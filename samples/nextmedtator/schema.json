@@ -1,0 +1,193 @@
+{
+  "id": "clinical-evidence-demo",
+  "version": "1.0.0",
+  "description": "Demonstration schema, not the final training grammar",
+  "families": {
+    "condition_occurrence": {
+      "label": "condition occurrence",
+      "fields": {
+        "concept": {
+          "type": "text"
+        },
+        "assertion": {
+          "type": "enum",
+          "values": [
+            "present",
+            "negated",
+            "possible",
+            "conditional",
+            "unknown"
+          ]
+        },
+        "temporality": {
+          "type": "enum",
+          "values": [
+            "current",
+            "historical",
+            "future",
+            "unknown"
+          ]
+        },
+        "experiencer": {
+          "type": "enum",
+          "values": [
+            "patient",
+            "family",
+            "other",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "measurement_occurrence": {
+      "label": "measurement occurrence",
+      "fields": {
+        "concept": {
+          "type": "text"
+        },
+        "assertion": {
+          "type": "enum",
+          "values": [
+            "present",
+            "negated",
+            "possible",
+            "conditional",
+            "unknown"
+          ]
+        },
+        "temporality": {
+          "type": "enum",
+          "values": [
+            "current",
+            "historical",
+            "future",
+            "unknown"
+          ]
+        },
+        "experiencer": {
+          "type": "enum",
+          "values": [
+            "patient",
+            "family",
+            "other",
+            "unknown"
+          ]
+        },
+        "value": {
+          "type": "text"
+        },
+        "unit": {
+          "type": "text"
+        }
+      }
+    },
+    "treatment_occurrence": {
+      "label": "treatment occurrence",
+      "fields": {
+        "concept": {
+          "type": "text"
+        },
+        "assertion": {
+          "type": "enum",
+          "values": [
+            "present",
+            "negated",
+            "possible",
+            "conditional",
+            "unknown"
+          ]
+        },
+        "temporality": {
+          "type": "enum",
+          "values": [
+            "current",
+            "historical",
+            "future",
+            "unknown"
+          ]
+        },
+        "experiencer": {
+          "type": "enum",
+          "values": [
+            "patient",
+            "family",
+            "other",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "event_occurrence": {
+      "label": "event occurrence",
+      "fields": {
+        "concept": {
+          "type": "text"
+        },
+        "assertion": {
+          "type": "enum",
+          "values": [
+            "present",
+            "negated",
+            "possible",
+            "conditional",
+            "unknown"
+          ]
+        },
+        "temporality": {
+          "type": "enum",
+          "values": [
+            "current",
+            "historical",
+            "future",
+            "unknown"
+          ]
+        },
+        "experiencer": {
+          "type": "enum",
+          "values": [
+            "patient",
+            "family",
+            "other",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "function_occurrence": {
+      "label": "function occurrence",
+      "fields": {
+        "concept": {
+          "type": "text"
+        },
+        "assertion": {
+          "type": "enum",
+          "values": [
+            "present",
+            "negated",
+            "possible",
+            "conditional",
+            "unknown"
+          ]
+        },
+        "temporality": {
+          "type": "enum",
+          "values": [
+            "current",
+            "historical",
+            "future",
+            "unknown"
+          ]
+        },
+        "experiencer": {
+          "type": "enum",
+          "values": [
+            "patient",
+            "family",
+            "other",
+            "unknown"
+          ]
+        }
+      }
+    }
+  }
+}
