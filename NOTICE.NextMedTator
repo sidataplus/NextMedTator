@@ -1,0 +1,8 @@
+NextMedTator is derived from OHNLP/MedTator.
+Retain the original repository's LICENSE, notices and attribution.
+The additive NextMedTator source in this implementation pack is provided under
+Apache License 2.0, consistent with the fork's selected project license.
+
+The synthetic samples are newly authored demonstration material, not patient
+records, independent clinical reference data or outputs of a trained model.
+No MACCROBAT or PMC articles are redistributed in this implementation pack.

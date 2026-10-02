@@ -146,3 +146,10 @@ vpp_data_DELI.json
 
 # IDE
 .idea/
+
+# NextMedTator generated assets and local research data
+node_modules/
+preview/
+test-results/
+dependency-verification.json
+.nmt-local/
