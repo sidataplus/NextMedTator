@@ -1,0 +1,29 @@
+{
+  "id": "nextmedtator-synthetic-v1",
+  "license": "Apache-2.0",
+  "source": "Original synthetic examples created for NextMedTator",
+  "notice": "Original synthetic walkthrough. Suggestions and reference examples were authored for demonstration, not produced by GLiNER or clinically validated.",
+  "documents": [
+    {
+      "id": "synthetic-1",
+      "sha256": "64e80d0ef5156f706d875f15c3eed1d4f73fdf33aa48e6d3e9787f72351a639c"
+    },
+    {
+      "id": "synthetic-2",
+      "sha256": "c8707402d57b73143d39a64e34db49ca0e154153407826eba2e7ac076a724f9e"
+    },
+    {
+      "id": "synthetic-3",
+      "sha256": "139e6f42bd17695ae1e033c48745cc0f7b0d5518543df560b50ce415e535a4ec"
+    },
+    {
+      "id": "synthetic-4",
+      "sha256": "e197e933f72985652b4c77969723878687d7e2d70a31a37e4285b1fabe2c1ffe"
+    },
+    {
+      "id": "synthetic-5",
+      "sha256": "7652913eb165f74d236469dd67ab359a245cd6de3763370a5f9d53fef950e02e"
+    }
+  ],
+  "externalDatasetsBundled": false
+}
