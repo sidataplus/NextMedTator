@@ -20,7 +20,7 @@ def build() -> None:
     copies={
       'VUE':('vue',{'JS':'dist/vue.runtime.min.js'}),
       'JQUERY':('jquery',{'JS':'dist/jquery.min.js'}),
-      'JQUERY_UI':('jquery-ui-dist',{'JS':'jquery-ui.min.js','CSS':'jquery-ui.min.css'}),
+      'JQUERY_UI':('jquery-ui',{'JS':'dist/jquery-ui.min.js','CSS':'dist/themes/base/jquery-ui.min.css'}),
       'FONT_AWESOME':('@fortawesome/fontawesome-free',{'CSS':'css/all.min.css'}),
       'JSZIP':('jszip',{'JS':'dist/jszip.min.js'}),
       'FILESAVER':('file-saver',{'JS':'dist/FileSaver.min.js'}),
