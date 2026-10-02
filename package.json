@@ -1,0 +1,45 @@
+{
+  "name": "nextmedtator",
+  "version": "0.1.0-preview.1",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {"node": ">=22.16"},
+  "scripts": {
+    "test": "node --test tests/unit/*.test.mjs",
+    "build": "python scripts/build_nextmedtator.py && node scripts/finalize_build.mjs",
+    "build:preview": "python scripts/build_preview.py",
+    "preview": "python scripts/serve_static.py --directory preview",
+    "preview:legacy": "python scripts/serve_static.py --directory dist",
+    "test:browser": "python tests/browser/test_preview.py",
+    "test:legacy": "python tests/browser/test_legacy.py",
+    "test:dom": "node scripts/build_dom_harness.mjs && python tests/browser/test_dom_memory.py",
+    "audit:assets": "node scripts/audit_assets.mjs",
+    "deps:verify": "node scripts/verify_dependency_versions.mjs",
+    "samples:generate": "node scripts/generate_demo.mjs"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "5.15.4",
+    "codemirror": "5.65.20",
+    "d3": "7.9.0",
+    "dayjs": "1.11.13",
+    "dompurify": "3.3.1",
+    "echarts": "5.6.0",
+    "file-saver": "2.0.5",
+    "jquery": "3.7.1",
+    "jquery-ui": "1.14.1",
+    "js-yaml": "4.3.2",
+    "jszip": "3.10.1",
+    "onnxruntime-web": "1.23.2",
+    "papaparse": "5.5.3",
+    "vue": "2.7.16"
+  },
+  "devDependencies": {
+    "acorn": "8.15.0",
+    "esbuild": "0.25.9",
+    "linkedom": "0.18.12",
+    "typescript": "5.9.3",
+    "vue-template-compiler": "2.7.16"
+  }
+}

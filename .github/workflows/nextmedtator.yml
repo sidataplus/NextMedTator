@@ -1,0 +1,50 @@
+name: NextMedTator validation
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify direct package versions
+        run: pnpm deps:verify
+      - name: Resolve dependencies for draft validation
+        run: |
+          if test -f pnpm-lock.yaml; then pnpm install --frozen-lockfile; else pnpm install --no-frozen-lockfile; fi
+          python -m pip install -r requirements.txt -r requirements-test.txt
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm audit:assets
+      - run: python -m playwright install --with-deps chromium
+      - run: pnpm test:legacy
+      - name: Review workspace browser tests
+        if: hashFiles('src/nextmedtator/ui.mjs') != ''
+        run: |
+          pnpm build:preview
+          pnpm test:browser
+      - name: Dependency audit
+        run: pnpm audit --audit-level high
+      - name: Require reviewed dependency lock before merge
+        run: git ls-files --error-unmatch pnpm-lock.yaml >/dev/null 2>&1 || { echo 'Commit the generated and reviewed lockfile before merging.'; exit 1; }
+      - name: Reports and generated dependency lock
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextmedtator-validation
+          path: |
+            pnpm-lock.yaml
+            dependency-verification.json
+            test-results/
+            dist/asset-manifest.json
+          retention-days: 7

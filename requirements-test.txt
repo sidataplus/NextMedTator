@@ -1,0 +1,2 @@
+# Browser test runner; runtime application has no Python requirement.
+playwright==1.56.0
