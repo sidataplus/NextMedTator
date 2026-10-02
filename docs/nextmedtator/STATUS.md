@@ -26,16 +26,16 @@ This file distinguishes working code from qualification. It is not a claim that 
 ## Executed validation in this environment
 
 - **50 Node unit tests passed**, using actual Node WebCrypto and no third-party test dependencies.
-- **4 Chromium DOM-only workflows passed** on an in-memory `about:blank` page: assisted review/edit/undo, blind freeze/reveal/compare, untrusted text rendering and XML CRLF/Unicode interoperability.
-- The DOM-only harness explicitly substitutes hash/UUID functions because opaque origins lack WebCrypto. It does **not** validate CSP, secure-context storage, service workers or inference.
-- Static preview build, source syntax checks and preview asset inventory passed.
+- **4 Chromium DOM-only workflows passed** on an in-memory `about:blank` page: assisted review/edit/undo, blind freeze/reveal/compare, untrusted text rendering and XML CRLF/Unicode interoperability. The DOM-only harness substitutes hash/UUID functions because opaque origins lack WebCrypto. It does **not** validate CSP, secure-context storage, service workers or inference.
+- **5 real-origin Chromium workflows passed** at `http://127.0.0.1:4173/`: assisted review/edit/undo/export, blind freeze/reveal/compare, opt-in recovery plus offline export, synthetic canary import/export with no content egress, and XML CRLF/Unicode round trip with XXE rejection.
+- The legacy MedTator page built with local dependencies loaded in Chromium, including opening and closing the evidence workspace.
+- Direct npm pins were checked against the registry. `pnpm-lock.yaml` is generated from that resolution. `pnpm audit --audit-level high` passed after moving js-yaml to 4.3.2. Moderate transitive findings remain.
+- Static `dist/` asset inventory passed, including the 25 MiB file limit and no remote or inline executable scripts.
 
-## Blocked validation, not passed
+## Still not qualified
 
-- Real-origin browser suite: managed Chromium rejected localhost navigation with `ERR_BLOCKED_BY_ADMINISTRATOR`. No browser policy was disabled.
-- Full fork dependency installation/build: runtime networking was unavailable, so new npm/PyPI packages and the full repository checkout could not be fetched into the runtime.
-- Dependency locks are **not fabricated**. Exact direct pins are supplied, with a registry verification command. The transitive lock, audit and original-workflow build must be generated and checked in a connected runner.
-- GitHub writes: both tree and branch creation returned `403 Resource not accessible by integration`. No commits, branches or PRs were created in the fork or upstream.
+- No GLiNER2.5 browser package is included. Analyze stays disabled. Authored sample suggestions are not model output, and this repository has no baseline-versus-LoRA performance results.
+- Group-aware relation editing, CaseDistiller SQL review, approved model download/cache, and a clinical pilot remain later work.
 
 ## Required before a clinical pilot
 

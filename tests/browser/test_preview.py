@@ -83,12 +83,16 @@ def run():
             assert page.evaluate('localStorage.length')==0
             assert page.evaluate('async()=> (await indexedDB.databases()).length')==0
             page.on('dialog',lambda d:d.accept())
-            page.get_by_test_id('recovery-enable').click();assert 'Recovery ON' in page.get_by_test_id('save-status').inner_text()
-            assert 'Recovery checkpoint saved' in page.get_by_test_id('save-status').inner_text()
+            page.get_by_test_id('recovery-enable').click()
+            # Recovery writes IndexedDB after the click. Locator expectations retry
+            # without page-side eval, which the application CSP rejects.
+            expect(page.get_by_test_id('save-status')).to_contain_text('Recovery checkpoint saved')
+            expect(page.get_by_test_id('save-status')).to_contain_text('Recovery ON')
             page.get_by_role('button',name='Delete recovery & disable',exact=True).click()
-            assert 'Recovery OFF' in page.get_by_test_id('save-status').inner_text()
+            expect(page.get_by_test_id('save-status')).to_contain_text('Recovery OFF')
             page.get_by_role('button',name='Install app for offline use',exact=True).click()
-            page.wait_for_function('navigator.serviceWorker.controller !== null')
+            expect(page.get_by_test_id('message')).to_contain_text('App cache installed')
+            page.wait_for_function('() => navigator.serviceWorker.controller !== null')
             context.set_offline(True);page.reload();page.get_by_test_id('sample').wait_for()
             page.get_by_test_id('sample').click();page.get_by_test_id('demo-suggest').click();page.get_by_test_id('accept').click()
             with page.expect_download() as saved:page.get_by_test_id('save').click()
