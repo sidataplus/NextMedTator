@@ -35,14 +35,14 @@ This file distinguishes working code from qualification. It is not a claim that 
 
 ## Still not qualified
 
-- Analyze locally runs only after import of a `gliner25-boundary-span-v1` package. The app ships the tokenizer, prompt, and boundary decoder; it does not ship weights. Output is span text plus score. Assertion, temporality, experiencer, values, and relations stay empty. Authored sample suggestions remain labeled as authored. There are no baseline-versus-LoRA results.
+- Analyze locally runs only after import of a GLiNER2.5 package. The app ships the tokenizer, prompt, boundary decoder, and span-attribute decoder; it does not ship weights. A span package returns span text plus score. A structured package also fills enum attributes from `explicit.onnx`. Measurement value, unit, and relations stay empty. Authored sample suggestions remain labeled as authored. There are no baseline-versus-LoRA results.
 - Group-aware relation editing, CaseDistiller SQL review, approved model download/cache, and a clinical pilot remain later work.
 
 ## Required before a clinical pilot
 
 1. Qualify the external structured GLiNER2.5 export, tokenizer/schema encoding, all heads, windowing and decoder. No qualified model or adapter package is supplied here.
 2. Run genuine baseline-versus-LoRA comparisons. This implementation does not contain model-performance results.
-3. The live path is local GLiNER2.5 boundary span extraction, windowed at 512 tokens. Full Clinical-Evidence structured heads, relation decoding, and a qualified LoRA package are still absent.
+3. The live path is local GLiNER2.5 boundary span extraction, windowed at 512 tokens, plus softmax enum attributes when the package includes the exported span-attribute head. Record binding for measurement value and unit, relation decoding, and a qualified LoRA package are still absent.
 4. Validate the original MedTator UI after precompilation and dependency changes. The isolated workspace is not evidence that the legacy integration passes.
 5. Audit/rework remaining legacy HTML sinks and vendored dependencies, including spreadsheet/NLP/toolkit paths; no full PHI security approval is claimed.
 6. Run real-origin storage, multi-tab recovery, service-worker/offline, cancellation and egress-canary tests.

@@ -3,6 +3,8 @@
 Weights are not downloaded or committed by this script. Point --source at a directory that already
 contains tokenizer.json, gliner2_config.json, onnx/encoder.onnx and onnx/boundary.onnx from
 https://huggingface.co/DanKau/gliner2.5-base-v1-onnx (Apache-2.0, base revision recorded below).
+If onnx/explicit.onnx is also present, the package uses the span-attribute head from
+scripts/export_gliner25_structured.py and the structured codec.
 """
 import argparse, hashlib, json, zipfile
 from pathlib import Path
@@ -18,12 +20,15 @@ def main() -> None:
     parser.add_argument('--source', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
+    explicit = args.source / 'onnx/explicit.onnx'
     members = {
         'encoder.onnx': args.source / 'onnx/encoder.onnx',
         'boundary.onnx': args.source / 'onnx/boundary.onnx',
         'tokenizer.json': args.source / 'tokenizer.json',
         'gliner2_config.json': args.source / 'gliner2_config.json',
     }
+    if explicit.is_file():
+        members['explicit.onnx'] = explicit
     fixture = {
         'kind': 'gliner25-boundary-span-v1',
         'text': 'John works at Google in Seattle.',
@@ -49,11 +54,13 @@ def main() -> None:
         'format': 'nextmedtator-model-v1', 'id': 'gliner25-base-boundary', 'version': '2026-04-09',
         'runtime': 'onnxruntime-web', 'runtimeVersion': '1.23.2',
         'lineage': {'base': {'model': 'fastino/gliner2.5-base-v1', 'revision': REVISION}},
-        'license': {'id': 'Apache-2.0', 'notice': 'ONNX export of fastino/gliner2.5-base-v1. Span extraction only; not a Clinical-Evidence adapter.'},
+        'license': {'id': 'Apache-2.0', 'notice': 'ONNX export of fastino/gliner2.5-base-v1. Not a Clinical-Evidence adapter.' + (' Includes the span-attribute head for enum fields.' if explicit.is_file() else ' Span extraction only.')},
         'files': files,
         'variants': [{
-            'id': 'wasm-fp32', 'backend': 'wasm', 'precision': 'fp32', 'codec': 'gliner25-boundary-span-v1',
-            'graph': 'encoder.onnx', 'graphs': {'encoder': 'encoder.onnx', 'boundary': 'boundary.onnx'},
+            'id': 'wasm-fp32', 'backend': 'wasm', 'precision': 'fp32',
+            'codec': 'gliner25-boundary-structured-v1' if explicit.is_file() else 'gliner25-boundary-span-v1',
+            'graph': 'encoder.onnx',
+            'graphs': {'encoder': 'encoder.onnx', 'boundary': 'boundary.onnx', **({'explicit': 'explicit.onnx'} if explicit.is_file() else {})},
             'tokenizer': 'tokenizer.json', 'modelConfig': 'gliner2_config.json', 'fixtures': ['span-fixture.json'], 'threshold': 0.5,
         }],
         'capabilities': ['*'],

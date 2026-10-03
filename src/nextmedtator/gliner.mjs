@@ -1,8 +1,10 @@
 import { invariant, jsonParse, OffsetMap, uuid } from './integrity.mjs';
 /** Application-owned GLiNER2.5 boundary span codec. Packages supply graphs and a tokenizer, never executable code. */
 export const GLINER_CODEC = 'gliner25-boundary-span-v1';
-export const GLINER_LIMITS = Object.freeze({ sequence: 512, labels: 64, wordOverlap: 32, threshold: 0.5, abstention: 0.5 });
+export const GLINER_STRUCTURED = 'gliner25-boundary-structured-v1';
+export const GLINER_LIMITS = Object.freeze({ sequence: 512, labels: 64, wordOverlap: 32, threshold: 0.5, abstention: 0.5, explicitWords: 512 });
 export const SPAN_NOTICE = 'GLiNER2.5 boundary span extraction on this device. Scores are span probabilities. Assertion, temporality, experiencer, measurement value/unit, and relations are not predicted.';
+export const STRUCTURED_NOTICE = 'GLiNER2.5 boundary spans plus the span-attribute head on this device. Enum fields are the softmax choice at the retained span. Measurement value, unit, and relations are not predicted.';
 const encoder = new TextEncoder();
 const META = '\u2581';
 const EXTRA_SPACE = new Set([0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x1c, 0x1d, 0x1e, 0x1f, 0x85]);
@@ -243,6 +245,49 @@ export function schemaEntityLabels(schema) {
     }
     return { labels, byLabel };
 }
+/** Family labels, then attribute labels in the alphabetical order GLiNER2 inserts into the entity prompt. */
+export function schemaPrompt(schema) {
+    const { labels, byLabel } = schemaEntityLabels(schema);
+    const enums = new Map();
+    for (const def of Object.values(schema.families))
+        for (const [field, spec] of Object.entries(def.fields)) {
+            if (spec.type !== 'enum')
+                continue;
+            const previous = enums.get(field);
+            invariant(!previous || previous.join('\u0000') === spec.values.join('\u0000'), 'The same enum field must have the same values on every family');
+            enums.set(field, spec.values);
+        }
+    const rows = [...enums.entries()].flatMap(([field, values]) => values.map(value => ({ field, value, label: `${field}: ${value}` })));
+    rows.sort((a, b) => a.label < b.label ? -1 : a.label > b.label ? 1 : 0);
+    for (const row of rows)
+        invariant(!byLabel.has(row.label), 'Attribute label collides with an occurrence family');
+    const prompt = [...labels, ...rows.map(row => row.label)];
+    invariant(prompt.length <= GLINER_LIMITS.labels && new Set(prompt).size === prompt.length, 'Structured prompt exceeds the label budget');
+    const at = new Map(rows.map((row, index) => [row.label, index]));
+    const groups = [...enums.keys()].map(field => ({ field, choices: enums.get(field).map(value => ({ value, index: at.get(`${field}: ${value}`) })) }));
+    return { labels: prompt, contentCount: labels.length, groups, byLabel };
+}
+export function softmaxChoice(logits) {
+    invariant(logits.length > 0 && logits.every(value => Number.isFinite(value)), 'Attribute logits required');
+    const max = Math.max(...logits);
+    const shifted = logits.map(value => Math.exp(value - max));
+    const sum = shifted.reduce((total, value) => total + value, 0);
+    let index = 0;
+    for (let i = 1; i < shifted.length; i++)
+        if (shifted[i] > shifted[index])
+            index = i;
+    return { index, score: shifted[index] / sum };
+}
+/** Single-label attribute groups. Logits are [1, attributes, spans], matching score_explicit_spans. */
+export function attributeFields(logits, dims, spanIndex, groups) {
+    const fields = {};
+    for (const group of groups) {
+        const values = group.choices.map(choice => Number(logits[index(dims, 0, choice.index, spanIndex)]));
+        const best = softmaxChoice(values);
+        fields[group.field] = group.choices[best.index].value;
+    }
+    return fields;
+}
 export function prepareWindow(tokenizer, labels, words) {
     const schema = ['(', '[P]', 'entities', '('];
     const markers = [];
@@ -374,7 +419,7 @@ export function locateSpans(text, words, localSpans, wordOffset) {
         const startWord = span.start + wordOffset, endWord = span.end + wordOffset;
         invariant(startWord >= 0 && endWord <= words.length, 'Model span is outside the encoded words');
         const start = words[startWord].start, end = words[endWord - 1].end;
-        return { label: span.label, start, end, text: cps(text).slice(start, end).join(''), score: span.score };
+        return { ...span, label: span.label, start, end, text: cps(text).slice(start, end).join(''), score: span.score };
     });
 }
 export function documentCoverage(text, words, uncovered) {
@@ -401,6 +446,13 @@ export function spansToRecords(doc, schema, spans) {
     return spans.map(span => {
         const family = byLabel.get(span.label);
         invariant(family, 'Prediction label is not a schema family');
-        return { id: uuid(), documentId: doc.id, family, anchor: [map.span(span.start, span.end)], fields: { concept: map.slice(span.start, span.end) }, score: span.score, origin: { kind: 'model', codec: GLINER_CODEC } };
+        const fields = { concept: map.slice(span.start, span.end) };
+        const def = schema.families[family];
+        for (const [name, value] of Object.entries(span.attributes ?? {})) {
+            const field = def.fields[name];
+            if (field?.type === 'enum' && field.values.includes(value))
+                fields[name] = value;
+        }
+        return { id: uuid(), documentId: doc.id, family, anchor: [map.span(span.start, span.end)], fields, score: span.score, origin: { kind: 'model', codec: span.attributes ? GLINER_STRUCTURED : GLINER_CODEC } };
     });
 }

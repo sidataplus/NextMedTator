@@ -6,7 +6,8 @@ export const MODEL_LIMITS = Object.freeze({ files: 128, file: 768 * 1024 * 1024,
 // Every executable preprocessor/decoder is shipped with the application, not with a model.
 export const CODECS = Object.freeze({
     'tensor-conformance-v1': { purpose: 'graph-conformance-only', clinicalInference: false, coverage: 'tensor-fixture' },
-    'gliner25-boundary-span-v1': { purpose: 'gliner25-boundary-span-extraction', clinicalInference: true, coverage: 'entity-span' }
+    'gliner25-boundary-span-v1': { purpose: 'gliner25-boundary-span-extraction', clinicalInference: true, coverage: 'entity-span' },
+    'gliner25-boundary-structured-v1': { purpose: 'gliner25-boundary-span-and-attributes', clinicalInference: true, coverage: 'structured-span' }
 });
 export function validateModelManifest(m) {
     invariant(m.format === PACKAGE_FORMAT, 'Unsupported model-package format');
@@ -46,11 +47,14 @@ export function validateModelManifest(m) {
         invariant(m.files.some(f => f.path === v.graph && f.role === 'graph'), 'Variant graph missing');
         if (v.threshold != null)
             invariant(typeof v.threshold === 'number' && v.threshold >= 0 && v.threshold <= 1, 'Invalid span threshold');
-        if (CODECS[v.codec].coverage === 'entity-span') {
+        if (CODECS[v.codec].coverage === 'entity-span' || CODECS[v.codec].coverage === 'structured-span') {
             invariant(v.graphs?.encoder === v.graph && typeof v.graphs.boundary === 'string', 'Boundary package needs encoder and boundary graphs');
             invariant(m.files.some(f => f.path === v.graphs.boundary && f.role === 'graph'), 'Boundary graph missing');
             invariant(typeof v.tokenizer === 'string' && m.files.some(f => f.path === v.tokenizer && f.role === 'tokenizer'), 'GLiNER tokenizer missing');
             invariant(typeof v.modelConfig === 'string' && m.files.some(f => f.path === v.modelConfig && f.role === 'schema'), 'GLiNER config missing');
+            if (CODECS[v.codec].coverage === 'structured-span') {
+                invariant(typeof v.graphs.explicit === 'string' && m.files.some(f => f.path === v.graphs.explicit && f.role === 'graph'), 'Span-attribute graph missing');
+            }
         }
         invariant(Array.isArray(v.fixtures) && v.fixtures.length > 0 && v.fixtures.every(p => m.files.some(f => f.path === p && f.role === 'fixture')), 'Reference fixtures required');
         for (const f of v.externalData ?? [])
@@ -78,8 +82,10 @@ export function qualifyForSchema(packageData, schema) {
     if (!open)
         for (const family of Object.keys(schema.families))
             invariant(packageData.manifest.capabilities.includes(family), 'Unsupported schema family');
-    const spanOnly = codecs.every(c => c.coverage === 'entity-span');
-    return { level: spanOnly ? 'entity-span' : 'structured', unpredicted: spanOnly ? ['assertion', 'temporality', 'experiencer', 'value', 'unit', 'relations'] : [] };
+    const structured = codecs.some(c => c.coverage === 'structured-span');
+    if (structured)
+        return { level: 'structured-span', unpredicted: ['value', 'unit', 'relations'] };
+    return { level: 'entity-span', unpredicted: ['assertion', 'temporality', 'experiencer', 'value', 'unit', 'relations'] };
 }
 export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
     invariant(Number.isFinite(atol) && Number.isFinite(rtol) && atol >= 0 && rtol >= 0, 'Invalid numerical tolerance');
@@ -99,7 +105,7 @@ export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
 export class ConformanceWorker {
     constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.pending = new Map(); }
     async run(packageData, variantId, options) { return this.#request(packageData, variantId, { task: 'fixtures' }, options); }
-    async analyze(packageData, variantId, { text, labels, threshold }, options) { return this.#request(packageData, variantId, { task: 'analyze', text, labels, threshold }, { timeoutMs: 600000, ...options }); }
+    async analyze(packageData, variantId, { text, labels, threshold, contentCount, groups }, options) { return this.#request(packageData, variantId, { task: 'analyze', text, labels, threshold, contentCount, groups }, { timeoutMs: 600000, ...options }); }
     #request(packageData, variantId, message, { timeoutMs = 120000 } = {}) {
         invariant(!this.worker, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);

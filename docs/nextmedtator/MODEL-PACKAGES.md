@@ -15,8 +15,9 @@ Two application codecs are implemented:
 
 - `tensor-conformance-v1` executes supplied tensor fixtures. It cannot read clinical text.
 - `gliner25-boundary-span-v1` tokenizes with the package's Unigram `tokenizer.json`, builds the GLiNER2 entity prompt, and runs a boundary ONNX pair (`encoder` then `boundary`) in the local ORT worker. Decoding is half-open word spans, sigmoid threshold 0.5, abstention when the null head exceeds 0.5, and the `flat` overlap policy. The largest member may be 768 MiB so the published fp32 base encoder fits. The archive stays within 1 GiB.
+- `gliner25-boundary-structured-v1` adds `explicit.onnx`, the `score_explicit_spans` head exported from `fastino/gliner2.5-base-v1`. Enum fields are prompt labels of the form `field: value`, scored at each retained span and reduced with softmax. The word axis of that graph is fixed at 512 and shorter windows are masked.
 
-The span codec fills occurrence anchors, concept text, and a score. It does **not** predict assertion, temporality, experiencer, measurement value or unit, or relations, and it is not a Clinical-Evidence LoRA evaluation. `*` in `capabilities` means any schema family may be used as a zero-shot span label. A conformance-only package still fails `qualifyForSchema` with `CLINICAL_RUNTIME_UNQUALIFIED`.
+The span codec fills occurrence anchors, concept text, and a score. The structured codec also fills schema enum attributes. Neither predicts measurement value or unit, or relations, and neither is a Clinical-Evidence LoRA evaluation. `*` in `capabilities` means any schema family may be used as a zero-shot span label. A conformance-only package still fails `qualifyForSchema` with `CLINICAL_RUNTIME_UNQUALIFIED`.
 
 ## Package layout
 
