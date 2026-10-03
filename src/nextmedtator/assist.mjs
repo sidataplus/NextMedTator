@@ -1,5 +1,5 @@
 import { DEMO_SCHEMA } from './contracts.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
 import { clone, freeze } from './integrity.mjs';
 
@@ -137,6 +137,7 @@ class LegacyAssist {
         this.modelRunner = new ConformanceWorker();
         this.runs = new Map();
         this.exposed = new Set();
+        this.exposure = [];
         this.blinded = new Set();
         this.blindSnapshots = new Map();
         this.selected = new Set();
@@ -181,6 +182,8 @@ class LegacyAssist {
         const dtd = view?.data?.dtd;
         return JSON.stringify({
             open: this.open,
+            section: view?.data?.section,
+            visible: !document.hidden && this.host.getClientRects().length > 0,
             mode: this.mode,
             model: this.model?.manifest?.id ?? '',
             codec: this.model?.manifest?.variants?.map(v => v.codec).join(',') ?? '',
@@ -275,9 +278,10 @@ class LegacyAssist {
             const doc = { id: ann._filename ?? `document-${index + 1}`, text: requests[index].text };
             if (result.kind !== codec)
                 throw new Error('Worker did not return GLiNER span output');
+            const provenance = modelRunProvenance(this.model, variant.id, result);
             const records = spansToRecords(doc, DEMO_SCHEMA, result.spans);
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
-            this.runs.set(key, { key, filename: ann._filename, records, notice, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
+            this.runs.set(key, { key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
         } });
         const hidden = this.mode === 'blind';
         this.message = hidden
@@ -300,6 +304,13 @@ class LegacyAssist {
             }
             return action(...args);
         };
+    }
+    recordExposure(view, run, kind) {
+        this.exposed.add(view.key);
+        if (run.exposedAt) return;
+        run.exposedAt = new Date().toISOString();
+        this.exposure.push({ key: view.key, at: run.exposedAt, kind,
+            manifestHash: run.producer.manifestHash, variantId: run.runtime.variantId });
     }
     writeAnnotation(record, tagName, values) {
         const view = legacy();
@@ -412,12 +423,13 @@ class LegacyAssist {
             if (!this.exposed.has(view.key)) {
                 const frozen = this.blindSnapshots.has(view.key);
                 body.append(button('Freeze blind annotation', this.forCurrentNote(view.key, () => {
+                    if (this.exposed.has(view.key)) { this.render(); return; }
                     this.blindSnapshots.set(view.key, freeze(clone({ filename: view.ann._filename, text: view.ann.text, tags: view.ann.tags, frozenAt: new Date().toISOString() })));
                     this.message = 'Blind annotation frozen for this note in this session. Reveal can now show suggestions.';
                     this.render();
                 }), { id: 'assist-freeze', disabled: frozen || this.busy }));
                 body.append(button('Reveal suggestions', this.forCurrentNote(view.key, () => {
-                    this.exposed.add(view.key);
+                    this.recordExposure(view, run, 'explicit-reveal');
                     run.revealedAt = new Date().toISOString();
                     this.mode = 'assisted';
                     this.message = 'Suggestions revealed for this note. Its frozen blind annotation is preserved in this session.';
@@ -425,9 +437,11 @@ class LegacyAssist {
                 }), { id: 'assist-reveal', disabled: !frozen || this.busy }));
             }
             else
-                body.append(node('p', 'This note was revealed earlier. Choose Assisted to show the suggestions again.', { class: 'muted' }));
+                body.append(node('p', 'Machine assistance was already shown for this note. Its current annotation cannot be frozen as independent blind labels. Choose Assisted to show suggestions again.', { class: 'muted', 'data-testid': 'assist-exposure' }));
             return;
         }
+        if (view.data.section === 'annotation' && !document.hidden && this.host.getClientRects().length)
+            this.recordExposure(view, run, 'assisted-display');
         const unresolved = run.records.filter(record => !run.decisions[record.id]).length;
         body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the clinical-evidence demonstration schema. Choose the annotation entity tag separately.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
         if (!run.records.length)

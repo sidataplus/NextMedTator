@@ -146,6 +146,34 @@ def check_worker_regressions(page):
     page.get_by_test_id('assist-suggestion').nth(1).get_by_test_id('assist-reject').click()
     assert page.evaluate('document.querySelector("nextmedtator-assist").assist.current().run.records.length') == 2
     assert page.evaluate('!!document.querySelector("nextmedtator-assist").assist.current().run.revealedAt')
+    # A new note starts in Assisted mode: visibility itself must record exposure.
+    assisted_name = page.evaluate('text => app_hotpot.vpp.add_sample_txt_as_ann(text)._filename', NOTE)
+    page.locator('.file-list-item-name', has_text=assisted_name).click()
+    expect(page.get_by_test_id('assist-document')).to_have_text(assisted_name)
+    page.get_by_test_id('assist-analyze').click()
+    expect(page.get_by_test_id('assist-suggestion')).to_have_count(2)
+    exposure = page.evaluate('''() => {
+        const assist = document.querySelector('nextmedtator-assist').assist, view = assist.current();
+        return {exposed: assist.exposed.has(view.key), at: view.run.exposedAt,
+            events: assist.exposure.filter(event => event.key === view.key),
+            manifestHash: assist.model.manifestHash, variantId: view.run.runtime.variantId};
+    }''')
+    assert exposure['exposed'] and exposure['at'], exposure
+    assert len(exposure['events']) == 1 and exposure['events'][0]['kind'] == 'assisted-display', exposure
+    assert exposure['events'][0]['manifestHash'] == exposure['manifestHash'], exposure
+    assert exposure['events'][0]['variantId'] == exposure['variantId'], exposure
+    page.get_by_test_id('assist-mode').select_option('blind')
+    expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
+    expect(page.get_by_test_id('assist-freeze')).to_have_count(0)
+    expect(page.get_by_test_id('assist-reveal')).to_have_count(0)
+    expect(page.get_by_test_id('assist-exposure')).to_contain_text('cannot be frozen as independent')
+    assert page.evaluate('''() => {
+        const assist = document.querySelector('nextmedtator-assist').assist;
+        return !assist.blindSnapshots.has(assist.current().key);
+    }''')
+    assert page.evaluate('JSON.stringify([...document.querySelector("nextmedtator-assist").assist.blindSnapshots.values()])') == frozen
+    page.get_by_test_id('assist-mode').select_option('assisted')
+    expect(page.get_by_test_id('assist-suggestion')).to_have_count(2)
     results = ROOT / 'test-results'
     results.mkdir(exist_ok=True)
     page.screenshot(path=str(results / 'legacy-worker-review.png'), full_page=True)
@@ -153,5 +181,6 @@ def check_worker_regressions(page):
         'scope': 'Real ORT WASM with synthetic constant graphs; no GLiNER quality or clinical qualification claim',
         'exact_occurrence_conformance': True, 'reject_extra_missing_misplaced_occurrences': True,
         'structured_two_note_batch': evidence, 'per_note_freeze_and_reveal': True,
-        'preserve_blind_snapshot_after_accept': True
+        'preserve_blind_snapshot_after_accept': True,
+        'automatic_assisted_exposure_prevents_blind_freeze': exposure
     }, indent=2))

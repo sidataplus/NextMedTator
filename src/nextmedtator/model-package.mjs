@@ -74,6 +74,23 @@ export async function importModelPackage(bytes) {
     }
     return { manifest: freeze(clone(manifest)), manifestHash: await fingerprint(manifest), files: entries };
 }
+/** Reproducible model identity retained in run fingerprints, comparisons and exports. */
+export function modelRunProvenance(packageData, variantId, result) {
+    const manifest = packageData.manifest, variant = manifest.variants.find(v => v.id === variantId);
+    invariant(variant, 'Run variant not found in the model package');
+    validHash(packageData.manifestHash);
+    invariant(result.manifestHash === packageData.manifestHash && result.variantId === variantId,
+        'Worker returned a different model package or variant');
+    invariant(result.kind === variant.codec && result.backend === variant.backend && result.precision === variant.precision,
+        'Worker runtime does not match the selected variant');
+    return {
+        producer: { kind: 'model', name: manifest.lineage.base.model, version: manifest.version,
+            packageId: manifest.id, manifestHash: packageData.manifestHash,
+            lineage: clone(manifest.lineage), artifacts: clone(manifest.files) },
+        runtime: { backend: result.backend, precision: result.precision, version: manifest.runtimeVersion,
+            variantId, variant: clone(variant) }
+    };
+}
 export function qualifyForSchema(packageData, schema) {
     validateModelManifest(packageData.manifest);
     const codecs = packageData.manifest.variants.map(v => CODECS[v.codec]).filter(c => c.clinicalInference);

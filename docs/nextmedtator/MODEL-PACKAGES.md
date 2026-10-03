@@ -11,6 +11,8 @@ Model training, LoRA preparation, merging, quantization and ONNX export stay in 
 - Provider-specific variants, graph paths, external weight data and numerical fixtures.
 - App-owned codec identity. Model packages cannot supply arbitrary JavaScript or WASM.
 
+Live runs retain the manifest hash, package ID, complete base/adapter/head lineage, artifact hashes, and the selected variant declaration alongside backend, precision, and runtime version. The worker result must match that package and variant before a run is accepted. These identities enter run fingerprints and portable exports; machine comparison snapshots reject mixed package or variant configurations even when their model name/version match.
+
 Three application codecs are implemented:
 
 - `tensor-conformance-v1` executes supplied tensor fixtures. It cannot read clinical text.

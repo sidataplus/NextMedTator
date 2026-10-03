@@ -6,7 +6,7 @@ import { exportBundle, importBundle, localDownload } from './bundle.mjs';
 import { RecoveryStore, ActiveTimer } from './recovery.mjs';
 import { compareSnapshots } from './compare.mjs';
 import { importJSONL, importMedTator, exportMedTator, evidenceJSONL, eventCSV } from './interchange.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
 import { mountLegacyAssist } from './assist.mjs';
 const styles = `
@@ -110,8 +110,9 @@ export class EvidenceWorkspace {
         const prompt = codec === GLINER_STRUCTURED ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
         const result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, threshold: variant.threshold });
         invariant(result.kind === codec, 'Worker did not return GLiNER span output');
+        const provenance = modelRunProvenance(this.model, variant.id, result);
         const records = spansToRecords(this.doc, this.project.current.schema, result.spans);
-        const run = await makeRun(this.project, this.doc, records, { producer: { kind: 'model', name: this.model.manifest.lineage.base.model, version: this.model.manifest.version, notice }, status: result.status, coverage: result.coverage, settings: { codec, threshold: result.threshold, overlapPolicy: 'flat', maxSequenceLength: 512, wordOverlap: 32, notice }, runtime: { backend: result.backend, precision: result.precision, version: this.model.manifest.runtimeVersion } });
+        const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, settings: { codec, threshold: result.threshold, overlapPolicy: 'flat', maxSequenceLength: 512, wordOverlap: 32, notice }, runtime: provenance.runtime });
         await this.project.addRun(run);
         this.changed();
         this.message = `${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;

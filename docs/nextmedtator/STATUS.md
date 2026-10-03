@@ -20,19 +20,19 @@ This file distinguishes working code from qualification. It is not a claim that 
 - Local active-time/event exports; no keystroke telemetry.
 - Explicit static app cache installation using an immutable asset inventory.
 - Synthetic walkthrough and license/source manifest, with authored suggestions clearly labeled.
-- External model-package validation, immutable baseline/LoRA/head provenance and tensor conformance worker code.
+- External model-package validation, immutable baseline/LoRA/head provenance in live run fingerprints and exports, and tensor conformance worker code.
 - Additive fork build, selected dependency refreshes, local asset copying, Vue precompilation and static security headers.
 
 ## Executed validation in this environment
 
 PR #3 follow-up, 2026-10-03:
 
-- **68 Node tests passed; 1 optional real-tokenizer test skipped** because its external artifact was absent. Worker lifecycle tests exercise ordered batch results, single package transfer, cancellation, timeout, failures, cleanup and retry.
+- **75 Node tests passed; 1 optional real-tokenizer test skipped** because its external artifact was absent. Tests cover package/lineage/variant isolation in fingerprints and comparison snapshots, portable provenance, worker attribution, ordered batch results, single package transfer, cancellation, timeout, failures, cleanup and retry.
 - **5 real-origin Chromium workflows passed** at `http://127.0.0.1:4173/`: assisted review/edit/undo/export, blind freeze/reveal/compare, opt-in recovery plus offline export, synthetic canary import/export with no content egress, and XML CRLF/Unicode round trip with XXE rejection.
 - Both static builds passed. The legacy MedTator page loaded in Chromium with its collapsible assistance column and portable evidence project.
-- The real ORT WASM worker executed tiny synthetic encoder, boundary and explicit-span graphs. Exact conformance rejected extra, missing and misplaced occurrences. Two-note structured analysis used one worker, one package transfer and two analysis requests. Per-note freeze/reveal and stale-action checks passed, and accepted tags did not change the frozen blind copy.
-- Offline restart, synthetic ONNX inference, acceptance and native export passed with network access blocked. These synthetic graphs test runtime/workflow behavior; they do not evaluate GLiNER or clinical quality.
-- Legacy blind copies and reveal timestamps are session-only. Durable study snapshots/exposure remain in the portable evidence project.
+- The real ORT WASM worker executed tiny synthetic encoder, boundary and explicit-span graphs. Exact conformance rejected extra, missing and misplaced occurrences. Two-note structured analysis used one worker, one package transfer and two analysis requests. Per-note freeze/reveal and stale-action checks passed, and accepted tags did not change the frozen blind copy. Automatically visible Assisted suggestions recorded exposure and prevented a subsequent independent blind freeze.
+- Offline restart, synthetic ONNX inference, acceptance and native export/reimport passed with network access blocked. The live run retained exact package hashes, full lineage, artifacts and variant identity. These synthetic graphs test runtime/workflow behavior; they do not evaluate GLiNER or clinical quality.
+- Legacy blind copies and automatic/explicit exposure history are session-only. Durable study snapshots/exposure remain in the portable evidence project.
 
 Earlier implementation validation, not rerun in this follow-up:
 

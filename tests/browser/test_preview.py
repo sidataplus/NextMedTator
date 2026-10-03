@@ -6,6 +6,7 @@ import os
 import subprocess
 import time
 import urllib.request
+import zipfile
 from playwright.sync_api import sync_playwright, expect
 from gliner_worker_fixture import package_bytes
 
@@ -107,9 +108,26 @@ def run():
             expect(page.get_by_test_id('message')).to_contain_text('structured package loaded')
             page.get_by_test_id('analyze').click()
             expect(page.get_by_test_id('suggestion')).to_have_count(2)
+            identity = page.evaluate('''() => {
+                const workspace = document.querySelector('nextmedtator-workspace').workspace;
+                return {run: workspace.project.current.runs[0],
+                    manifest: workspace.model.manifest, manifestHash: workspace.model.manifestHash};
+            }''')
+            run, manifest = identity['run'], identity['manifest']
+            assert run['producer']['manifestHash'] == identity['manifestHash']
+            assert run['producer']['packageId'] == manifest['id']
+            assert run['producer']['lineage'] == manifest['lineage']
+            assert run['producer']['artifacts'] == manifest['files']
+            assert run['runtime']['variantId'] == manifest['variants'][0]['id']
+            assert run['runtime']['variant'] == manifest['variants'][0]
             page.get_by_test_id('accept').first.click()
             with page.expect_download() as saved:page.get_by_test_id('save').click()
             saved.value.save_as(str(RESULTS/'offline.nmt.zip'))
+            with zipfile.ZipFile(RESULTS/'offline.nmt.zip') as bundle:
+                assert json.loads(bundle.read('machine-runs/index.json')) == [run]
+            page.get_by_label('Open project/files').set_input_files(str(RESULTS/'offline.nmt.zip'))
+            expect(page.get_by_test_id('suggestion')).to_have_count(2)
+            assert page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current.runs[0]') == run
         case('opt-in-recovery-offline-export',local)
         def canary(page,context,requests):
             canary='NMT_PRIVATE_CANARY_4F8C'
