@@ -41,7 +41,7 @@ def run():
         with sync_playwright() as p:
             executable = os.environ.get('CHROMIUM_PATH', '/usr/bin/chromium')
             browser = p.chromium.launch(executable_path=executable if Path(executable).exists() else None, args=['--no-sandbox'])
-            context = browser.new_context(viewport={'width': 1440, 'height': 1000}, record_video_dir='/opt/cursor/artifacts')
+            context = browser.new_context(viewport={'width': 1440, 'height': 1000}, record_video_dir='/opt/cursor/artifacts', record_video_size={'width': 1440, 'height': 1000})
             page = context.new_page()
             page.set_default_timeout(360000)
             errors = []
