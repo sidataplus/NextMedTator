@@ -29,7 +29,7 @@ The official pinned `@sqlite.org/sqlite-wasm@3.53.4-build2` package runs in a mo
 
 Each checkpoint validates first, starts `BEGIN IMMEDIATE`, checks the expected prior hash, atomically replaces all project tables, verifies the canonical payload by reading it back, and commits. Foreign keys, `synchronous=FULL`, rollback journaling and `secure_delete=ON` are enabled. A failed statement or actual `SQLITE_FULL` leaves the prior project intact. A worker termination around commit can lose the acknowledgement even if the new transaction committed: reload the saved checkpoint before retrying; CAS refuses a stale write. Hashes detect corruption, not authenticated authorship or tamper-proof auditing.
 
-Project Web Locks prevent two tabs from editing one recovery copy. A global write lock and SQLite transactions serialize database writes. SQLite initialization, storage denial or unsupported OPFS must fail explicitly; a volatile in-memory database is never presented as saved recovery. Manual annotation and native/XML exports remain available when durable storage is unavailable.
+Project Web Locks prevent two tabs from editing one recovery copy. A global write lock and SQLite transactions serialize database writes. Persistent initialization, including schema creation/migration for read-only first requests, takes that same lock before serving any operation; mutation locks are acquired afterward to avoid nested locking. Volatile corpus search does not take the persistent database lock. SQLite initialization, storage denial or unsupported OPFS must fail explicitly; a volatile in-memory database is never presented as saved recovery. Manual annotation and native/XML exports remain available when durable storage is unavailable.
 
 ## Original-screen recovery
 
