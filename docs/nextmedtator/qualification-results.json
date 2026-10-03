@@ -2,7 +2,7 @@
   "date": "2026-10-03",
   "scope": "Cloud Linux CPU / Chromium WASM only; public synthetic fixtures; not clinical or target-device qualification",
   "unitTests": {
-    "passed": 89,
+    "passed": 95,
     "skipped": 0,
     "externalTokenizerArtifact": "Pinned downloaded small tokenizer compared to Python tokenizers 0.22.2"
   },
@@ -29,6 +29,16 @@
     },
     {
       "name": "xml-unicode-roundtrip-and-xxe-rejection",
+      "pass": true,
+      "requests": 21
+    },
+    {
+      "name": "linked-occurrence-merge-and-undo",
+      "pass": true,
+      "requests": 21
+    },
+    {
+      "name": "adjudication-selector-refresh-and-parent-provenance",
       "pass": true,
       "requests": 21
     }
@@ -71,49 +81,28 @@
           "status": "complete",
           "records": [
             {
-              "id": "0a726ced-36fd-4368-aae5-bd62d6642f87",
+              "id": "9ed0a822-137a-4afb-893e-527c707a549c",
               "documentId": "pending",
-              "family": "location",
+              "family": "company",
               "anchor": [
                 {
-                  "start": 42,
-                  "end": 51,
-                  "text": "Cupertino"
+                  "start": 0,
+                  "end": 5,
+                  "text": "Apple"
                 }
               ],
               "fields": {
-                "concept": "Cupertino"
+                "concept": "Apple"
               },
               "evidence": [],
-              "score": 0.9988501048041828,
+              "score": 0.9935407467307715,
               "origin": {
                 "kind": "model",
                 "codec": "gliner25-small-records-v5"
               }
             },
             {
-              "id": "0ad858a1-641d-4939-918d-f8616ca1e9d4",
-              "documentId": "pending",
-              "family": "product",
-              "anchor": [
-                {
-                  "start": 29,
-                  "end": 38,
-                  "text": "iPhone 15"
-                }
-              ],
-              "fields": {
-                "concept": "iPhone 15"
-              },
-              "evidence": [],
-              "score": 0.9987113089029194,
-              "origin": {
-                "kind": "model",
-                "codec": "gliner25-small-records-v5"
-              }
-            },
-            {
-              "id": "66a42b81-0f74-445b-aa12-6ecb4480e143",
+              "id": "9af04597-113b-4f02-92ca-858493dfb65c",
               "documentId": "pending",
               "family": "person",
               "anchor": [
@@ -134,21 +123,42 @@
               }
             },
             {
-              "id": "7ae76baf-1b1f-43ec-b3b6-115df9aa55d3",
+              "id": "62ad17ea-2f4a-41bb-9efb-d0c850fde73f",
               "documentId": "pending",
-              "family": "company",
+              "family": "product",
               "anchor": [
                 {
-                  "start": 0,
-                  "end": 5,
-                  "text": "Apple"
+                  "start": 29,
+                  "end": 38,
+                  "text": "iPhone 15"
                 }
               ],
               "fields": {
-                "concept": "Apple"
+                "concept": "iPhone 15"
               },
               "evidence": [],
-              "score": 0.9935407467307715,
+              "score": 0.9987113089029194,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            },
+            {
+              "id": "d50b650a-cc4b-4376-9745-437069170bdf",
+              "documentId": "pending",
+              "family": "location",
+              "anchor": [
+                {
+                  "start": 42,
+                  "end": 51,
+                  "text": "Cupertino"
+                }
+              ],
+              "fields": {
+                "concept": "Cupertino"
+              },
+              "evidence": [],
+              "score": 0.9988501048041828,
               "origin": {
                 "kind": "model",
                 "codec": "gliner25-small-records-v5"
@@ -162,7 +172,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "3b961eb8-4035-465e-90a1-c2332069c02e",
+              "id": "a9b12196-96c3-4036-b057-bc9bf421275a",
               "documentId": "pending",
               "family": "product",
               "anchor": [
@@ -379,5 +389,29 @@
       }
     ],
     "automaticRelationsQualified": false
+  },
+  "reviewFollowup": {
+    "reviewCommentsAddressed": 6,
+    "newUnitRegressions": 6,
+    "browserRegressions": [
+      "linked-occurrence-merge-and-undo",
+      "adjudication-selector-refresh-and-parent-provenance"
+    ],
+    "parityEdges": {
+      "packageStorage": {
+        "cancelled": true,
+        "quotaAtomic": true,
+        "rollback": true
+      },
+      "legacyRelationRoundtrip": true,
+      "keyboardAndTimingControls": true,
+      "performance": {
+        "documents": 1000,
+        "switchSamples": 30,
+        "switchP95Ms": 55.86500000208616,
+        "heapBytes": 5105689,
+        "scope": "Cloud Linux Chromium; target laptops not qualified"
+      }
+    }
   }
 }

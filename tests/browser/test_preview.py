@@ -149,6 +149,39 @@ def run():
             rejected=page.evaluate('''async()=>{const {importMedTator}=await import('/app/nextmedtator/interchange.mjs');try{await importMedTator('<!DOCTYPE x [<!ENTITY xxe SYSTEM "https://evil.invalid">]><x><TEXT>&xxe;</TEXT><TAGS/></x>');return false;}catch{return true;}}''')
             assert rejected
         case('xml-unicode-roundtrip-and-xxe-rejection',xml)
+        def linked_merge(page,context,requests):
+            page.get_by_test_id('sample').click()
+            before=page.evaluate('''async()=>{const w=document.querySelector('nextmedtator-workspace').workspace;const {authoredReference}=await import('/app/nextmedtator/samples.mjs');const {OffsetMap,clone}=await import('/app/nextmedtator/integrity.mjs');const r=authoredReference(w.doc),extra=clone(r[0]);extra.id='incoming';extra.anchor=[new OffsetMap(w.doc.text).span(0,3)];extra.fields.concept='Her';r[0].relations=[{type:'related',targetId:r[1].id}];r[1].relations=[{type:'related',targetId:extra.id}];extra.relations=[{type:'related',targetId:r[0].id},{type:'related',targetId:r[1].id}];w.project.transformRecords([],[...r,extra]);w.changed();w.render();return JSON.stringify(w.project.current.draft);}''')
+            cards=page.get_by_test_id('human-record');expect(cards).to_have_count(3)
+            cards.first.get_by_role('button',name='Merge occurrences',exact=True).click();expect(cards).to_have_count(2)
+            expect(page.get_by_test_id('message')).to_contain_text('removed links between merged occurrences')
+            graph=page.evaluate('''()=>{const p=document.querySelector('nextmedtator-workspace').workspace.project.current;const merged=p.draft.records.find(r=>r.origin.kind==='human-merge');return {id:merged.id,outgoing:merged.relations,incoming:p.draft.records.find(r=>r.id==='incoming').relations};}''')
+            assert graph['outgoing']==[{'type':'related','targetId':'incoming'}]
+            assert graph['incoming']==[{'type':'related','targetId':graph['id']}]
+            page.get_by_role('button',name='Undo',exact=True).click();expect(cards).to_have_count(3)
+            assert page.evaluate("JSON.stringify(document.querySelector('nextmedtator-workspace').workspace.project.current.draft)")==before
+        case('linked-occurrence-merge-and-undo',linked_merge)
+        def adjudication_selectors(page,context,requests):
+            page.get_by_test_id('sample').click()
+            snapshots=page.evaluate('''async()=>{const w=document.querySelector('nextmedtator-workspace').workspace;const {ReviewProject}=await import('/app/nextmedtator/project.mjs');const {authoredReference}=await import('/app/nextmedtator/samples.mjs');const result={};for(const actor of ['A','B','C']){const p=await ReviewProject.create(w.project.current.documents,w.project.current.schema,{actor});p.record(authoredReference(w.doc)[0]);const s=await p.snapshot();await w.project.importSnapshot(s);result[actor]={id:s.id,hash:s.hash};}w.changed();w.render();return result;}''')
+            page.get_by_role('button',name='Compare & adjudicate',exact=True).click()
+            candidates=page.get_by_test_id('adjudication-candidates')
+            expect(candidates.get_by_role('button',name='from A in adjudication draft',exact=False)).to_have_count(1)
+            expect(candidates.get_by_role('button',name='from C in adjudication draft',exact=False)).to_have_count(0)
+            page.get_by_label('Left / reference snapshot',exact=True).select_option(snapshots['C']['id'])
+            page.get_by_label('Right / candidate snapshot',exact=True).select_option(snapshots['A']['id'])
+            expect(candidates.get_by_role('button',name='from B in adjudication draft',exact=False)).to_have_count(0)
+            candidates.get_by_role('button',name='from C in adjudication draft',exact=False).click()
+            copied=page.evaluate("document.querySelector('nextmedtator-workspace').workspace.project.current.draft.records[0].origin")
+            assert copied['snapshotHash']==snapshots['C']['hash']
+            page.on('dialog',lambda d:d.accept('Reviewed selected inputs' if d.message.startswith('Rationale') else ''))
+            page.get_by_role('button',name='Adjudicate current human draft as third snapshot',exact=True).click()
+            final=page.evaluate("document.querySelector('nextmedtator-workspace').workspace.project.current.snapshots.at(-1)")
+            assert final['parents']==[snapshots['C']['hash'],snapshots['A']['hash']],final['parents']
+            assert final['records'][0]['origin']['snapshotHash']==snapshots['C']['hash']
+            hashes=page.evaluate("document.querySelector('nextmedtator-workspace').workspace.project.current.snapshots.slice(0,3).map(s=>s.hash)")
+            assert hashes==[snapshots[actor]['hash'] for actor in ['A','B','C']]
+        case('adjudication-selector-refresh-and-parent-provenance',adjudication_selectors)
         browser.close()
     (RESULTS/'browser-results.json').write_text(json.dumps(results,indent=2))
     print(json.dumps(results,indent=2))

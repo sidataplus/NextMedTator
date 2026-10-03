@@ -1,8 +1,8 @@
 import {Gliner25} from './vendor/gliner25/api.mjs';
-import {decodeEntitiesV2,buildEntitiesSchemaTokens,buildRelationSchemaTokens} from './vendor/gliner25/gliner-boundary.mjs';
+import {decodeEntitiesV2,buildEntitiesSchemaTokens,buildRelationSchemaTokens,resolveOverlapsFlat} from './vendor/gliner25/gliner-boundary.mjs';
 import {decodeAssignedRecords} from './vendor/gliner25/joint-ie.mjs';
 import {schemaPrompt, GlinerTokenizer, splitWords, planWindows, documentCoverage} from './gliner.mjs';
-import {OffsetMap, invariant, uuid, canonical} from './integrity.mjs';
+import {OffsetMap, invariant, uuid, unionSpans} from './integrity.mjs';
 export const SMALL_CODEC='gliner25-small-records-v5';
 export const SMALL_NOTICE='Pinned GLiNER2.5-small ONNX v5: local anchors, enum attributes, anchored record fields. Automatic relations are withheld pending source-score qualification. Unqualified clinical accuracy; cross-window relations and anchorless records are unsupported.';
 export function smallRuntime(ort,sessions,tokenizer,variant){return new Gliner25({ort,session:sessions.model,headsSession:sessions.relations,attrsSession:sessions.attributes,recordsSession:sessions.records,tokenize:t=>tokenizer.encodeIds(t),pairTemperature:variant.pairTemperature??1});}
@@ -65,7 +65,13 @@ export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,auto
         }
         windows.push({from,to,sourceRange:[words[from].start,words[to-1].end]});onProgress?.({completed:windowIndex+1,total:plan.windows.length});
     }
-    const records=[],seen=new Set();for(const r of all.sort((a,b)=>b.score-a.score)){const key=canonical({family:r.family,anchor:r.anchor,fields:r.fields});if(!seen.has(key)){seen.add(key);records.push(r);}}
+    const records=finalizeSmallRecords(all,text);
     for(const relation of relations){const locate=(mention,role)=>records.find(r=>schema.relations[relation.type][role].includes(r.family)&&r.anchor[0].start===source.toCodePoint(relation.windowStart+mention.start)&&r.anchor[0].end===source.toCodePoint(relation.windowStart+mention.end));const head=locate(relation.head,'head'),tail=locate(relation.tail,'tail');if(head&&tail){head.relations??=[];if(!head.relations.some(r=>r.type===relation.type&&r.targetId===tail.id))head.relations.push({type:relation.type,targetId:tail.id});}}
     return {records,...documentCoverage(text,words,plan.uncovered),windows,limitations:['cross-window-relations','anchorless-records',...(!automaticRelations&&Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])],threshold,notice:SMALL_NOTICE};
+}
+/** Apply the declared flat policy to document offsets after all windows decode. */
+export function finalizeSmallRecords(records,text){
+    const families=new Map();
+    for(const record of records){const spans=families.get(record.family)??[];spans.push({start:record.anchor[0].start,end:record.anchor[0].end,score:record.score,record});families.set(record.family,spans);}
+    return [...families.values()].flatMap(spans=>resolveOverlapsFlat(spans).map(({record})=>({...record,evidence:unionSpans(record.evidence??[],text)})));
 }

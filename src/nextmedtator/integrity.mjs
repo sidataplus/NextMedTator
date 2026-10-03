@@ -5,6 +5,17 @@ export class ValidationError extends Error {
 export function invariant(condition, message, code) { if (!condition)
     throw new ValidationError(message, code); }
 export const LIMITS = Object.freeze({ documents: 10000, records: 100000, text: 16 * 1024 * 1024, json: 64 * 1024 * 1024, depth: 40 });
+/** Canonical source coverage; overlapping evidence remains covered once. */
+export function unionSpans(spans,text,{adjacent=false}={}){
+    const map=new OffsetMap(text),ranges=[];
+    for(const span of [...spans].sort((a,b)=>a.start-b.start||a.end-b.end)){
+        invariant(map.span(span.start,span.end).text===span.text,'Span text does not match source');
+        const last=ranges.at(-1);
+        if(last&&(span.start<last[1]||(adjacent&&span.start===last[1])))last[1]=Math.max(last[1],span.end);
+        else ranges.push([span.start,span.end]);
+    }
+    return ranges.map(([start,end])=>map.span(start,end));
+}
 export function jsonParse(text, maxBytes = LIMITS.json) {
     invariant(typeof text === 'string' && new TextEncoder().encode(text).length <= maxBytes, 'JSON exceeds the import limit');
     let result;

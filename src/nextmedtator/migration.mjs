@@ -10,7 +10,15 @@ export async function previewSchemaMigration(project,schema,mapping={}){
  for(const [name,value] of Object.entries(original.fields)){const target=mapping.fields?.[original.family]?.[name]??name;if(!def.fields[target]){losses.push({recordId:r.id,field:name,reason:'Field has no destination'});continue;}r.fields[target]=clone(value);}
  try{validateRecords([{...r,relations:[]}],p.documents,schema);records.push(r);}catch(error){losses.push({recordId:r.id,reason:error.message});}
  }
- const ids=new Set(records.map(r=>r.id));for(const r of records)r.relations=(r.relations??[]).filter(rel=>{const valid=ids.has(rel.targetId)&&(!schema.relations||schema.relations[rel.type]);if(!valid)losses.push({recordId:r.id,relation:rel.type,reason:'Relation destination or type excluded'});return valid;});
+ const destinations=new Map(records.map(r=>[r.id,r]));
+ for(const r of records)r.relations=(r.relations??[]).filter(rel=>{
+  const target=destinations.get(rel.targetId),definition=schema.relations?.[rel.type];
+  let reason;
+  if(!target||schema.relations&&!definition)reason='Relation destination or type excluded';
+  else if(definition&&(!definition.head.includes(r.family)||!definition.tail.includes(target.family)))reason='Relation head or tail family incompatible with revised schema';
+  if(reason)losses.push({recordId:r.id,targetId:rel.targetId,relation:rel.type,reason});
+  return !reason;
+ });
  validateRecords(records,p.documents,schema);
  const report={id:uuid(),fromSchemaHash:p.schemaHash,fromDraftHash:await fingerprint(p.draft),toSchemaHash:await fingerprint(schema),mapping:clone(mapping),retainedRecords:records.length,inputRecords:p.draft.records.length,losses};return {schema:clone(schema),records,report};
 }

@@ -22,9 +22,13 @@ The requested small ONNX export is pinned to `nicolasembleton/gliner2.5-small-v1
 
 See `QUALIFICATION.md` for commands, immutable model/source identities and numerical policies. Generated raw reports live in ignored `test-results/` and CI artifacts.
 
-**89 unit tests passed with no skips**, including the independent real-tokenizer check. Both static builds, asset audit, five real-origin review workflows, legacy workflow/real synthetic-WASM worker tests, four recovery faults, installed-model rollback/XML-relations/performance tests and four DOM-only checks passed. The actual downloaded model passed browser conformance against native CPU outputs for the encoder and all three exported heads, plus exact source tokenizer/NER and anchored record fixtures. Real-weight install, network-blocked restart, inference, review, comparison, native export/reimport and canary checks passed in Chromium 151 on Linux. The real-weight original-screen acceptance/provenance-export test also passed. Official source contextual-attribute outputs match; they contain baseline clinical errors and are not reference truth.
+**95 unit tests passed with no skips**, including the independent real-tokenizer check. Both static builds, asset audit, seven real-origin review workflows, legacy workflow/real synthetic-WASM worker tests, four recovery faults, installed-model rollback/XML-relations/performance tests and four DOM-only checks passed. The actual downloaded model passed browser conformance against native CPU outputs for the encoder and all three exported heads, plus exact source tokenizer/NER and anchored record fixtures. Real-weight install, network-blocked restart, inference, review, comparison, native export/reimport and canary checks passed in Chromium 151 on Linux. The real-weight original-screen acceptance/provenance-export test also passed. Official source contextual-attribute outputs match; they contain baseline clinical errors and are not reference truth.
 
 A 1,000-document browser probe measured 101–165 ms p95 synchronous switching over 30 samples. Native CPU load/inference and browser reports describe this cloud environment; they do not qualify target laptops or establish whole-process peak memory. Dependency pins were registry-verified and the high-severity audit passed. Two inherited Vue 2 advisories remain documented in `DEPENDENCIES.md`.
+
+## PR review follow-up
+
+All six review findings have regression coverage: document-wide flat window reconciliation; ordered, deduplicated supporting-evidence coverage; relation disagreements gated on declared coverage; atomic linked-occurrence merge and undo; incompatible schema-migration edges reported as losses; and refreshed adjudication candidates whose origins match the selected parents. The real-model workflows and both static builds passed after these changes.
 
 ## Acceptance matrix
 

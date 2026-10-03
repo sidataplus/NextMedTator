@@ -1,4 +1,4 @@
-import { clone, freeze, invariant, fingerprint, uuid, now, OffsetMap, canonical } from './integrity.mjs';
+import { clone, freeze, invariant, fingerprint, uuid, now, OffsetMap, canonical, unionSpans } from './integrity.mjs';
 import { VERSION, validateProject, validateSchema, validateRecords, validateRun, runIdentity } from './contracts.mjs';
 function undoDelta(before, after) {
     const changes = [];
@@ -105,6 +105,26 @@ export class ReviewProject {
         validateRecords(records, this.data.documents, this.data.schema);
         const before = clone(this.data.draft);
         this.#commit(action, {before, ids, reason}, p => { p.draft.records = records; for (const r of replacements) delete p.draft.completeness[r.documentId]; for (const id of ids) { const r=before.records.find(r=>r.id===id); delete p.draft.completeness[r.documentId]; } });
+    }
+    mergeRecords(firstId,secondId){
+        this.#editable();
+        const first=this.data.draft.records.find(r=>r.id===firstId),second=this.data.draft.records.find(r=>r.id===secondId);
+        invariant(first&&second&&firstId!==secondId&&first.documentId===second.documentId&&first.family===second.family,'Merge two occurrences of the same document and family');
+        const before=clone(this.data.draft),parents=new Set([firstId,secondId]),text=this.data.documents.find(d=>d.id===first.documentId).text;
+        const merged={...clone(first),id:uuid(),anchor:unionSpans([...first.anchor,...second.anchor],text,{adjacent:true}),evidence:unionSpans([...(first.evidence??[]),...(second.evidence??[])],text),relations:[...clone(first.relations??[]),...clone(second.relations??[])],origin:{kind:'human-merge',actor:this.data.actor,parents:[firstId,secondId]}};
+        const records=[...clone(this.data.draft.records.filter(r=>!parents.has(r.id))),merged];let removedSelfRelations=0;
+        for(const record of records){const seen=new Set();record.relations=(record.relations??[]).flatMap(relation=>{
+            const edge={...relation,targetId:parents.has(relation.targetId)?merged.id:relation.targetId};
+            // An edge between the merged occurrences no longer connects two occurrences.
+            if(record.id===merged.id&&edge.targetId===merged.id){removedSelfRelations++;return [];}
+            const key=canonical(edge);if(seen.has(key))return [];seen.add(key);return [edge];
+        });}
+        validateRecords(records,this.data.documents,this.data.schema);
+        this.#commit('merge',{before,ids:[firstId,secondId],mergedId:merged.id,removedSelfRelations,reason:'Retained first occurrence fields; combined evidence and external links; removed internal links. Reviewer must resolve field differences.'},p=>{
+            p.draft.records=records;delete p.draft.completeness[first.documentId];
+            for(const decision of Object.values(p.draft.decisions))if(parents.has(decision.humanId))decision.humanId=merged.id;
+        });
+        return merged.id;
     }
     copyAdjudicationGroup(snapshotId,recordId){
         this.#editable();const snapshot=this.data.snapshots.find(s=>s.id===snapshotId);invariant(snapshot?.records.some(r=>r.id===recordId),'Unknown adjudication candidate');const ids=new Set([recordId]);let changed=true;while(changed){changed=false;for(const r of snapshot.records)for(const rel of r.relations??[])if(ids.has(r.id)||ids.has(rel.targetId)){if(!ids.has(r.id)||!ids.has(rel.targetId))changed=true;ids.add(r.id);ids.add(rel.targetId);}}
