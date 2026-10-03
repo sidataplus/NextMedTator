@@ -20,29 +20,38 @@ This file distinguishes working code from qualification. It is not a claim that 
 - Local active-time/event exports; no keystroke telemetry.
 - Explicit static app cache installation using an immutable asset inventory.
 - Synthetic walkthrough and license/source manifest, with authored suggestions clearly labeled.
-- External model-package validation, immutable baseline/LoRA/head provenance and tensor conformance worker code.
+- External model-package validation, immutable baseline/LoRA/head provenance in live run fingerprints and exports, and tensor conformance worker code.
 - Additive fork build, selected dependency refreshes, local asset copying, Vue precompilation and static security headers.
 
 ## Executed validation in this environment
 
-- **50 Node unit tests passed**, using actual Node WebCrypto and no third-party test dependencies.
-- **4 Chromium DOM-only workflows passed** on an in-memory `about:blank` page: assisted review/edit/undo, blind freeze/reveal/compare, untrusted text rendering and XML CRLF/Unicode interoperability. The DOM-only harness substitutes hash/UUID functions because opaque origins lack WebCrypto. It does **not** validate CSP, secure-context storage, service workers or inference.
+PR #3 follow-up, 2026-10-03:
+
+- **75 Node tests passed; 1 optional real-tokenizer test skipped** because its external artifact was absent. Tests cover package/lineage/variant isolation in fingerprints and comparison snapshots, portable provenance, worker attribution, ordered batch results, single package transfer, cancellation, timeout, failures, cleanup and retry.
 - **5 real-origin Chromium workflows passed** at `http://127.0.0.1:4173/`: assisted review/edit/undo/export, blind freeze/reveal/compare, opt-in recovery plus offline export, synthetic canary import/export with no content egress, and XML CRLF/Unicode round trip with XXE rejection.
-- The legacy MedTator page built with local dependencies loaded in Chromium, including opening and closing the evidence workspace.
+- Both static builds passed. The legacy MedTator page loaded in Chromium with its collapsible assistance column and portable evidence project.
+- The real ORT WASM worker executed tiny synthetic encoder, boundary and explicit-span graphs. Exact conformance rejected extra, missing and misplaced occurrences. Two-note structured analysis used one worker, one package transfer and two analysis requests. Per-note freeze/reveal and stale-action checks passed, and accepted tags did not change the frozen blind copy. Automatically visible Assisted suggestions recorded exposure and prevented a subsequent independent blind freeze.
+- Offline restart, synthetic ONNX inference, acceptance and native export/reimport passed with network access blocked. The live run retained exact package hashes, full lineage, artifacts and variant identity. These synthetic graphs test runtime/workflow behavior; they do not evaluate GLiNER or clinical quality.
+- Legacy blind copies and automatic/explicit exposure history are session-only. Durable study snapshots/exposure remain in the portable evidence project.
+
+Earlier implementation validation, not rerun in this follow-up:
+
+- **4 Chromium DOM-only workflows passed** on an in-memory `about:blank` page. That harness substitutes hash/UUID functions and does not validate CSP, secure-context storage, service workers or inference.
+- A local `gliner25-boundary-span-v1` package built from the published fp32 `fastino/gliner2.5-base-v1` ONNX export returned two machine spans for “diabetes” (scores 0.991 and 0.984). Those weights and the real structured package are absent on the current machine, so native/GLiNER parity, real enum-head results and WebGPU qualification were not rerun.
 - Direct npm pins were checked against the registry. `pnpm-lock.yaml` is generated from that resolution. `pnpm audit --audit-level high` passed after moving js-yaml to 4.3.2. Moderate transitive findings remain.
 - Static `dist/` asset inventory passed, including the 25 MiB file limit and no remote or inline executable scripts.
 
 ## Still not qualified
 
-- No GLiNER2.5 browser package is included. Analyze stays disabled. Authored sample suggestions are not model output, and this repository has no baseline-versus-LoRA performance results.
+- Analyze locally runs only after import of a GLiNER2.5 package. The app ships the tokenizer, prompt, boundary decoder, and span-attribute decoder; it does not ship weights. A span package returns span text plus score. A structured package also fills enum attributes from `explicit.onnx`. Measurement value, unit, and relations stay empty. Authored sample suggestions remain labeled as authored. There are no baseline-versus-LoRA results.
 - Group-aware relation editing, CaseDistiller SQL review, approved model download/cache, and a clinical pilot remain later work.
 
 ## Required before a clinical pilot
 
 1. Qualify the external structured GLiNER2.5 export, tokenizer/schema encoding, all heads, windowing and decoder. No qualified model or adapter package is supplied here.
 2. Run genuine baseline-versus-LoRA comparisons. This implementation does not contain model-performance results.
-3. Implement the live clinical codec and batch inference orchestration. The shipped codec is tensor-fixture diagnostics only; Analyze is intentionally disabled.
-4. Validate the original MedTator UI after precompilation and dependency changes. The isolated workspace is not evidence that the legacy integration passes.
+3. The live path is local GLiNER2.5 boundary span extraction, windowed at 512 tokens, plus softmax enum attributes when the package includes the exported span-attribute head. Record binding for measurement value and unit, relation decoding, and a qualified LoRA package are still absent.
+4. The original annotation screen hosts the assistance column. Smoke coverage includes sample load, analyze-without-a-package, collapse, and the statistics, export, and adjudication tabs. A broader legacy regression remains a pilot gate.
 5. Audit/rework remaining legacy HTML sinks and vendored dependencies, including spreadsheet/NLP/toolkit paths; no full PHI security approval is claimed.
 6. Run real-origin storage, multi-tab recovery, service-worker/offline, cancellation and egress-canary tests.
 7. Add group-aware relation editing, relation metrics, complete legacy schema/relation mapping, and working-context preservation through broader clinician tests.

@@ -6,7 +6,9 @@ import os
 import subprocess
 import time
 import urllib.request
+import zipfile
 from playwright.sync_api import sync_playwright, expect
+from gliner_worker_fixture import package_bytes
 
 ROOT=Path(__file__).resolve().parents[2]
 RESULTS=ROOT/'test-results'
@@ -47,7 +49,11 @@ def run():
                 results.append({'name':name,'pass':False,'error':str(e),'pageErrors':errors})
             finally:context.close()
         def assisted(page,context,requests):
-            page.get_by_test_id('sample').click();page.get_by_test_id('demo-suggest').click()
+            page.get_by_test_id('sample').click()
+            assert page.get_by_test_id('analyze').is_enabled()
+            page.get_by_test_id('analyze').click()
+            expect(page.get_by_test_id('message')).to_contain_text('Import a GLiNER2.5 boundary model package')
+            page.get_by_test_id('demo-suggest').click()
             expect(page.get_by_test_id('suggestion')).to_have_count(1)
             page.get_by_test_id('accept').click();expect(page.get_by_test_id('human-record')).to_have_count(1)
             page.get_by_role('button',name='Undo',exact=True).click();expect(page.get_by_test_id('human-record')).to_have_count(0)
@@ -94,9 +100,34 @@ def run():
             expect(page.get_by_test_id('message')).to_contain_text('App cache installed')
             page.wait_for_function('() => navigator.serviceWorker.controller !== null')
             context.set_offline(True);page.reload();page.get_by_test_id('sample').wait_for()
-            page.get_by_test_id('sample').click();page.get_by_test_id('demo-suggest').click();page.get_by_test_id('accept').click()
+            page.get_by_test_id('sample').click()
+            page.get_by_role('button', name='Models', exact=True).click()
+            page.get_by_label('Import local model package').set_input_files({
+                'name': 'synthetic-worker.nmt.zip', 'mimeType': 'application/zip', 'buffer': package_bytes(structured=True)
+            })
+            expect(page.get_by_test_id('message')).to_contain_text('structured package loaded')
+            page.get_by_test_id('analyze').click()
+            expect(page.get_by_test_id('suggestion')).to_have_count(2)
+            identity = page.evaluate('''() => {
+                const workspace = document.querySelector('nextmedtator-workspace').workspace;
+                return {run: workspace.project.current.runs[0],
+                    manifest: workspace.model.manifest, manifestHash: workspace.model.manifestHash};
+            }''')
+            run, manifest = identity['run'], identity['manifest']
+            assert run['producer']['manifestHash'] == identity['manifestHash']
+            assert run['producer']['packageId'] == manifest['id']
+            assert run['producer']['lineage'] == manifest['lineage']
+            assert run['producer']['artifacts'] == manifest['files']
+            assert run['runtime']['variantId'] == manifest['variants'][0]['id']
+            assert run['runtime']['variant'] == manifest['variants'][0]
+            page.get_by_test_id('accept').first.click()
             with page.expect_download() as saved:page.get_by_test_id('save').click()
             saved.value.save_as(str(RESULTS/'offline.nmt.zip'))
+            with zipfile.ZipFile(RESULTS/'offline.nmt.zip') as bundle:
+                assert json.loads(bundle.read('machine-runs/index.json')) == [run]
+            page.get_by_label('Open project/files').set_input_files(str(RESULTS/'offline.nmt.zip'))
+            expect(page.get_by_test_id('suggestion')).to_have_count(2)
+            assert page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current.runs[0]') == run
         case('opt-in-recovery-offline-export',local)
         def canary(page,context,requests):
             canary='NMT_PRIVATE_CANARY_4F8C'

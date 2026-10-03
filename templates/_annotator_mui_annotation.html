@@ -1,6 +1,7 @@
 <div v-show="section=='annotation'" id="main_ui" 
     class="main-ui container-fluid">
-    <div class="d-flex flex-row flex-justify-start flex-align-start w-100"
+    <div id="mui_editor_row"
+        class="d-flex flex-row flex-justify-start flex-align-start w-100"
         style="height: 60%;">
         <div id="mui_filelist"
             class="d-flex flex-column flex-justify-start flex-align-start h-100">
@@ -226,7 +227,7 @@
                 
             </div>
         </div>
-        
+        <nextmedtator-assist id="nmt-assist"></nextmedtator-assist>
     </div>
     <div class="v-splitter"></div>
     <div class="d-flex flex-row flex-justify-start flex-align-start w-100"

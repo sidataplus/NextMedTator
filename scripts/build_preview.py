@@ -29,6 +29,14 @@ def offline_assets(out: Path) -> None:
 if __name__=='__main__':
     if OUT.exists():shutil.rmtree(OUT)
     shutil.copytree(ROOT/'src/nextmedtator',OUT/'app/nextmedtator')
+    runtime=ROOT/'node_modules/onnxruntime-web/dist'
+    if not runtime.is_dir():
+        raise RuntimeError('Missing local ONNX Runtime Web package')
+    ort=OUT/'vendor/ort'
+    ort.mkdir(parents=True)
+    for p in runtime.iterdir():
+        if p.is_file() and (p.name=='ort.webgpu.min.mjs' or (p.name.startswith('ort-wasm-simd-threaded') and p.suffix in ('.mjs','.wasm'))):
+            shutil.copyfile(p, ort/p.name)
     (OUT/'index.html').write_text('''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NextMedTator engineering preview</title></head>
 <body><nextmedtator-workspace standalone></nextmedtator-workspace><script type="module" src="./app/nextmedtator/ui.mjs"></script></body></html>''')

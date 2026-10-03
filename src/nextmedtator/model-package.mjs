@@ -1,9 +1,14 @@
 import { invariant, validId, validHash, uniqueIds, fingerprint, sha256, freeze, clone, jsonParse } from './integrity.mjs';
 import { safePath, unzipBounded } from './zip.mjs';
 export const PACKAGE_FORMAT = 'nextmedtator-model-v1';
-export const MODEL_LIMITS = Object.freeze({ files: 128, file: 512 * 1024 * 1024, total: 1024 * 1024 * 1024, archive: 1024 * 1024 * 1024 });
+// The published fp32 GLiNER2.5-base encoder is about 702 MiB, above the earlier 512 MiB member cap and under 1 GiB.
+export const MODEL_LIMITS = Object.freeze({ files: 128, file: 768 * 1024 * 1024, total: 1024 * 1024 * 1024, archive: 1024 * 1024 * 1024 });
 // Every executable preprocessor/decoder is shipped with the application, not with a model.
-export const CODECS = Object.freeze({ 'tensor-conformance-v1': { purpose: 'graph-conformance-only', clinicalInference: false } });
+export const CODECS = Object.freeze({
+    'tensor-conformance-v1': { purpose: 'graph-conformance-only', clinicalInference: false, coverage: 'tensor-fixture' },
+    'gliner25-boundary-span-v1': { purpose: 'gliner25-boundary-span-extraction', clinicalInference: true, coverage: 'entity-span' },
+    'gliner25-boundary-structured-v1': { purpose: 'gliner25-boundary-span-and-attributes', clinicalInference: true, coverage: 'structured-span' }
+});
 export function validateModelManifest(m) {
     invariant(m.format === PACKAGE_FORMAT, 'Unsupported model-package format');
     validId(m.id);
@@ -40,6 +45,17 @@ export function validateModelManifest(m) {
         invariant(typeof v.precision === 'string', 'Precision required');
         invariant(CODECS[v.codec], 'Unsupported tokenizer/decoder contract; needs an application release');
         invariant(m.files.some(f => f.path === v.graph && f.role === 'graph'), 'Variant graph missing');
+        if (v.threshold != null)
+            invariant(typeof v.threshold === 'number' && v.threshold >= 0 && v.threshold <= 1, 'Invalid span threshold');
+        if (CODECS[v.codec].coverage === 'entity-span' || CODECS[v.codec].coverage === 'structured-span') {
+            invariant(v.graphs?.encoder === v.graph && typeof v.graphs.boundary === 'string', 'Boundary package needs encoder and boundary graphs');
+            invariant(m.files.some(f => f.path === v.graphs.boundary && f.role === 'graph'), 'Boundary graph missing');
+            invariant(typeof v.tokenizer === 'string' && m.files.some(f => f.path === v.tokenizer && f.role === 'tokenizer'), 'GLiNER tokenizer missing');
+            invariant(typeof v.modelConfig === 'string' && m.files.some(f => f.path === v.modelConfig && f.role === 'schema'), 'GLiNER config missing');
+            if (CODECS[v.codec].coverage === 'structured-span') {
+                invariant(typeof v.graphs.explicit === 'string' && m.files.some(f => f.path === v.graphs.explicit && f.role === 'graph'), 'Span-attribute graph missing');
+            }
+        }
         invariant(Array.isArray(v.fixtures) && v.fixtures.length > 0 && v.fixtures.every(p => m.files.some(f => f.path === p && f.role === 'fixture')), 'Reference fixtures required');
         for (const f of v.externalData ?? [])
             invariant(m.files.some(x => x.path === f.path && x.role === 'weights') && typeof f.name === 'string', 'External weight reference invalid');
@@ -58,12 +74,35 @@ export async function importModelPackage(bytes) {
     }
     return { manifest: freeze(clone(manifest)), manifestHash: await fingerprint(manifest), files: entries };
 }
+/** Reproducible model identity retained in run fingerprints, comparisons and exports. */
+export function modelRunProvenance(packageData, variantId, result) {
+    const manifest = packageData.manifest, variant = manifest.variants.find(v => v.id === variantId);
+    invariant(variant, 'Run variant not found in the model package');
+    validHash(packageData.manifestHash);
+    invariant(result.manifestHash === packageData.manifestHash && result.variantId === variantId,
+        'Worker returned a different model package or variant');
+    invariant(result.kind === variant.codec && result.backend === variant.backend && result.precision === variant.precision,
+        'Worker runtime does not match the selected variant');
+    return {
+        producer: { kind: 'model', name: manifest.lineage.base.model, version: manifest.version,
+            packageId: manifest.id, manifestHash: packageData.manifestHash,
+            lineage: clone(manifest.lineage), artifacts: clone(manifest.files) },
+        runtime: { backend: result.backend, precision: result.precision, version: manifest.runtimeVersion,
+            variantId, variant: clone(variant) }
+    };
+}
 export function qualifyForSchema(packageData, schema) {
     validateModelManifest(packageData.manifest);
-    const codecs = packageData.manifest.variants.map(v => CODECS[v.codec]);
-    invariant(codecs.some(c => c.clinicalInference), 'Package is graph-conformance only. A qualified Clinical-Evidence tokenizer, schema encoder, heads and decoder are not installed.', 'CLINICAL_RUNTIME_UNQUALIFIED');
-    for (const family of Object.keys(schema.families))
-        invariant(packageData.manifest.capabilities.includes(family), 'Unsupported schema family');
+    const codecs = packageData.manifest.variants.map(v => CODECS[v.codec]).filter(c => c.clinicalInference);
+    invariant(codecs.length, 'Package is graph-conformance only. A qualified Clinical-Evidence tokenizer, schema encoder, heads and decoder are not installed.', 'CLINICAL_RUNTIME_UNQUALIFIED');
+    const open = packageData.manifest.capabilities.includes('*');
+    if (!open)
+        for (const family of Object.keys(schema.families))
+            invariant(packageData.manifest.capabilities.includes(family), 'Unsupported schema family');
+    const structured = codecs.some(c => c.coverage === 'structured-span');
+    if (structured)
+        return { level: 'structured-span', unpredicted: ['value', 'unit', 'relations'] };
+    return { level: 'entity-span', unpredicted: ['assertion', 'temporality', 'experiencer', 'value', 'unit', 'relations'] };
 }
 export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
     invariant(Number.isFinite(atol) && Number.isFinite(rtol) && atol >= 0 && rtol >= 0, 'Invalid numerical tolerance');
@@ -81,18 +120,67 @@ export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
 }
 /** Dedicated worker owns ORT sessions. Force stop disposes the worker, never human state. */
 export class ConformanceWorker {
-    constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.pending = new Map(); }
+    constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.reject = null; this.cancelled = false; }
     async run(packageData, variantId, { timeoutMs = 120000 } = {}) {
+        return this.#withModel(packageData, variantId, () => this.#request({ task: 'fixtures' }, timeoutMs), timeoutMs);
+    }
+    async analyze(packageData, variantId, request, options) {
+        const [result] = await this.analyzeBatch(packageData, variantId, [request], options);
+        return result;
+    }
+    async analyzeBatch(packageData, variantId, requests, { timeoutMs = 600000, onProgress, onResult } = {}) {
+        invariant(requests.length > 0, 'Analysis batch is empty');
+        return this.#withModel(packageData, variantId, async () => {
+            const results = [];
+            for (const [index, request] of requests.entries()) {
+                await onProgress?.(index);
+                const result = await this.#request({ ...request, task: 'analyze' }, timeoutMs);
+                await onResult?.(result, index);
+                results.push(result);
+            }
+            invariant(!this.cancelled, 'Cancelled: local model worker stopped');
+            return results;
+        }, timeoutMs);
+    }
+    async #withModel(packageData, variantId, action, timeoutMs) {
         invariant(!this.worker, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
-        const worker = new Worker(this.url, { type: 'module' });
-        this.worker = worker;
-        return new Promise((resolve, reject) => { let finished = false; const finish = (error, result) => { if (finished)
-            return; finished = true; clearTimeout(timer); worker.terminate(); this.worker = null; this.reject = null; error ? reject(error) : resolve(result); }; const timer = setTimeout(() => finish(new Error('Conformance timed out; worker stopped')), timeoutMs); this.reject = error => finish(error); worker.onerror = () => finish(new Error('Local ONNX worker failed. Check installed runtime assets.')); worker.onmessage = ({ data }) => { if (data.error)
-            finish(new Error(data.error));
-        else if (data.result)
-            finish(null, data.result); }; worker.postMessage({ manifest: packageData.manifest, manifestHash: packageData.manifestHash, variantId, files: [...packageData.files] }); });
+        this.worker = new Worker(this.url, { type: 'module' });
+        this.cancelled = false;
+        try {
+            await this.#request({ task: 'load', manifest: packageData.manifest, manifestHash: packageData.manifestHash, variantId, files: [...packageData.files] }, timeoutMs);
+            return await action();
+        }
+        finally {
+            this.worker.terminate();
+            this.worker = null;
+            this.reject = null;
+        }
     }
-    cancel() { this.reject?.(new Error('Cancelled: conformance worker stopped')); }
+    #request(message, timeoutMs) {
+        invariant(!this.cancelled, 'Cancelled: local model worker stopped');
+        const worker = this.worker;
+        return new Promise((resolve, reject) => {
+            let finished = false;
+            const finish = (error, result) => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timer);
+                this.reject = null;
+                worker.onmessage = worker.onerror = null;
+                error ? reject(error) : resolve(result);
+            };
+            const timer = setTimeout(() => finish(new Error('Local model worker timed out and was stopped')), timeoutMs);
+            this.reject = error => finish(error);
+            worker.onerror = () => finish(new Error('Local ONNX worker failed. Check installed runtime assets.'));
+            worker.onmessage = ({ data }) => data.error ? finish(new Error(data.error)) : finish(null, data.result);
+            try { worker.postMessage(message); }
+            catch (error) { finish(error); }
+        });
+    }
+    cancel() {
+        this.cancelled = true;
+        this.reject?.(new Error('Cancelled: local model worker stopped'));
+    }
 }

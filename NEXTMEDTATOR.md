@@ -13,7 +13,7 @@ python scripts/serve_static.py --directory preview
 # Open http://127.0.0.1:4173 in a normal local browser.
 ```
 
-The preview supports source import, occurrence records, immutable suggestions, human editing, blind freeze/reveal, snapshot comparison/adjudication and local native project exports. **Sample suggestions are authored, not GLiNER output.** The local Analyze action remains disabled until a real structured browser codec and matching model package are qualified.
+The preview supports source import, occurrence records, immutable suggestions, human editing, blind freeze/reveal, snapshot comparison/adjudication and local native project exports. **Sample suggestions are authored, not GLiNER output.** On the original annotation screen, Analyze runs after a local GLiNER2.5 package is imported. A span package fills anchors and scores. A structured package also fills schema enum attributes. Measurement value, unit, and relations stay empty.
 
 ## Build the fork with refreshed dependencies
 

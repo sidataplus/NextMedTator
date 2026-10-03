@@ -89,6 +89,35 @@ html,body {
     width: calc(100% - 250px); 
     height: 100%;
 }
+#mui_editor_row {
+    min-width: 0;
+}
+#mui_editor_row #mui_filelist {
+    flex: 0 0 250px;
+    width: 250px;
+}
+#mui_editor_row > .h-splitter {
+    flex: 0 0 5px;
+}
+#mui_editor_row #mui_texteditor {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 160px;
+    height: 100%;
+}
+#mui_editor_row nextmedtator-assist {
+    flex: 0 0 36px;
+    width: 36px;
+    min-width: 36px;
+    height: 100%;
+    background: #f7f9fa;
+    border-left: 1px solid #d7e1e7;
+    overflow: hidden;
+}
+#mui_editor_row nextmedtator-assist[data-open="true"] {
+    flex-basis: 380px;
+    width: 380px;
+}
 #mui_dtdlist {
     overflow-y: auto;
     width: 250px;

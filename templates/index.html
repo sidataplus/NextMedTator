@@ -438,6 +438,13 @@ var _SEC_LMT_MSG = 'The <a target="_blank" href="https://developer.mozilla.org/e
 <script src="[[ config.THIRD_PARTY_LIB_URL[config.LIB_BASE]['JQUERY_UI']['JS'] ]]"></script>
 <!-- Vue.js -->
 <script src="[[ config.THIRD_PARTY_LIB_URL[config.LIB_BASE]['VUE']['JS'] ]]"></script>
+<script>
+if (window.Vue) {
+    var nmtIgnored = Array.isArray(Vue.config.ignoredElements) ? Vue.config.ignoredElements.slice() : [];
+    if (nmtIgnored.indexOf('nextmedtator-assist') < 0) nmtIgnored.push('nextmedtator-assist');
+    Vue.config.ignoredElements = nmtIgnored;
+}
+</script>
 <!-- jszip -->
 <script src="[[ config.THIRD_PARTY_LIB_URL[config.LIB_BASE]['JSZIP']['JS'] ]]"></script>
 <!-- filesaver -->

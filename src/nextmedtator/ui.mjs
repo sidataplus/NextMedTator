@@ -1,4 +1,4 @@
-import { ReviewProject, machineSnapshot } from './project.mjs';
+import { ReviewProject, machineSnapshot, makeRun } from './project.mjs';
 import { DEMO_SCHEMA, validateSchema } from './contracts.mjs';
 import { demoProject, authoredSuggestionRun, DEMO_NOTICE } from './samples.mjs';
 import { OffsetMap, TextareaOffsetMap, sourceDocument, uuid, clone, invariant, jsonParse, canonical } from './integrity.mjs';
@@ -6,7 +6,9 @@ import { exportBundle, importBundle, localDownload } from './bundle.mjs';
 import { RecoveryStore, ActiveTimer } from './recovery.mjs';
 import { compareSnapshots } from './compare.mjs';
 import { importJSONL, importMedTator, exportMedTator, evidenceJSONL, eventCSV } from './interchange.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema } from './model-package.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
+import { mountLegacyAssist } from './assist.mjs';
 const styles = `
 :host { --ink:#1a3041;--muted:#536976;--paper:#fff;--line:#d7e1e7;--accent:#076b74; color:var(--ink);font:15px/1.5 system-ui,sans-serif; }
 *{box-sizing:border-box} button,input,select,textarea{font:inherit} button,.file{border:1px solid var(--line);border-radius:7px;background:white;color:var(--ink);padding:7px 11px;cursor:pointer;display:inline-block}button:hover,.file:hover{background:#eef5f7}button:disabled{opacity:.5;cursor:not-allowed}button.primary{background:var(--accent);color:white;border-color:var(--accent)}:focus-visible{outline:3px solid #137aab;outline-offset:2px}button:focus:not(:focus-visible){outline:none}input,select,textarea{border:1px solid var(--line);border-radius:5px;padding:7px;max-width:100%;color:var(--ink)}textarea{width:100%}label{display:flex;flex-direction:column;gap:4px}input[type=file]{max-width:235px;font-size:12px}.app{position:fixed;inset:18px;z-index:10020;display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 80px #162b4a44;overflow:hidden}.app.full{position:relative;inset:auto;border:0;box-shadow:none;min-height:100vh;border-radius:0}.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:12px 18px}.brand{font-size:21px;font-weight:750;letter-spacing:-.6px}.badge{border-radius:20px;padding:3px 9px;background:#e8f5ef;font-size:12px}.stage{background:#f2f5f7}.muted{color:var(--muted);font-size:13px}.grow{flex:1}.toolbar{display:flex;gap:7px;padding:10px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}.main{display:grid;grid-template-columns:205px minmax(260px,1fr) 370px;flex:1;min-height:460px;overflow:auto}.documents{background:#f7f9fa;border-right:1px solid var(--line);padding:14px;overflow:auto}.documents button{display:block;text-align:left;width:100%;margin:6px 0;word-break:break-word}.documents button[aria-current=true]{border-color:var(--accent);background:#e6f2f3}.source{padding:20px;overflow:auto;min-width:0}.source textarea{white-space:pre-wrap;min-height:300px;resize:vertical;background:#fbfcfd;line-height:1.8;font-size:var(--source-size,17px);border:1px solid var(--line);tab-size:4}.panel{padding:16px;border-left:1px solid var(--line);overflow:auto;max-height:75vh}.card{padding:12px;border:1px solid var(--line);border-radius:9px;margin:10px 0;background:white}.card p{margin:5px 0;overflow-wrap:anywhere}.anchor{font-weight:650}.actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fields label{font-size:12px}.status{min-height:37px;border-top:1px solid var(--line);padding:8px 18px;font-size:13px;background:#f7f9fa}.message{margin:10px 18px;padding:10px;border-radius:7px;background:#edf4f6;overflow-wrap:anywhere}.message.error{background:#fff0ec;border:1px solid #db927f}.welcome{max-width:850px;margin:40px auto;padding:24px}.welcome h1{font-size:34px;letter-spacing:-1px;line-height:1.2}.welcome p{font-size:16px}.welcome .choices{display:flex;gap:15px;flex-wrap:wrap;margin:25px 0}.details{padding:14px 18px;border-bottom:1px solid var(--line);max-height:55vh;overflow:auto}.details h3{margin:4px 0 12px}.details pre{max-height:220px;overflow:auto;white-space:pre-wrap;background:#f7f9fa;padding:10px}.banner{padding:7px 18px;background:#fff9e9;border-bottom:1px solid #ebdfb7;font-size:12px}.closed{position:fixed;right:18px;bottom:16px;z-index:10010;border-color:var(--accent);box-shadow:0 4px 20px #193a4522}.check{display:flex;flex-direction:row;align-items:center;gap:8px}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:16px 0 8px}.tag{font-size:11px;text-transform:uppercase;letter-spacing:.4px}.source-note{font-size:12px;color:var(--muted)}.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hidden{display:none!important}@media(max-width:1000px){.main{grid-template-columns:155px 1fr}.panel{grid-column:1/-1;border-top:1px solid var(--line);max-height:none}.app{inset:4px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
@@ -23,11 +25,12 @@ function choose(values, current) { const s = node('select'); for (const [value, 
     s.append(o);
 } s.value = current; return s; }
 export class EvidenceWorkspace {
-    constructor(host, { standalone = false } = {}) {
+    constructor(host, { standalone = false, startOpen = false } = {}) {
         this.host = host;
         this.root = host.attachShadow({ mode: 'open' });
         this.standalone = standalone;
-        this.open = standalone;
+        this.open = standalone || startOpen;
+        host.workspace = this;
         this.project = null;
         this.index = 0;
         this.mode = 'assisted';
@@ -94,6 +97,26 @@ export class EvidenceWorkspace {
     }
     changed() { this.dirty = true; this.saveState = 'Unsaved changes'; }
     get doc() { return this.project?.current.documents[this.index]; }
+    async analyzeCurrent() {
+        invariant(this.doc, 'Open a document first');
+        invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
+        const qualification = qualifyForSchema(this.model, this.project.current.schema);
+        invariant(qualification.level === 'entity-span' || qualification.level === 'structured-span', 'This package’s codec is not a local GLiNER2.5 decoder');
+        const codec = qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
+        const notice = codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
+        const variants = this.model.manifest.variants.filter(v => v.codec === codec);
+        const variant = variants.find(v => v.backend === 'wasm') ?? variants.find(v => v.backend === 'webgpu' && navigator.gpu);
+        invariant(variant, 'No browser GLiNER2.5 variant is available in the imported package');
+        const prompt = codec === GLINER_STRUCTURED ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
+        const result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, threshold: variant.threshold });
+        invariant(result.kind === codec, 'Worker did not return GLiNER span output');
+        const provenance = modelRunProvenance(this.model, variant.id, result);
+        const records = spansToRecords(this.doc, this.project.current.schema, result.spans);
+        const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, settings: { codec, threshold: result.threshold, overlapPolicy: 'flat', maxSequenceLength: 512, wordOverlap: 32, notice }, runtime: provenance.runtime });
+        await this.project.addRun(run);
+        this.changed();
+        this.message = `${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;
+    }
     async save() { const data = await exportBundle(this.project.current); localDownload(data, `${this.project.current.id}.nmt.zip`, 'application/zip'); this.saveState = 'Project export created; verify your downloaded file'; this.dirty = false; this.message = 'Export stays on your device. The application cannot verify a durable backup.'; }
     async checkpoint() { await this.recovery.checkpoint(this.project.current); this.saveState = 'Recovery checkpoint saved in this browser; export still recommended'; this.message = 'Verified browser recovery copy. It is not a portable backup.'; }
     fileInput(label, accept, handler, { multiple = false } = {}) { const i = node('input', null, { type: 'file', accept, multiple, 'aria-label': label }); i.addEventListener('change', () => { const files = [...i.files]; if (files.length)
@@ -131,7 +154,11 @@ export class EvidenceWorkspace {
         const source = this.root.querySelector('[data-testid=source]');
         const sourceState = source ? { start: source.selectionStart, end: source.selectionEnd, scroll: source.scrollTop } : null;
         this.root.replaceChildren(node('style', styles));
+        const docked = !!document.querySelector('nextmedtator-assist');
+        this.host.hidden = !this.open && !this.standalone && docked;
         if (!this.open) {
+            if (docked)
+                return;
             this.root.append(button('Clinical Evidence', () => { this.previousFocus = document.activeElement; this.open = true; this.render(); }, { id: 'open-workspace' }));
             this.root.lastChild.className = 'closed';
             return;
@@ -146,7 +173,7 @@ export class EvidenceWorkspace {
         if (!this.standalone)
             top.append(button('Back to MedTator', () => { this.open = false; this.render(); this.previousFocus?.focus(); }));
         app.append(top);
-        const warning = node('div', 'Live GLiNER2.5 extraction is not yet qualified. Authored sample suggestions are not model predictions.', { class: 'banner' });
+        const warning = node('div', 'Local GLiNER2.5 extraction is not a clinical qualification. A structured package fills enum attributes; value, unit, relations, and LoRA comparison stay empty. Authored samples are not model predictions.', { class: 'banner' });
         app.append(warning);
         if (this.message)
             app.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'message' }));
@@ -211,7 +238,7 @@ export class EvidenceWorkspace {
     }
     renderWelcome(app) {
         const w = node('div', null, { class: 'welcome' });
-        w.append(node('h1', 'Your evidence. Your device.'), node('p', 'Review structured clinical evidence with portable projects, independent snapshots, and no document upload. Existing MedTator annotation remains available in the original workspace.'), node('p', 'This preview exercises review and comparison with original synthetic examples. It does not include a qualified GLiNER model.', { class: 'muted' }));
+        w.append(node('h1', 'Your evidence. Your device.'), node('p', 'Review structured clinical evidence with portable projects, independent snapshots, and no document upload. Existing MedTator annotation remains available in the original workspace.'), node('p', 'Synthetic examples include authored suggestions, which are not model output. A span package predicts anchors and scores. A structured package also fills schema enum attributes from the exported span-attribute head. Measurement value, unit, and relations stay empty.', { class: 'muted' }));
         const mode = choose([['assisted', 'Assisted annotation'], ['blind', 'Blind annotation, compare later']], this.mode);
         mode.addEventListener('change', () => { this.mode = mode.value; });
         const actor = node('input', null, { value: this.actor, maxlength: 100, 'aria-label': 'Annotator identifier' });
@@ -227,7 +254,7 @@ export class EvidenceWorkspace {
     }
     recordCard(r, { human = false, run = null } = {}) {
         const card = node('article', null, { class: 'card', 'data-testid': human ? 'human-record' : 'suggestion' });
-        card.append(node('div', human ? 'Human annotation' : run?.producer?.kind === 'author-demo' ? 'Authored example' : 'Machine suggestion', { class: 'tag' }), node('p', r.anchor.map(s => s.text).join(' … ') || 'Document-level record', { class: 'anchor' }), node('p', r.family.replaceAll('_', ' '), { class: 'muted' }));
+        card.append(node('div', human ? 'Human annotation' : run?.producer?.kind === 'author-demo' ? 'Authored example' : 'Machine suggestion', { class: 'tag' }), node('p', r.anchor.map(s => s.text).join(' … ') || 'Document-level record', { class: 'anchor' }), node('p', `${r.family.replaceAll('_', ' ')}${r.score == null ? '' : ` · score ${r.score.toFixed(3)}`}`, { class: 'muted' }));
         for (const [k, v] of Object.entries(r.fields))
             card.append(node('p', `${k}: ${v === null ? 'Unknown / not supplied' : typeof v === 'object' ? JSON.stringify(v) : v}`, { class: 'muted' }));
         const actions = node('div', null, { class: 'actions' });
@@ -266,15 +293,16 @@ export class EvidenceWorkspace {
         if (isDemo)
             aside.append(button(p.phase === 'frozen' ? 'Prepare authored examples for reveal' : 'Show authored suggestions', () => this.perform(async () => { await this.project.addRun(await authoredSuggestionRun(this.project, this.doc)); this.changed(); this.message = DEMO_NOTICE; }), { id: 'demo-suggest' }));
         aside.append(this.fileInput('Import prediction run', '.json', async ([f]) => { invariant(f.size <= 64 * 1024 * 1024, 'Run size limit'); await this.project.addRun(jsonParse(await f.text())); this.changed(); }));
-        const analyze = button('Analyze locally', () => this.perform(() => { invariant(this.model, 'Install a qualified model package first'); qualifyForSchema(this.model, p.schema); }), { disabled: true });
-        analyze.title = 'Not enabled until a Clinical-Evidence browser codec and matching exported package pass conformance';
-        aside.append(analyze, node('p', 'No remote inference fallback. Model installation and graph diagnostics are in Models.', { class: 'muted' }));
+        const analyze = button('Analyze locally', () => this.perform(() => this.analyzeCurrent()), { disabled: !this.doc, id: 'analyze' });
+        const structured = this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED);
+        analyze.title = structured ? 'Run the imported GLiNER2.5 package on this device. Spans plus enum attributes; value, unit, and relations stay empty.' : 'Run the imported GLiNER2.5 boundary package on this device. Span text and scores only; contextual fields stay empty.';
+        aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
         if (!this.project.canSeeMachine) {
             aside.append(node('p', 'The human snapshot is frozen. Use Reveal comparison when ready.'));
             return;
         }
         for (const run of p.runs.filter(r => r.documentId === this.doc?.id)) {
-            aside.append(node('h3', run.producer.name ?? run.producer.kind), node('p', `Coverage status: ${run.status}. ${run.runtime.backend} / ${run.runtime.precision}`, { class: 'muted' }));
+            aside.append(node('h3', run.producer.name ?? run.producer.kind), node('p', `Coverage status: ${run.status}. ${run.runtime.backend} / ${run.runtime.precision}. ${run.settings?.notice ?? run.producer.notice ?? ''}`, { class: 'muted' }));
             for (const r of run.records)
                 aside.append(this.recordCard(r, { run }));
             if (!run.records.length)
@@ -342,14 +370,14 @@ export class EvidenceWorkspace {
             box.append(button('Install app for offline use', () => this.perform(async () => { invariant('serviceWorker' in navigator, 'Service workers unavailable'); const registration = await navigator.serviceWorker.register(new URL('../../service-worker.js', import.meta.url), { scope: new URL('../../', import.meta.url).pathname }); await navigator.serviceWorker.ready; this.message = 'App cache installed. Reload once, then test offline. Model assets require separate qualification.'; })), button('Export local timing report', () => localDownload(new TextEncoder().encode(JSON.stringify(this.timer.report(), null, 2)), 'timing.json', 'application/json')));
         }
         else if (this.panel === 'models') {
-            box.append(node('h3', 'Local model packages'), node('p', 'Training and export stay external. Import an approved .nmt-model.zip with exact hashes, runtime version, baseline/LoRA lineage and numerical fixtures. No package-supplied JavaScript or WASM plugins are accepted.'));
-            box.append(node('p', 'Current capability: ONNX tensor-fixture conformance. Clinical text tokenization, GLiNER2.5 structured decoding and the baseline/adapter artifacts are not supplied or qualified.', { class: 'banner' }));
-            box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { invariant(f.size <= 1024 * 1024 * 1024, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer())); this.model = candidate; this.modelReport = null; this.message = 'Package hashes validated in memory. This is not a clinical-quality or browser-compatibility approval.'; }));
+            box.append(node('h3', 'Local model packages'), node('p', 'Training and export stay external. Import a .nmt-model.zip with exact hashes, runtime version, baseline/LoRA lineage and fixtures. No package-supplied JavaScript or WASM plugins are accepted.'));
+            box.append(node('p', 'Live analysis uses an imported GLiNER2.5 package. A span package predicts anchors and scores. A structured package also fills enum attributes from the span-attribute head. Value, unit, relations, and model weights are not bundled.', { class: 'banner' }));
+            box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { invariant(f.size <= MODEL_LIMITS.archive, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer())); this.model = candidate; this.modelReport = null; const structured = candidate.manifest.variants.some(v => v.codec === GLINER_STRUCTURED); const qualified = candidate.manifest.variants.some(v => CODECS[v.codec].clinicalInference); this.message = structured ? 'GLiNER2.5 structured package loaded in memory. Analyze locally fills spans and enum attributes on this device only.' : qualified ? 'GLiNER2.5 span package loaded in memory. Analyze locally uses it on this device only.' : 'Package hashes validated. This package can run tensor fixtures only.'; }));
             if (this.model) {
                 const m = this.model.manifest;
                 box.append(node('p', `${m.id} ${m.version} · ${m.lineage.adapter ? 'LoRA-derived' : 'Baseline'} · ${m.license.id}`));
                 for (const v of m.variants)
-                    box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id); this.message = this.modelReport.pass ? 'Graph fixtures passed; clinical extraction remains unqualified.' : 'Graph fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
+                    box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id); this.message = this.modelReport.pass ? (CODECS[v.codec].coverage === 'structured-span' ? 'Span fixtures matched. Enum attributes, value, unit, and relations were not part of this fixture.' : CODECS[v.codec].coverage === 'entity-span' ? 'Span fixtures matched. Attributes and relations were not tested.' : 'Graph fixtures passed. This codec does not extract clinical text.') : 'Fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
                 box.append(button('Unload package', () => { this.modelRunner.cancel(); this.model = null; this.modelReport = null; this.render(); }));
                 if (this.modelReport)
                     box.append(node('pre', JSON.stringify(this.modelReport, null, 2)));
@@ -415,12 +443,35 @@ export class EvidenceWorkspace {
         }
     }
 }
-const existing = document.querySelector('nextmedtator-workspace');
-if (existing) {
-    new EvidenceWorkspace(existing, { standalone: existing.hasAttribute('standalone') });
+let booted = false;
+function boot() {
+    if (booted)
+        return;
+    if (document.querySelector('#app_hotpot') && !window.app_hotpot?.vpp) {
+        setTimeout(boot, 50);
+        return;
+    }
+    booted = true;
+    const assistHost = document.querySelector('nextmedtator-assist');
+    const existing = document.querySelector('nextmedtator-workspace');
+    if (existing)
+        new EvidenceWorkspace(existing, { standalone: existing.hasAttribute('standalone') });
+    else if (!assistHost) {
+        const host = document.createElement('nextmedtator-workspace');
+        document.body.append(host);
+        new EvidenceWorkspace(host);
+    }
+    if (assistHost)
+        mountLegacyAssist(assistHost, { openProject() {
+            let host = document.querySelector('nextmedtator-workspace');
+            if (!host) {
+                host = document.createElement('nextmedtator-workspace');
+                document.body.append(host);
+                new EvidenceWorkspace(host, { startOpen: true });
+                return;
+            }
+            host.workspace.open = true;
+            host.workspace.render();
+        } });
 }
-else {
-    const host = document.createElement('nextmedtator-workspace');
-    document.body.append(host);
-    new EvidenceWorkspace(host);
-}
+boot();
