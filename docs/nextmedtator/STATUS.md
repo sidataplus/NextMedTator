@@ -2,6 +2,14 @@
 
 Validated on 2026-10-03 against checked-in PRD v1.0. This is a baseline engineering preview; the full public/clinical release is not yet qualified.
 
+## WASM architecture follow-up
+
+The requested browser-local backend is implemented while retaining the original Vue 2/CodeMirror annotation UI. Rust-WASM workers provide bulk schema/record/source-span validation, Unicode offsets/literal search and compatible snapshot comparison. Official SQLite-WASM in OPFS supplies atomic, hash-verified recovery, bound queries and selected-project SQLite exports. The original assistance panel adds opt-in multi-document recovery and debounced Vue-edit autosave. Native child-project model/snapshot/exposure identities are retained. Legacy IndexedDB recovery migration is explicit, hash-preserving and keeps the old copy; subsequent writes use SQLite only. See [WASM-BACKEND.md](WASM-BACKEND.md).
+
+**109 unit tests passed with no skips** on the WASM branch, including the actual downloaded tokenizer, instantiated Rust/SQLite WASM, 160 varied comparison graphs/policies, actual `SQLITE_FULL`, atomic rollback, worker cancellation and source isolation. Both static inventories pass (5,072 original-UI assets; 55 engineering-preview assets). Actual Chromium OPFS reload, simultaneous storage-worker CAS, selected-project SQLite export/integrity, legacy migration, network-blocked core/storage reads and writes, original-screen autosave and corpus restart gates pass. The seven review workflows, original-UI worker/sanitizer/charts, installed-package rollback/XML/timing/performance and four DOM gates pass. Actual ONNX offline and original-screen model regression gates pass. Registry pin verification, frozen pnpm installation and the high-severity audit pass; the documented Vue advisories remain.
+
+The latest cloud-only 1,000-document switch probe measured 24.87 ms p95 over 30 samples. Different runs are not a controlled JavaScript-versus-WASM benchmark, and no general speedup or target-laptop claim is made. Shared validation and transactional recovery are the implemented gains. Mac/Windows browser, assistive-technology, clinical pilot and public-release gates remain unchanged.
+
 ## Implemented in this parity follow-up
 
 The requested small ONNX export is pinned to `nicolasembleton/gliner2.5-small-v1-onnx@5e2e3f51adfb0eeb7c1f83464400b4d498d41659`. Its four graphs and tokenizer are consumed locally with ORT Web 1.23.2, single-thread fp32 WASM. The app owns the compiler/decoder; packages cannot install code. Live analysis requires the selected package's public fixtures to pass. Weights are downloaded separately and are not committed or bundled as static assets.
@@ -40,7 +48,7 @@ All six review findings have regression coverage: document-wide flat window reco
 | AC-05 | Source/native/browser NER and record outputs, contextual labels and numerical exported-head checks pass in WASM. Automatic relation qualification is withheld; see discrepancy below. |
 | AC-06 | Distinct baseline/adapter/head identities, install/run/compare contracts pass. The actual fine-tuned LoRA is pending from the user. |
 | AC-07–11, 15 | Five-family record contracts, immutable layers, exposure, linked review/adjudication, completeness and failure coverage tests pass. Zero-shot outputs are not guaranteed to fill or correctly interpret every clinical field. |
-| AC-12 | Real Web Lock conflict, stale CAS, synchronous quota fault and denied storage pass; old checkpoint remains available. |
+| AC-12 | Actual SQLite-WASM/OPFS reload, concurrent-worker CAS, tab lock, `SQLITE_FULL`, transaction rollback, cancellation, unavailable storage, original-UI autosave and hash-preserving migration pass. |
 | AC-14 | Original synthetic corpus and walkthrough; public patient/case corpora are not redistributed. |
 | AC-16 | Worker timeout/cancellation/retry contracts and Linux performance probe pass. Target-device envelopes and peak-memory approval remain external gates. |
 | AC-17 | Native/evaluation/training exports preserve grouping, splits, coverage and immutable identities. |

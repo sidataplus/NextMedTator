@@ -30,6 +30,10 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           uv sync --locked
+      - name: Install pinned Rust WASM toolchain
+        run: rustup toolchain install 1.90.0 --profile minimal --component rustfmt --target wasm32-unknown-unknown
+      - run: pnpm build:core
+      - run: cargo +1.90.0 fmt --manifest-path wasm/core/Cargo.toml --check
       - run: pnpm test
       - run: pnpm build
       - run: pnpm audit:assets
@@ -40,6 +44,8 @@ jobs:
         run: |
           pnpm build:preview
           pnpm test:browser
+      - run: uv run --locked python tests/browser/test_wasm_backend.py
+      - run: uv run --locked python tests/browser/test_legacy_recovery.py
       - run: uv run --locked python tests/browser/test_recovery_faults.py
       - run: uv run --locked python tests/browser/test_parity_edges.py
       - name: Required real-weight qualification when requested

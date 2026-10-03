@@ -1,4 +1,4 @@
-"""Build a dependency-free engineering preview, not a replacement for MedTator."""
+"""Build a static engineering preview, not a replacement for MedTator."""
 from pathlib import Path
 import hashlib
 import json
@@ -38,6 +38,8 @@ if __name__=='__main__':
     for p in runtime.iterdir():
         if p.is_file() and (p.name=='ort.webgpu.min.mjs' or (p.name.startswith('ort-wasm-simd-threaded') and p.suffix in ('.mjs','.wasm'))):
             shutil.copyfile(p, ort/p.name)
+    from backend_assets import copy_backend_assets
+    copy_backend_assets(OUT)
     (OUT/'index.html').write_text('''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NextMedTator engineering preview</title></head>
 <body><nextmedtator-workspace standalone></nextmedtator-workspace><script type="module" src="./app/nextmedtator/ui.mjs"></script></body></html>''')

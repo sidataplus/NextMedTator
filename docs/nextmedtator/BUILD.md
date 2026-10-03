@@ -9,6 +9,8 @@ corepack enable
 pnpm install --frozen-lockfile
 uv sync --locked
 pnpm deps:verify
+rustup toolchain install 1.90.0 --profile minimal --component rustfmt --target wasm32-unknown-unknown
+pnpm build:core
 pnpm test
 pnpm build
 pnpm audit:assets
@@ -16,6 +18,8 @@ uv run --locked python -m playwright install chromium
 pnpm test:legacy
 pnpm build:preview
 pnpm test:browser
+uv run --locked python tests/browser/test_wasm_backend.py
+uv run --locked python tests/browser/test_legacy_recovery.py
 uv run --locked python tests/browser/test_recovery_faults.py
 uv run --locked python tests/browser/test_parity_edges.py
 pnpm test:dom
@@ -26,7 +30,7 @@ Builds precompile repository-owned Vue templates, externalize scripts, sanitize 
 
 `test_legacy.py` includes synthetic real-ORT worker tests and familiar UI/sanitizer/chart checks. `test_preview.py` exercises review, independent snapshots, comparison, recovery, offline workflow, Unicode/XML and canaries on a real origin. DOM-only checks explicitly substitute hash/UUID helpers and cannot qualify storage/CSP/workers. `test_real_small.py` and `test_legacy_assist.py` require the real pinned package; see `QUALIFICATION.md`. CI's optional real-model dispatch downloads actual weights and fails on missing artifacts or failed conformance.
 
-Legacy native export/open carries source, loaded schema, manual labels/binary links, model history, blind snapshots, exposure and decisions. Representability losses remain explicit in XML interchange; native bundles are authoritative. Public installed packages can be selected in both workspaces. Clinical recovery requires consent; model storage is separate.
+Legacy native export/open carries source, loaded schema, manual labels/binary links, model history, blind snapshots, exposure and decisions. Representability losses remain explicit in XML interchange; native bundles are authoritative. Public installed packages can be selected in both workspaces. Clinical recovery requires consent; model storage is separate. The WASM architecture follow-up replaces recovery writes with transactional SQLite-WASM in OPFS and routes bulk validation/comparison through Rust-WASM workers. Original-screen corpus autosave is added to the existing assistance panel. See [WASM-BACKEND.md](WASM-BACKEND.md) for storage, migration, export and rollback details.
 
 ## Release operations
 

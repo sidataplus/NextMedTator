@@ -99,7 +99,7 @@ export class EvidenceWorkspace {
         this.timer = new ActiveTimer();this.documentTimers=new Map();this.manualPause=false;this.waitMs=0;
         if (recoveryHash) {
             await this.recovery.enable(project.current.id, { consent: true, expectedHash: recoveryHash });
-            this.saveState = 'Recovered local checkpoint; export a portable copy';
+            this.saveState = this.recovery.migrated?'Legacy recovery migrated; original copy retained':'Recovered local database checkpoint; export a portable copy';
         }
         return true;
     }
@@ -136,7 +136,7 @@ export class EvidenceWorkspace {
         this.message = `${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;
     }
     async save() { const data = await exportBundle(this.project.current); localDownload(data, `${this.project.current.id}.nmt.zip`, 'application/zip'); this.saveState = 'Project export created; verify your downloaded file'; this.dirty = false; this.message = 'Export stays on your device. The application cannot verify a durable backup.'; }
-    async checkpoint() { try{await this.recovery.checkpoint(this.project.current);}catch(error){this.dirty=true;this.saveState='Unsaved changes; recovery failed. Export this project.';throw error;} this.saveState = 'Recovery checkpoint saved in this browser; export still recommended'; this.message = 'Verified browser recovery copy. It is not a portable backup.'; }
+    async checkpoint() { try{await this.recovery.checkpoint(this.project.current);}catch(error){this.dirty=true;this.saveState='Unsaved changes; recovery failed. Export this project.';throw error;} this.saveState = 'Recovery checkpoint saved in this browser; export still recommended'; this.message = 'Verified local database recovery copy. Export a portable backup.'; }
     fileInput(label, accept, handler, { multiple = false } = {}) { const i = node('input', null, { type: 'file', accept, multiple, 'aria-label': label }); i.addEventListener('change', () => { const files = [...i.files]; if (files.length)
         this.perform(() => handler(files)); }); return labeled(label, i); }
     async openFiles(files) {
@@ -399,11 +399,12 @@ export class EvidenceWorkspace {
                     box.append(button('Save recovery checkpoint', () => this.perform(() => this.checkpoint()), { id: 'checkpoint' }), button('Delete recovery & disable', () => this.perform(async () => { if (!confirm('Delete this project’s browser recovery copy? Current in-memory work will remain.'))
                         return; await this.recovery.forget(); this.recovery.disable(); this.saveState = 'Recovery deleted; export work to keep it'; })));
             }
+            if(this.recovery.enabled)box.append(button('Inspect saved project',()=>this.perform(async()=>{this.databaseReport=await this.recovery.query();})),button('Export SQLite project backup',()=>this.perform(async()=>{await this.checkpoint();localDownload(await this.recovery.exportDatabase(),`${this.project.current.id}.nmt.sqlite3`,'application/vnd.sqlite3');})));if(this.databaseReport)box.append(node('pre',JSON.stringify(this.databaseReport,null,2)));
             box.append(button('Inspect storage usage',()=>this.perform(async()=>{const estimate=await navigator.storage?.estimate?.();const models=await this.modelStore.list();this.storageReport={browserBytes:estimate?.usage??null,quotaBytes:estimate?.quota??null,modelBytes:models.reduce((n,m)=>n+m.bytes,0),recoveryProjects:(await this.recovery.list()).length};})));if(this.storageReport)box.append(node('pre',JSON.stringify(this.storageReport,null,2)));
             box.append(button('Clear all local application data',()=>this.perform(async()=>{if(!confirm('Delete installed models, browser recovery projects and app caches? Export current work first.'))return;this.modelRunner.cancel();await this.recovery.clear();for(const m of await this.modelStore.list())await this.modelStore.remove(m.manifestHash);for(const key of await caches.keys())if(key.startsWith('nextmedtator-app-'))await caches.delete(key);const registration=await navigator.serviceWorker.getRegistration();if(registration)await registration.unregister();this.model=null;this.installedModels=[];this.recoveryList=[];this.saveState='Browser application data deleted; current work remains in memory';})));
             box.append(button('List saved recovery projects', () => this.perform(async () => { this.recoveryList = await this.recovery.list(); })));
             for (const r of this.recoveryList ?? [])
-                box.append(button(`Recover ${r.id} (${r.updatedAt})`, () => this.perform(async () => { const saved = await this.recovery.read(r.id); invariant(saved, 'Recovery entry no longer exists'); await this.adopt(await ReviewProject.open(saved.data), { recoveryHash: saved.hash }); })));
+                box.append(button(`Recover ${r.id} (${r.updatedAt}; ${r.backend==='indexeddb-legacy'?'legacy recovery':'local database'})`, () => this.perform(async () => { const saved = await this.recovery.read(r.id,{backend:r.backend}); invariant(saved, 'Recovery entry no longer exists'); await this.adopt(await ReviewProject.open(saved.data), { recoveryHash: saved.hash }); })));
             box.append(button('Install app for offline use', () => this.perform(async () => { invariant('serviceWorker' in navigator, 'Service workers unavailable'); const registration = await navigator.serviceWorker.register(new URL('../../service-worker.js', import.meta.url), { scope: new URL('../../', import.meta.url).pathname }); await navigator.serviceWorker.ready; this.message = 'App cache installed. Reload once, then test offline. Model assets require separate qualification.'; })), button('Export local timing report', () => localDownload(new TextEncoder().encode(JSON.stringify({projectId:this.project?.current.id,actor:this.project?.current.actor,schemaHash:this.project?.current.schemaHash,waitingMs:Math.round(this.waitMs),documents:this.project?.current.documents.map(d=>({documentId:d.id,sourceHash:d.textSha256,groupId:d.groupId,split:d.split,...(d.id===this.doc?.id?this.timer:this.documentTimers.get(d.id))?.report()}))??[]}, null, 2)), 'timing.json', 'application/json')));
         }
         else if (this.panel === 'models') {

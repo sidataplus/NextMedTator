@@ -1,3 +1,4 @@
+import {LegacyRecoverySession} from './backend/legacy-session.mjs';
 import {ModelStore} from './model-store.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
@@ -5,7 +6,7 @@ import {SMALL_CODEC,SMALL_NOTICE,validateSmallSchema} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
-import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant } from './integrity.mjs';
+import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
 const styles = `
 :host{display:block;height:100%;color:#1a3041;font:13px/1.45 system-ui,sans-serif}
@@ -151,7 +152,7 @@ class LegacyAssist {
         this.modelRunner = new ConformanceWorker();this.modelStore=new ModelStore();
         this.runs = new Map();
         this.projects = new Map();
-        this.runHistory = [];
+        this.runHistory = [];this.corpusCreatedAt=null;this.corpusIdentity=null;
         this.exposed = new Set();
         this.exposure = [];
         this.blinded = new Set();
@@ -163,11 +164,14 @@ class LegacyAssist {
         this.progress = null;
         this.apply = null;
         this.signature = '';
+        this.recoverySession=new LegacyRecoverySession({capture:id=>this.captureCorpus(id),restore:project=>this.restoreCorpus(project),onStatus:()=>this.render()});
+        this.unwatch=null;
         host.setAttribute('role', 'complementary');
         host.setAttribute('aria-label', 'Local assistance');
         this.render();
         this.timer = setInterval(() => this.sync(), 500);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) this.sync(); });
+        window.addEventListener('beforeunload',event=>{const session=this.recoverySession;if(session.enabled&&(session.pending||session.revision!==session.savedRevision)){event.preventDefault();event.returnValue='';}});
     }
     current() {
         const view = legacy();
@@ -179,6 +183,7 @@ class LegacyAssist {
         return { ...view, key, run: this.runs.get(key) ?? null };
     }
     sync() {
+        if(!this.unwatch&&legacy()?.vpp?.$watch)this.unwatch=legacy().vpp.$watch(()=>({dtd:legacy().data.dtd,anns:legacy().data.anns}),()=>this.recoverySession.touch(),{deep:true});
         const host = document.querySelector('nextmedtator-assist');
         if (host && host !== this.host) {
             this.host = host;
@@ -204,6 +209,7 @@ class LegacyAssist {
             model: this.model?.manifest?.id ?? '',
             codec: this.model?.manifest?.variants?.map(v => v.codec).join(',') ?? '',
             message: this.message,
+            recoveryStatus:this.recoverySession.status,
             error: this.error,
             busy: this.busy,
             progress: this.progress,
@@ -227,6 +233,7 @@ class LegacyAssist {
         this.render();
         try {
             await action();
+            if(this.recoverySession.enabled)this.recoverySession.touch();
         }
         catch (error) {
             this.error = true;
@@ -260,14 +267,14 @@ class LegacyAssist {
                 ? 'GLiNER2.5 span package loaded in memory. Analyze fills spans and scores on this device.'
                 : 'Package hashes validated. This package can run tensor fixtures only.';
     }
-    async ensureProject(ann) {
-        const key=documentKey(ann._filename??'document',ann.text??''), schema=legacySchema(legacy().data.dtd),hash=await fingerprint(schema);
+    async ensureProject(ann,schema=legacySchema(legacy().data.dtd)) {
+        const key=documentKey(ann._filename??'document',ann.text??''),hash=await fingerprint(schema);
         let project=this.projects.get(key);
         if(!project||project.current.schemaHash!==hash){const doc=await sourceDocument('legacy-note',new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});project=await ReviewProject.create([doc],schema,{mode:this.mode,actor:'legacy-annotator'});const data=clone(project.current);data.draft.records=legacyRecords(ann,doc,schema);if(this.exposed.has(key))data.exposure=clone(this.exposure.filter(e=>e.key===key));project=await ReviewProject.open(data);this.projects.set(key,project);}
         return project;
     }
-    async syncProject(ann){
-        const project=await this.ensureProject(ann),records=legacyRecords(ann,project.current.documents[0],project.current.schema),key=documentKey(ann._filename??'document',ann.text),viewRun=this.runs.get(key);
+    async syncProject(ann,schema=legacySchema(legacy().data.dtd)){
+        const project=await this.ensureProject(ann,schema),records=legacyRecords(ann,project.current.documents[0],project.current.schema),key=documentKey(ann._filename??'document',ann.text),viewRun=this.runs.get(key);
         const mapping=new Map(Object.entries(viewRun?.decisions??{}).filter(([,d])=>d.tagId).map(([predictionId,d])=>[d.tagId,project.current.draft.decisions[`${viewRun.nativeRunId}/${predictionId}`]?.humanId]));
         for(const record of records)if(mapping.get(record.id)){const original=project.current.draft.records.find(r=>r.id===mapping.get(record.id));const legacyId=record.id;record.id=mapping.get(legacyId);record.origin={...original?.origin,legacyTagId:legacyId};}
         for(const record of records)for(const rel of record.relations??[])if(mapping.get(rel.targetId))rel.targetId=mapping.get(rel.targetId);
@@ -276,6 +283,28 @@ class LegacyAssist {
             else for(const record of records)project.record(record);
         }
         return project;
+    }
+    async captureCorpus(id=uuid()){
+        const view=legacy();invariant(view?.data.dtd&&view.data.anns.length,'Load a schema and documents before enabling recovery');
+        const workspace=jsonParse(JSON.stringify({dtd:view.data.dtd,anns:view.data.anns,annIndex:view.data.ann_idx},(key,value)=>key==='_fh'?null:value));
+        const schema=legacySchema(workspace.dtd),documents=[],records=[],children=[];
+        for(const [index,ann]of workspace.anns.entries()){
+            const project=await this.syncProject(ann,schema),doc=await sourceDocument(`note-${index+1}`,new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});
+            invariant(!children.some(child=>child.key===documentKey(ann._filename??'document',ann.text)),'Duplicate document identity; rename duplicate notes before recovery');documents.push(doc);children.push({documentId:doc.id,key:documentKey(ann._filename??'document',ann.text),project:clone(project.current)});
+            const current=legacyRecords(ann,doc,schema),ids=new Map();for(const record of current)ids.set(record.id,'record-'+await sha256(doc.id+'\0'+record.id));
+            for(const record of current)records.push({...record,id:ids.get(record.id),relations:(record.relations??[]).map(rel=>({...rel,targetId:ids.get(rel.targetId)})),origin:{kind:'imported',source:'legacy-recovery',legacyProjectId:project.current.id,legacyRecordId:record.id,reviewStatus:'preserved-in-child-project'}});
+        }
+        const project=await ReviewProject.create(documents,schema,{id,actor:'legacy-annotator'}),data=clone(project.current);data.draft.records=records;if(this.corpusIdentity!==id){this.corpusIdentity=id;this.corpusCreatedAt=data.createdAt;}data.createdAt=this.corpusCreatedAt;
+        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
+        // JSON transport excludes file handles/functions; public model bytes stay in ModelStore.
+        return (await ReviewProject.open(jsonParse(JSON.stringify(data)))).current;
+    }
+    async restoreCorpus(project){
+        const saved=project.extensions.legacyWorkspace;invariant(saved?.version===1,'Unsupported legacy corpus recovery');
+        const children=new Map();for(const child of saved.children??[])children.set(child.key,await ReviewProject.open(child.project));
+        const view=legacy();invariant(view,'Original annotation workspace unavailable');
+        view.app.set_vpp_data_json({dtd:clone(saved.dtd),anns:clone(saved.anns),ann_idx:saved.annIndex,mn4anns:1});
+        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'assisted';this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
     }
     async freezeNote(view){
         invariant(!this.exposed.has(view.key),'This note was already exposed');
@@ -435,6 +464,10 @@ class LegacyAssist {
         actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
         body.append(actions);
+        const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
+        if(!this.recoverySession.enabled)recovery.append(button('Enable local corpus recovery',()=>this.perform(async()=>{if(!confirm('Store this corpus, annotations and prediction history in this browser profile? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann,id:'assist-recovery-enable'}));
+        else recovery.append(button('Save corpus checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete corpus recovery',()=>this.perform(async()=>{if(confirm('Delete this corpus recovery copy? Current in-memory annotations remain.'))await this.recoverySession.forget();})),button('Export SQLite corpus backup',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
+        recovery.append(button('List saved corpora',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore corpus '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the current in-memory corpus with this recovery copy? Export unsaved files first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));body.append(recovery);
         body.append(node('p', this.structured()
             ? (this.model.manifest.variants.some(v=>v.codec===SMALL_CODEC)?SMALL_NOTICE:'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));

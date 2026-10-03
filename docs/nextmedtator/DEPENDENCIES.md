@@ -18,6 +18,7 @@ The new static build resolves JavaScript packages and serves local assets instea
 | D3 | floating v7 | 7.9.0 | Pin the v7 renderer |
 | ECharts | 5.3.3 | 6.1.0 | Patched XSS advisory; legacy chart families exercised in Chromium |
 | DOMPurify | absent | 3.4.16 | Patched sanitizer advisories; application sanitization exercised in Chromium |
+| SQLite-WASM | absent | 3.53.4-build2 | Official browser-local SQLite/OPFS runtime |
 | ONNX Runtime Web | absent | 1.23.2 | Candidate browser tensor-conformance runtime |
 
 Public primary references inspected include Flask's 3.1.3 security release, the Vue 2 support status, jQuery's 4.0 migration and ORT Web session documentation. Do not infer an all-package advisory audit from that inspection.
@@ -26,7 +27,7 @@ Public primary references inspected include Flask's 3.1.3 security release, the 
 
 **Compatibility exceptions:** Vue 2 is end-of-life. jQuery 4, CodeMirror 6 and a new UI framework are not drop-in upgrades. Metro UI, brat, math/NLP helpers, legacy XLSX exporters and remaining copied vendored components still need focused update/removal. Their old copies can remain in the source tree; selected production URLs are replaced by the build. A complete supply-chain bill of materials and unreachable-asset removal remain release work.
 
-The preview review core uses no third-party runtime library; its unit suite is independently executable without resolving this dependency graph.
+The Rust core uses pinned serde_json and its locked dependencies. The actual WASM/SQLite unit suite requires a compiled core and the pinned npm SQLite package. Cargo.lock and reproduced third-party notices are checked in; build output is generated, never committed.
 
 Sources:
 - https://github.com/pallets/flask/releases/tag/3.1.3
