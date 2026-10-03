@@ -1,7 +1,8 @@
 import {canonical,sha256,jsonParse,invariant,ValidationError} from '../integrity.mjs';
 import {validateProject} from '../contracts.mjs';
 import {validateCore} from './core-loader.mjs';
-export const STORAGE_VERSION=2;
+import {SEARCH_DDL,searchDocuments} from './search-engine.mjs';
+export const STORAGE_VERSION=3;
 const DDL=`
 CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY, hash TEXT NOT NULL, updated_at TEXT NOT NULL, project_json TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS documents(project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,id TEXT NOT NULL,ordinal INTEGER NOT NULL,source_hash TEXT NOT NULL,split TEXT NOT NULL,group_id TEXT,document_json TEXT NOT NULL,PRIMARY KEY(project_id,id));
@@ -18,7 +19,17 @@ CREATE INDEX IF NOT EXISTS events_by_project ON review_events(project_id,ordinal
 `;
 /** Only closed operations and bound parameters; imported schemas never become SQL. */
 export class SQLiteProjectStore{
-    constructor(db,core){this.db=db;this.core=core;db.exec('PRAGMA foreign_keys=ON; PRAGMA synchronous=FULL; PRAGMA secure_delete=ON; PRAGMA journal_mode=DELETE;');const version=db.selectValue('PRAGMA user_version');invariant(version===0||version===STORAGE_VERSION,'Unsupported local database version; export with the compatible app');db.exec(DDL);db.exec('PRAGMA user_version=2; PRAGMA application_id=1313698898;');}
+    constructor(db,core){
+        this.db=db;this.core=core;
+        db.exec('PRAGMA foreign_keys=ON; PRAGMA synchronous=FULL; PRAGMA secure_delete=ON; PRAGMA journal_mode=DELETE;');
+        const version=db.selectValue('PRAGMA user_version');
+        invariant([0,2,STORAGE_VERSION].includes(version),'Unsupported local database version; export with the compatible app');
+        if(version===STORAGE_VERSION)return;
+        db.exec('BEGIN IMMEDIATE');
+        try{db.exec(DDL);db.exec(SEARCH_DDL);db.exec("INSERT INTO document_fts(document_fts) VALUES('rebuild');");db.exec('PRAGMA user_version=3; PRAGMA application_id=1313698898; COMMIT;');}
+        catch(error){try{db.exec('ROLLBACK');}catch{}throw error;}
+    }
+    search(args){return {...searchDocuments(this.db,args),persistent:true};}
     exec(sql,bind=[]){return this.db.exec({sql,bind});}
     rows(sql,bind=[]){return this.db.exec({sql,bind,rowMode:'object',returnValue:'resultRows'});}
     async checkpoint(project,expectedHash){

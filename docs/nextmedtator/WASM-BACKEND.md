@@ -29,7 +29,7 @@ The official pinned `@sqlite.org/sqlite-wasm@3.53.4-build2` package runs in a mo
 
 Each checkpoint validates first, starts `BEGIN IMMEDIATE`, checks the expected prior hash, atomically replaces all project tables, verifies the canonical payload by reading it back, and commits. Foreign keys, `synchronous=FULL`, rollback journaling and `secure_delete=ON` are enabled. A failed statement or actual `SQLITE_FULL` leaves the prior project intact. A worker termination around commit can lose the acknowledgement even if the new transaction committed: reload the saved checkpoint before retrying; CAS refuses a stale write. Hashes detect corruption, not authenticated authorship or tamper-proof auditing.
 
-Project Web Locks prevent two tabs from editing one recovery copy. A global write lock and SQLite transactions serialize database writes. SQLite initialization, storage denial or unsupported OPFS must fail explicitly; a volatile in-memory database is never presented as saved recovery. Manual annotation and native/XML exports remain available when durable storage is unavailable.
+Project Web Locks prevent two tabs from editing one recovery copy. A global write lock and SQLite transactions serialize database writes. Persistent initialization, including schema creation/migration for read-only first requests, takes that same lock before serving any operation; mutation locks are acquired afterward to avoid nested locking. Volatile corpus search does not take the persistent database lock. SQLite initialization, storage denial or unsupported OPFS must fail explicitly; a volatile in-memory database is never presented as saved recovery. Manual annotation and native/XML exports remain available when durable storage is unavailable.
 
 ## Original-screen recovery
 
@@ -65,3 +65,26 @@ The added unit suite instantiates actual Rust and SQLite WASM, compares native-c
 Target Mac/Windows browsers, clinician/assistive-technology acceptance, large-corpus/device performance and public deployment remain external qualification gates. The actual fine-tuned LoRA is still pending. Automatic relations for the published small ONNX export remain withheld for its documented source discrepancy. See `STATUS.md` and `QUALIFICATION.md`.
 
 Rust dependencies are locked in `Cargo.lock`; their reproduced license texts ship in `THIRD-PARTY-NOTICES.txt`. SQLite's bundled license preamble is retained, including Emscripten MIT/NCSA notices and SQLite public-domain notices; the npm wrapper declares Apache-2.0.
+
+## English corpus retrieval (FTS5)
+
+**FTS retrieves; `medtator-core` decides.** Search is a candidate retrieval layer. It does not add annotations, assign phenotype/classification truth, alter frozen references, or replace deterministic CaseDistiller execution. There is no CaseDistiller-to-FTS rule compilation in this release.
+
+On the original annotation screen choose **Search corpus** in the document pane. Search all entered words, an ordered phrase, word prefixes, or an advanced expression (`"suicide attempt" OR suicid*`). Results show BM25 ordering, plain-text snippets with highlighted matches, current annotation counts, and pages of 25 notes. Selecting a result opens the existing CodeMirror editor. Close search to return to the original file list and its sorting/filter controls. Only the loaded corpus is searched; notes are not sent to a service.
+
+The worker uses FTS5 `unicode61`, without stemming, synonym expansion, trigram indexing, or Thai segmentation. Short English abbreviations such as MI/HF/DM remain searchable as whole tokens. English case folding and diacritic matching are retrieval behavior, not exact lexical/rule semantics. BM25 statistics belong to the FTS table; project-scoped filters constrain returned documents. Ranking and snippets must never be interpreted as annotation offsets or classification evidence.
+
+Live search uses a separate in-memory SQLite worker with OPFS VFS initialization disabled. Indexing starts with a query; closing search terminates the worker. Corpus edits, imports, renames and removals invalidate the index/results and trigger a transactional rebuild for the next query. Revision and request checks discard superseded answers and refuse opening stale source copies. This live index is independent of recovery consent. With unavailable WASM, close search and continue using the original file list.
+
+Durable recovery schema v3 adds `document_fts`, an external-content index over `document_search_content`, a view reading the existing canonical document JSON. It stores no additional full durable text column. Insert/update/delete triggers synchronize the index inside the same checkpoint transaction. Opening a previously opted-in v2 recovery database creates and rebuilds the index transactionally without changing native project hashes. The OPFS filename remains `/nextmedtator-v2.sqlite3` to preserve existing recovery copies. Single-project SQLite exports include a freshly populated FTS index. Older apps reject schema v3; export the native bundle before rollback.
+
+`StorageBackend.search({projectId,query,mode,limit,offset})` exposes only bound queries. Results include document IDs, source hashes, finite ranks and plain-text snippet segments; the UI creates text nodes and `<mark>` elements, never trusts HTML from note text. Invalid advanced expressions report a search error. The volatile API additionally requires the indexed revision and exposes `indexCorpus`; raw SQL and dynamic schema names are not accepted.
+
+Qualification commands:
+
+```sh
+uv run --locked python tests/browser/test_corpus_search.py
+node scripts/benchmark_search.mjs
+```
+
+The benchmark uses 1,000 synthetic English clinical-style notes (~7.2 MB of text), records build/full-refresh and query timings, and compares SQLite database size against the same content table without FTS. It writes `test-results/search-benchmark.json`; this is not a real clinical corpus or target-device qualification. Browser gates exercise real SQLite-WASM, phrase/prefix/short-token search, safe snippet rendering, paging, add/edit/rename/remove synchronization, stale responses, no OPFS persistence before consent, recovery-backed FTS, and an installed offline restart. Thai/trigram search, structured annotation filters, saved queries and CaseDistiller candidate-review workflows remain future work.
