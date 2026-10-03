@@ -364,9 +364,29 @@ export function decodeBoundary({ pairLogits, pairDims, candidateIndices, indexDi
             if (Number.isInteger(start) && Number.isInteger(end) && end > start)
                 perLabel[q].push({ label: labels[q], start, end, score });
         }
-        perLabel[q] = resolveFlat(perLabel[q]);
     }
-    return perLabel.flat();
+    return resolveFlat(perLabel.flat());
+}
+/** Exact occurrence multiset; scores have separate numerical conformance fixtures. */
+export function compareSpanOccurrences(actual, expected, text) {
+    const source = cps(text);
+    const rows = spans => spans.map(span => {
+        invariant(typeof span.label === 'string' && Number.isInteger(span.start) && Number.isInteger(span.end)
+            && span.start >= 0 && span.end > span.start && span.end <= source.length,
+        'Span fixtures require exact code-point start/end offsets; regenerate older packages');
+        invariant(span.text === source.slice(span.start, span.end).join(''), 'Fixture span text does not match its source offsets');
+        return { label: span.label, start: span.start, end: span.end, text: span.text };
+    });
+    const remaining = rows(actual), missing = [];
+    for (const span of rows(expected)) {
+        const at = remaining.findIndex(candidate => candidate.label === span.label && candidate.start === span.start
+            && candidate.end === span.end && candidate.text === span.text);
+        if (at < 0)
+            missing.push(span);
+        else
+            remaining.splice(at, 1);
+    }
+    return { pass: missing.length === 0 && remaining.length === 0, missing, unexpected: remaining };
 }
 export function resolveFlat(items) {
     if (!items.length)

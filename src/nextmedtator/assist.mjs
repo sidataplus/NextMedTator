@@ -1,6 +1,7 @@
 import { DEMO_SCHEMA } from './contracts.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
+import { clone, freeze } from './integrity.mjs';
 
 const styles = `
 :host{display:block;height:100%;color:#1a3041;font:13px/1.45 system-ui,sans-serif}
@@ -136,6 +137,8 @@ class LegacyAssist {
         this.modelRunner = new ConformanceWorker();
         this.runs = new Map();
         this.exposed = new Set();
+        this.blinded = new Set();
+        this.blindSnapshots = new Map();
         this.selected = new Set();
         this.message = '';
         this.error = false;
@@ -192,6 +195,7 @@ class LegacyAssist {
             files: (view?.data?.anns ?? []).map(item => item?._filename ?? ''),
             selected: [...this.selected],
             exposed: [...this.exposed],
+            frozen: this.blindSnapshots.has(view?.key),
             run: view?.run ? { status: view.run.status, decisions: view.run.decisions, count: view.run.records.length } : null,
             apply: this.apply?.id ?? ''
         });
@@ -254,24 +258,27 @@ class LegacyAssist {
         const prompt = codec === GLINER_STRUCTURED
             ? schemaPrompt(DEMO_SCHEMA)
             : { ...schemaEntityLabels(DEMO_SCHEMA), contentCount: undefined, groups: undefined };
-        for (const [index, ann] of anns.entries()) {
+        const requests = anns.map((ann, index) => {
+            const doc = { id: ann._filename ?? `document-${index + 1}`, text: ann.text };
+            const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
+            if (this.mode === 'blind')
+                this.blinded.add(key);
+            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, threshold: variant.threshold };
+        });
+        await this.modelRunner.analyzeBatch(this.model, variant.id, requests, { onProgress: index => {
+            const ann = anns[index];
             this.progress = { index: index + 1, total: anns.length, filename: ann._filename ?? 'document' };
             this.message = `Analyzing ${index + 1} of ${anns.length} on this device.`;
             this.render();
-            const doc = { id: ann._filename ?? `document-${index + 1}`, text: ann.text };
-            const result = await this.modelRunner.analyze(this.model, variant.id, {
-                text: doc.text,
-                labels: prompt.labels,
-                contentCount: prompt.contentCount,
-                groups: prompt.groups,
-                threshold: variant.threshold
-            });
+        }, onResult: (result, index) => {
+            const ann = anns[index];
+            const doc = { id: ann._filename ?? `document-${index + 1}`, text: requests[index].text };
             if (result.kind !== codec)
                 throw new Error('Worker did not return GLiNER span output');
             const records = spansToRecords(doc, DEMO_SCHEMA, result.spans);
-            const key = documentKey(ann._filename ?? 'document', ann.text ?? '');
+            const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
             this.runs.set(key, { key, filename: ann._filename, records, notice, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
-        }
+        } });
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
@@ -283,6 +290,16 @@ class LegacyAssist {
         if (!onlySelected)
             return view?.ann ? [view.ann] : [];
         return anns.filter(ann => ann && this.selected.has(documentKey(ann._filename ?? 'document', ann.text ?? '')));
+    }
+    forCurrentNote(key, action) {
+        return (...args) => {
+            if (this.current().key !== key) {
+                this.apply = null;
+                this.render();
+                return;
+            }
+            return action(...args);
+        };
     }
     writeAnnotation(record, tagName, values) {
         const view = legacy();
@@ -319,6 +336,10 @@ class LegacyAssist {
         editor.scrollIntoView({ from: range.anchor, to: range.head }, 80);
     }
     render() {
+        // Entering blind mode protects each source even after the selector changes.
+        if (this.mode === 'blind')
+            for (const ann of legacy()?.data?.anns ?? [])
+                this.blinded.add(documentKey(ann._filename ?? 'document', ann.text ?? ''));
         this.signature = this.viewSignature();
         this.host.dataset.open = String(this.open);
         this.root.replaceChildren(node('style', styles));
@@ -342,6 +363,8 @@ class LegacyAssist {
         const status = node('div', null, { class: 'row' });
         status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'No local model', { class: 'badge', 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
         head.append(title, labeled('Mode', mode), status, node('p', `${schema ? `Schema: ${schema}` : 'Schema: none loaded'}. Documents stay in the annotation workspace.`, { class: 'muted' }));
+        if (view?.ann)
+            head.append(node('p', view.ann._filename ?? 'document', { class: 'muted', 'data-testid': 'assist-document' }));
         dock.append(head);
         if (this.message)
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
@@ -384,10 +407,23 @@ class LegacyAssist {
         const run = view?.run;
         if (!run)
             return;
-        if (this.mode === 'blind') {
+        if (this.mode === 'blind' || (this.blinded.has(view.key) && !this.exposed.has(view.key))) {
             body.append(node('h2', 'Blind annotation'), node('p', 'Suggestions, scores, and counts stay hidden. Reveal is explicit and applies to this note.', { class: 'muted' }));
-            if (!this.exposed.has(view.key))
-                body.append(button('Reveal suggestions', () => { this.exposed.add(view.key); this.mode = 'assisted'; this.message = 'Suggestions revealed for this note. Earlier blind labels stay in the annotation file.'; this.render(); }, { id: 'assist-reveal' }));
+            if (!this.exposed.has(view.key)) {
+                const frozen = this.blindSnapshots.has(view.key);
+                body.append(button('Freeze blind annotation', this.forCurrentNote(view.key, () => {
+                    this.blindSnapshots.set(view.key, freeze(clone({ filename: view.ann._filename, text: view.ann.text, tags: view.ann.tags, frozenAt: new Date().toISOString() })));
+                    this.message = 'Blind annotation frozen for this note in this session. Reveal can now show suggestions.';
+                    this.render();
+                }), { id: 'assist-freeze', disabled: frozen || this.busy }));
+                body.append(button('Reveal suggestions', this.forCurrentNote(view.key, () => {
+                    this.exposed.add(view.key);
+                    run.revealedAt = new Date().toISOString();
+                    this.mode = 'assisted';
+                    this.message = 'Suggestions revealed for this note. Its frozen blind annotation is preserved in this session.';
+                    this.render();
+                }), { id: 'assist-reveal', disabled: !frozen || this.busy }));
+            }
             else
                 body.append(node('p', 'This note was revealed earlier. Choose Assisted to show the suggestions again.', { class: 'muted' }));
             return;
@@ -408,9 +444,9 @@ class LegacyAssist {
         if (decision)
             card.append(node('p', decision.status === 'rejected' ? 'Rejected. The annotation file was not changed.' : `Added to the annotation as ${decision.tagId}. The suggestion stays here.`, { 'data-testid': 'assist-decision' }));
         const actions = node('div', null, { class: 'row' });
-        actions.append(button('Locate', () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }, { id: 'assist-locate' }));
+        actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-locate' }));
         if (!decision) {
-            actions.append(button('Add to annotation', () => { this.apply = { id: record.id, tag: preferredTag(record.family, view?.data?.dtd?.etags) }; this.render(); }, { id: 'assist-accept' }), button('Reject', () => { run.decisions[record.id] = { status: 'rejected' }; if (this.apply?.id === record.id) this.apply = null; this.message = 'Suggestion rejected. Original annotation tags stay as they were.'; this.render(); }, { id: 'assist-reject' }));
+            actions.append(button('Add to annotation', this.forCurrentNote(view.key, () => { this.apply = { id: record.id, tag: preferredTag(record.family, view?.data?.dtd?.etags) }; this.render(); }), { id: 'assist-accept' }), button('Reject', this.forCurrentNote(view.key, () => { run.decisions[record.id] = { status: 'rejected' }; if (this.apply?.id === record.id) this.apply = null; this.message = 'Suggestion rejected. Original annotation tags stay as they were.'; this.render(); }), { id: 'assist-reject' }));
         }
         card.append(actions);
         if (this.apply?.id === record.id)
@@ -452,7 +488,7 @@ class LegacyAssist {
             form.append(labeled(attr.name, input));
         }
         form.append(node('p', 'Link attributes stay empty. Confirming writes a new annotation tag and leaves this suggestion unchanged.', { class: 'muted' }));
-        form.append(button('Write annotation', () => {
+        form.append(button('Write annotation', this.forCurrentNote(view.key, () => {
             const values = {};
             for (const [name, input] of inputs)
                 values[name] = input.value;
@@ -462,7 +498,7 @@ class LegacyAssist {
                 this.apply = null;
                 this.message = `Added ${tagId} to the open annotation. The machine suggestion remains in this panel.`;
             });
-        }, { primary: true, id: 'assist-add' }));
+        }), { primary: true, id: 'assist-add' }));
         picker.addEventListener('change', () => { this.apply = { id: record.id, tag: picker.value }; this.render(); });
         return form;
     }

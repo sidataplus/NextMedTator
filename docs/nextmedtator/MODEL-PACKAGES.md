@@ -11,7 +11,7 @@ Model training, LoRA preparation, merging, quantization and ONNX export stay in 
 - Provider-specific variants, graph paths, external weight data and numerical fixtures.
 - App-owned codec identity. Model packages cannot supply arbitrary JavaScript or WASM.
 
-Two application codecs are implemented:
+Three application codecs are implemented:
 
 - `tensor-conformance-v1` executes supplied tensor fixtures. It cannot read clinical text.
 - `gliner25-boundary-span-v1` tokenizes with the package's Unigram `tokenizer.json`, builds the GLiNER2 entity prompt, and runs a boundary ONNX pair (`encoder` then `boundary`) in the local ORT worker. Decoding is half-open word spans, sigmoid threshold 0.5, abstention when the null head exceeds 0.5, and the `flat` overlap policy. The largest member may be 768 MiB so the published fp32 base encoder fits. The archive stays within 1 GiB.
@@ -30,6 +30,10 @@ reference-fixture.json
 
 A fixture has explicit input tensor type, shape and values, plus expected output tensors and declared absolute/relative tolerances. Keep fixtures synthetic or approved for distribution. Downloadable models must not contain clinical examples accidentally copied from development data.
 
+Span fixtures instead declare `kind: gliner25-boundary-span-v1`, source `text`, prompt `labels`, and the complete `expected` occurrence list. Each expected occurrence must include `label`, `text`, and exact half-open Unicode code-point `start`/`end` offsets. Conformance compares the full occurrence multiset: extra spans, missing repeated mentions, and misplaced mentions fail. Older text-only fixtures must be regenerated with offsets and their package hashes updated. Span scores are reported but this fixture does not qualify numerical scores or enum attributes.
+
+The flat overlap policy resolves candidates across all family labels and again across document windows. Identical boundaries with different labels cannot both survive.
+
 Do not use the synthetic unit-test graph bytes as a real ONNX model. Those bytes exercise validation only; no numerical inference success is claimed.
 
 ## Qualification required from the external exporter
@@ -47,3 +51,5 @@ Prefer one loaded package at a time for baseline-versus-adapter comparison. Grap
 ## Runtime limitations
 
 Local file import is bounded to 1 GiB total and 768 MiB per member in this preview, but buffering and worker copies can require substantially more RAM. Large-package streaming/persistent installation and a public R2 catalog are not implemented. Runtime modules and WASM binaries must come from the same pinned ORT distribution. The worker never falls back to an HTTP inference service.
+
+Analyze selected sends the package once to a worker, validates its hashes and creates its ONNX sessions once, then processes notes sequentially with those sessions. The worker terminates after completion, failure, timeout, or cancellation. Finished note results remain available if a later note fails; unprocessed notes do not receive a completed run.

@@ -25,11 +25,19 @@ This file distinguishes working code from qualification. It is not a claim that 
 
 ## Executed validation in this environment
 
-- **50 Node unit tests passed**, using actual Node WebCrypto and no third-party test dependencies.
-- **4 Chromium DOM-only workflows passed** on an in-memory `about:blank` page: assisted review/edit/undo, blind freeze/reveal/compare, untrusted text rendering and XML CRLF/Unicode interoperability. The DOM-only harness substitutes hash/UUID functions because opaque origins lack WebCrypto. It does **not** validate CSP, secure-context storage, service workers or inference.
+PR #3 follow-up, 2026-10-03:
+
+- **68 Node tests passed; 1 optional real-tokenizer test skipped** because its external artifact was absent. Worker lifecycle tests exercise ordered batch results, single package transfer, cancellation, timeout, failures, cleanup and retry.
 - **5 real-origin Chromium workflows passed** at `http://127.0.0.1:4173/`: assisted review/edit/undo/export, blind freeze/reveal/compare, opt-in recovery plus offline export, synthetic canary import/export with no content egress, and XML CRLF/Unicode round trip with XXE rejection.
-- The legacy MedTator page built with local dependencies loaded in Chromium. The annotation screen includes a collapsible assistance column for local GLiNER import, analyze, and review. The portable evidence project still opens from that column.
-- A local `gliner25-boundary-span-v1` package built from the published fp32 `fastino/gliner2.5-base-v1` ONNX export was imported in Chromium. Analyze locally returned two machine spans for “diabetes” (scores 0.991 and 0.984) with concept text only. Assertion, experiencer, and the negated-family distinction were not predicted. Weights are not in the repository.
+- Both static builds passed. The legacy MedTator page loaded in Chromium with its collapsible assistance column and portable evidence project.
+- The real ORT WASM worker executed tiny synthetic encoder, boundary and explicit-span graphs. Exact conformance rejected extra, missing and misplaced occurrences. Two-note structured analysis used one worker, one package transfer and two analysis requests. Per-note freeze/reveal and stale-action checks passed, and accepted tags did not change the frozen blind copy.
+- Offline restart, synthetic ONNX inference, acceptance and native export passed with network access blocked. These synthetic graphs test runtime/workflow behavior; they do not evaluate GLiNER or clinical quality.
+- Legacy blind copies and reveal timestamps are session-only. Durable study snapshots/exposure remain in the portable evidence project.
+
+Earlier implementation validation, not rerun in this follow-up:
+
+- **4 Chromium DOM-only workflows passed** on an in-memory `about:blank` page. That harness substitutes hash/UUID functions and does not validate CSP, secure-context storage, service workers or inference.
+- A local `gliner25-boundary-span-v1` package built from the published fp32 `fastino/gliner2.5-base-v1` ONNX export returned two machine spans for “diabetes” (scores 0.991 and 0.984). Those weights and the real structured package are absent on the current machine, so native/GLiNER parity, real enum-head results and WebGPU qualification were not rerun.
 - Direct npm pins were checked against the registry. `pnpm-lock.yaml` is generated from that resolution. `pnpm audit --audit-level high` passed after moving js-yaml to 4.3.2. Moderate transitive findings remain.
 - Static `dist/` asset inventory passed, including the 25 MiB file limit and no remote or inline executable scripts.
 

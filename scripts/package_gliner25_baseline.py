@@ -34,9 +34,9 @@ def main() -> None:
         'text': 'John works at Google in Seattle.',
         'labels': ['person', 'organization', 'location'],
         'expected': [
-            {'label': 'person', 'text': 'John'},
-            {'label': 'organization', 'text': 'Google'},
-            {'label': 'location', 'text': 'Seattle'},
+            {'label': 'person', 'text': 'John', 'start': 0, 'end': 4},
+            {'label': 'organization', 'text': 'Google', 'start': 14, 'end': 20},
+            {'label': 'location', 'text': 'Seattle', 'start': 24, 'end': 31},
         ],
     }
     fixture_bytes = json.dumps(fixture, separators=(',', ':')).encode()

@@ -103,20 +103,67 @@ export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
 }
 /** Dedicated worker owns ORT sessions. Force stop disposes the worker, never human state. */
 export class ConformanceWorker {
-    constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.pending = new Map(); }
-    async run(packageData, variantId, options) { return this.#request(packageData, variantId, { task: 'fixtures' }, options); }
-    async analyze(packageData, variantId, { text, labels, threshold, contentCount, groups }, options) { return this.#request(packageData, variantId, { task: 'analyze', text, labels, threshold, contentCount, groups }, { timeoutMs: 600000, ...options }); }
-    #request(packageData, variantId, message, { timeoutMs = 120000 } = {}) {
+    constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.reject = null; this.cancelled = false; }
+    async run(packageData, variantId, { timeoutMs = 120000 } = {}) {
+        return this.#withModel(packageData, variantId, () => this.#request({ task: 'fixtures' }, timeoutMs), timeoutMs);
+    }
+    async analyze(packageData, variantId, request, options) {
+        const [result] = await this.analyzeBatch(packageData, variantId, [request], options);
+        return result;
+    }
+    async analyzeBatch(packageData, variantId, requests, { timeoutMs = 600000, onProgress, onResult } = {}) {
+        invariant(requests.length > 0, 'Analysis batch is empty');
+        return this.#withModel(packageData, variantId, async () => {
+            const results = [];
+            for (const [index, request] of requests.entries()) {
+                await onProgress?.(index);
+                const result = await this.#request({ ...request, task: 'analyze' }, timeoutMs);
+                await onResult?.(result, index);
+                results.push(result);
+            }
+            invariant(!this.cancelled, 'Cancelled: local model worker stopped');
+            return results;
+        }, timeoutMs);
+    }
+    async #withModel(packageData, variantId, action, timeoutMs) {
         invariant(!this.worker, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
-        const worker = new Worker(this.url, { type: 'module' });
-        this.worker = worker;
-        return new Promise((resolve, reject) => { let finished = false; const finish = (error, result) => { if (finished)
-            return; finished = true; clearTimeout(timer); worker.terminate(); this.worker = null; this.reject = null; error ? reject(error) : resolve(result); }; const timer = setTimeout(() => finish(new Error('Local model worker timed out and was stopped')), timeoutMs); this.reject = error => finish(error); worker.onerror = () => finish(new Error('Local ONNX worker failed. Check installed runtime assets.')); worker.onmessage = ({ data }) => { if (data.error)
-            finish(new Error(data.error));
-        else if (data.result)
-            finish(null, data.result); }; worker.postMessage({ ...message, manifest: packageData.manifest, manifestHash: packageData.manifestHash, variantId, files: [...packageData.files] }); });
+        this.worker = new Worker(this.url, { type: 'module' });
+        this.cancelled = false;
+        try {
+            await this.#request({ task: 'load', manifest: packageData.manifest, manifestHash: packageData.manifestHash, variantId, files: [...packageData.files] }, timeoutMs);
+            return await action();
+        }
+        finally {
+            this.worker.terminate();
+            this.worker = null;
+            this.reject = null;
+        }
     }
-    cancel() { this.reject?.(new Error('Cancelled: conformance worker stopped')); }
+    #request(message, timeoutMs) {
+        invariant(!this.cancelled, 'Cancelled: local model worker stopped');
+        const worker = this.worker;
+        return new Promise((resolve, reject) => {
+            let finished = false;
+            const finish = (error, result) => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timer);
+                this.reject = null;
+                worker.onmessage = worker.onerror = null;
+                error ? reject(error) : resolve(result);
+            };
+            const timer = setTimeout(() => finish(new Error('Local model worker timed out and was stopped')), timeoutMs);
+            this.reject = error => finish(error);
+            worker.onerror = () => finish(new Error('Local ONNX worker failed. Check installed runtime assets.'));
+            worker.onmessage = ({ data }) => data.error ? finish(new Error(data.error)) : finish(null, data.result);
+            try { worker.postMessage(message); }
+            catch (error) { finish(error); }
+        });
+    }
+    cancel() {
+        this.cancelled = true;
+        this.reject?.(new Error('Cancelled: local model worker stopped'));
+    }
 }

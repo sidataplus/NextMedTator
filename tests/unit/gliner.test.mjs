@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { GlinerTokenizer, splitWords, resolveFlat, schemaEntityLabels, schemaPrompt, softmaxChoice, attributeFields, spansToRecords, prepareWindow, planWindows, documentCoverage } from '../../src/nextmedtator/gliner.mjs';
+import { GlinerTokenizer, splitWords, resolveFlat, decodeBoundary, compareSpanOccurrences, schemaEntityLabels, schemaPrompt, softmaxChoice, attributeFields, spansToRecords, prepareWindow, planWindows, documentCoverage } from '../../src/nextmedtator/gliner.mjs';
 import { qualifyForSchema, validateModelManifest } from '../../src/nextmedtator/model-package.mjs';
 import { DEMO_SCHEMA } from '../../src/nextmedtator/contracts.mjs';
 import { sha256, sourceDocument } from '../../src/nextmedtator/integrity.mjs';
@@ -24,6 +24,36 @@ test('whitespace splitter keeps original code-point offsets', () => {
 test('flat overlap keeps the higher total rather than only the longest span', () => {
     const kept = resolveFlat([{ start: 0, end: 5, score: 0.9 }, { start: 0, end: 2, score: 0.6 }, { start: 3, end: 5, score: 0.6 }]);
     assert.deepEqual(kept.map(span => [span.start, span.end]), [[0, 2], [3, 5]]);
+});
+test('boundary flat policy resolves identical and overlapping spans across families together', () => {
+    const spans = decodeBoundary({
+        pairLogits: [2, 1, 1, 1], pairDims: [1, 2, 2], candidateIndices: [0, 5, 0, 2, 0, 5, 3, 5],
+        indexDims: [1, 2, 2, 2], candidateValid: [1, 1, 1, 1], nullLogits: [-10, -10],
+        labels: ['condition', 'finding']
+    });
+    assert.deepEqual(spans.map(({ label, start, end }) => ({ label, start, end })), [
+        { label: 'condition', start: 0, end: 2 }, { label: 'finding', start: 3, end: 5 }
+    ]);
+    const identical = decodeBoundary({
+        pairLogits: [1, 2], pairDims: [1, 2, 1], candidateIndices: [0, 2, 0, 2],
+        indexDims: [1, 2, 1, 2], candidateValid: [1, 1], nullLogits: [-10, -10], labels: ['condition', 'finding']
+    });
+    assert.equal(identical.length, 1);
+    assert.equal(identical[0].label, 'finding');
+});
+test('occurrence conformance rejects extras, missing duplicates, and wrong locations', () => {
+    const text = '👩 diabetes diabetes';
+    const first = { label: 'condition', start: 2, end: 10, text: 'diabetes' };
+    const second = { ...first, start: 11, end: 19 };
+    const expected = [first, second];
+    assert.equal(compareSpanOccurrences([second, first], expected, text).pass, true);
+    assert.deepEqual(compareSpanOccurrences([first], expected, text).missing, [second]);
+    assert.equal(compareSpanOccurrences([first, first], expected, text).pass, false);
+    assert.deepEqual(compareSpanOccurrences([first, second, first], expected, text).unexpected, [first]);
+    assert.equal(compareSpanOccurrences([second], [first], text).pass, false);
+    assert.equal(compareSpanOccurrences([], [], text).pass, true);
+    assert.throws(() => compareSpanOccurrences([first], [{ label: 'condition', text: 'diabetes' }], text), /exact code-point/);
+    assert.throws(() => compareSpanOccurrences([{ ...first, start: 3 }], [first], text), /does not match/);
 });
 test('conformance package still cannot qualify and a span package can', async () => {
     const graph = new Uint8Array([1]), boundary = new Uint8Array([2]), tokenizer = enc.encode('{}'), config = enc.encode('{}'), fixture = enc.encode('{}');
@@ -71,7 +101,7 @@ test('span records use source offsets and leave context fields empty', async () 
     assert.deepEqual(planWindows(tokenizer, ['condition occurrence'], words).windows, [[0, 1]]);
     assert.equal(documentCoverage('her', words, []).status, 'complete');
 });
-test('real GLiNER tokenizer matches Hugging Face token ids when the file is present', () => {
+test('real GLiNER tokenizer matches Hugging Face token ids when the file is present', { skip: !process.env.GLINER_TOKENIZER }, () => {
     const path = process.env.GLINER_TOKENIZER;
     if (!path)
         return;

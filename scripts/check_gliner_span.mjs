@@ -1,7 +1,7 @@
 /** Run the application span codec against a local GLiNER2.5 ONNX directory. Exits absence skips. */
 import { readFileSync } from 'node:fs';
 import * as ort from '../node_modules/onnxruntime-web/dist/ort.wasm.min.mjs';
-import { GlinerTokenizer, readGlinerConfig, splitWords, prepareWindow, planWindows, decodeBoundary, locateSpans } from '../src/nextmedtator/gliner.mjs';
+import { GlinerTokenizer, readGlinerConfig, splitWords, prepareWindow, planWindows, decodeBoundary, locateSpans, compareSpanOccurrences } from '../src/nextmedtator/gliner.mjs';
 const root = process.argv[2];
 if (!root) {
     console.log('skip: no model directory');
@@ -20,8 +20,8 @@ for (const name of ['[E]', '[P]', '[SEP_TEXT]']) {
 const encoder = await ort.InferenceSession.create(readFileSync(`${root}/onnx/encoder.onnx`), { executionProviders: ['wasm'], graphOptimizationLevel: 'disabled' });
 const boundary = await ort.InferenceSession.create(readFileSync(`${root}/onnx/boundary.onnx`), { executionProviders: ['wasm'], graphOptimizationLevel: 'disabled' });
 const cases = [
-    ['Her mother has diabetes. The patient denies diabetes.', ['condition', 'medication', 'procedure'], ['condition\tdiabetes']],
-    ['John works at Google in Seattle.', ['person', 'organization', 'location'], ['person\tJohn', 'organization\tGoogle', 'location\tSeattle']]
+    ['Her mother has diabetes. The patient denies diabetes.', ['condition', 'medication', 'procedure'], [{ label: 'condition', text: 'diabetes', start: 15, end: 23 }, { label: 'condition', text: 'diabetes', start: 44, end: 52 }]],
+    ['John works at Google in Seattle.', ['person', 'organization', 'location'], [{ label: 'person', text: 'John', start: 0, end: 4 }, { label: 'organization', text: 'Google', start: 14, end: 20 }, { label: 'location', text: 'Seattle', start: 24, end: 31 }]]
 ];
 for (const [text, labels, required] of cases) {
     const words = splitWords(text);
@@ -41,11 +41,10 @@ for (const [text, labels, required] of cases) {
     const absent = [...outputs.null_logits.data].slice(0, labels.length);
     const decoded = decodeBoundary({ pairLogits: outputs.pair_logits.data, pairDims: outputs.pair_logits.dims, candidateIndices: outputs.candidate_indices.data, indexDims: outputs.candidate_indices.dims, candidateValid: outputs.candidate_valid.data, nullLogits: absent, labels });
     const spans = locateSpans(text, words, decoded, from);
-    const got = [...new Set(spans.map(span => `${span.label}\t${span.text}`))].sort();
-    console.log(JSON.stringify({ text, got, scores: spans.map(span => [span.label, span.text, Number(span.score.toFixed(3))]) }));
-    for (const item of required)
-        if (!got.includes(item))
-            throw new Error(`Missing ${item} in ${got.join(', ')}`);
+    const checks = compareSpanOccurrences(spans, required, text);
+    console.log(JSON.stringify({ text, ...checks, spans }));
+    if (!checks.pass)
+        throw new Error('Span occurrence conformance failed: missing or unexpected source spans');
 }
 await encoder.release();
 await boundary.release();

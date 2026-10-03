@@ -7,6 +7,7 @@ import subprocess
 import time
 import urllib.request
 from playwright.sync_api import sync_playwright, expect
+from gliner_worker_fixture import package_bytes
 
 ROOT=Path(__file__).resolve().parents[2]
 RESULTS=ROOT/'test-results'
@@ -98,7 +99,15 @@ def run():
             expect(page.get_by_test_id('message')).to_contain_text('App cache installed')
             page.wait_for_function('() => navigator.serviceWorker.controller !== null')
             context.set_offline(True);page.reload();page.get_by_test_id('sample').wait_for()
-            page.get_by_test_id('sample').click();page.get_by_test_id('demo-suggest').click();page.get_by_test_id('accept').click()
+            page.get_by_test_id('sample').click()
+            page.get_by_role('button', name='Models', exact=True).click()
+            page.get_by_label('Import local model package').set_input_files({
+                'name': 'synthetic-worker.nmt.zip', 'mimeType': 'application/zip', 'buffer': package_bytes(structured=True)
+            })
+            expect(page.get_by_test_id('message')).to_contain_text('structured package loaded')
+            page.get_by_test_id('analyze').click()
+            expect(page.get_by_test_id('suggestion')).to_have_count(2)
+            page.get_by_test_id('accept').first.click()
             with page.expect_download() as saved:page.get_by_test_id('save').click()
             saved.value.save_as(str(RESULTS/'offline.nmt.zip'))
         case('opt-in-recovery-offline-export',local)

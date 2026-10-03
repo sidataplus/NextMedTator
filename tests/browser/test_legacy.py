@@ -5,6 +5,7 @@ import subprocess
 import time
 import urllib.request
 from playwright.sync_api import sync_playwright, expect
+from gliner_worker_fixture import check_worker_regressions
 ROOT=Path(__file__).resolve().parents[2]
 URL='http://127.0.0.1:4174/'
 
@@ -51,6 +52,7 @@ def run():
             page.get_by_role('button', name='Back to MedTator', exact=True).click()
             page.locator('#tab_link_annotation').wait_for()
             page.locator('#mui_dtdlist').wait_for()
+            check_worker_regressions(page)
             assert errors==[],errors
             assert all(r.startswith(URL) for r in requests),requests
             browser.close()

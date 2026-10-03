@@ -1,0 +1,76 @@
+{
+  "notice": "Synthetic constant ONNX graphs exercise worker loading, decoding and UI only. They are not GLiNER weights or clinical predictions. Generated with onnx 1.19.1; opset 17; IR 8.",
+  "graphs": {
+    "encoder.onnx": "CAgSJU5leHRNZWRUYXRvciBzeW50aGV0aWMgd29ya2VyIGZpeHR1cmU6hwIKPxIMaGlkZGVuX3NoYXBlIghDb25zdGFudColCgV2YWx1ZSoZCAMQBzoFAYAEgAZCDGhpZGRlbl9zaGFwZaABBAouCgxoaWRkZW5fc2hhcGUSDWhpZGRlbl9zdGF0ZXMiD0NvbnN0YW50T2ZTaGFwZRIic3ludGhldGljLXdvcmtlci10ZXN0LW5vdC1jbGluaWNhbFohCglpbnB1dF9pZHMSFAoSCAcSDgoCCAEKCBIGdG9rZW5zWiYKDmF0dGVudGlvbl9tYXNrEhQKEggHEg4KAggBCggSBnRva2Vuc2IlCg1oaWRkZW5fc3RhdGVzEhQKEggBEg4KAggBCgMIgAQKAwiABkIECgAQEQ==",
+    "boundary.onnx": "CAgSJU5leHRNZWRUYXRvciBzeW50aGV0aWMgd29ya2VyIGZpeHR1cmU61gwKKRIEemVybyIIQ29uc3RhbnQqFwoFdmFsdWUqCxAHOgEAQgR6ZXJvoAEECicSA29uZSIIQ29uc3RhbnQqFgoFdmFsdWUqChAHOgEBQgNvbmWgAQQKKRIEYXhpcyIIQ29uc3RhbnQqFwoFdmFsdWUqCxAHOgEBQgRheGlzoAEECi8SBnByZWZpeCIIQ29uc3RhbnQqGwoFdmFsdWUqDwgBEAc6AQFCBnByZWZpeKABBAo5Egt6ZXJvX3ZlY3RvciIIQ29uc3RhbnQqIAoFdmFsdWUqFAgBEAc6AQBCC3plcm9fdmVjdG9yoAEECikSA3R3byIIQ29uc3RhbnQqGAoFdmFsdWUqDAgBEAc6AQJCA3R3b6ABBAosEgRheGVzIghDb25zdGFudCoaCgV2YWx1ZSoOCAIQBzoCAAJCBGF4ZXOgAQQKLhIFc2NhbGUiCENvbnN0YW50KhsKBXZhbHVlKg8QASIEAAC4QUIFc2NhbGWgAQQKNBIIbmVnYXRpdmUiCENvbnN0YW50Kh4KBXZhbHVlKhIQASIEAACgwUIIbmVnYXRpdmWgAQQKRBIMYmFzZV9pbmRpY2VzIghDb25zdGFudCoqCgV2YWx1ZSoeCAEIAQgCCAIQBzoEAwQICUIMYmFzZV9pbmRpY2VzoAEECisSBHRydWUiCENvbnN0YW50KhkKBXZhbHVlKg0IARAJKgEBQgR0cnVloAEECiIKDHF1ZXJ5X3N0YXRlcxILcXVlcnlfc2hhcGUiBVNoYXBlCjEKC3F1ZXJ5X3NoYXBlCgRheGlzEgdxdWVyaWVzIgZHYXRoZXIqCwoEYXhpcxgAoAECCi8KB3F1ZXJpZXMKC3plcm9fdmVjdG9yEgxxdWVyeV92ZWN0b3IiCVVuc3F1ZWV6ZQo3CgZwcmVmaXgKDHF1ZXJ5X3ZlY3RvchIKbnVsbF9zaGFwZSIGQ29uY2F0KgsKBGF4aXMYAKABAgoyCgpudWxsX3NoYXBlCgN0d28SCnBhaXJfc2hhcGUiBkNvbmNhdCoLCgRheGlzGACgAQIKMwoKcGFpcl9zaGFwZQoDdHdvEgtpbmRleF9zaGFwZSIGQ29uY2F0KgsKBGF4aXMYAKABAgoiCgR6ZXJvCgdxdWVyaWVzCgNvbmUSBXJhbmdlIgVSYW5nZQohCgVyYW5nZQoEemVybxILZmlyc3RfcXVlcnkiBUVxdWFsCisKC2ZpcnN0X3F1ZXJ5EgtmaXJzdF9mbG9hdCIEQ2FzdCoJCgJ0bxgBoAECCiAKC2ZpcnN0X2Zsb2F0CgVzY2FsZRIFYm9vc3QiA011bAoeCgVib29zdAoIbmVnYXRpdmUSBnNjb3JlcyIDQWRkCiQKBnNjb3JlcwoEYXhlcxIJcGFpcl9iYXNlIglVbnNxdWVlemUKLAoJcGFpcl9iYXNlCgpwYWlyX3NoYXBlEgtwYWlyX2xvZ2l0cyIGRXhwYW5kCjYKDGJhc2VfaW5kaWNlcwoLaW5kZXhfc2hhcGUSEWNhbmRpZGF0ZV9pbmRpY2VzIgZFeHBhbmQKKwoEdHJ1ZQoKcGFpcl9zaGFwZRIPY2FuZGlkYXRlX3ZhbGlkIgZFeHBhbmQKKwoIbmVnYXRpdmUKCm51bGxfc2hhcGUSC251bGxfbG9naXRzIgZFeHBhbmQSInN5bnRoZXRpYy13b3JrZXItdGVzdC1ub3QtY2xpbmljYWxaKAoMdG9rZW5fc3RhdGVzEhgKFggBEhIKAggBCgcSBXdvcmRzCgMIgAZaIAoJdGV4dF9tYXNrEhMKEQgJEg0KAggBCgcSBXdvcmRzWioKDHF1ZXJ5X3N0YXRlcxIaChgIARIUCgIIAQoJEgdxdWVyaWVzCgMIgAZaIwoKcXVlcnlfbWFzaxIVChMICRIPCgIIAQoJEgdxdWVyaWVzYigKC3BhaXJfbG9naXRzEhkKFwgBEhMKAggBCgkSB3F1ZXJpZXMKAggCYjIKEWNhbmRpZGF0ZV9pbmRpY2VzEh0KGwgHEhcKAggBCgkSB3F1ZXJpZXMKAggCCgIIAmIsCg9jYW5kaWRhdGVfdmFsaWQSGQoXCAkSEwoCCAEKCRIHcXVlcmllcwoCCAJiJAoLbnVsbF9sb2dpdHMSFQoTCAESDwoCCAEKCRIHcXVlcmllc0IECgAQEQ==",
+    "explicit.onnx": "CAgSJU5leHRNZWRUYXRvciBzeW50aGV0aWMgd29ya2VyIGZpeHR1cmU6ywMKHQoHaW5kaWNlcxILaW5kZXhfc2hhcGUiBVNoYXBlCi0SBGF4ZXMiCENvbnN0YW50KhsKBXZhbHVlKg8IAxAHOgMAAQJCBGF4ZXOgAQQKNQoLaW5kZXhfc2hhcGUKBGF4ZXMSC2xvZ2l0X3NoYXBlIgZHYXRoZXIqCwoEYXhpcxgAoAECCiYKC2xvZ2l0X3NoYXBlEgZsb2dpdHMiD0NvbnN0YW50T2ZTaGFwZRIic3ludGhldGljLXdvcmtlci10ZXN0LW5vdC1jbGluaWNhbFokCgx0b2tlbl9zdGF0ZXMSFAoSCAESDgoCCAEKAwiABAoDCIAGWhwKCXRleHRfbWFzaxIPCg0ICRIJCgIIAQoDCIAEWi0KDHF1ZXJ5X3N0YXRlcxIdChsIARIXCgIIAQoMEgphdHRyaWJ1dGVzCgMIgAZaJgoKcXVlcnlfbWFzaxIYChYICRISCgIIAQoMEgphdHRyaWJ1dGVzWjAKB2luZGljZXMSJQojCAcSHwoCCAEKDBIKYXR0cmlidXRlcwoHEgVzcGFucwoCCAJiKwoGbG9naXRzEiEKHwgBEhsKAggBCgwSCmF0dHJpYnV0ZXMKBxIFc3BhbnNCBAoAEBE="
+  },
+  "tokenizer": {
+    "model": {
+      "type": "Unigram",
+      "unk_id": 0,
+      "vocab": [
+        [
+          "<unk>",
+          -1
+        ]
+      ]
+    },
+    "added_tokens": [
+      {
+        "content": "[E]",
+        "id": 1,
+        "special": true
+      },
+      {
+        "content": "[P]",
+        "id": 2,
+        "special": true
+      },
+      {
+        "content": "[SEP_TEXT]",
+        "id": 3,
+        "special": true
+      },
+      {
+        "content": "[SEP_STRUCT]",
+        "id": 4,
+        "special": true
+      }
+    ]
+  },
+  "config": {
+    "architecture": "boundary",
+    "special_tokens": {
+      "[E]": 1,
+      "[P]": 2,
+      "[SEP_TEXT]": 3,
+      "[SEP_STRUCT]": 4
+    }
+  },
+  "reference": {
+    "kind": "gliner25-boundary-span-v1",
+    "text": "Her mother has diabetes. The patient denies diabetes.",
+    "labels": [
+      "condition occurrence",
+      "measurement occurrence",
+      "treatment occurrence",
+      "event occurrence",
+      "function occurrence"
+    ],
+    "expected": [
+      {
+        "label": "condition occurrence",
+        "start": 15,
+        "end": 23,
+        "text": "diabetes"
+      },
+      {
+        "label": "condition occurrence",
+        "start": 44,
+        "end": 52,
+        "text": "diabetes"
+      }
+    ]
+  }
+}
