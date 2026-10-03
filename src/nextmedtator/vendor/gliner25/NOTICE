@@ -1,3 +1,4 @@
 Adapted from Pastel-Org/gliner2.5-onnx-webgpu at 9f8173223d84bb65e6952d070137a990f93ef298. Apache-2.0. Copyright Pastel-Cloud OÜ.
 NextMedTator removes network download code and silent attribute fallback. Model preparation remains external.
 NextMedTator also routes relation role markers as boundary queries and applies source proposal limits. Automatic relations remain withheld because source-score conformance is incomplete.
+The merged-LoRA record codec pads and masks the word axis to the exporter contract, returns source null logits, and applies source abstention. The original small-model codec retains its existing contract.

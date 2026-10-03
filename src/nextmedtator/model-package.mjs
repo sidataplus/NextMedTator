@@ -6,6 +6,7 @@ export const MODEL_LIMITS = Object.freeze({ files: 128, file: 768 * 1024 * 1024,
 // Every executable preprocessor/decoder is shipped with the application, not with a model.
 export const CODECS = Object.freeze({
     'gliner25-small-records-v5': { purpose:'anchored-records', clinicalInference:true, coverage:'occurrence-record' },
+    'gliner25-records-v1': { purpose:'anchored-records', clinicalInference:true, coverage:'occurrence-record' },
     'tensor-conformance-v1': { purpose: 'graph-conformance-only', clinicalInference: false, coverage: 'tensor-fixture' },
     'gliner25-boundary-span-v1': { purpose: 'gliner25-boundary-span-extraction', clinicalInference: true, coverage: 'entity-span' },
     'gliner25-boundary-structured-v1': { purpose: 'gliner25-boundary-span-and-attributes', clinicalInference: true, coverage: 'structured-span' }
@@ -48,11 +49,16 @@ export function validateModelManifest(m) {
         invariant(m.files.some(f => f.path === v.graph && f.role === 'graph'), 'Variant graph missing');
         if (v.threshold != null)
             invariant(typeof v.threshold === 'number' && v.threshold >= 0 && v.threshold <= 1, 'Invalid span threshold');
-        if (v.codec === 'gliner25-small-records-v5') {
-            invariant(v.automaticRelations!==true,'Automatic small-model relations are not source-score qualified in this app release');
-            for (const name of ['model','attributes','records','relations']) invariant(m.files.some(f=>f.path===v.graphs?.[name]&&f.role==='graph'),'Small v5 graph missing: '+name);
-            invariant(m.files.some(f=>f.path===v.tokenizer&&f.role==='tokenizer'),'Small tokenizer missing');
+        if (CODECS[v.codec].coverage === 'occurrence-record') {
+            invariant(v.automaticRelations!==true,'Automatic model relations are not source-score qualified in this app release');
+            for (const name of ['model','attributes','records','relations']) invariant(m.files.some(f=>f.path===v.graphs?.[name]&&f.role==='graph'),'Record graph missing: '+name);
+            invariant(m.files.some(f=>f.path===v.tokenizer&&f.role==='tokenizer'),'Record tokenizer missing');
             invariant(Number.isFinite(v.pairTemperature)&&v.pairTemperature>0,'Pair temperature required');
+            if(v.codec==='gliner25-records-v1'){
+                invariant(v.fixedWords===512&&v.maxSequenceLength===512,'Unsupported GLiNER fixed-axis/window contract');
+                invariant(Number.isFinite(v.abstentionThreshold)&&v.abstentionThreshold>=0&&v.abstentionThreshold<=1,'Source abstention threshold required');
+                invariant(m.lineage.adapter&&m.lineage.merge==='merged-export','Generic GLiNER package requires merged LoRA lineage');
+            }
         }
         if (CODECS[v.codec].coverage === 'entity-span' || CODECS[v.codec].coverage === 'structured-span') {
             invariant(v.graphs?.encoder === v.graph && typeof v.graphs.boundary === 'string', 'Boundary package needs encoder and boundary graphs');

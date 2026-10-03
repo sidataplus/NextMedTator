@@ -399,7 +399,7 @@ export function decodeEntitiesV2({
  * @param {number} [opts.pairTemperature] v2 graphs: pair logit temperature (1.0 in current exports)
  */
 export class GlinerBoundaryRuntime {
-  constructor({ ort, session, tokenize, pairTemperature = 1.0, headsSession = null, attrsSession = null, recordsSession = null }) {
+  constructor({ ort, session, tokenize, pairTemperature = 1.0, headsSession = null, attrsSession = null, recordsSession = null, fixedWords = 0 }) {
     if (!ort || !session || !tokenize) throw new Error("ort, session and tokenize are required");
     this.ort = ort;
     this.session = session;
@@ -408,6 +408,7 @@ export class GlinerBoundaryRuntime {
     this.headsSession = headsSession;
     this.attrsSession = attrsSession;
     this.recordsSession = recordsSession;
+    this.fixedWords = fixedWords;
     this._cache = new Map();
     this.inputNames = new Set((session.inputNames || []).map(String));
     this.outputNames = new Set((session.outputNames || []).map(String));
@@ -458,6 +459,12 @@ export class GlinerBoundaryRuntime {
     const queryMarkerPositions=schemaKind === "relations" ? relMarkerPositions : entityMarkerPositions;
     const T = inputIds.length;
     const L = words.length;
+    const paddedL = this.fixedWords || L;
+    if (L > paddedL) throw new Error('Text exceeds the fixed word axis');
+    const wordIndices = new BigInt64Array(paddedL);
+    wordIndices.set(BigInt64Array.from(textWordFirstPositions.map(BigInt)));
+    const wordMask = new Float32Array(paddedL);
+    wordMask.fill(1, 0, L);
     let Q = queryMarkerPositions.length;
     let queryIdx = queryMarkerPositions;
     let queryMask = Array.from({ length: Q }, () => 1);
@@ -472,8 +479,8 @@ export class GlinerBoundaryRuntime {
     const feeds = {
       input_ids: new this.ort.Tensor("int64", BigInt64Array.from(inputIds.map(BigInt)), [1, T]),
       attention_mask: new this.ort.Tensor("int64", BigInt64Array.from({ length: T }, () => 1n), [1, T]),
-      text_word_indices: new this.ort.Tensor("int64", BigInt64Array.from(textWordFirstPositions.map(BigInt)), [1, L]),
-      text_word_mask: new this.ort.Tensor("float32", Float32Array.from({ length: L }, () => 1), [1, L]),
+      text_word_indices: new this.ort.Tensor("int64", wordIndices, [1, paddedL]),
+      text_word_mask: new this.ort.Tensor("float32", wordMask, [1, paddedL]),
       query_marker_indices: new this.ort.Tensor("int64", BigInt64Array.from(queryIdx.map(BigInt)), [1, Q]),
       query_marker_mask: new this.ort.Tensor("float32", Float32Array.from(queryMask), [1, Q]),
     };
@@ -515,6 +522,7 @@ export class GlinerBoundaryRuntime {
       relRoleCount: relMarkerPositions.length,
       queryStates: results.query_states ?? null,
       candidateStates: results.candidate_states ?? null,
+      nullLogits: results.null_logits?.data ?? null,
     };
     if (results.pair_logits) {
       return {

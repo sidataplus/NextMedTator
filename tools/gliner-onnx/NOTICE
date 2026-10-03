@@ -1,0 +1,16 @@
+GLiNER ONNX packager
+Copyright 2026 NextMedTator contributors. Apache-2.0.
+
+GLiNER2: Copyright Fastino AI / Urchade Zaratiana. Apache-2.0.
+https://github.com/fastino-ai/GLiNER2
+Pinned source: 55656fbfa01d3d4a77485e1a1eeeaf682990ccdf.
+
+Graph tensor interfaces and the explicit attention/record/relation equations
+are adapted from GLiNER2 and Pastel-Cloud OÜ's GLiNER2.5 ONNX exporter.
+Copyright Pastel-Cloud OÜ. Apache-2.0.
+https://github.com/Pastel-Org/gliner2.5-onnx-webgpu
+Reference: 9f8173223d84bb65e6952d070137a990f93ef298.
+
+This implementation retains the native stable candidate deduplication, adds
+source abstention, verifies immutable base bytes, and exports merged PEFT
+adapters. Model and adapter licensing are separate from this tool's license.
