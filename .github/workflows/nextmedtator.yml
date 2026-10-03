@@ -40,6 +40,8 @@ jobs:
       - run: uv run --locked python -m playwright install --with-deps chromium
       - run: pnpm test:legacy
       - run: uv run --locked python tests/browser/test_legacy_layout.py
+      - run: uv run --locked python tests/browser/test_corpus_search.py
+      - run: node scripts/benchmark_search.mjs
       - name: Review workspace browser tests
         if: hashFiles('src/nextmedtator/ui.mjs') != ''
         run: |

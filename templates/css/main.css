@@ -68,6 +68,17 @@ html,body {
 #mui_filelist {
     overflow-y: hidden;
     width: 250px;
+    min-height: 0;
+}
+#mui_filelist nextmedtator-search {
+    flex: 0 0 auto;
+}
+#mui_filelist.corpus-search-active nextmedtator-search {
+    flex: 1;
+    min-height: 0;
+}
+#mui_filelist.corpus-search-active > :not(nextmedtator-search) {
+    display: none !important;
 }
 #mui_filelist_toolbar {
     height: 30px;
@@ -76,7 +87,9 @@ html,body {
     border-bottom: 1px solid #cccccc;
 }
 #mui_filelist_list {
-    height: calc(100% - 32px);
+    height: auto !important;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
 }
 #mui_filelist_pager {
