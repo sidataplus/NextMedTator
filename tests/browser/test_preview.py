@@ -49,7 +49,7 @@ def run():
                 results.append({'name':name,'pass':False,'error':str(e),'pageErrors':errors})
             finally:context.close()
         def assisted(page,context,requests):
-            page.get_by_test_id('sample').click()
+            page.get_by_test_id('sample').click();page.get_by_test_id('source').wait_for()
             assert page.get_by_test_id('analyze').is_enabled()
             page.get_by_test_id('analyze').click()
             expect(page.get_by_test_id('message')).to_contain_text('Import a GLiNER2.5 boundary model package')
@@ -72,7 +72,7 @@ def run():
             page.screenshot(path=str(RESULTS/'assisted.png'),full_page=True)
         case('assisted-review-export',assisted)
         def blind(page,context,requests):
-            page.locator('select').select_option('blind');page.get_by_test_id('sample').click()
+            page.locator('select').select_option('blind');page.get_by_test_id('sample').click();page.get_by_test_id('source').wait_for()
             expect(page.get_by_test_id('demo-suggest')).to_have_count(0)
             expect(page.get_by_test_id('suggestion')).to_have_count(0)
             page.get_by_test_id('freeze').click();expect(page.get_by_test_id('phase')).to_contain_text('frozen')
@@ -84,13 +84,13 @@ def run():
             assert 'disagreement-analysis-not-accuracy' in page.locator('pre').inner_text()
         case('blind-freeze-reveal-compare',blind)
         def local(page,context,requests):
-            page.get_by_test_id('sample').click();page.get_by_role('button',name='Privacy & storage',exact=True).click()
+            page.get_by_test_id('sample').click();page.get_by_test_id('source').wait_for();page.get_by_role('button',name='Privacy & storage',exact=True).click()
             # No recovery keys before opt-in, including no implicit metadata persistence.
             assert page.evaluate('localStorage.length')==0
             assert page.evaluate('async()=> (await indexedDB.databases()).length')==0
             page.on('dialog',lambda d:d.accept())
             page.get_by_test_id('recovery-enable').click()
-            # Recovery writes IndexedDB after the click. Locator expectations retry
+            # Recovery writes SQLite in OPFS after the click. Locator expectations retry
             # without page-side eval, which the application CSP rejects.
             expect(page.get_by_test_id('save-status')).to_contain_text('Recovery checkpoint saved')
             expect(page.get_by_test_id('save-status')).to_contain_text('Recovery ON')
@@ -100,7 +100,7 @@ def run():
             expect(page.get_by_test_id('message')).to_contain_text('App cache installed')
             page.wait_for_function('() => navigator.serviceWorker.controller !== null')
             context.set_offline(True);page.reload();page.get_by_test_id('sample').wait_for()
-            page.get_by_test_id('sample').click()
+            page.get_by_test_id('sample').click();page.get_by_test_id('source').wait_for()
             page.get_by_role('button', name='Models', exact=True).click()
             page.get_by_label('Import local model package').set_input_files({
                 'name': 'synthetic-worker.nmt.zip', 'mimeType': 'application/zip', 'buffer': package_bytes(structured=True)
@@ -150,7 +150,7 @@ def run():
             assert rejected
         case('xml-unicode-roundtrip-and-xxe-rejection',xml)
         def linked_merge(page,context,requests):
-            page.get_by_test_id('sample').click()
+            page.get_by_test_id('sample').click();page.get_by_test_id('source').wait_for()
             before=page.evaluate('''async()=>{const w=document.querySelector('nextmedtator-workspace').workspace;const {authoredReference}=await import('/app/nextmedtator/samples.mjs');const {OffsetMap,clone}=await import('/app/nextmedtator/integrity.mjs');const r=authoredReference(w.doc),extra=clone(r[0]);extra.id='incoming';extra.anchor=[new OffsetMap(w.doc.text).span(0,3)];extra.fields.concept='Her';r[0].relations=[{type:'related',targetId:r[1].id}];r[1].relations=[{type:'related',targetId:extra.id}];extra.relations=[{type:'related',targetId:r[0].id},{type:'related',targetId:r[1].id}];w.project.transformRecords([],[...r,extra]);w.changed();w.render();return JSON.stringify(w.project.current.draft);}''')
             cards=page.get_by_test_id('human-record');expect(cards).to_have_count(3)
             cards.first.get_by_role('button',name='Merge occurrences',exact=True).click();expect(cards).to_have_count(2)
@@ -162,7 +162,7 @@ def run():
             assert page.evaluate("JSON.stringify(document.querySelector('nextmedtator-workspace').workspace.project.current.draft)")==before
         case('linked-occurrence-merge-and-undo',linked_merge)
         def adjudication_selectors(page,context,requests):
-            page.get_by_test_id('sample').click()
+            page.get_by_test_id('sample').click();page.get_by_test_id('source').wait_for()
             snapshots=page.evaluate('''async()=>{const w=document.querySelector('nextmedtator-workspace').workspace;const {ReviewProject}=await import('/app/nextmedtator/project.mjs');const {authoredReference}=await import('/app/nextmedtator/samples.mjs');const result={};for(const actor of ['A','B','C']){const p=await ReviewProject.create(w.project.current.documents,w.project.current.schema,{actor});p.record(authoredReference(w.doc)[0]);const s=await p.snapshot();await w.project.importSnapshot(s);result[actor]={id:s.id,hash:s.hash};}w.changed();w.render();return result;}''')
             page.get_by_role('button',name='Compare & adjudicate',exact=True).click()
             candidates=page.get_by_test_id('adjudication-candidates')

@@ -10,8 +10,8 @@
   },
   "scripts": {
     "test": "node --test tests/unit/*.test.mjs",
-    "build": "uv run --locked python scripts/build_nextmedtator.py && node scripts/finalize_build.mjs",
-    "build:preview": "uv run --locked python scripts/build_preview.py",
+    "build": "node scripts/build_wasm.mjs && uv run --locked python scripts/build_nextmedtator.py && node scripts/finalize_build.mjs",
+    "build:preview": "node scripts/build_wasm.mjs && uv run --locked python scripts/build_preview.py",
     "preview": "uv run --locked python scripts/serve_static.py --directory preview",
     "preview:legacy": "uv run --locked python scripts/serve_static.py --directory dist",
     "test:browser": "uv run --locked python tests/browser/test_preview.py",
@@ -19,10 +19,12 @@
     "test:dom": "node scripts/build_dom_harness.mjs && uv run --locked python tests/browser/test_dom_memory.py",
     "audit:assets": "node scripts/audit_assets.mjs",
     "deps:verify": "node scripts/verify_dependency_versions.mjs",
-    "samples:generate": "node scripts/generate_demo.mjs"
+    "samples:generate": "node scripts/generate_demo.mjs",
+    "build:core": "node scripts/build_wasm.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "5.15.4",
+    "@sqlite.org/sqlite-wasm": "3.53.4-build2",
     "codemirror": "5.65.20",
     "d3": "7.9.0",
     "dayjs": "1.11.13",

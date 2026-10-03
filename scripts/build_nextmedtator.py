@@ -57,6 +57,8 @@ def build() -> None:
     for p in runtime.iterdir():
         if p.is_file() and (p.name=='ort.webgpu.min.mjs' or (p.name.startswith('ort-wasm-simd-threaded') and p.suffix in ('.mjs','.wasm'))):
             shutil.copyfile(p,target/p.name)
+    from scripts.backend_assets import copy_backend_assets
+    copy_backend_assets(out)
     with web.app.test_request_context('/'):
         html=web.index()
     html=html.replace('<title>MedTator</title>','<title>NextMedTator</title>')

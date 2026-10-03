@@ -2,7 +2,7 @@
   "date": "2026-10-03",
   "scope": "Cloud Linux CPU / Chromium WASM only; public synthetic fixtures; not clinical or target-device qualification",
   "unitTests": {
-    "passed": 95,
+    "passed": 110,
     "skipped": 0,
     "externalTokenizerArtifact": "Pinned downloaded small tokenizer compared to Python tokenizers 0.22.2"
   },
@@ -10,43 +10,43 @@
     {
       "name": "assisted-review-export",
       "pass": true,
-      "requests": 21
+      "requests": 30
     },
     {
       "name": "blind-freeze-reveal-compare",
       "pass": true,
-      "requests": 24
+      "requests": 34
     },
     {
       "name": "opt-in-recovery-offline-export",
       "pass": true,
-      "requests": 68
+      "requests": 98
     },
     {
       "name": "local-canary-import-export",
       "pass": true,
-      "requests": 21
+      "requests": 30
     },
     {
       "name": "xml-unicode-roundtrip-and-xxe-rejection",
       "pass": true,
-      "requests": 21
+      "requests": 30
     },
     {
       "name": "linked-occurrence-merge-and-undo",
       "pass": true,
-      "requests": 21
+      "requests": 30
     },
     {
       "name": "adjudication-selector-refresh-and-parent-provenance",
       "pass": true,
-      "requests": 21
+      "requests": 30
     }
   ],
   "recovery": {
     "multiTabLock": true,
     "compareAndSwapConflict": true,
-    "quotaFailurePreservesPreviousCheckpoint": true,
+    "workerCancellationPreservesPreviousCheckpoint": true,
     "storageDenialReleasesBusyState": true
   },
   "parityEdges": {
@@ -60,8 +60,8 @@
     "performance": {
       "documents": 1000,
       "switchSamples": 30,
-      "switchP95Ms": 165.12000000011176,
-      "heapBytes": 5120900,
+      "switchP95Ms": 29.67000000178814,
+      "heapBytes": 4926183,
       "scope": "Cloud Linux Chromium; target laptops not qualified"
     }
   },
@@ -81,7 +81,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "9ed0a822-137a-4afb-893e-527c707a549c",
+              "id": "7a615438-2a2f-4e23-8e6b-211158cbfce1",
               "documentId": "pending",
               "family": "company",
               "anchor": [
@@ -102,7 +102,7 @@
               }
             },
             {
-              "id": "9af04597-113b-4f02-92ca-858493dfb65c",
+              "id": "a3f742e0-493a-4503-99d0-13f4dc2389c6",
               "documentId": "pending",
               "family": "person",
               "anchor": [
@@ -123,7 +123,7 @@
               }
             },
             {
-              "id": "62ad17ea-2f4a-41bb-9efb-d0c850fde73f",
+              "id": "23c8880c-9395-455d-832c-601188d1f20b",
               "documentId": "pending",
               "family": "product",
               "anchor": [
@@ -144,7 +144,7 @@
               }
             },
             {
-              "id": "d50b650a-cc4b-4376-9745-437069170bdf",
+              "id": "4ed67811-0933-48d6-bbc6-bf160c66f09b",
               "documentId": "pending",
               "family": "location",
               "anchor": [
@@ -172,7 +172,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "a9b12196-96c3-4036-b057-bc9bf421275a",
+              "id": "1f27475f-f0f8-40ef-9936-6b930b46b1ec",
               "documentId": "pending",
               "family": "product",
               "anchor": [
@@ -291,7 +291,7 @@
     "canaryInferenceNoEgress": true,
     "sourceContextAttributeFixtureExact": true,
     "browser": "151.0.7922.173",
-    "requests": 102
+    "requests": 121
   },
   "sourceRelationDiscrepancy": {
     "sourceConfidence": 0.6271791458129883,
@@ -327,7 +327,7 @@
     "liveLegacyAccept": true,
     "portableRunExposureAndReview": true,
     "exposedCopyCannotFreezeIndependent": true,
-    "requests": 103,
+    "requests": 112,
     "browser": "151.0.7922.173"
   },
   "relationExportDiagnosis": {
@@ -413,5 +413,64 @@
         "scope": "Cloud Linux Chromium; target laptops not qualified"
       }
     }
+  },
+  "wasmBackend": {
+    "actualRustWorker": true,
+    "actualSQLiteOPFS": true,
+    "noPersistenceBeforeConsent": true,
+    "restartHashVerified": true,
+    "singleProjectSQLiteExport": true,
+    "concurrentStorageWorkersCAS": true,
+    "legacyMigrationIdentityPreserved": true,
+    "legacyCopyRetained": true,
+    "offlineReadWriteAndCore": true,
+    "networkCanariesAbsent": true,
+    "browser": "151.0.7922.173"
+  },
+  "legacyRecovery": {
+    "originalVueCodeMirrorRetained": true,
+    "multiDocumentRecovery": true,
+    "directVueEditAutosaved": true,
+    "restartRestoresCorpus": true,
+    "nativeRunAndSnapshotHashesPreserved": true,
+    "importedProvenanceRemainsNonIndependent": true,
+    "browser": "151.0.7922.173"
+  },
+  "wasmCore": {
+    "rustToolchain": "1.90.0",
+    "comparisonConformanceCases": 160,
+    "actualSQLiteFullRollback": true,
+    "modelRunSourceIsolation": true,
+    "queuedCancellation": true,
+    "failedAutosaveDoesNotLoop": true,
+    "editsDuringInitialCaptureStayPending": true
+  },
+  "staticInventories": {
+    "dist": 5072,
+    "preview": 55
+  },
+  "wasmReviewFollowup": {
+    "legacyFallback": [
+      {
+        "mode": "no-cross-origin-isolation",
+        "legacyListRestoreExportReimport": true,
+        "originalHashRetained": true,
+        "recoveryRemainsOff": true,
+        "bothStoresFailHonestly": true
+      },
+      {
+        "mode": "sqlite-asset-denied",
+        "legacyListRestoreExportReimport": true,
+        "originalHashRetained": true,
+        "recoveryRemainsOff": true,
+        "bothStoresFailHonestly": true
+      }
+    ],
+    "wasmValidation": {
+      "rejected": 4,
+      "validNullableFieldsAccepted": true
+    },
+    "sqliteListSurvivesLegacyFailure": true,
+    "browser": "151.0.7922.173"
   }
 }

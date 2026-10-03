@@ -1,3 +1,5 @@
+import {coreBackend} from './backend/core-client.mjs';
+const useWasm=()=>typeof document!=='undefined'&&typeof Worker!=='undefined'&&/^https?:$/.test(globalThis.location?.protocol??'');
 import { invariant, freeze, clone, validId, validHash, uniqueIds, validateSpans, OffsetMap, fingerprint, sha256, LIMITS, assertUnicode } from './integrity.mjs';
 export const VERSION = 'nextmedtator-project-v1';
 export const FAMILIES = Object.freeze(['condition_occurrence', 'measurement_occurrence', 'treatment_occurrence', 'event_occurrence', 'function_occurrence']);
@@ -91,7 +93,7 @@ export function validateCoverage(coverage, doc, status) {
     if (status === 'complete')
         invariant(end === n, 'Complete run does not cover the document');
 }
-export async function validateRun(run, project) {
+export async function validateRun(run, project, {recordsValidated=false}={}) {
     validId(run.id);
     invariant(['complete', 'partial', 'cancelled', 'failed', 'unsupported'].includes(run.status), 'Invalid run status');
     invariant(run.schemaHash === project.schemaHash, 'Run schema mismatch');
@@ -101,7 +103,7 @@ export async function validateRun(run, project) {
     invariant(doc, 'Unknown run document');
     invariant(run.sourceHash === doc.textSha256, 'Run source mismatch');
     validateCoverage(run.coverage, doc, run.status);
-    validateRecords(run.records, [doc], project.schema);
+    if(!recordsValidated){if(useWasm())await coreBackend.validate({schema:project.schema,documents:[doc],draft:{records:run.records},runs:[],snapshots:[]});else validateRecords(run.records,[doc],project.schema);}
     for (const record of run.records)
         for (const span of [...record.anchor, ...(record.evidence ?? [])])
             invariant(run.coverage.some(([a, b]) => span.start >= a && span.end <= b), 'Prediction outside declared coverage');
@@ -134,11 +136,12 @@ export async function validateProject(project) {
         invariant(Array.isArray(project[key]), `Missing ${key}`);
         uniqueIds(project[key]);
     }
-    validateRecords(project.draft.records, project.documents, project.schema);
+    const recordsValidated=useWasm();
+    if(recordsValidated)await coreBackend.validate(project);else validateRecords(project.draft.records,project.documents,project.schema);
     validateCompleteness(project.draft.completeness, project.documents, project.schema);
     invariant(project.mode !== 'blind' || project.phase !== 'annotation' || (project.runs.length === 0 && project.snapshots.length === 0 && project.exposure.length === 0), 'Blind assignment already contains exposed material');
     for (const run of project.runs)
-        await validateRun(run, project);
+        await validateRun(run, project, {recordsValidated});
     for (const snapshot of project.snapshots) {
         const { hash, ...body } = snapshot;
         invariant(await fingerprint(body) === hash, 'Snapshot hash mismatch');
@@ -147,7 +150,7 @@ export async function validateProject(project) {
         for (const doc of project.documents)
             invariant(snapshot.sources[doc.id] === doc.textSha256, 'Snapshot source mismatch');
         invariant(['human', 'machine', 'adjudicated'].includes(snapshot.kind), 'Unsupported snapshot kind');
-        validateRecords(snapshot.records, project.documents, project.schema);
+        if(!recordsValidated)validateRecords(snapshot.records,project.documents,project.schema);
         validateCompleteness(snapshot.completeness, project.documents, project.schema, { machine: snapshot.kind === 'machine' });
     }
     for(const report of project.extensions?.comparisons??[]){const {hash,...body}=report;invariant(await fingerprint(body)===hash,'Comparison hash mismatch');invariant(project.snapshots.some(s=>s.hash===report.referenceHash)&&project.snapshots.some(s=>s.hash===report.candidateHash),'Comparison input missing');}
