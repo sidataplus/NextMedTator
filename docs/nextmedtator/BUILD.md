@@ -9,7 +9,7 @@ sidataplus/NextMedTator
 main: 7e0fd568ee7ee9dd5c2ffe7092489cfec31b602c
 ```
 
-`build_nextmedtator.py` renders the original Flask/Jinja templates with locally copied compatible dependencies. `finalize_build.mjs` extracts executable scripts, precompiles the static Vue templates, uses the Vue runtime-only build and attaches a collapsible Clinical Evidence workspace. It does not rewrite the upstream source layout or replace its manual UI. Copying legacy documents transfers source text only; typed annotation interchange uses explicit native/XML imports.
+`build_nextmedtator.py` renders the original Flask/Jinja templates with locally copied compatible dependencies. `finalize_build.mjs` extracts executable scripts, precompiles the static Vue templates, and uses the Vue runtime-only build. The annotation screen keeps the document list, source editor, schema tags, and tag table. A collapsible assistance column on that screen holds the workspace mode, local model status, and GLiNER analyze/review actions. The portable evidence project remains available from that column. Manual annotation stays available with the column collapsed and with no model imported. Copying legacy documents into the evidence project transfers source text only; typed annotation interchange uses explicit native/XML imports.
 
 The full integration was **not executed** in the restricted runtime. The CI and `test_legacy.py` smoke gate must pass on a connected runner. Exercise schema loading, manual entity/relation edits, adjudication, statistics and exports beyond that initial smoke test before approval.
 
