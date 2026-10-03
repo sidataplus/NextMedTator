@@ -319,5 +319,65 @@
     "exposedCopyCannotFreezeIndependent": true,
     "requests": 103,
     "browser": "151.0.7922.173"
+  },
+  "relationExportDiagnosis": {
+    "scope": "Published relation graph defect diagnosis, not relation qualification",
+    "distanceDivisor": 48.0,
+    "requiredDivisor": "current text_states word dimension",
+    "lengths": [
+      {
+        "words": 6,
+        "sourceLogits": [
+          -0.2030051052570343,
+          -0.4643976092338562
+        ],
+        "exportLogits": [
+          -0.19352878630161285,
+          -0.45039263367652893
+        ],
+        "maxAbsoluteError": 0.01400497555732727,
+        "passesSourceTolerance": false
+      },
+      {
+        "words": 16,
+        "sourceLogits": [
+          -0.1957578808069229,
+          -0.45332109928131104
+        ],
+        "exportLogits": [
+          -0.19352878630161285,
+          -0.45039263367652893
+        ],
+        "maxAbsoluteError": 0.0029284656047821045,
+        "passesSourceTolerance": false
+      },
+      {
+        "words": 48,
+        "sourceLogits": [
+          -0.19352874159812927,
+          -0.450392484664917
+        ],
+        "exportLogits": [
+          -0.19352878630161285,
+          -0.45039263367652893
+        ],
+        "maxAbsoluteError": 1.4901161193847656e-07,
+        "passesSourceTolerance": true
+      },
+      {
+        "words": 96,
+        "sourceLogits": [
+          -0.19302915036678314,
+          -0.44978559017181396
+        ],
+        "exportLogits": [
+          -0.19352878630161285,
+          -0.45039263367652893
+        ],
+        "maxAbsoluteError": 0.0006070435047149658,
+        "passesSourceTolerance": false
+      }
+    ],
+    "automaticRelationsQualified": false
   }
 }

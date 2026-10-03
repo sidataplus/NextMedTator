@@ -55,6 +55,17 @@ The source card has four exact entities, with source/browser confidence differen
 
 The source relation edge matches after correcting query routing, but confidence differs by 0.004642. This exceeds the existing budget and is **not passed numerical source parity**. Automatic relations are disabled; their source preparation/decoding discrepancy must be resolved and new fixtures reviewed before enabling them. The app supports manual/imported relations independently.
 
+The published `heads.onnx` distance feature has a frozen divisor of 48. The official source scorer divides by the current word dimension. `diagnose_gliner25_relations.py` compared both scorers with identical deterministic inputs at 6, 16, 48 and 96 words: only 48 passed the prespecified tolerance (maximum logit error 1.49e-7). Other lengths had errors 0.014005, 0.002928 and 0.000607. This identifies an external export defect; it does not qualify a special 48-word application mode or alter the downloaded graph. The diagnostic intentionally requires that the known defect reproduce and must be revisited for a new artifact.
+
+To reproduce in the pinned official-source runtime with `onnx==1.20.1` and `onnxruntime==1.30.0`:
+
+```sh
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python scripts/diagnose_gliner25_relations.py \
+  --source work/source-checkpoint --export work/small
+```
+
+A corrected producer release must preserve dynamic distance normalization and pass source fixtures at multiple input lengths before the application enables automatic relations. Model export and preparation remain in the separate project required by the PRD.
+
 Native CPU cold session creation was about 1.0 s; warm encoder inference about 23–25 ms for the small source card. The 1,000-document Chromium switch probe was 165 ms p95 in the final concurrent-suite run (101 ms in the earlier run), 30 samples, under the 300 ms engineering threshold. Neither result is a target-device or clinical-workflow claim. Repeat on the required Mac and Windows devices and measure whole-process peak memory, model cold/warm browser inference, long-note behavior and cancellation under real load before release approval.
 
 ## Operational rollback
