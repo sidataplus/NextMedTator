@@ -152,11 +152,11 @@ export class ReviewProject {
     trainingCandidates(snapshotId) {
         const snapshot = this.data.snapshots.find(s => s.id === snapshotId);
         invariant(snapshot, 'Snapshot not found');
-        return this.data.documents.filter(doc => doc.split === 'train' && snapshot.completeness[doc.id]?.full).map(doc => ({ documentId: doc.id, text: doc.text, sourceHash: doc.textSha256, schemaHash: this.data.schemaHash, split: doc.split, groupId: doc.groupId, records: snapshot.records.filter(r => r.documentId === doc.id), modelRuns: clone(this.data.runs.filter(r=>r.documentId===doc.id).map(r=>({fingerprint:r.fingerprint,producer:r.producer,runtime:r.runtime,settings:r.settings}))), unresolved: snapshot.unresolved ?? [], completeness: snapshot.completeness[doc.id], exposure: snapshot.exposure, referenceStatus: snapshot.kind, snapshotHash: snapshot.hash }));
+        return this.data.documents.filter(doc => doc.split === 'train' && snapshot.completeness[doc.id]?.full).map(doc => ({ documentId: doc.id, text: doc.text, sourceHash: doc.textSha256, schemaHash: this.data.schemaHash, split: doc.split, groupId: doc.groupId, records: snapshot.records.filter(r => r.documentId === doc.id), modelRuns: clone(this.data.runs.filter(r=>r.documentId===doc.id).map(r=>({id:r.id,fingerprint:r.fingerprint,producer:r.producer,runtime:r.runtime,settings:r.settings,status:r.status,coverage:r.coverage,windows:r.windows,timing:r.timing,failures:r.failures}))), unresolved: snapshot.unresolved ?? [], completeness: snapshot.completeness[doc.id], exposure: snapshot.exposure, referenceStatus: snapshot.kind, snapshotHash: snapshot.hash }));
     }
 }
-export async function makeRun(project, doc, records, { producer, status = 'complete', coverage, settings = {}, windows = [], timing = {}, runtime = { backend: 'recorded', precision: 'not-applicable', version: '1' } }) {
-    const run = { id: uuid(), createdAt: now(), documentId: doc.id, sourceHash: doc.textSha256, schemaHash: project.current.schemaHash, producer: clone(producer), runtime: clone(runtime), settings: clone(settings), windows: clone(windows), timing: clone(timing), status, coverage: coverage ?? [[0, new OffsetMap(doc.text).length]], records: clone(records) };
+export async function makeRun(project, doc, records, { producer, status = 'complete', coverage, settings = {}, windows = [], timing = {}, failures = [], runtime = { backend: 'recorded', precision: 'not-applicable', version: '1' } }) {
+    const run = { id: uuid(), createdAt: now(), documentId: doc.id, sourceHash: doc.textSha256, schemaHash: project.current.schemaHash, producer: clone(producer), runtime: clone(runtime), settings: clone(settings), windows: clone(windows), timing: clone(timing), failures: clone(failures), status, coverage: coverage ?? [[0, new OffsetMap(doc.text).length]], records: clone(records) };
     run.fingerprint = await fingerprint(runIdentity(run));
     return run;
 }

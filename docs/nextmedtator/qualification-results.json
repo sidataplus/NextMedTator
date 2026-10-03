@@ -2,7 +2,7 @@
   "date": "2026-10-03",
   "scope": "Cloud Linux CPU / Chromium WASM only; public synthetic fixtures; not clinical or target-device qualification",
   "unitTests": {
-    "passed": 88,
+    "passed": 89,
     "skipped": 0,
     "externalTokenizerArtifact": "Pinned downloaded small tokenizer compared to Python tokenizers 0.22.2"
   },
@@ -68,12 +68,134 @@
         {
           "fixture": "reference.json",
           "pass": true,
-          "status": "complete"
+          "status": "complete",
+          "records": [
+            {
+              "id": "0a726ced-36fd-4368-aae5-bd62d6642f87",
+              "documentId": "pending",
+              "family": "location",
+              "anchor": [
+                {
+                  "start": 42,
+                  "end": 51,
+                  "text": "Cupertino"
+                }
+              ],
+              "fields": {
+                "concept": "Cupertino"
+              },
+              "evidence": [],
+              "score": 0.9988501048041828,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            },
+            {
+              "id": "0ad858a1-641d-4939-918d-f8616ca1e9d4",
+              "documentId": "pending",
+              "family": "product",
+              "anchor": [
+                {
+                  "start": 29,
+                  "end": 38,
+                  "text": "iPhone 15"
+                }
+              ],
+              "fields": {
+                "concept": "iPhone 15"
+              },
+              "evidence": [],
+              "score": 0.9987113089029194,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            },
+            {
+              "id": "66a42b81-0f74-445b-aa12-6ecb4480e143",
+              "documentId": "pending",
+              "family": "person",
+              "anchor": [
+                {
+                  "start": 10,
+                  "end": 18,
+                  "text": "Tim Cook"
+                }
+              ],
+              "fields": {
+                "concept": "Tim Cook"
+              },
+              "evidence": [],
+              "score": 0.9986261339836954,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            },
+            {
+              "id": "7ae76baf-1b1f-43ec-b3b6-115df9aa55d3",
+              "documentId": "pending",
+              "family": "company",
+              "anchor": [
+                {
+                  "start": 0,
+                  "end": 5,
+                  "text": "Apple"
+                }
+              ],
+              "fields": {
+                "concept": "Apple"
+              },
+              "evidence": [],
+              "score": 0.9935407467307715,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            }
+          ]
         },
         {
           "fixture": "binding-reference.json",
           "pass": true,
-          "status": "complete"
+          "status": "complete",
+          "records": [
+            {
+              "id": "3b961eb8-4035-465e-90a1-c2332069c02e",
+              "documentId": "pending",
+              "family": "product",
+              "anchor": [
+                {
+                  "start": 8,
+                  "end": 19,
+                  "text": "MacBook Pro"
+                }
+              ],
+              "fields": {
+                "concept": "MacBook Pro",
+                "price": "$1999",
+                "features": "Liquid Retina display"
+              },
+              "evidence": [
+                {
+                  "start": 26,
+                  "end": 31,
+                  "text": "$1999"
+                },
+                {
+                  "start": 51,
+                  "end": 72,
+                  "text": "Liquid Retina display"
+                }
+              ],
+              "score": 0.9650020792131011,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            }
+          ]
         },
         {
           "fixture": "native-reference.json",

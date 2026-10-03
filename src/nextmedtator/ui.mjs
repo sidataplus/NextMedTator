@@ -118,18 +118,19 @@ export class EvidenceWorkspace {
         const prompt = (codec === GLINER_STRUCTURED || codec===SMALL_CODEC) ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
         if(codec===SMALL_CODEC)validateSmallSchema(this.project.current.schema);
         if(this.modelReport?.manifestHash!==this.model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(this.model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
+        const runSettings={codec,threshold:variant.threshold??.5,overlapPolicy:'flat',maxSequenceLength:512,wordOverlap:32,notice,limitations:codec===SMALL_CODEC?['cross-window-relations','anchorless-records',...(Object.keys(this.project.current.schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         let result;const started=performance.now();
         try {
             result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema: this.project.current.schema, threshold: variant.threshold });
         } catch(error) {
             const identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
-            const failed=await makeRun(this.project,this.doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:{codec,threshold:variant.threshold??.5,errorCategory:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'},timing:{inferenceMs:performance.now()-started}});
+            const failed=await makeRun(this.project,this.doc,[],{...identity,producer:{...identity.producer,notice},status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}],timing:{inferenceMs:performance.now()-started}});
             await this.project.addRun(failed);this.changed();throw error;
         }
         invariant(result.kind === codec, 'Worker returned a different decoder output');
         const provenance = modelRunProvenance(this.model, variant.id, result);
         const records = result.records ? result.records.map(r=>({...r,documentId:this.doc.id})) : spansToRecords(this.doc, this.project.current.schema, result.spans);
-        const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, windows: result.windows ?? [], timing: { inferenceMs: performance.now()-started }, settings: { codec, limitations:result.limitations??[], threshold: result.threshold, overlapPolicy: 'flat', maxSequenceLength: 512, wordOverlap: 32, notice }, runtime: provenance.runtime });
+        const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, windows: result.windows ?? [], timing: { inferenceMs: performance.now()-started }, settings: runSettings, runtime: provenance.runtime });
         await this.project.addRun(run);
         this.changed();
         this.message = `${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;
