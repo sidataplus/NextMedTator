@@ -46,6 +46,7 @@ jobs:
           pnpm test:browser
       - run: uv run --locked python tests/browser/test_wasm_backend.py
       - run: uv run --locked python tests/browser/test_legacy_recovery.py
+      - run: uv run --locked python tests/browser/test_review_fixes.py
       - run: uv run --locked python tests/browser/test_recovery_faults.py
       - run: uv run --locked python tests/browser/test_parity_edges.py
       - name: Required real-weight qualification when requested

@@ -2,7 +2,7 @@
   "date": "2026-10-03",
   "scope": "Cloud Linux CPU / Chromium WASM only; public synthetic fixtures; not clinical or target-device qualification",
   "unitTests": {
-    "passed": 109,
+    "passed": 110,
     "skipped": 0,
     "externalTokenizerArtifact": "Pinned downloaded small tokenizer compared to Python tokenizers 0.22.2"
   },
@@ -60,8 +60,8 @@
     "performance": {
       "documents": 1000,
       "switchSamples": 30,
-      "switchP95Ms": 24.86999999731779,
-      "heapBytes": 5037182,
+      "switchP95Ms": 29.67000000178814,
+      "heapBytes": 4926183,
       "scope": "Cloud Linux Chromium; target laptops not qualified"
     }
   },
@@ -81,7 +81,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "f89505b6-1e9c-4e2d-a0de-a6a74a9658d9",
+              "id": "7a615438-2a2f-4e23-8e6b-211158cbfce1",
               "documentId": "pending",
               "family": "company",
               "anchor": [
@@ -102,7 +102,7 @@
               }
             },
             {
-              "id": "fe3069a3-0345-4945-9b98-debec8f9bc38",
+              "id": "a3f742e0-493a-4503-99d0-13f4dc2389c6",
               "documentId": "pending",
               "family": "person",
               "anchor": [
@@ -123,7 +123,7 @@
               }
             },
             {
-              "id": "2f457bb6-d22c-4983-97f2-85668dfce8e6",
+              "id": "23c8880c-9395-455d-832c-601188d1f20b",
               "documentId": "pending",
               "family": "product",
               "anchor": [
@@ -144,7 +144,7 @@
               }
             },
             {
-              "id": "4e2fa655-f6aa-4585-a18f-af0741d87c60",
+              "id": "4ed67811-0933-48d6-bbc6-bf160c66f09b",
               "documentId": "pending",
               "family": "location",
               "anchor": [
@@ -172,7 +172,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "4630a06b-e85b-4228-9e47-e95a0bbc8386",
+              "id": "1f27475f-f0f8-40ef-9936-6b930b46b1ec",
               "documentId": "pending",
               "family": "product",
               "anchor": [
@@ -291,7 +291,7 @@
     "canaryInferenceNoEgress": true,
     "sourceContextAttributeFixtureExact": true,
     "browser": "151.0.7922.173",
-    "requests": 117
+    "requests": 121
   },
   "sourceRelationDiscrepancy": {
     "sourceConfidence": 0.6271791458129883,
@@ -448,5 +448,29 @@
   "staticInventories": {
     "dist": 5072,
     "preview": 55
+  },
+  "wasmReviewFollowup": {
+    "legacyFallback": [
+      {
+        "mode": "no-cross-origin-isolation",
+        "legacyListRestoreExportReimport": true,
+        "originalHashRetained": true,
+        "recoveryRemainsOff": true,
+        "bothStoresFailHonestly": true
+      },
+      {
+        "mode": "sqlite-asset-denied",
+        "legacyListRestoreExportReimport": true,
+        "originalHashRetained": true,
+        "recoveryRemainsOff": true,
+        "bothStoresFailHonestly": true
+      }
+    ],
+    "wasmValidation": {
+      "rejected": 4,
+      "validNullableFieldsAccepted": true
+    },
+    "sqliteListSurvivesLegacyFailure": true,
+    "browser": "151.0.7922.173"
   }
 }

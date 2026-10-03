@@ -21,6 +21,7 @@ pnpm test:browser
 uv run --locked python tests/browser/test_wasm_backend.py
 uv run --locked python tests/browser/test_legacy_recovery.py
 uv run --locked python tests/browser/test_recovery_faults.py
+uv run --locked python tests/browser/test_review_fixes.py
 uv run --locked python tests/browser/test_parity_edges.py
 pnpm test:dom
 pnpm audit --audit-level high

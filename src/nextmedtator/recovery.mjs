@@ -3,7 +3,7 @@ import {StorageBackend} from './backend/storage-client.mjs';
 import {readLegacy,listLegacy,forgetLegacy,clearLegacy} from './backend/legacy-recovery.mjs';
 /** Consent remains separate from compute/model installation. SQLite CAS is authoritative. */
 export class RecoveryStore {
-    constructor({backend=new StorageBackend()}={}){this.backend=backend;this.enabled=false;this.id=null;this.expected=null;this.release=null;this.busy=false;this.migrated=false;}
+    constructor({backend=new StorageBackend()}={}){this.backend=backend;this.enabled=false;this.id=null;this.expected=null;this.release=null;this.busy=false;this.migrated=false;this.listWarnings=[];}
     async enable(id,{consent=false,expectedHash=null}={}){
         invariant(consent,'Local recovery requires explicit consent');invariant(!this.enabled,'Recovery is already enabled');
         try{
@@ -17,7 +17,12 @@ export class RecoveryStore {
     }
     async checkpoint(project){invariant(this.enabled&&project.id===this.id,'Recovery has not been enabled for this project');invariant(!this.busy,'A recovery checkpoint is already in progress');this.busy=true;try{const hash=await this.backend.checkpoint(project,this.expected);this.expected=hash;return hash;}finally{this.busy=false;}}
     async read(id,{backend='sqlite-opfs'}={}){if(backend==='indexeddb-legacy')return readLegacy(id);const stored=await this.backend.read(id);return stored??readLegacy(id);}
-    async list(){const [current,legacy]=await Promise.all([this.backend.list(),listLegacy()]);return [...current,...legacy];}
+    async list(){
+        const results=await Promise.allSettled([this.backend.list(),listLegacy()]);
+        this.listWarnings=results.flatMap((result,index)=>result.status==='rejected'?[index===0?'Local database recovery is unavailable; only readable legacy checkpoints are listed.':'Legacy recovery is unavailable; only local database checkpoints are listed.']:[]);
+        if(results.every(result=>result.status==='rejected'))throw new ValidationError('Recovery stores are unavailable. Export current work to keep it.','STORAGE_UNAVAILABLE');
+        return results.flatMap(result=>result.status==='fulfilled'?result.value:[]);
+    }
     async forget(){invariant(this.enabled,'Enable the selected project before deleting its recovery copy');invariant(!this.busy,'Checkpoint in progress');await this.backend.forget(this.id,this.expected);const legacy=await readLegacy(this.id);if(legacy)await forgetLegacy(this.id,legacy.hash);this.expected=null;}
     async forgetListed(id,hash,backend){invariant(!this.enabled,'Disable active recovery before deleting another checkpoint');if(backend==='indexeddb-legacy')await forgetLegacy(id,hash);else await this.backend.forget(id,hash);}
     async clear(){invariant(!this.busy,'Checkpoint in progress');this.disable();await this.backend.clear();await clearLegacy();this.backend.close();}
