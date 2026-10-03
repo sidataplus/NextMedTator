@@ -71,5 +71,5 @@ if ((await stat('src/nextmedtator/ui.mjs').catch(() => null))?.isFile()) {
     document.body.append(module);
 }
 await writeFile(`${out}/index.html`, '<!doctype html>\n' + document.documentElement.outerHTML);
-execFileSync('python', ['-c', "from scripts.build_preview import HEADERS,offline_assets; from pathlib import Path; p=Path('dist'); (p/'_headers').write_text(HEADERS); offline_assets(p)"], { stdio: 'inherit' });
+execFileSync('uv', ['run', '--locked', 'python', '-c', "from scripts.build_preview import HEADERS,offline_assets; from pathlib import Path; p=Path('dist'); (p/'_headers').write_text(HEADERS); offline_assets(p)"], { stdio: 'inherit' });
 console.log('Built static NextMedTator. Run original-workflow/browser gates before release.');

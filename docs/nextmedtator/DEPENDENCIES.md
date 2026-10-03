@@ -16,8 +16,8 @@ The new static build resolves JavaScript packages and serves local assets instea
 | PapaParse | 5.3.1 | 5.5.3 | Updated CSV parser |
 | js-yaml | 4.1.0 | 4.3.2 | 4.x parser with merge-key CPU fixes |
 | D3 | floating v7 | 7.9.0 | Pin the v7 renderer |
-| ECharts | 5.3.3 | 5.6.0 | Preserve chart API |
-| DOMPurify | absent | 3.3.1 | Sanitization for generated Vue v-html render paths |
+| ECharts | 5.3.3 | 6.1.0 | Patched XSS advisory; legacy chart families exercised in Chromium |
+| DOMPurify | absent | 3.4.16 | Patched sanitizer advisories; application sanitization exercised in Chromium |
 | ONNX Runtime Web | absent | 1.23.2 | Candidate browser tensor-conformance runtime |
 
 Public primary references inspected include Flask's 3.1.3 security release, the Vue 2 support status, jQuery's 4.0 migration and ORT Web session documentation. Do not infer an all-package advisory audit from that inspection.
@@ -33,3 +33,14 @@ Sources:
 - https://v2.vuejs.org/lts/
 - https://blog.jquery.com/2026/01/17/jquery-4-0-0/
 - https://onnxruntime.ai/docs/tutorials/web/env-flags-and-session-options.html
+
+## Remaining public advisories
+
+The refreshed locked npm graph reports **one low and one moderate advisory**, both in end-of-life Vue 2:
+
+- `vue@2.7.16`: [GHSA-5j4c-8p2g-v4jx](https://github.com/advisories/GHSA-5j4c-8p2g-v4jx), low ReDoS in the HTML parser. The static build ships `vue.runtime.min.js` and precompiles repository-owned templates. That narrows exposure but does not constitute a patched dependency.
+- `vue-template-compiler@2.7.16`: [GHSA-g3ch-rx76-35fx](https://github.com/advisories/GHSA-g3ch-rx76-35fx), moderate client-side XSS advisory. This is a build-only compiler for repository-owned templates, never imported clinical templates. There is no public patched Vue 2 compiler.
+
+No advisory is suppressed. Eliminating these findings requires migrating the legacy templates, runtime and render-function generation together to a supported framework, followed by broader legacy interaction qualification. A Vue 3 package substitution alone is incompatible with the current generated Vue 2 render functions.
+
+Python development dependencies now live in `pyproject.toml` and the hash-bearing `uv.lock`. `uv sync --locked` recreates the environment; all Python-backed pnpm commands use `uv run --locked`. CI uses uv 0.12.19 and frozen locks for both ecosystems.
