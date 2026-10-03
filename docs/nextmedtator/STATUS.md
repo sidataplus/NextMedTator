@@ -6,6 +6,15 @@ Validated on 2026-10-03 against checked-in PRD v1.0. This is a baseline engineer
 
 The supplied mixv1 PEFT adapter now has a reproducible export through the separate [locked Python packager](../../tools/gliner-onnx/README.md). Its metadata pins `fastino/gliner2.5-base-v1@ca906247640776a07753514055be9726f9080ead`; all 144 adapter tensors were loaded exactly. Active-adapter versus merged encoder output differs by at most 7.3e-6. The approximately 790 MB package passes six synthetic English source occurrence cases and numerical checks for the main, attribute, record and relation graphs. Actual ORT Web WASM conformance, offline installation/restart/inference, review, comparison, portable export/reopen, lineage and native Vue/CodeMirror annotation are exercised by `tests/browser/test_lora_model.py`. User weights are not committed or published. Technical conformance does not establish clinical accuracy; source-exclusive record assignment and automatic relations remain outside this app codec.
 
+## Generated-note validation
+
+The [generated-note follow-up](GENERATED-NOTE-VALIDATION.md) validates all 27
+supplied notes offline and in portable exports, and exercises a representative
+note in the original UI. Exact-anchor agreement with the 618 generated labels
+is 47.5% micro F1; assertion/experiencer agreement is low. These unverified
+references do not qualify clinical accuracy. The full 17-choice status union
+is explicitly rejected by the current eight-choice attribute head.
+
 ## WASM architecture follow-up
 
 The requested browser-local backend is implemented while retaining the original Vue 2/CodeMirror annotation UI. Rust-WASM workers provide bulk schema/record/source-span validation, Unicode offsets/literal search and compatible snapshot comparison. Official SQLite-WASM in OPFS supplies atomic, hash-verified recovery, bound queries and selected-project SQLite exports. The original assistance panel adds opt-in multi-document recovery and debounced Vue-edit autosave. Native child-project model/snapshot/exposure identities are retained. Legacy IndexedDB recovery migration is explicit, hash-preserving and keeps the old copy; subsequent writes use SQLite only. See [WASM-BACKEND.md](WASM-BACKEND.md).

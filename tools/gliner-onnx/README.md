@@ -107,3 +107,9 @@ and [original-UI screenshot](../../docs/nextmedtator/qualification/mixv1-origina
 record this Cloud run. Record fixtures vary instances, fields and candidate
 counts; relation fixtures cover 6 and 96 words. CI also checks record inputs
 up to 192 candidates against the original source scorer.
+
+The supplied 27-note clinical-style generated corpus is also validated through
+the app. See [generated-note validation](../../docs/nextmedtator/GENERATED-NOTE-VALIDATION.md)
+for exact scope, reproduction and agreement results. These references are
+unverified generated labels, and the contextual-field agreement is low;
+the successful runtime checks do not qualify clinical accuracy.

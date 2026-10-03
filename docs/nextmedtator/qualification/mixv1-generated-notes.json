@@ -1,0 +1,421 @@
+{
+  "source": {
+    "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
+    "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
+    "generatorModels": [
+      "gemini-3.1-pro-high"
+    ],
+    "referenceKind": "externally-generated-labels",
+    "referenceCompleteness": "unverified",
+    "clinicalGoldStandard": false
+  },
+  "counts": {
+    "notes": 27,
+    "anchors": 618,
+    "literals": 507,
+    "families": {
+      "care_context_occurrence": 37,
+      "condition_occurrence": 260,
+      "event_occurrence": 135,
+      "function_occurrence": 62,
+      "measurement_occurrence": 3,
+      "treatment_occurrence": 121
+    }
+  },
+  "scope": {
+    "anchors": "all six supplied families",
+    "enums": [
+      "assertion",
+      "time_frame",
+      "experiencer"
+    ],
+    "literals": {
+      "condition_occurrence": [
+        "time_text"
+      ]
+    },
+    "unvalidated": "Other fields remain in references but are not silently qualified by this gate"
+  },
+  "browser": "151.0.7922.173",
+  "runtimeVersion": "1.23.2",
+  "packageId": "gliner25-base-mixv1",
+  "manifestHash": "2e9e9dde527d8060559ae6879fa48bbefcaab591b9bf6ee642bdd61ba12d9288",
+  "adapterLineage": {
+    "base": {
+      "model": "fastino/gliner2.5-base-v1",
+      "revision": "ca906247640776a07753514055be9726f9080ead",
+      "files": {
+        "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+        "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+        "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+        "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+        "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+      }
+    },
+    "adapter": {
+      "sha256": "a94e5d5e9d646b4de053f48eb40c05feaeb925e577404f959b4a701f5b1099ff",
+      "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+      "weightsSha256": "bf4579355629483dfdd90ffcaf56fff0248efbb2aa2229b1420e7abc9bae355c",
+      "configSha256": "9a34cce2484acebbba60b822a089891903a4656101cb04eaad32b070981824ff"
+    },
+    "merge": "merged-export",
+    "trainedHeads": "unchanged"
+  },
+  "modelConformancePassed": true,
+  "allNotesCompleteOffline": true,
+  "allSourceSpansValid": true,
+  "portableCorpusExportReopenExact": true,
+  "noNoteEgress": true,
+  "fullStatusSchemaRejectedExplicitly": {
+    "choices": 17,
+    "reason": "Enum exceeds the eight-query attribute head"
+  },
+  "windowCounts": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "cloudTimingMs": {
+    "median": 4796.52499999851,
+    "max": 7065.214999996126
+  },
+  "generatedReferenceAgreement": {
+    "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+    "exactAnchors": {
+      "reference": 618,
+      "predicted": 326,
+      "matched": 224,
+      "precisionAgreement": 0.6871165644171779,
+      "recallAgreement": 0.36245954692556637,
+      "f1Agreement": 0.47457627118644063
+    },
+    "byFamily": {
+      "care_context_occurrence": {
+        "reference": 37,
+        "predicted": 35,
+        "matched": 22,
+        "precisionAgreement": 0.6285714285714286,
+        "recallAgreement": 0.5945945945945946,
+        "f1Agreement": 0.611111111111111
+      },
+      "condition_occurrence": {
+        "reference": 260,
+        "predicted": 117,
+        "matched": 88,
+        "precisionAgreement": 0.7521367521367521,
+        "recallAgreement": 0.3384615384615385,
+        "f1Agreement": 0.46684350132625996
+      },
+      "event_occurrence": {
+        "reference": 135,
+        "predicted": 76,
+        "matched": 34,
+        "precisionAgreement": 0.4473684210526316,
+        "recallAgreement": 0.2518518518518518,
+        "f1Agreement": 0.3222748815165877
+      },
+      "function_occurrence": {
+        "reference": 62,
+        "predicted": 24,
+        "matched": 8,
+        "precisionAgreement": 0.3333333333333333,
+        "recallAgreement": 0.12903225806451613,
+        "f1Agreement": 0.18604651162790697
+      },
+      "measurement_occurrence": {
+        "reference": 3,
+        "predicted": 1,
+        "matched": 1,
+        "precisionAgreement": 1.0,
+        "recallAgreement": 0.3333333333333333,
+        "f1Agreement": 0.5
+      },
+      "treatment_occurrence": {
+        "reference": 121,
+        "predicted": 73,
+        "matched": 71,
+        "precisionAgreement": 0.9726027397260274,
+        "recallAgreement": 0.5867768595041323,
+        "f1Agreement": 0.731958762886598
+      }
+    },
+    "enumAgreementOnExactMatchedAnchors": {
+      "assertion": {
+        "matchedAnchorsWithReference": 223,
+        "agree": 40,
+        "fractionAgree": 0.17937219730941703
+      },
+      "experiencer": {
+        "matchedAnchorsWithReference": 87,
+        "agree": 17,
+        "fractionAgree": 0.19540229885057472
+      },
+      "time_frame": {
+        "matchedAnchorsWithReference": 85,
+        "agree": 43,
+        "fractionAgree": 0.5058823529411764
+      }
+    },
+    "conditionTimeLiteralAgreementOnMatchedAnchors": {
+      "matchedAnchorsWithTimeReference": 26,
+      "exactTimeSpansAgree": 2
+    },
+    "notes": [
+      {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 15,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00005",
+        "reference": 23,
+        "predicted": 11,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00000",
+        "reference": 33,
+        "predicted": 15,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00002",
+        "reference": 26,
+        "predicted": 10,
+        "matched": 6,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00001",
+        "reference": 23,
+        "predicted": 12,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00003",
+        "reference": 24,
+        "predicted": 11,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00004",
+        "reference": 17,
+        "predicted": 12,
+        "matched": 6,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00008",
+        "reference": 18,
+        "predicted": 13,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00009",
+        "reference": 18,
+        "predicted": 9,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00013",
+        "reference": 21,
+        "predicted": 12,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00011",
+        "reference": 27,
+        "predicted": 14,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00006",
+        "reference": 20,
+        "predicted": 10,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00014",
+        "reference": 26,
+        "predicted": 16,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00010",
+        "reference": 20,
+        "predicted": 10,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00015",
+        "reference": 22,
+        "predicted": 11,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00016",
+        "reference": 21,
+        "predicted": 13,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00017",
+        "reference": 26,
+        "predicted": 16,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00018",
+        "reference": 26,
+        "predicted": 12,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00012",
+        "reference": 16,
+        "predicted": 10,
+        "matched": 6,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00019",
+        "reference": 24,
+        "predicted": 15,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00022",
+        "reference": 17,
+        "predicted": 13,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00020",
+        "reference": 28,
+        "predicted": 12,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00023",
+        "reference": 25,
+        "predicted": 12,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00021",
+        "reference": 29,
+        "predicted": 9,
+        "matched": 6,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00024",
+        "reference": 21,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00026",
+        "reference": 26,
+        "predicted": 8,
+        "matched": 6,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00027",
+        "reference": 16,
+        "predicted": 10,
+        "matched": 6,
+        "status": "complete",
+        "windows": 1
+      }
+    ]
+  },
+  "originalMedTatorUI": {
+    "corpusDocumentsInOriginalUI": 27,
+    "representativeId": "syn7_00007",
+    "actualLoRAInferLocateAcceptNativeTagExport": true,
+    "noNoteEgress": true,
+    "browser": "151.0.7922.173"
+  },
+  "validationUnitTests": 4,
+  "limitations": [
+    "Reference labels were generated by Gemini; completeness, correctness and training overlap are unverified.",
+    "Metrics describe the current app schema/prompt and codec, not an independent evaluation of every official GLiNER record policy.",
+    "All other supplied enums/literals remain available in the fixture but are outside this run scope.",
+    "No baseline-versus-LoRA or clinical accuracy claim; no threshold tuning on these notes.",
+    "Full status union has 17 choices and exceeds the existing eight-query attribute head."
+  ]
+}
