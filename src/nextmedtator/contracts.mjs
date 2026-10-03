@@ -11,6 +11,7 @@ export function validateSchema(schema) {
     invariant(Object.keys(schema.families).length > 0 && Object.keys(schema.families).length <= 200, 'Schema family limit');
     for (const [family, def] of Object.entries(schema.families)) {
         validId(family);
+        for(const key of ['recordParent','recordAnchorLabel'])if(def[key]!=null)invariant(typeof def[key]==='string'&&def[key].length>0&&def[key].length<=200,'Invalid record query mapping');
         invariant(def.fields && typeof def.fields === 'object' && !Array.isArray(def.fields), 'Family fields required');
         invariant(Object.keys(def.fields).length <= 100, 'Field limit');
         for (const [name, field] of Object.entries(def.fields)) {
@@ -20,6 +21,7 @@ export function validateSchema(schema) {
                 invariant(Array.isArray(field.values) && field.values.length > 0 && field.values.length <= 1000 && field.values.every(v => typeof v === 'string') && new Set(field.values).size === field.values.length, 'Invalid enum');
         }
     }
+    for(const [type,rel] of Object.entries(schema.relations??{})){validId(type);invariant(Array.isArray(rel.head)&&Array.isArray(rel.tail)&&[...rel.head,...rel.tail].every(id=>schema.families[id]),'Invalid relation families');}
     return schema;
 }
 export function validateRecord(record, doc, schema) {
@@ -53,6 +55,7 @@ export function validateRecord(record, doc, schema) {
         for (const rel of record.relations) {
             validId(rel.targetId);
             validId(rel.type);
+            if(schema.relations)invariant(schema.relations[rel.type]?.head.includes(record.family),'Unsupported relation type or head family');
         }
     }
     return record;
@@ -69,6 +72,7 @@ export function validateRecords(records, documents, schema) {
         for (const rel of r.relations ?? []) {
             const target = ids.get(rel.targetId);
             invariant(target && target.documentId === r.documentId, 'Dangling or cross-document relation');
+            if(schema.relations)invariant(schema.relations[rel.type].tail.includes(target.family),'Unsupported relation tail family');
         }
     }
 }
@@ -146,6 +150,7 @@ export async function validateProject(project) {
         validateRecords(snapshot.records, project.documents, project.schema);
         validateCompleteness(snapshot.completeness, project.documents, project.schema, { machine: snapshot.kind === 'machine' });
     }
+    for(const report of project.extensions?.comparisons??[]){const {hash,...body}=report;invariant(await fingerprint(body)===hash,'Comparison hash mismatch');invariant(project.snapshots.some(s=>s.hash===report.referenceHash)&&project.snapshots.some(s=>s.hash===report.candidateHash),'Comparison input missing');}
     invariant(project.phase === 'annotation' || project.phase === 'frozen' || project.phase === 'revealed', 'Invalid phase');
     invariant(project.phase === 'annotation' || project.snapshots.length > 0, 'Frozen state without snapshot');
     return project;

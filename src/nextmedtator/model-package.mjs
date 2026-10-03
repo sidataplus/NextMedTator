@@ -5,6 +5,7 @@ export const PACKAGE_FORMAT = 'nextmedtator-model-v1';
 export const MODEL_LIMITS = Object.freeze({ files: 128, file: 768 * 1024 * 1024, total: 1024 * 1024 * 1024, archive: 1024 * 1024 * 1024 });
 // Every executable preprocessor/decoder is shipped with the application, not with a model.
 export const CODECS = Object.freeze({
+    'gliner25-small-records-v5': { purpose:'anchored-records', clinicalInference:true, coverage:'occurrence-record' },
     'tensor-conformance-v1': { purpose: 'graph-conformance-only', clinicalInference: false, coverage: 'tensor-fixture' },
     'gliner25-boundary-span-v1': { purpose: 'gliner25-boundary-span-extraction', clinicalInference: true, coverage: 'entity-span' },
     'gliner25-boundary-structured-v1': { purpose: 'gliner25-boundary-span-and-attributes', clinicalInference: true, coverage: 'structured-span' }
@@ -47,6 +48,12 @@ export function validateModelManifest(m) {
         invariant(m.files.some(f => f.path === v.graph && f.role === 'graph'), 'Variant graph missing');
         if (v.threshold != null)
             invariant(typeof v.threshold === 'number' && v.threshold >= 0 && v.threshold <= 1, 'Invalid span threshold');
+        if (v.codec === 'gliner25-small-records-v5') {
+            invariant(v.automaticRelations!==true,'Automatic small-model relations are not source-score qualified in this app release');
+            for (const name of ['model','attributes','records','relations']) invariant(m.files.some(f=>f.path===v.graphs?.[name]&&f.role==='graph'),'Small v5 graph missing: '+name);
+            invariant(m.files.some(f=>f.path===v.tokenizer&&f.role==='tokenizer'),'Small tokenizer missing');
+            invariant(Number.isFinite(v.pairTemperature)&&v.pairTemperature>0,'Pair temperature required');
+        }
         if (CODECS[v.codec].coverage === 'entity-span' || CODECS[v.codec].coverage === 'structured-span') {
             invariant(v.graphs?.encoder === v.graph && typeof v.graphs.boundary === 'string', 'Boundary package needs encoder and boundary graphs');
             invariant(m.files.some(f => f.path === v.graphs.boundary && f.role === 'graph'), 'Boundary graph missing');
@@ -99,6 +106,7 @@ export function qualifyForSchema(packageData, schema) {
     if (!open)
         for (const family of Object.keys(schema.families))
             invariant(packageData.manifest.capabilities.includes(family), 'Unsupported schema family');
+    if (codecs.some(c=>c.coverage==='occurrence-record')) return {level:'occurrence-record',unpredicted:['anchorless-records','cross-window-relations']};
     const structured = codecs.some(c => c.coverage === 'structured-span');
     if (structured)
         return { level: 'structured-span', unpredicted: ['value', 'unit', 'relations'] };
@@ -174,7 +182,7 @@ export class ConformanceWorker {
             const timer = setTimeout(() => finish(new Error('Local model worker timed out and was stopped')), timeoutMs);
             this.reject = error => finish(error);
             worker.onerror = () => finish(new Error('Local ONNX worker failed. Check installed runtime assets.'));
-            worker.onmessage = ({ data }) => data.error ? finish(new Error(data.error)) : finish(null, data.result);
+            worker.onmessage = ({ data }) => data.progress ? undefined : data.error ? finish(new Error(data.error)) : finish(null, data.result);
             try { worker.postMessage(message); }
             catch (error) { finish(error); }
         });

@@ -1,103 +1,28 @@
-"""Original annotation screen: import a local structured package and review spans there.
-
-Skips when the package zip is absent. Weights are not in the repository.
-"""
+"""Required real-weight review and portable provenance on the original annotation screen."""
 from pathlib import Path
-import os
-import subprocess
-import time
-import urllib.request
-from playwright.sync_api import sync_playwright, expect
-expect.set_options(timeout=360000)
-ROOT = Path(__file__).resolve().parents[2]
-ZIP = Path('/tmp/gliner/gliner25-structured.nmt.zip')
-URL = 'http://127.0.0.1:4175/'
-NOTE = 'Her mother has diabetes. The patient denies diabetes.'
-
-def dismiss(page):
-    page.wait_for_timeout(700)
-    if page.locator('#start-screen').is_visible():
-        cont = page.locator('#start-screen a', has_text='Continue')
-        if cont.count():
-            cont.first.click()
-        else:
-            page.evaluate('jarvis.ssclose()')
-    page.locator('#start-screen').wait_for(state='hidden')
-
+import json,os,subprocess,time,urllib.request,zipfile
+from playwright.sync_api import sync_playwright,expect
+ROOT=Path(__file__).resolve().parents[2];ZIP=Path(os.environ.get('NMT_SMALL_PACKAGE','/workspace/work/gliner25-small.nmt-model.zip'));URL='http://127.0.0.1:4175/'
 def run():
-    if not ZIP.is_file():
-        print('skip: structured package is not on this machine')
-        return
-    server = subprocess.Popen(['python', 'scripts/serve_static.py', '--directory', 'dist', '--port', '4175'], cwd=ROOT)
-    try:
-        for _ in range(100):
-            try:
-                urllib.request.urlopen(URL, timeout=1).close()
-                break
-            except Exception:
-                time.sleep(.1)
-        else:
-            raise RuntimeError('Static legacy preview not available')
-        with sync_playwright() as p:
-            executable = os.environ.get('CHROMIUM_PATH', '/usr/bin/chromium')
-            browser = p.chromium.launch(executable_path=executable if Path(executable).exists() else None, args=['--no-sandbox'])
-            context = browser.new_context(viewport={'width': 1440, 'height': 1000}, record_video_dir='/opt/cursor/artifacts', record_video_size={'width': 1440, 'height': 1000})
-            page = context.new_page()
-            page.set_default_timeout(360000)
-            errors = []
-            page.on('pageerror', lambda e: errors.append(str(e)))
-            try:
-                page.goto(URL)
-                page.locator('#tab_link_annotation').wait_for()
-                page.wait_for_function('window.app_hotpot?.vpp != null')
-                dismiss(page)
-                page.get_by_test_id('assist-mode').wait_for()
-                page.get_by_title('Load a minimal task').click()
-                page.locator('.file-list-item-name', has_text='doc_01.txt.xml').wait_for()
-                page.locator('#btn_annotation_load_sample .dropdown-toggle').click()
-                page.once('dialog', lambda dialog: dialog.accept(NOTE))
-                page.get_by_text('Customize a Sample Text', exact=True).click()
-                sample = page.locator('.file-list-item-name', has_text='sample-')
-                sample.wait_for()
-                sample.click()
-                page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ZIP))
-                expect(page.get_by_test_id('assist-message')).to_contain_text('structured package loaded')
-                page.get_by_test_id('assist-analyze').click()
-                cards = page.get_by_test_id('assist-suggestion')
-                expect(cards).to_have_count(2)
-                expect(page.get_by_test_id('model-status')).to_have_text('Structured package')
-                text = cards.nth(0).inner_text() + '\n' + cards.nth(1).inner_text()
-                assert 'assertion: negated' in text
-                assert 'experiencer: patient' in text
-                assert 'temporality: unknown' in text
-                assert '0.994' in text and '0.983' in text
-                cards.nth(1).scroll_into_view_if_needed()
-                page.get_by_test_id('assist-suggestion').nth(1).get_by_test_id('assist-accept').click()
-                expect(page.get_by_test_id('assist-suggestion').nth(1)).to_contain_text('assertion = negated')
-                page.get_by_label('certainty', exact=True).select_option('negated')
-                page.get_by_test_id('assist-add').click()
-                expect(page.locator('.tag-table')).to_contain_text('diabetes')
-                expect(page.locator('.tag-table')).to_contain_text('negated')
-                expect(page.get_by_test_id('assist-decision')).to_contain_text('Added to the annotation')
-                page.screenshot(path='/opt/cursor/artifacts/legacy-gliner-annotation.png')
-                page.get_by_test_id('assist-suggestion').nth(0).get_by_test_id('assist-locate').click()
-                selected = page.evaluate('app_hotpot.codemirror.getSelection()')
-                assert selected == 'diabetes', selected
-                page.get_by_test_id('assist-suggestion').nth(0).get_by_test_id('assist-reject').click()
-                expect(page.get_by_test_id('assist-decision').nth(0)).to_contain_text('Rejected')
-                page.get_by_test_id('assist-mode').select_option('blind')
-                expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
-                page.get_by_role('link', name='Statistics').click()
-                page.locator('#tab_link_annotation').click()
-                expect(page.locator('.tag-table')).to_contain_text('diabetes')
-                assert errors == [], errors
-            finally:
-                page.screenshot(path='/opt/cursor/artifacts/legacy-gliner-end.png')
-                context.close()
-                browser.close()
-    finally:
-        server.terminate()
-        server.wait(timeout=5)
-
-if __name__ == '__main__':
-    run()
+ assert ZIP.is_file(),'Pinned real package required; this test never skips or substitutes weights'
+ server=subprocess.Popen(['python','scripts/serve_static.py','--directory','dist','--port','4175'],cwd=ROOT)
+ try:
+  for _ in range(100):
+   try:urllib.request.urlopen(URL,timeout=1).close();break
+   except Exception:time.sleep(.1)
+  with sync_playwright() as p:
+   exe=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium');browser=p.chromium.launch(executable_path=exe if Path(exe).exists() else None,args=['--no-sandbox']);page=browser.new_page(accept_downloads=True);page.set_default_timeout(30000);expect.set_options(timeout=30000);errors=[];requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append(r.url))
+   page.goto(URL);print('Loaded legacy page',flush=True);page.wait_for_function('() => window.app_hotpot?.vpp!=null');page.evaluate('jarvis.ssclose()');page.get_by_title('Load a minimal task').click();page.locator('.file-list-item-name',has_text='doc_01.txt.xml').wait_for()
+   name=page.evaluate('''()=>{app_hotpot.vpp.$data.anns=[];app_hotpot.vpp.$data.ann_idx=0;const dtd=dtd_parser.parse(['<!ENTITY name "condition_task">','<!ELEMENT condition (#PCDATA)>','<!ATTLIST condition certainty ( present | negated | possible | unknown ) #IMPLIED "unknown">'].join(String.fromCharCode(10)),'dtd');app_hotpot.set_dtd(dtd);app_hotpot.vpp.$data.dtd=dtd;const ann=app_hotpot.vpp.add_sample_txt_as_ann('Her mother has diabetes. The patient denies diabetes.');app_hotpot.vpp.$data.mn4anns=1;app_hotpot.vpp.set_ann_idx(0);return ann._filename;}''')
+   print('Created note '+name,flush=True);page.locator('.file-list-item-name',has_text=name).click();page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ZIP));expect(page.get_by_test_id('assist-message')).to_contain_text('package loaded');print('Imported model',flush=True);page.get_by_test_id('assist-analyze').click();expect(page.get_by_test_id('assist-message')).not_to_contain_text('failed');expect(page.get_by_test_id('assist-suggestion')).to_have_count(2);print('Inferred legacy records',flush=True)
+   page.get_by_test_id('assist-suggestion').first.get_by_test_id('assist-accept').click();page.get_by_test_id('assist-add').click();expect(page.locator('.tag-table')).to_contain_text('diabetes')
+   with page.expect_download() as download:page.get_by_role('button',name='Export evidence project',exact=True).click()
+   out=ROOT/'test-results/legacy-real-small.nmt.zip';download.value.save_as(str(out))
+   with zipfile.ZipFile(out) as z:
+    data=json.loads(z.read('project.json'));data['schema']=json.loads(z.read('schema.json'));data['runs']=json.loads(z.read('machine-runs/index.json'))
+   assert list(data['schema']['families'])==['condition'],data['schema'];assert len(data['runs'])==1 and len(data['runs'][0]['records'])==2;assert data['exposure'];assert data['draft']['records'][0]['origin']['runId']==data['runs'][0]['id'],data['draft']
+   page.get_by_test_id('assist-mode').select_option('blind');expect(page.get_by_test_id('assist-suggestion')).to_have_count(0);expect(page.get_by_test_id('assist-freeze')).to_have_count(0)
+   assert not errors,errors;assert all(url.startswith(URL) for url in requests),requests
+   (ROOT/'test-results/legacy-real-small.json').write_text(json.dumps({'realWeights':True,'loadedSchemaPreserved':True,'liveLegacyAccept':True,'portableRunExposureAndReview':True,'exposedCopyCannotFreezeIndependent':True,'requests':len(requests),'browser':browser.version},indent=2));print('Real-weight legacy acceptance and portable provenance passed');browser.close()
+ finally:server.terminate();server.wait(timeout=5)
+if __name__=='__main__':run()

@@ -2,6 +2,11 @@ name: NextMedTator validation
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      real_model:
+        description: Download and validate pinned real GLiNER2.5-small (about 314 MB)
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -14,25 +19,40 @@ jobs:
         with:
           node-version: '22'
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
+          version: '0.12.19'
           python-version: '3.12'
+          enable-cache: true
       - name: Verify direct package versions
         run: pnpm deps:verify
       - name: Resolve dependencies for draft validation
         run: |
-          if test -f pnpm-lock.yaml; then pnpm install --frozen-lockfile; else pnpm install --no-frozen-lockfile; fi
-          python -m pip install -r requirements.txt -r requirements-test.txt
+          pnpm install --frozen-lockfile
+          uv sync --locked
       - run: pnpm test
       - run: pnpm build
       - run: pnpm audit:assets
-      - run: python -m playwright install --with-deps chromium
+      - run: uv run --locked python -m playwright install --with-deps chromium
       - run: pnpm test:legacy
       - name: Review workspace browser tests
         if: hashFiles('src/nextmedtator/ui.mjs') != ''
         run: |
           pnpm build:preview
           pnpm test:browser
+      - run: uv run --locked python tests/browser/test_recovery_faults.py
+      - run: uv run --locked python tests/browser/test_parity_edges.py
+      - name: Required real-weight qualification when requested
+        if: github.event_name == 'workflow_dispatch' && inputs.real_model
+        env:
+          NMT_SMALL_PACKAGE: ${{ runner.temp }}/small.nmt-model.zip
+        run: |
+          uv tool run --from huggingface_hub==2.1.1 hf download nicolasembleton/gliner2.5-small-v1-onnx --revision 5e2e3f51adfb0eeb7c1f83464400b4d498d41659 --local-dir "${{ runner.temp }}/small"
+          GLINER_TOKENIZER="${{ runner.temp }}/small/tokenizer.json" uv run --no-project --with tokenizers==0.22.2 node --test tests/unit/gliner.test.mjs
+          uv run --locked python scripts/package_gliner25_small.py --source "${{ runner.temp }}/small" --out "$NMT_SMALL_PACKAGE"
+          uv run --locked python tests/browser/test_real_small.py
+          uv run --locked python tests/browser/test_legacy_assist.py
+      - run: pnpm test:dom
       - name: Dependency audit
         run: pnpm audit --audit-level high
       - name: Require reviewed dependency lock before merge
@@ -44,6 +64,7 @@ jobs:
           name: nextmedtator-validation
           path: |
             pnpm-lock.yaml
+            uv.lock
             dependency-verification.json
             test-results/
             dist/asset-manifest.json

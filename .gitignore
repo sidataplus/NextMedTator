@@ -153,3 +153,8 @@ preview/
 test-results/
 dependency-verification.json
 .nmt-local/
+
+# Isolated development artifacts
+/node_modules
+/work/
+/:memory:.ses

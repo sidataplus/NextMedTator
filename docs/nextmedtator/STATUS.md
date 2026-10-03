@@ -1,64 +1,54 @@
-# Implementation status
+# Implementation and qualification status
 
-This file distinguishes working code from qualification. It is not a claim that the entire PRD is finished.
+Validated on 2026-10-03 against checked-in PRD v1.0. This is a baseline engineering preview; the full public/clinical release is not yet qualified.
 
-## Implemented
+## Implemented in this parity follow-up
 
-- Immutable project/source, schema and prediction-run contracts with exact Unicode code-point spans.
-- Explicit textarea display-normalization mapping back to unmodified CRLF/CR source.
-- Grapheme-safe new selections; BOM, emoji, Thai and combining-character handling.
-- Structured occurrence review for all five demonstration families and schema-defined attributes.
-- Accept/edit/reject/defer, missing human records, reversible review and separate completeness.
-- Blind assignment exclusion, independent freeze, explicit reveal and exposure provenance.
-- Same-configuration machine comparison snapshots, human snapshots and third-layer adjudication.
-- Deterministic one-to-one exact/overlap matching, evaluated-field tuples and fixed-unit kappa.
-- Training export filtered to completely reviewed `train` records; test/demo/protected excluded.
-- Bounded ZIP import/export with CRC, member hashes, path and expansion checks.
-- MedTator XML interoperability for representable spans/text fields; explicit loss reports.
-- Local JSONL/text/project inputs; no background clinical-data upload.
-- Opt-in IndexedDB recovery with CAS and optional Web Locks, read-back integrity checks.
-- Local active-time/event exports; no keystroke telemetry.
-- Explicit static app cache installation using an immutable asset inventory.
-- Synthetic walkthrough and license/source manifest, with authored suggestions clearly labeled.
-- External model-package validation, immutable baseline/LoRA/head provenance in live run fingerprints and exports, and tensor conformance worker code.
-- Additive fork build, selected dependency refreshes, local asset copying, Vue precompilation and static security headers.
+The requested small ONNX export is pinned to `nicolasembleton/gliner2.5-small-v1-onnx@5e2e3f51adfb0eeb7c1f83464400b4d498d41659`. Its four graphs and tokenizer are consumed locally with ORT Web 1.23.2, single-thread fp32 WASM. The app owns the compiler/decoder; packages cannot install code. Live analysis requires the selected package's public fixtures to pass. Weights are downloaded separately and are not committed or bundled as static assets.
 
-## Executed validation in this environment
+- Separate public-model IndexedDB installation with per-file hashes, read-back verification, cancellable allowlisted download, installed-version selection/deletion and rollback. Optional clinical recovery remains a separate store.
+- Exact anchors, schema enums and anchored text/span field binding with supporting evidence. Unsupported field types/schema budgets fail explicitly. Unknown fields stay unknown. Window accounting includes record prompts and terminal punctuation.
+- Durable legacy evidence projects containing loaded-schema identities, manual annotations, binary relations, document labels, prediction histories, blind snapshots, exposure and review decisions. Explicit native export/open synchronizes the current working copy.
+- Compact undo receipts and successive undo; anchor/evidence editing, split/merge, explicit linked-set suggestion acceptance, manual relation editing and linked adjudication candidate copying.
+- Worker comparison; supporting-evidence/complete-record metrics and relation metrics conditional on declared coverage; explicit reference and matching protocol; portable comparison reports, CSV, unresolved adjudication and reason codes.
+- Explicit schema-migration preview with losses and prior project/schema retained; stale previews cannot silently overwrite newer work.
+- Group/split JSONL mappings, frozen assignment order, training exclusions and evaluation exports retaining source/schema/model/exposure identities.
+- Quota/storage/CAS failures preserve the prior recovery copy and truthful save state. Public-model installation aborts atomically on synchronous storage failures.
+- Adjustable idle cutoff, manual timing pause, per-document/annotator grouping, visibility handling and separate operation/inference waiting time; local export only, no keystroke log.
+- Keyboard focus restoration and dialog wrapping, existing source text sizing, explicit status/provenance labels. Disabled inherited clinical network-analysis helpers.
+- Eight original synthetic examples, including uncertainty, missing evidence and a long note. Authored suggestions remain labeled as authored.
 
-PR #3 follow-up, 2026-10-03:
+## Executed evidence
 
-- **75 Node tests passed; 1 optional real-tokenizer test skipped** because its external artifact was absent. Tests cover package/lineage/variant isolation in fingerprints and comparison snapshots, portable provenance, worker attribution, ordered batch results, single package transfer, cancellation, timeout, failures, cleanup and retry.
-- **5 real-origin Chromium workflows passed** at `http://127.0.0.1:4173/`: assisted review/edit/undo/export, blind freeze/reveal/compare, opt-in recovery plus offline export, synthetic canary import/export with no content egress, and XML CRLF/Unicode round trip with XXE rejection.
-- Both static builds passed. The legacy MedTator page loaded in Chromium with its collapsible assistance column and portable evidence project.
-- The real ORT WASM worker executed tiny synthetic encoder, boundary and explicit-span graphs. Exact conformance rejected extra, missing and misplaced occurrences. Two-note structured analysis used one worker, one package transfer and two analysis requests. Per-note freeze/reveal and stale-action checks passed, and accepted tags did not change the frozen blind copy. Automatically visible Assisted suggestions recorded exposure and prevented a subsequent independent blind freeze.
-- Offline restart, synthetic ONNX inference, acceptance and native export/reimport passed with network access blocked. The live run retained exact package hashes, full lineage, artifacts and variant identity. These synthetic graphs test runtime/workflow behavior; they do not evaluate GLiNER or clinical quality.
-- Legacy blind copies and automatic/explicit exposure history are session-only. Durable study snapshots/exposure remain in the portable evidence project.
+See `QUALIFICATION.md` for commands, immutable model/source identities and numerical policies. Generated raw reports live in ignored `test-results/` and CI artifacts.
 
-Earlier implementation validation, not rerun in this follow-up:
+**95 unit tests passed with no skips**, including the independent real-tokenizer check. Both static builds, asset audit, seven real-origin review workflows, legacy workflow/real synthetic-WASM worker tests, four recovery faults, installed-model rollback/XML-relations/performance tests and four DOM-only checks passed. The actual downloaded model passed browser conformance against native CPU outputs for the encoder and all three exported heads, plus exact source tokenizer/NER and anchored record fixtures. Real-weight install, network-blocked restart, inference, review, comparison, native export/reimport and canary checks passed in Chromium 151 on Linux. The real-weight original-screen acceptance/provenance-export test also passed. Official source contextual-attribute outputs match; they contain baseline clinical errors and are not reference truth.
 
-- **4 Chromium DOM-only workflows passed** on an in-memory `about:blank` page. That harness substitutes hash/UUID functions and does not validate CSP, secure-context storage, service workers or inference.
-- A local `gliner25-boundary-span-v1` package built from the published fp32 `fastino/gliner2.5-base-v1` ONNX export returned two machine spans for “diabetes” (scores 0.991 and 0.984). Those weights and the real structured package are absent on the current machine, so native/GLiNER parity, real enum-head results and WebGPU qualification were not rerun.
-- Direct npm pins were checked against the registry. `pnpm-lock.yaml` is generated from that resolution. `pnpm audit --audit-level high` passed after moving js-yaml to 4.3.2. Moderate transitive findings remain.
-- Static `dist/` asset inventory passed, including the 25 MiB file limit and no remote or inline executable scripts.
+A 1,000-document browser probe measured 101–165 ms p95 synchronous switching over 30 samples. Native CPU load/inference and browser reports describe this cloud environment; they do not qualify target laptops or establish whole-process peak memory. Dependency pins were registry-verified and the high-severity audit passed. Two inherited Vue 2 advisories remain documented in `DEPENDENCIES.md`.
 
-## Still not qualified
+## PR review follow-up
 
-- Analyze locally runs only after import of a GLiNER2.5 package. The app ships the tokenizer, prompt, boundary decoder, and span-attribute decoder; it does not ship weights. A span package returns span text plus score. A structured package also fills enum attributes from `explicit.onnx`. Measurement value, unit, and relations stay empty. Authored sample suggestions remain labeled as authored. There are no baseline-versus-LoRA results.
-- Group-aware relation editing, CaseDistiller SQL review, approved model download/cache, and a clinical pilot remain later work.
+All six review findings have regression coverage: document-wide flat window reconciliation; ordered, deduplicated supporting-evidence coverage; relation disagreements gated on declared coverage; atomic linked-occurrence merge and undo; incompatible schema-migration edges reported as losses; and refreshed adjudication candidates whose origins match the selected parents. The real-model workflows and both static builds passed after these changes.
 
-## Required before a clinical pilot
+## Acceptance matrix
 
-1. Qualify the external structured GLiNER2.5 export, tokenizer/schema encoding, all heads, windowing and decoder. No qualified model or adapter package is supplied here.
-2. Run genuine baseline-versus-LoRA comparisons. This implementation does not contain model-performance results.
-3. The live path is local GLiNER2.5 boundary span extraction, windowed at 512 tokens, plus softmax enum attributes when the package includes the exported span-attribute head. Record binding for measurement value and unit, relation decoding, and a qualified LoRA package are still absent.
-4. The original annotation screen hosts the assistance column. Smoke coverage includes sample load, analyze-without-a-package, collapse, and the statistics, export, and adjudication tabs. A broader legacy regression remains a pilot gate.
-5. Audit/rework remaining legacy HTML sinks and vendored dependencies, including spreadsheet/NLP/toolkit paths; no full PHI security approval is claimed.
-6. Run real-origin storage, multi-tab recovery, service-worker/offline, cancellation and egress-canary tests.
-7. Add group-aware relation editing, relation metrics, complete legacy schema/relation mapping, and working-context preservation through broader clinician tests.
-8. Move expensive comparisons off the main thread, replace full-draft undo receipts with compact deltas for larger projects, measure realistic memory and latency.
-9. Add approved model download/cache management and R2 distribution. The first model-package path is local-file, in-memory import.
-10. Complete accessibility, original keyboard-flow and device qualification, including an ordinary Windows CPU laptop.
+| PRD IDs | Evidence and scope |
+|---|---|
+| AC-01, 04, 13 | Familiar legacy smoke/worker review, exact Unicode/XML tests and binary-relation round trip. Broader clinician workflow review remains required. |
+| AC-02 | Real downloaded small package: install, disconnect, restart, infer, review, native export/reimport. Existing real-origin suite also compares offline layers. |
+| AC-03, 18 | Canary requests stay local; injection, XXE, archive/member corruption and bounds tests pass. No complete inherited-asset security approval is claimed. |
+| AC-05 | Source/native/browser NER and record outputs, contextual labels and numerical exported-head checks pass in WASM. Automatic relation qualification is withheld; see discrepancy below. |
+| AC-06 | Distinct baseline/adapter/head identities, install/run/compare contracts pass. The actual fine-tuned LoRA is pending from the user. |
+| AC-07–11, 15 | Five-family record contracts, immutable layers, exposure, linked review/adjudication, completeness and failure coverage tests pass. Zero-shot outputs are not guaranteed to fill or correctly interpret every clinical field. |
+| AC-12 | Real Web Lock conflict, stale CAS, synchronous quota fault and denied storage pass; old checkpoint remains available. |
+| AC-14 | Original synthetic corpus and walkthrough; public patient/case corpora are not redistributed. |
+| AC-16 | Worker timeout/cancellation/retry contracts and Linux performance probe pass. Target-device envelopes and peak-memory approval remain external gates. |
+| AC-17 | Native/evaluation/training exports preserve grouping, splits, coverage and immutable identities. |
+| AC-19 | Keyboard/focus/status/text-size paths exercised in Chromium. Assistive-technology and clinician usability qualification remain required. |
+| AC-20 | Locked builds, hash inventory, notices and model-storage rollback tested. Cloudflare/R2 account/domain rollout and deployed-release rollback require operator infrastructure. |
 
-## Deliberately later
+## Withheld capabilities and external dependencies
 
-CaseDistiller error bundles and expert SQL proposals remain a later integration. NextMedTator must never execute or promote SQL. Public MACCROBAT/PMC material is not bundled until exact source/license review; synthetic examples are included now.
+The official-source relation fixture returns `Tim Cook → leads → Apple`. After correcting role-query routing, the ONNX host returns the same edge, but confidence is about 0.631821 versus source 0.627179: absolute difference 0.004642, above the 1e-4 numerical budget. **Automatic small-model relations are disabled and a package cannot enable them in this app release.** Manual/imported relations, review and coverage-aware metrics work. Random-input native/browser relation-head parity does not resolve this source-pipeline discrepancy. Independent source-scorer diagnosis now isolates a defect in the published graph: its distance normalization divides by a traced constant `48`, whereas source inference divides by the actual word count. At 48 words, the identical-input native/source head error is 1.49e-7; at 6, 16 and 96 words it exceeds the fixed 1e-4 tolerance. A corrected, separately versioned producer export and reviewed source fixtures are required; the app does not patch public model graphs.
+
+Anchorless inference, cross-window relations and WebGPU are not qualified for this package. The baseline measurement example leaves value/unit empty when the source model does; the app does not invent missing fields. The final Clinical-Evidence ontology and LoRA-derived package require external producer fixtures. Actual held-out model comparisons, clinical pilot outcomes, M3 Mac/ordinary Windows hardware, assistive-technology review, comprehensive inherited-library security approval, and public Cloudflare/R2 operations remain release gates. CaseDistiller SQL feedback/execution stays a later, external integration as specified by the PRD.

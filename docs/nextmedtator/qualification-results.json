@@ -1,0 +1,417 @@
+{
+  "date": "2026-10-03",
+  "scope": "Cloud Linux CPU / Chromium WASM only; public synthetic fixtures; not clinical or target-device qualification",
+  "unitTests": {
+    "passed": 95,
+    "skipped": 0,
+    "externalTokenizerArtifact": "Pinned downloaded small tokenizer compared to Python tokenizers 0.22.2"
+  },
+  "browser": [
+    {
+      "name": "assisted-review-export",
+      "pass": true,
+      "requests": 21
+    },
+    {
+      "name": "blind-freeze-reveal-compare",
+      "pass": true,
+      "requests": 24
+    },
+    {
+      "name": "opt-in-recovery-offline-export",
+      "pass": true,
+      "requests": 68
+    },
+    {
+      "name": "local-canary-import-export",
+      "pass": true,
+      "requests": 21
+    },
+    {
+      "name": "xml-unicode-roundtrip-and-xxe-rejection",
+      "pass": true,
+      "requests": 21
+    },
+    {
+      "name": "linked-occurrence-merge-and-undo",
+      "pass": true,
+      "requests": 21
+    },
+    {
+      "name": "adjudication-selector-refresh-and-parent-provenance",
+      "pass": true,
+      "requests": 21
+    }
+  ],
+  "recovery": {
+    "multiTabLock": true,
+    "compareAndSwapConflict": true,
+    "quotaFailurePreservesPreviousCheckpoint": true,
+    "storageDenialReleasesBusyState": true
+  },
+  "parityEdges": {
+    "packageStorage": {
+      "cancelled": true,
+      "quotaAtomic": true,
+      "rollback": true
+    },
+    "legacyRelationRoundtrip": true,
+    "keyboardAndTimingControls": true,
+    "performance": {
+      "documents": 1000,
+      "switchSamples": 30,
+      "switchP95Ms": 165.12000000011176,
+      "heapBytes": 5120900,
+      "scope": "Cloud Linux Chromium; target laptops not qualified"
+    }
+  },
+  "realSmall": {
+    "realWeights": true,
+    "packageBytes": 313519734,
+    "conformance": {
+      "kind": "gliner25-small-records-v5",
+      "manifestHash": "c5f06be01ff687f250c4b64310adf34c0fc9d1d60bafcc6d6592075bcd97f048",
+      "variantId": "wasm-fp32",
+      "backend": "wasm",
+      "precision": "fp32",
+      "results": [
+        {
+          "fixture": "reference.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "9ed0a822-137a-4afb-893e-527c707a549c",
+              "documentId": "pending",
+              "family": "company",
+              "anchor": [
+                {
+                  "start": 0,
+                  "end": 5,
+                  "text": "Apple"
+                }
+              ],
+              "fields": {
+                "concept": "Apple"
+              },
+              "evidence": [],
+              "score": 0.9935407467307715,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            },
+            {
+              "id": "9af04597-113b-4f02-92ca-858493dfb65c",
+              "documentId": "pending",
+              "family": "person",
+              "anchor": [
+                {
+                  "start": 10,
+                  "end": 18,
+                  "text": "Tim Cook"
+                }
+              ],
+              "fields": {
+                "concept": "Tim Cook"
+              },
+              "evidence": [],
+              "score": 0.9986261339836954,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            },
+            {
+              "id": "62ad17ea-2f4a-41bb-9efb-d0c850fde73f",
+              "documentId": "pending",
+              "family": "product",
+              "anchor": [
+                {
+                  "start": 29,
+                  "end": 38,
+                  "text": "iPhone 15"
+                }
+              ],
+              "fields": {
+                "concept": "iPhone 15"
+              },
+              "evidence": [],
+              "score": 0.9987113089029194,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            },
+            {
+              "id": "d50b650a-cc4b-4376-9745-437069170bdf",
+              "documentId": "pending",
+              "family": "location",
+              "anchor": [
+                {
+                  "start": 42,
+                  "end": 51,
+                  "text": "Cupertino"
+                }
+              ],
+              "fields": {
+                "concept": "Cupertino"
+              },
+              "evidence": [],
+              "score": 0.9988501048041828,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "binding-reference.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "a9b12196-96c3-4036-b057-bc9bf421275a",
+              "documentId": "pending",
+              "family": "product",
+              "anchor": [
+                {
+                  "start": 8,
+                  "end": 19,
+                  "text": "MacBook Pro"
+                }
+              ],
+              "fields": {
+                "concept": "MacBook Pro",
+                "price": "$1999",
+                "features": "Liquid Retina display"
+              },
+              "evidence": [
+                {
+                  "start": 26,
+                  "end": 31,
+                  "text": "$1999"
+                },
+                {
+                  "start": 51,
+                  "end": 72,
+                  "text": "Liquid Retina display"
+                }
+              ],
+              "score": 0.9650020792131011,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-small-records-v5"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "native-reference.json",
+          "checks": {
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 768,
+              "maxAbsoluteError": 1.1920928955078125e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "attrs-reference.json",
+          "checks": {
+            "attr_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 128,
+              "maxAbsoluteError": 1.1920928955078125e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "records-reference.json",
+          "checks": {
+            "assign_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 20,
+              "maxAbsoluteError": 2.384185791015625e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "object_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 3.725290298461914e-09,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "latent_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.862645149230957e-09,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "heads-reference.json",
+          "checks": {
+            "rel_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.4901161193847656e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    "installedModelOfflineRestart": true,
+    "offlineInferenceReviewCompareExportReimport": true,
+    "canaryInferenceNoEgress": true,
+    "sourceContextAttributeFixtureExact": true,
+    "browser": "151.0.7922.173",
+    "requests": 102
+  },
+  "sourceRelationDiscrepancy": {
+    "sourceConfidence": 0.6271791458129883,
+    "wasmHostConfidence": 0.6318213105065253,
+    "absoluteDifference": 0.004642164693537065,
+    "sourceTolerance": 0.0001,
+    "passed": false,
+    "automaticRelationsEnabled": false
+  },
+  "dependencyAudit": {
+    "highSeverityPassed": true,
+    "remaining": {
+      "low": 1,
+      "moderate": 1
+    }
+  },
+  "cleanFrozenInstall": {
+    "pnpm": "10.18.3",
+    "packages": 118,
+    "passed": true
+  },
+  "externalGates": [
+    "actual fine-tuned LoRA",
+    "target Mac/Windows and peak memory",
+    "clinical pilot and final schema",
+    "assistive-technology review",
+    "comprehensive inherited-library security review",
+    "Cloudflare/R2 deployment and app rollback drill"
+  ],
+  "legacyRealSmall": {
+    "realWeights": true,
+    "loadedSchemaPreserved": true,
+    "liveLegacyAccept": true,
+    "portableRunExposureAndReview": true,
+    "exposedCopyCannotFreezeIndependent": true,
+    "requests": 103,
+    "browser": "151.0.7922.173"
+  },
+  "relationExportDiagnosis": {
+    "scope": "Published relation graph defect diagnosis, not relation qualification",
+    "distanceDivisor": 48.0,
+    "requiredDivisor": "current text_states word dimension",
+    "lengths": [
+      {
+        "words": 6,
+        "sourceLogits": [
+          -0.2030051052570343,
+          -0.4643976092338562
+        ],
+        "exportLogits": [
+          -0.19352878630161285,
+          -0.45039263367652893
+        ],
+        "maxAbsoluteError": 0.01400497555732727,
+        "passesSourceTolerance": false
+      },
+      {
+        "words": 16,
+        "sourceLogits": [
+          -0.1957578808069229,
+          -0.45332109928131104
+        ],
+        "exportLogits": [
+          -0.19352878630161285,
+          -0.45039263367652893
+        ],
+        "maxAbsoluteError": 0.0029284656047821045,
+        "passesSourceTolerance": false
+      },
+      {
+        "words": 48,
+        "sourceLogits": [
+          -0.19352874159812927,
+          -0.450392484664917
+        ],
+        "exportLogits": [
+          -0.19352878630161285,
+          -0.45039263367652893
+        ],
+        "maxAbsoluteError": 1.4901161193847656e-07,
+        "passesSourceTolerance": true
+      },
+      {
+        "words": 96,
+        "sourceLogits": [
+          -0.19302915036678314,
+          -0.44978559017181396
+        ],
+        "exportLogits": [
+          -0.19352878630161285,
+          -0.45039263367652893
+        ],
+        "maxAbsoluteError": 0.0006070435047149658,
+        "passesSourceTolerance": false
+      }
+    ],
+    "automaticRelationsQualified": false
+  },
+  "reviewFollowup": {
+    "reviewCommentsAddressed": 6,
+    "newUnitRegressions": 6,
+    "browserRegressions": [
+      "linked-occurrence-merge-and-undo",
+      "adjudication-selector-refresh-and-parent-provenance"
+    ],
+    "parityEdges": {
+      "packageStorage": {
+        "cancelled": true,
+        "quotaAtomic": true,
+        "rollback": true
+      },
+      "legacyRelationRoundtrip": true,
+      "keyboardAndTimingControls": true,
+      "performance": {
+        "documents": 1000,
+        "switchSamples": 30,
+        "switchP95Ms": 55.86500000208616,
+        "heapBytes": 5105689,
+        "scope": "Cloud Linux Chromium; target laptops not qualified"
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import {SMALL_CODEC,smallRuntime,analyzeSmall} from './gliner-small.mjs';
 import { validateModelManifest, compareTensors, CODECS } from './model-package.mjs';
 import { invariant, jsonParse, sha256 } from './integrity.mjs';
 import { GLINER_CODEC, GLINER_STRUCTURED, GLINER_LIMITS, SPAN_NOTICE, STRUCTURED_NOTICE, GlinerTokenizer, readGlinerConfig, prepareWindow, planWindows, decodeBoundary, locateSpans, documentCoverage, resolveFlat, splitWords, attributeFields, compareSpanOccurrences } from './gliner.mjs';
@@ -15,7 +16,7 @@ self.onmessage = async ({ data }) => {
             invariant(loaded, 'Load a model before requesting inference');
             const { ort, files, manifest, variant, sessions } = loaded;
             const request = { ...data, manifestHash: loaded.manifestHash };
-            result = loaded.tokenizer
+            result = loaded.small ? await runSmall(loaded,request) : loaded.tokenizer
                 ? await runBoundary(loaded, request)
                 : await runFixtures(ort, files, manifest, variant, request, sessions, loaded.session);
         }
@@ -43,6 +44,11 @@ async function loadModel(data) {
     }
     const context = { ort, files, manifest, variant, manifestHash: data.manifestHash, sessions: [] };
     const codec = CODECS[variant.codec];
+    if (variant.codec === SMALL_CODEC) {
+        const tokenizer=GlinerTokenizer.fromJson(new TextDecoder().decode(files.get(variant.tokenizer)));
+        const graphs={};for(const [name,path] of Object.entries(variant.graphs))graphs[name]=await openSession(ort,files,variant,path,context.sessions);
+        context.small=smallRuntime(ort,graphs,tokenizer,variant);return context;
+    }
     if (codec.coverage === 'entity-span' || codec.coverage === 'structured-span') {
         context.tokenizer = GlinerTokenizer.fromJson(new TextDecoder('utf-8', { fatal: true }).decode(files.get(variant.tokenizer)));
         const special = readGlinerConfig(new TextDecoder('utf-8', { fatal: true }).decode(files.get(variant.modelConfig)));
@@ -177,4 +183,12 @@ async function attachAttributes(ort, explicit, tokens, wordCount, attributeState
     const logits = outputs.logits;
     invariant(logits?.dims?.[1] === attributes && logits.dims[2] === decoded.length, 'Span-attribute graph returned an unexpected shape');
     decoded.forEach((span, column) => { span.attributes = attributeFields(logits.data, logits.dims, column, groups); });
+}
+
+async function runSmall(context,request){
+    const analyze=async(input)=>({...await analyzeSmall(context.small,input.text,input.schema,{threshold:input.threshold??context.variant.threshold??.5,automaticRelations:context.variant.automaticRelations===true,onProgress:progress=>self.postMessage({progress})}),kind:SMALL_CODEC,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision});
+    if(request.task==='analyze')return analyze(request);
+    const results=[];
+    for(const path of context.variant.fixtures){const fixture=jsonParse(new TextDecoder().decode(context.files.get(path)));if(fixture.feeds){const checks={};for(const row of fixture.tokenRows)invariant(JSON.stringify(context.small.rt._tokenize(row.text))===JSON.stringify(row.ids),'Exact tokenizer conformance failed');const feeds={};for(const [name,t] of Object.entries(fixture.feeds))feeds[name]=new context.ort.Tensor(t.type,t.type==='int64'?BigInt64Array.from(t.data,BigInt):Float32Array.from(t.data),t.dims);const session=fixture.graph==='attributes'?context.small.rt.attrsSession:fixture.graph==='records'?context.small.rt.recordsSession:fixture.graph==='relations'?context.small.rt.headsSession:context.small.rt.session;const outputs=await session.run(feeds);for(const [name,expected] of Object.entries(fixture.outputs)){invariant(JSON.stringify(outputs[name].dims)===JSON.stringify(expected.dims),'Native output shape mismatch');checks[name]=compareTensors(outputs[name].data,expected.data,expected.tolerance);}results.push({fixture:path,checks,tokenIdsExact:fixture.tokenRows.length?true:null,pass:Object.values(checks).every(c=>c.pass)});continue;}const actual=await analyze(fixture);const {canonical}=await import('./integrity.mjs');const rows=records=>records.map(({id,origin,score,documentId,...r})=>r).sort((a,b)=>canonical(a).localeCompare(canonical(b)));const pass=canonical(rows(actual.records))===canonical(rows(fixture.records));results.push({fixture:path,pass,status:actual.status,records:actual.records});}
+    return {kind:SMALL_CODEC,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision,results,pass:results.every(r=>r.pass)};
 }

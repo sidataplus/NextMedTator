@@ -1,2 +1,0 @@
-# Build/development only. Production serves static files, not Flask.
-Flask==3.1.3

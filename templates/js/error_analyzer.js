@@ -465,47 +465,10 @@ var error_analyzer = {
         return tokens;
     },
 
-    use_tews: function(url, req, callback) {
-        $.ajax({
-            type: 'POST',
-            url: url,
-            data: {
-                data: JSON.stringify(req)
-            },
-            success: callback,
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error(textStatus, errorThrown);
-            }
-        });
-    },
-
-    use_eaws: function(url, req, callback) {
-        $.ajax({
-            type: 'POST',
-            url: url,
-            data: {
-                data: JSON.stringify(req)
-            },
-            success: callback,
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error(textStatus, errorThrown);
-            }
-        });
-    },
-
-    use_eaws_q: function(url, req, callback) {
-        $.ajaxQueue({
-            type: 'POST',
-            url: url,
-            data: {
-                data: JSON.stringify(req)
-            },
-            success: callback,
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error(textStatus, errorThrown);
-            }
-        });
-    },
+    // Clinical-content HTTP integrations are intentionally unavailable in the static local release.
+    use_tews: function() { throw new Error('Remote clinical services are disabled. Export a local artifact instead.'); },
+    use_eaws: function() { throw new Error('Remote clinical services are disabled. Export a local artifact instead.'); },
+    use_eaws_q: function() { throw new Error('Remote clinical services are disabled. Export a local artifact instead.'); },
 
     get_error_rate: function(tp, fp, fn) {
         var sum = tp + fp + fn;

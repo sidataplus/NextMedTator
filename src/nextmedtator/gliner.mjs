@@ -3,7 +3,7 @@ import { invariant, jsonParse, OffsetMap, uuid } from './integrity.mjs';
 export const GLINER_CODEC = 'gliner25-boundary-span-v1';
 export const GLINER_STRUCTURED = 'gliner25-boundary-structured-v1';
 export const GLINER_LIMITS = Object.freeze({ sequence: 512, labels: 64, wordOverlap: 32, threshold: 0.5, abstention: 0.5, explicitWords: 512 });
-export const SPAN_NOTICE = 'GLiNER2.5 boundary span extraction on this device. Scores are span probabilities. Assertion, temporality, experiencer, measurement value/unit, and relations are not predicted.';
+export const SPAN_NOTICE = 'GLiNER2.5 boundary span extraction on this device. Scores are uncalibrated model scores. Assertion, temporality, experiencer, measurement value/unit, and relations are not predicted.';
 export const STRUCTURED_NOTICE = 'GLiNER2.5 boundary spans plus the span-attribute head on this device. Enum fields are the softmax choice at the retained span. Measurement value, unit, and relations are not predicted.';
 const encoder = new TextEncoder();
 const META = '\u2581';
@@ -315,8 +315,8 @@ export function prepareWindow(tokenizer, labels, words) {
     invariant(queryPositions.length === labels.length && wordFirst.length === words.length, 'GLiNER prompt alignment failed');
     return { inputIds: ids, queryPositions, wordFirst };
 }
-export function planWindows(tokenizer, labels, words) {
-    const prefix = prepareWindow(tokenizer, labels, []).inputIds.length;
+export function planWindows(tokenizer, labels, words, {prefixTokens}={}) {
+    const prefix = prefixTokens ?? prepareWindow(tokenizer, labels, []).inputIds.length;
     invariant(prefix < GLINER_LIMITS.sequence, 'Schema prompt exceeds the 512-token encoder window', 'SCHEMA_WINDOW');
     const widths = words.map(word => tokenizer.encodeIds(word.text).length);
     const windows = [], uncovered = [];
@@ -466,7 +466,7 @@ export function spansToRecords(doc, schema, spans) {
     return spans.map(span => {
         const family = byLabel.get(span.label);
         invariant(family, 'Prediction label is not a schema family');
-        const fields = { concept: map.slice(span.start, span.end) };
+        const fields = schema.families[family].fields.concept ? { concept: map.slice(span.start, span.end) } : {};
         const def = schema.families[family];
         for (const [name, value] of Object.entries(span.attributes ?? {})) {
             const field = def.fields[name];

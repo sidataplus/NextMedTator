@@ -36,7 +36,7 @@ export class RecoveryStore {
                     conflict = true;
                     tx.abort();
                     return;
-                } store.put({ id: this.id, hash, payload, updatedAt: new Date().toISOString() }); };
+                } try{store.put({ id: this.id, hash, payload, updatedAt: new Date().toISOString() });}catch(error){tx.abort();reject(error);} };
             });
             this.expected = hash;
             const stored = await req(db.transaction('projects').objectStore('projects').get(this.id));
@@ -74,6 +74,7 @@ export class RecoveryStore {
     finally {
         db.close();
     } }
+    async clear() { invariant(!this.busy,'Checkpoint in progress');this.disable();const db=await database();try{await new Promise((resolve,reject)=>{const tx=db.transaction('projects','readwrite');tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);tx.onerror=()=>reject(tx.error);tx.objectStore('projects').clear();});}finally{db.close();} }
     disable() { invariant(!this.busy, 'Wait for the active checkpoint before disabling recovery'); this.release?.(); this.release = null; this.enabled = false; this.id = null; this.expected = null; }
 }
 export class ActiveTimer {

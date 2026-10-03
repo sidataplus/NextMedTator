@@ -40,14 +40,14 @@ def run():
    page.get_by_test_id('suggestion').get_by_role('button',name='Edit',exact=True).click();page.locator('select[data-field=experiencer]').select_option('family');page.get_by_test_id('save-evidence').click()
    assert 'family' in page.get_by_test_id('human-record').inner_text()
    note=page.get_by_test_id('source');note.evaluate('(n)=>{n.focus();n.setSelectionRange(44,52)}');page.get_by_test_id('add-evidence').click();page.locator('input[data-field=concept]').fill('diabetes');page.locator('select[data-field=assertion]').select_option('negated');page.get_by_test_id('save-evidence').click();expect(page.get_by_test_id('human-record')).to_have_count(2)
-   page.get_by_role('button',name='Review completeness',exact=True).click();page.get_by_role('checkbox').check();page.get_by_test_id('complete').click();page.get_by_test_id('freeze').click()
+   page.get_by_role('button',name='Review completeness',exact=True).click();page.get_by_role('checkbox',name='I checked the whole document',exact=False).check();page.get_by_test_id('complete').click();page.get_by_test_id('freeze').click()
    page.screenshot(path=str(ROOT/'test-results'/'assisted-dom.png'),full_page=True)
   case('assisted-edit-undo-add-complete',assisted)
   def blind(page):
    page.locator('select').select_option('blind');page.get_by_test_id('sample').click();expect(page.get_by_test_id('demo-suggest')).to_have_count(0)
    page.get_by_test_id('freeze').click();page.get_by_test_id('demo-suggest').click();expect(page.get_by_test_id('suggestion')).to_have_count(0)
    page.get_by_test_id('reveal').click();expect(page.get_by_test_id('suggestion')).to_have_count(1)
-   page.get_by_role('button',name='Compare & adjudicate',exact=True).click();page.get_by_role('checkbox').check();page.get_by_test_id('machine-snapshot').click();page.get_by_role('button',name='Compare snapshots',exact=True).click();assert 'disagreement-analysis-not-accuracy' in page.locator('pre').inner_text()
+   page.get_by_role('button',name='Compare & adjudicate',exact=True).click();page.locator('.details').get_by_role('checkbox').check();page.get_by_test_id('machine-snapshot').click();page.wait_for_function('() => document.querySelector("nextmedtator-workspace").workspace.project.current.snapshots.length===2');report=page.evaluate('async()=>{const p=document.querySelector("nextmedtator-workspace").workspace.project.current;return __testRequire("compare.mjs").compareSnapshots(p.snapshots[0],p.snapshots[1]);}');assert report['interpretation']=='disagreement-analysis-not-accuracy'
   case('blind-freeze-reveal-machine-compare',blind)
   def injection(page):
    canary='NMT_DOM_CANARY'

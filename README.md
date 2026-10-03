@@ -26,23 +26,23 @@ If you're having trouble using MedTator, you can use [Issues](https://github.com
 ## MedTator Development
 
 MedTator itself doesn't require Python runtime environment, so you don't need to install any runtime environment to run MedTator for corpus annotation.
-If you are interested in the MedTator development or just want to try the development version, a Python 3+ runtime environment is needed to run a debugging server.
+For development and the debugging server, install Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
-You can install a [Python 3+](https://www.python.org/downloads/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) / [Anaconda](https://www.anaconda.com/products/individual), then download the source code of MedTator and install the requirements (just Python [Flask](https://github.com/pallets/flask/), that's all):
+From the repository root, install the locked development dependencies:
 
 ```bash
-pip install -r requirements.txt
+uv sync --locked
 ```
 
 Then, run the following command to start a local server which is binding port 8086:
 
 ```bash
-python web.py
+uv run --locked python web.py
 ```
 
 Now you can open web browser and check the http://localhost:8086/. 
 
-For more details of the parameters for `web.py`, run `python web.py -h` and it will show the details as follows.
+For more details of the parameters for `web.py`, run `uv run --locked python web.py -h` and it will show the details as follows.
 
 ```
 usage: web.py [-h] [--mode {build,run,release}] [--lib {local,cdn}]
@@ -74,25 +74,25 @@ In addition, as the default filename is `index.html`, the build script will auto
 So that the user can access the old version for comparison or checking old functions.
 
 ```bash
-python web.py --mode build
+uv run --locked python web.py --mode build
 ```
 
 Or you can build a dev version for public testing, run the following command:
 
 ```bash
-python web.py --mode build --fn dev.html
+uv run --locked python web.py --mode build --fn dev.html
 ```
 
 Or you can build a standalone version for local use, run the following command:
 
 ```bash
-python web.py --mode build --lib local --fn standalone.html
+uv run --locked python web.py --mode build --lib local --fn standalone.html
 ```
 
 Then, you can create a release zip file:
 
 ```bash
-python web.py --mode release
+uv run --locked python web.py --mode release
 ```
 
 ## License

@@ -1,22 +1,19 @@
 # Security and privacy boundary
 
-The new review workspace makes no clinical-data network requests. Source text and fields are rendered as text, not HTML. App installation fetches only an allowlisted immutable public asset inventory. Models are local-file imports in this preview; no inference API exists.
+Clinical text, predictions, annotations and review/evaluation results stay in the browser or explicit local exports. The new workspace renders imported values as text. There is no inference API or remote inference fallback. Inherited remote clinical-analysis helpers now throw an actionable local error before sending a request.
 
-This statement does not qualify the inherited MedTator application. Legacy jQuery/HTML sinks and experimental network helpers require a separate audit. The build externalizes application scripts, precompiles Vue templates and sanitizes Vue `v-html`, but that alone is not proof that all legacy sinks are safe.
+Public app installation fetches an immutable hash inventory. Model installation uses only the application-owned catalog: pinned Hugging Face artifact URLs and local public reference files, with credentials omitted, exact bytes/SHA-256, cancellation and atomic installation. Projects cannot supply installation URLs or executable model plugins. The generated CSP allows these public artifact hosts, local runtime/worker files and WASM compilation; it does not permit remote executable scripts or general JavaScript evaluation.
 
-## Storage and provenance
+## Storage and integrity
 
-Browser recovery is opt-in and contains potentially sensitive data. Exports may contain PHI. Browser extensions, shared computers, OS backups, cloud-synced folders and disk encryption are outside the application. Deletion is not a forensic-erasure guarantee. Hashes detect content corruption and track identity; they do not prove annotator identity or prevent deliberate local tampering.
+Public-model IndexedDB is separate from opt-in project recovery. Recovery and exports may contain sensitive source/provenance data. Browser extensions, shared devices, OS backups, cloud-synced folders and disk encryption are outside the app. Deletion is not forensic erasure. Local hashes detect corruption and preserve identities; they do not authenticate annotators or make the audit trail tamper-proof.
 
-ZIP imports enforce size, expansion, path, uniqueness and CRC limits. Native bundles verify every declared member hash and reject extra files. Annotation XML rejects DOCTYPE/ENTITY declarations. Legacy offset disagreement fails import rather than guessing. Model packages cannot install code plugins.
+ZIP imports enforce bytes, expansion, paths, uniqueness, CRC and member hashes. Native bundles reject undeclared members. Annotation XML rejects DOCTYPE/ENTITY and inconsistent source offsets. Loaded graph/tokenizer/reference bytes are hash-verified again in the worker; numerical/exact public fixtures gate live analysis. Source/adapter accuracy needs separate external evaluation.
 
-## Required live-origin tests
+Recovery uses Web Locks when available and compare-and-swap as final authority. Tab conflicts, storage denial and quota faults must not silently overwrite a previous checkpoint or report success. Install cancellation/quota must not remove earlier model versions. Privacy & storage exposes usage inspection, recovery deletion, package deletion and explicit deletion of app-owned stores/caches.
 
-- Load, edit and export a canary document while recording all network requests and payloads.
-- Install public assets, block the network, reload and complete/export a review.
-- Verify model downloads/runtime binaries do not trigger an external inference request.
-- Exercise two-tab recovery conflicts, quota errors, abrupt reload and stale export status.
-- Verify original MedTator workflows under the generated CSP and sanitized rendering.
-- Inspect local logs/console/error reports for accidental patient-content persistence.
+## Executed checks and limitations
 
-The included real-origin test suite was blocked by environment policy, not passed. In-memory DOM tests are explicitly weaker and cannot substitute for these gates.
+Real-origin Chromium tests passed for canary import/edit/export and real local inference with all requests recorded; requests contained no canary text/filename and stayed on the local origin. Network-blocked restart with installed app/model, live inference, review and export/reimport passed. Recovery fault tests exercise two tabs, CAS, quota and denied storage. Package tests cover cancelled/quota installation and rollback. Legacy checks exercise sanitizer output, charts, loaded-schema review and worker/provenance boundaries under generated CSP. Contract tests reject injection-oriented JSON, unsafe/corrupt archives, malformed manifests and XML entities.
+
+These checks do not establish a complete audit of every inherited jQuery/HTML sink, spreadsheet/NLP/export dependency, browser extension, error-log path or medical workflow. Two Vue 2 advisories remain disclosed in `DEPENDENCIES.md`. Target-browser/device, assistive-technology, comprehensive inherited-library security and clinical pilot approvals remain release gates; see `STATUS.md` and `QUALIFICATION.md`.

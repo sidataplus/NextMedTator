@@ -1,0 +1,57 @@
+{
+  "text": "The new MacBook Pro costs $1999 and has a stunning Liquid Retina display.",
+  "schema": {
+    "id": "product-source-golden",
+    "version": "1",
+    "families": {
+      "product": {
+        "label": "product",
+        "recordParent": "product",
+        "recordAnchorLabel": "name",
+        "fields": {
+          "concept": {
+            "type": "text"
+          },
+          "price": {
+            "type": "text"
+          },
+          "features": {
+            "type": "text"
+          }
+        }
+      }
+    }
+  },
+  "records": [
+    {
+      "id": "product-1",
+      "documentId": "pending",
+      "family": "product",
+      "anchor": [
+        {
+          "start": 8,
+          "end": 19,
+          "text": "MacBook Pro"
+        }
+      ],
+      "fields": {
+        "concept": "MacBook Pro",
+        "price": "$1999",
+        "features": "Liquid Retina display"
+      },
+      "evidence": [
+        {
+          "start": 26,
+          "end": 31,
+          "text": "$1999"
+        },
+        {
+          "start": 51,
+          "end": 72,
+          "text": "Liquid Retina display"
+        }
+      ]
+    }
+  ],
+  "origin": "Exact record field/span output from pinned official small checkpoint and native host; separate entity anchor task supplies concept. Source fixture is public synthetic text."
+}

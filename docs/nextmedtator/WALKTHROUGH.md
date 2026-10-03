@@ -11,7 +11,7 @@ The sample corpus is original synthetic text, not patient data. All prepared sug
 5. Choose Review completeness only after checking the whole document across the schema families. Accepting suggestions alone does not make review complete.
 6. Freeze a human snapshot, then export the native project. Original machine examples, human records and review history remain separate.
 
-Documents 2-5 cover measurements, treatments, events and function, including CRLF, Thai and compound Unicode characters. Source files remain unchanged; textarea normalization has an explicit map back to canonical source offsets.
+Documents 2-8 cover measurements, treatments, events and function, including CRLF, Thai, compound Unicode characters, uncertainty, missing evidence and a long note. Source files remain unchanged; textarea normalization has an explicit map back to canonical source offsets.
 
 ## Blind, then compare
 
@@ -29,4 +29,14 @@ Privacy & storage explains what remains in this browser. Enabling recovery requi
 
 ## Import/export
 
-Text, mapped JSONL, representable MedTator XML and native bundles are supported. New schema JSON creates a new schema-specific project rather than reinterpreting existing records. Legacy XML export emits a loss report because it cannot preserve the full provenance/history model. Model packages and clinical project bundles are different file types despite both using ZIP containers.
+Text, mapped JSONL, representable MedTator XML and native bundles are supported. New schema JSON creates a new empty schema-specific project. To carry records across a revision, use Preview schema revision and mapping JSON, inspect its loss report, then Apply reviewed schema revision. The old project/schema remains in the native migration extension. Legacy XML export emits a loss report because it cannot preserve the full provenance/history model. Model packages and clinical project bundles are different file types despite both using ZIP containers.
+
+## Live small-model assistance
+
+Open Models, Show approved catalog, then Download and install the small package, or import the locally packaged ZIP from `QUALIFICATION.md`. Run WASM conformance and install imported packages explicitly. Privacy & storage installs the public app cache separately. Restart with network disconnected, reopen a local source/project, choose List installed models and Use installed, then Analyze. Live analysis reruns public qualification if needed before sending the document to the local worker.
+
+The baseline supports anchors, schema enums and explicitly mapped anchored fields. It can be wrong, including contextual labels. Empty fields are not proof of absence. Automatic relations are withheld; add/review manual links and explicitly confirm relation coverage for metrics. Imported/native predictions are kept separately from human review. Your forthcoming LoRA needs its own immutable package and source fixtures.
+
+Select suggestion checkboxes and Accept selected suggestions to preserve a linked set atomically. Anchor/evidence edits, split/merge, manual relation editing and successive Undo are available in the native workspace. Adjudication candidate selection copies its linked group into the draft; it never modifies input snapshots. Choose an explicit reference and matching policy, and record unresolved case identifiers when freezing the third snapshot.
+
+Privacy & storage also exposes idle cutoff, manual timing pause, grouped timing export, storage inspection and deletion. Browser recovery is optional; the public-model store contains only public package bytes.

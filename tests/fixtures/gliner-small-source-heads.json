@@ -1,0 +1,47 @@
+{
+  "relations": {
+    "relation_extraction": {
+      "leads": [
+        {
+          "head": {
+            "text": "Tim Cook",
+            "start": 0,
+            "end": 8,
+            "confidence": 0.6271791458129883
+          },
+          "tail": {
+            "text": "Apple",
+            "start": 15,
+            "end": 20,
+            "confidence": 0.6271791458129883
+          }
+        }
+      ],
+      "located_in": []
+    }
+  },
+  "records": {
+    "product": [
+      {
+        "name": {
+          "text": "MacBook Pro",
+          "confidence": 0.9992337226867676,
+          "start": 8,
+          "end": 19
+        },
+        "price": {
+          "text": "$1999",
+          "confidence": 0.9640406966209412,
+          "start": 26,
+          "end": 31
+        },
+        "features": {
+          "text": "Liquid Retina display",
+          "confidence": 0.9781758189201355,
+          "start": 51,
+          "end": 72
+        }
+      }
+    ]
+  }
+}

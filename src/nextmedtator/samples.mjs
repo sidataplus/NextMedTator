@@ -6,7 +6,10 @@ const text = [
     'Temperature 38.2 °C. Oxygen saturation is 97% on room air.',
     'Started amoxicillin yesterday. Surgery is planned next month.',
     'A fall occurred in 2019. The patient reports no falls this year.',
-    'Needs assistance with dressing but eats independently.\r\nภาษาไทย 👩‍⚕️ café e\u0301'
+    'Needs assistance with dressing but eats independently.\r\nภาษาไทย 👩‍⚕️ café e\u0301',
+    'Possible pneumonia; if symptoms worsen, consider antibiotics. No other evidence is available.',
+    'No relevant evidence is documented.',
+    ('Long synthetic context. '.repeat(600)) + 'The patient denies diabetes.'
 ];
 export const DEMO_NOTICE = 'Original synthetic walkthrough. Suggestions and reference examples were authored for demonstration, not produced by GLiNER or clinically validated.';
 export async function demoProject(mode = 'assisted', actor = 'demo-reviewer') {
@@ -22,6 +25,9 @@ export function authoredReference(doc) {
         case 'synthetic-3': return [record(doc, 'treatment_occurrence', 'amoxicillin', { concept: 'amoxicillin', ...context }), record(doc, 'treatment_occurrence', 'Surgery', { concept: 'surgery', ...context, temporality: 'future' })];
         case 'synthetic-4': return [record(doc, 'event_occurrence', 'fall', { concept: 'fall', ...context, temporality: 'historical' }), record(doc, 'event_occurrence', 'falls', { concept: 'fall', ...context, assertion: 'negated' })];
         case 'synthetic-5': return [record(doc, 'function_occurrence', 'dressing', { concept: 'assistance with dressing', ...context }), record(doc, 'function_occurrence', 'eats independently', { concept: 'independent eating', ...context })];
+        case 'synthetic-6': return [record(doc,'condition_occurrence','pneumonia',{concept:'pneumonia',...context,assertion:'possible'}),record(doc,'treatment_occurrence','antibiotics',{concept:'antibiotics',...context,assertion:'conditional',temporality:'future'})];
+        case 'synthetic-7': return [];
+        case 'synthetic-8': return [record(doc,'condition_occurrence','diabetes',{concept:'diabetes',...context,assertion:'negated'})];
         default: throw Error('Recorded examples are only available for the synthetic walkthrough');
     }
 }

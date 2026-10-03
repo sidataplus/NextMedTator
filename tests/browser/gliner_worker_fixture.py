@@ -89,15 +89,19 @@ def check_worker_regressions(page):
     for name in names:
         page.get_by_role('checkbox', name=name, exact=True).check()
     page.evaluate('window.__workerEvidence = {starts: 0, stops: 0, messages: []}')
+    for name in names:
+        page.locator('.file-list-item-name', has_text=name).click()
+        page.get_by_test_id('assist-freeze').click()
     page.get_by_test_id('assist-analyze-selected').click()
     expect(page.get_by_test_id('assist-message')).to_contain_text('Local analysis finished')
     evidence = page.evaluate('window.__workerEvidence')
-    assert evidence == {'starts': 1, 'stops': 1, 'messages': [
+    assert evidence == {'starts': 2, 'stops': 2, 'messages': [
+        {'task': 'load', 'files': True}, {'task': 'fixtures', 'files': False},
         {'task': 'load', 'files': True}, {'task': 'analyze', 'files': False}, {'task': 'analyze', 'files': False}
     ]}, evidence
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
     expect(page.get_by_test_id('assist-summary')).to_have_count(0)
-    expect(page.get_by_test_id('assist-reveal')).to_be_disabled()
+    expect(page.get_by_test_id('assist-reveal')).to_be_enabled()
     # Switching the selector cannot reveal a protected note.
     page.get_by_test_id('assist-mode').select_option('assisted')
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
@@ -105,19 +109,16 @@ def check_worker_regressions(page):
     page.get_by_test_id('assist-mode').select_option('blind')
     page.locator('.file-list-item-name', has_text=names[0]).click()
     expect(page.get_by_test_id('assist-document')).to_have_text(names[0])
-    page.get_by_test_id('assist-freeze').click()
     frozen = page.evaluate('JSON.stringify([...document.querySelector("nextmedtator-assist").assist.blindSnapshots.values()])')
     page.get_by_test_id('assist-reveal').click()
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(2)
-    expect(page.get_by_test_id('assist-suggestion').first).to_contain_text('assertion: present')
-    expect(page.get_by_test_id('assist-suggestion').first).to_contain_text('temporality: current')
-    expect(page.get_by_test_id('assist-suggestion').first).to_contain_text('experiencer: patient')
+    assert page.evaluate('document.querySelector("nextmedtator-assist").assist.current().run.project.current.schema.families')
     # The second note remains hidden after revealing the first.
     page.locator('.file-list-item-name', has_text=names[1]).click()
     expect(page.get_by_test_id('assist-document')).to_have_text(names[1])
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
     expect(page.get_by_test_id('assist-summary')).to_have_count(0)
-    expect(page.get_by_test_id('assist-reveal')).to_be_disabled()
+    expect(page.get_by_test_id('assist-reveal')).to_be_enabled()
     page.get_by_test_id('assist-mode').select_option('blind')
     page.get_by_test_id('assist-mode').select_option('assisted')
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)

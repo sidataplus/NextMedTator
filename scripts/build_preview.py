@@ -6,7 +6,7 @@ import shutil
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'preview'
 HEADERS = """/*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://*.hf.co https://*.xethub.hf.co; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Cross-Origin-Opener-Policy: same-origin
@@ -29,6 +29,7 @@ def offline_assets(out: Path) -> None:
 if __name__=='__main__':
     if OUT.exists():shutil.rmtree(OUT)
     shutil.copytree(ROOT/'src/nextmedtator',OUT/'app/nextmedtator')
+    if (ROOT/'models').exists(): shutil.copytree(ROOT/'models',OUT/'models')
     runtime=ROOT/'node_modules/onnxruntime-web/dist'
     if not runtime.is_dir():
         raise RuntimeError('Missing local ONNX Runtime Web package')

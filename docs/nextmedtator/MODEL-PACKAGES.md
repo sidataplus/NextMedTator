@@ -13,8 +13,9 @@ Model training, LoRA preparation, merging, quantization and ONNX export stay in 
 
 Live runs retain the manifest hash, package ID, complete base/adapter/head lineage, artifact hashes, and the selected variant declaration alongside backend, precision, and runtime version. The worker result must match that package and variant before a run is accepted. These identities enter run fingerprints and portable exports; machine comparison snapshots reject mixed package or variant configurations even when their model name/version match.
 
-Three application codecs are implemented:
+Four application codecs are implemented:
 
+- `gliner25-small-records-v5` consumes the requested small export with combined encoder/boundary/classification graph plus attributes, records and relation heads. It runs exact anchors, enum scoring and anchored text/span fields with supporting evidence. `recordParent` and `recordAnchorLabel` in a family declare explicit external record-query mappings. Source-score discrepancies withhold automatic relations in this release; packages declaring `automaticRelations: true` are rejected. See `QUALIFICATION.md` for the pinned export, source checks and limitations.
 - `tensor-conformance-v1` executes supplied tensor fixtures. It cannot read clinical text.
 - `gliner25-boundary-span-v1` tokenizes with the package's Unigram `tokenizer.json`, builds the GLiNER2 entity prompt, and runs a boundary ONNX pair (`encoder` then `boundary`) in the local ORT worker. Decoding is half-open word spans, sigmoid threshold 0.5, abstention when the null head exceeds 0.5, and the `flat` overlap policy. The largest member may be 768 MiB so the published fp32 base encoder fits. The archive stays within 1 GiB.
 - `gliner25-boundary-structured-v1` adds `explicit.onnx`, the `score_explicit_spans` head exported from `fastino/gliner2.5-base-v1`. Enum fields are prompt labels of the form `field: value`, scored at each retained span and reduced with softmax. The word axis of that graph is fixed at 512 and shorter windows are masked.
@@ -48,10 +49,12 @@ Do not use the synthetic unit-test graph bytes as a real ONNX model. Those bytes
 6. Baseline and merged-LoRA packages tied to the same source/schema evaluation protocol.
 7. Real package sizes, latency and peak memory on target machines.
 
-Prefer one loaded package at a time for baseline-versus-adapter comparison. Graph hashes and adapter lineage identify the artifact but do not authenticate an untrusted publisher. A future approved catalog needs a trusted release process.
+Prefer one loaded package at a time for baseline-versus-adapter comparison. Graph hashes and adapter lineage identify the artifact but do not authenticate an untrusted publisher. The checked-in catalog is application-owned and reviewed with the static release; untrusted projects cannot add installation URLs.
 
 ## Runtime limitations
 
-Local file import is bounded to 1 GiB total and 768 MiB per member in this preview, but buffering and worker copies can require substantially more RAM. Large-package streaming/persistent installation and a public R2 catalog are not implemented. Runtime modules and WASM binaries must come from the same pinned ORT distribution. The worker never falls back to an HTTP inference service.
+Local file import is bounded to 1 GiB total and 768 MiB per member in this preview, but buffering and worker copies can require substantially more RAM. Public artifacts download through an allowlisted, pinned Hugging Face catalog with byte progress and cancellation; hash-verified installation uses a separate IndexedDB store with old versions retained. Local ZIP import and ORT worker transfers still buffer bytes and need RAM. R2 publication requires operator infrastructure. Runtime modules and WASM binaries must come from the same pinned ORT distribution. The worker never falls back to an HTTP inference service.
 
 Analyze selected sends the package once to a worker, validates its hashes and creates its ONNX sessions once, then processes notes sequentially with those sessions. The worker terminates after completion, failure, timeout, or cancellation. Finished note results remain available if a later note fails; unprocessed notes do not receive a completed run.
+
+Live analysis first runs public fixtures once per selected package/variant in the current session. A conformance failure prevents document analysis. Browser restart revalidates selected installed files and conformance; it does not substitute cached predictions for live inference.

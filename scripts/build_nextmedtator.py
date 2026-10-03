@@ -49,6 +49,7 @@ def build() -> None:
     shutil.copytree(ROOT/'node_modules/dompurify/dist',out/'vendor/dompurify')
     if (ROOT/'src/nextmedtator').exists():
         shutil.copytree(ROOT/'src/nextmedtator',out/'app/nextmedtator')
+    if (ROOT/'models').exists(): shutil.copytree(ROOT/'models',out/'models')
     runtime=ROOT/'node_modules/onnxruntime-web/dist'
     if not runtime.is_dir():raise RuntimeError('Missing local ONNX Runtime Web package')
     target=out/'vendor/ort';target.mkdir(parents=True)
