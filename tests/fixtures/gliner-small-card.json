@@ -1,0 +1,108 @@
+{
+  "text": "Apple CEO Tim Cook announced iPhone 15 in Cupertino yesterday.",
+  "schema": {
+    "id": "small-card",
+    "version": "1",
+    "families": {
+      "company": {
+        "label": "company",
+        "fields": {
+          "concept": {
+            "type": "text"
+          }
+        }
+      },
+      "person": {
+        "label": "person",
+        "fields": {
+          "concept": {
+            "type": "text"
+          }
+        }
+      },
+      "product": {
+        "label": "product",
+        "fields": {
+          "concept": {
+            "type": "text"
+          }
+        }
+      },
+      "location": {
+        "label": "location",
+        "fields": {
+          "concept": {
+            "type": "text"
+          }
+        }
+      }
+    }
+  },
+  "records": [
+    {
+      "id": "0",
+      "documentId": "pending",
+      "family": "company",
+      "anchor": [
+        {
+          "start": 0,
+          "end": 5,
+          "text": "Apple"
+        }
+      ],
+      "fields": {
+        "concept": "Apple"
+      },
+      "evidence": []
+    },
+    {
+      "id": "1",
+      "documentId": "pending",
+      "family": "person",
+      "anchor": [
+        {
+          "start": 10,
+          "end": 18,
+          "text": "Tim Cook"
+        }
+      ],
+      "fields": {
+        "concept": "Tim Cook"
+      },
+      "evidence": []
+    },
+    {
+      "id": "2",
+      "documentId": "pending",
+      "family": "product",
+      "anchor": [
+        {
+          "start": 29,
+          "end": 38,
+          "text": "iPhone 15"
+        }
+      ],
+      "fields": {
+        "concept": "iPhone 15"
+      },
+      "evidence": []
+    },
+    {
+      "id": "3",
+      "documentId": "pending",
+      "family": "location",
+      "anchor": [
+        {
+          "start": 42,
+          "end": 51,
+          "text": "Cupertino"
+        }
+      ],
+      "fields": {
+        "concept": "Cupertino"
+      },
+      "evidence": []
+    }
+  ],
+  "origin": "Fastino small source-model GOLDEN.md from Pastel-Org host revision 9f8173223d84bb65e6952d070137a990f93ef298; verified independently with native ONNX in qualification."
+}

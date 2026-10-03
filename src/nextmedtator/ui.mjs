@@ -1,10 +1,13 @@
+import {previewSchemaMigration,applySchemaMigration} from './migration.mjs';
+import {ModelStore,downloadCatalogPackage} from './model-store.mjs';
+import {SMALL_CODEC,SMALL_NOTICE,validateSmallSchema} from './gliner-small.mjs';
 import { ReviewProject, machineSnapshot, makeRun } from './project.mjs';
 import { DEMO_SCHEMA, validateSchema } from './contracts.mjs';
 import { demoProject, authoredSuggestionRun, DEMO_NOTICE } from './samples.mjs';
 import { OffsetMap, TextareaOffsetMap, sourceDocument, uuid, clone, invariant, jsonParse, canonical } from './integrity.mjs';
 import { exportBundle, importBundle, localDownload } from './bundle.mjs';
 import { RecoveryStore, ActiveTimer } from './recovery.mjs';
-import { compareSnapshots } from './compare.mjs';
+import { compareSnapshots, comparisonCSV } from './compare.mjs';
 import { importJSONL, importMedTator, exportMedTator, evidenceJSONL, eventCSV } from './interchange.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
@@ -18,7 +21,7 @@ function node(tag, text, attrs = {}) { const n = document.createElement(tag); if
     if (v !== false && v !== undefined && v !== null)
         n.setAttribute(k, String(v));
 } return n; }
-function button(text, fn, { disabled = false, primary = false, id } = {}) { const n = node('button', text, { type: 'button', disabled, class: primary ? 'primary' : '', ...(id ? { 'data-testid': id } : {}) }); n.addEventListener('click', fn); return n; }
+function button(text, fn, { disabled = false, primary = false, id } = {}) { const n = node('button', text, { type: 'button', disabled, class: primary ? 'primary' : '', ...(id ? { 'data-testid': id } : {}), 'data-focus-key': text }); n.addEventListener('click', fn); return n; }
 function labeled(text, input) { const l = node('label'); l.append(node('span', text), input); return l; }
 function choose(values, current) { const s = node('select'); for (const [value, label] of values) {
     const o = node('option', label, { value });
@@ -41,10 +44,13 @@ export class EvidenceWorkspace {
         this.saveState = 'No project open';
         this.recovery = new RecoveryStore();
         this.timer = new ActiveTimer();
+        this.documentTimers=new Map();this.manualPause=false;this.waitMs=0;
         this.panel = null;
         this.editor = null;
         this.busy = false;
         this.model = null;
+        this.modelStore = new ModelStore();
+        this.selectedSuggestions = new Set();
         this.modelReport = null;
         this.modelRunner = new ConformanceWorker();
         this.previousFocus = null;
@@ -57,7 +63,7 @@ export class EvidenceWorkspace {
         this.root.addEventListener('keydown', e => { this.timer.touch(); if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && this.project) {
             e.preventDefault();
             this.perform(() => this.save());
-        } if (e.key === 'Escape' && !this.standalone) {
+        } if(e.key==='Tab'&&!this.standalone&&this.open){const controls=[...this.root.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled)')].filter(n=>n.getClientRects().length);const first=controls[0],last=controls.at(-1);if(e.shiftKey&&this.root.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&this.root.activeElement===last){e.preventDefault();first?.focus();}} if (e.key === 'Escape' && !this.standalone) {
             this.open = false;
             this.render();
             this.previousFocus?.focus();
@@ -68,7 +74,8 @@ export class EvidenceWorkspace {
         return; this.busy = true; this.root.querySelector('.app')?.setAttribute('aria-busy', 'true'); for (const b of this.root.querySelectorAll('button'))
         if (b.textContent !== 'Force stop')
             b.disabled = true; try {
-        await action();
+        this.timer.pause(true);
+        const waiting=performance.now();try{await action();}finally{this.waitMs+=performance.now()-waiting;}
         this.error = false;
     }
     catch (e) {
@@ -77,6 +84,7 @@ export class EvidenceWorkspace {
     }
     finally {
         this.busy = false;
+        this.timer.pause(this.manualPause);
         this.render();
     } }
     async adopt(project, { recoveryHash = null } = {}) {
@@ -88,7 +96,7 @@ export class EvidenceWorkspace {
         this.editor = null;
         this.dirty = false;
         this.saveState = 'Project loaded in memory';
-        this.timer = new ActiveTimer();
+        this.timer = new ActiveTimer();this.documentTimers=new Map();this.manualPause=false;this.waitMs=0;
         if (recoveryHash) {
             await this.recovery.enable(project.current.id, { consent: true, expectedHash: recoveryHash });
             this.saveState = 'Recovered local checkpoint; export a portable copy';
@@ -101,24 +109,33 @@ export class EvidenceWorkspace {
         invariant(this.doc, 'Open a document first');
         invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
         const qualification = qualifyForSchema(this.model, this.project.current.schema);
-        invariant(qualification.level === 'entity-span' || qualification.level === 'structured-span', 'This package’s codec is not a local GLiNER2.5 decoder');
-        const codec = qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
-        const notice = codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
+        invariant(qualification.level === 'entity-span' || qualification.level === 'structured-span' || qualification.level === 'occurrence-record', 'This package’s codec is not a local GLiNER2.5 decoder');
+        const codec = qualification.level === 'occurrence-record' ? SMALL_CODEC : qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
+        const notice = codec === SMALL_CODEC ? SMALL_NOTICE : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         const variants = this.model.manifest.variants.filter(v => v.codec === codec);
         const variant = variants.find(v => v.backend === 'wasm') ?? variants.find(v => v.backend === 'webgpu' && navigator.gpu);
         invariant(variant, 'No browser GLiNER2.5 variant is available in the imported package');
-        const prompt = codec === GLINER_STRUCTURED ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
-        const result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, threshold: variant.threshold });
-        invariant(result.kind === codec, 'Worker did not return GLiNER span output');
+        const prompt = (codec === GLINER_STRUCTURED || codec===SMALL_CODEC) ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
+        if(codec===SMALL_CODEC)validateSmallSchema(this.project.current.schema);
+        if(this.modelReport?.manifestHash!==this.model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(this.model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
+        let result;const started=performance.now();
+        try {
+            result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema: this.project.current.schema, threshold: variant.threshold });
+        } catch(error) {
+            const identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
+            const failed=await makeRun(this.project,this.doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:{codec,threshold:variant.threshold??.5,errorCategory:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'},timing:{inferenceMs:performance.now()-started}});
+            await this.project.addRun(failed);this.changed();throw error;
+        }
+        invariant(result.kind === codec, 'Worker returned a different decoder output');
         const provenance = modelRunProvenance(this.model, variant.id, result);
-        const records = spansToRecords(this.doc, this.project.current.schema, result.spans);
-        const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, settings: { codec, threshold: result.threshold, overlapPolicy: 'flat', maxSequenceLength: 512, wordOverlap: 32, notice }, runtime: provenance.runtime });
+        const records = result.records ? result.records.map(r=>({...r,documentId:this.doc.id})) : spansToRecords(this.doc, this.project.current.schema, result.spans);
+        const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, windows: result.windows ?? [], timing: { inferenceMs: performance.now()-started }, settings: { codec, limitations:result.limitations??[], threshold: result.threshold, overlapPolicy: 'flat', maxSequenceLength: 512, wordOverlap: 32, notice }, runtime: provenance.runtime });
         await this.project.addRun(run);
         this.changed();
         this.message = `${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;
     }
     async save() { const data = await exportBundle(this.project.current); localDownload(data, `${this.project.current.id}.nmt.zip`, 'application/zip'); this.saveState = 'Project export created; verify your downloaded file'; this.dirty = false; this.message = 'Export stays on your device. The application cannot verify a durable backup.'; }
-    async checkpoint() { await this.recovery.checkpoint(this.project.current); this.saveState = 'Recovery checkpoint saved in this browser; export still recommended'; this.message = 'Verified browser recovery copy. It is not a portable backup.'; }
+    async checkpoint() { try{await this.recovery.checkpoint(this.project.current);}catch(error){this.dirty=true;this.saveState='Unsaved changes; recovery failed. Export this project.';throw error;} this.saveState = 'Recovery checkpoint saved in this browser; export still recommended'; this.message = 'Verified browser recovery copy. It is not a portable backup.'; }
     fileInput(label, accept, handler, { multiple = false } = {}) { const i = node('input', null, { type: 'file', accept, multiple, 'aria-label': label }); i.addEventListener('change', () => { const files = [...i.files]; if (files.length)
         this.perform(() => handler(files)); }); return labeled(label, i); }
     async openFiles(files) {
@@ -139,7 +156,7 @@ export class EvidenceWorkspace {
             const idField = prompt('Document ID field', 'id'), textField = prompt('Document text field', 'text');
             if (!idField || !textField)
                 return;
-            await this.adopt(await importJSONL(await file.text(), DEMO_SCHEMA, { idField, textField, mode: this.mode, actor: this.actor }));
+            await this.adopt(await importJSONL(await file.text(), DEMO_SCHEMA, { idField, textField, groupField:prompt('Group ID field (optional)','')||null,splitField:prompt('Split role field (optional)','')||null, mode: this.mode, actor: this.actor }));
             return;
         }
         const documents = [];
@@ -173,7 +190,7 @@ export class EvidenceWorkspace {
         if (!this.standalone)
             top.append(button('Back to MedTator', () => { this.open = false; this.render(); this.previousFocus?.focus(); }));
         app.append(top);
-        const warning = node('div', 'Local GLiNER2.5 extraction is not a clinical qualification. A structured package fills enum attributes; value, unit, relations, and LoRA comparison stay empty. Authored samples are not model predictions.', { class: 'banner' });
+        const warning = node('div', 'Research annotation preview. Local model capabilities depend on the selected package. Authored sample suggestions are not model output; no fine-tuned LoRA is supplied.', { class: 'banner' });
         app.append(warning);
         if (this.message)
             app.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'message' }));
@@ -194,7 +211,7 @@ export class EvidenceWorkspace {
         docs.append(node('h2', 'Documents'));
         for (const [i, d] of p.documents.entries()) {
             const full = p.draft.completeness[d.id]?.full;
-            const b = button(`${i + 1}. ${d.provenance?.filename ?? d.id}\n${full ? 'Reviewed' : 'Not fully reviewed'}`, () => { this.index = i; this.editor = null; this.render(); });
+            const b = button(`${i + 1}. ${d.provenance?.filename ?? d.id}\n${full ? 'Reviewed' : 'Not fully reviewed'}`, () => { if(this.doc){this.timer.pause(true);this.documentTimers.set(this.doc.id,this.timer);}this.index = i;this.timer=this.documentTimers.get(d.id)??new ActiveTimer({idleMs:this.timer.idleMs});this.timer.pause(this.manualPause);this.editor = null; this.render(); });
             b.setAttribute('aria-current', String(i === this.index));
             b.dataset.testid = `doc-${i}`;
             docs.append(b);
@@ -212,6 +229,7 @@ export class EvidenceWorkspace {
             font.addEventListener('change', () => { this.textSize = font.value; note.style.fontSize = `${font.value}px`; });
             note.style.fontSize = `${this.textSize ?? 17}px`;
             tools.append(font);
+            const documentFamily=Object.keys(p.schema.families).find(id=>p.schema.families[id].documentLevel);if(documentFamily)tools.append(button('Add document label',()=>this.perform(()=>{this.editor={record:{id:uuid(),documentId:this.doc.id,family:documentFamily,anchor:[],fields:{}},runId:null,predictionId:null};})));
             center.append(tools);
             center.append(node('h3', 'Human evidence'));
             for (const r of p.draft.records.filter(r => r.documentId === this.doc.id))
@@ -234,7 +252,7 @@ export class EvidenceWorkspace {
                 n.scrollTop = sourceState.scroll;
         }
         if (focused)
-            this.root.querySelector(`[data-focus-key="${focused}"]`)?.focus({ preventScroll: true });
+            [...this.root.querySelectorAll('[data-focus-key]')].find(n=>n.dataset.focusKey===focused)?.focus({ preventScroll: true });
     }
     renderWelcome(app) {
         const w = node('div', null, { class: 'welcome' });
@@ -258,6 +276,7 @@ export class EvidenceWorkspace {
         for (const [k, v] of Object.entries(r.fields))
             card.append(node('p', `${k}: ${v === null ? 'Unknown / not supplied' : typeof v === 'object' ? JSON.stringify(v) : v}`, { class: 'muted' }));
         const actions = node('div', null, { class: 'actions' });
+        if (run) {const check=node('input',null,{type:'checkbox','aria-label':'Select suggestion for group review'});check.checked=this.selectedSuggestions.has(`${run.id}/${r.id}`);check.onchange=()=>{const key=`${run.id}/${r.id}`;check.checked?this.selectedSuggestions.add(key):this.selectedSuggestions.delete(key);};card.append(check);}
         if (this.project.current.phase !== 'frozen') {
             if (!human) {
                 const state = this.project.current.draft.decisions[`${run.id}/${r.id}`]?.status;
@@ -265,6 +284,11 @@ export class EvidenceWorkspace {
                 actions.append(button('Accept', () => this.perform(() => { this.project.review(run.id, r.id, 'accepted'); this.changed(); }), { id: 'accept' }), button('Reject', () => this.perform(() => { this.project.review(run.id, r.id, 'rejected'); this.changed(); })), button('Defer', () => this.perform(() => { this.project.review(run.id, r.id, 'deferred'); this.changed(); })));
             }
             actions.append(button('Edit', () => { this.editor = { record: clone(r), runId: run?.id ?? null, predictionId: run ? r.id : null }; this.render(); }));
+            if(human){
+                actions.append(button('Split at selected boundary',()=>this.perform(()=>{const input=this.root.querySelector('[data-testid=source]'),viewMap=new TextareaOffsetMap(this.doc.text),point=viewMap.source.toCodePoint(viewMap.viewToSource.get(input.selectionStart));invariant(r.anchor.length===1&&point>r.anchor[0].start&&point<r.anchor[0].end,'Select a boundary inside this occurrence');const map=new OffsetMap(this.doc.text);const copies=[[r.anchor[0].start,point],[point,r.anchor[0].end]].map(([a,b])=>({...clone(r),id:uuid(),anchor:[map.span(a,b)],origin:{kind:'human-split',actor:this.project.current.actor,parents:[r.id]}}));this.project.transformRecords([r.id],copies,'split');this.changed();})));
+                const others=this.project.current.draft.records.filter(x=>x.documentId===r.documentId&&x.family===r.family&&x.id!==r.id);
+                if(others.length){const merge=choose(others.map(x=>[x.id,x.anchor.map(s=>s.text).join(' … ')]),others[0].id);actions.append(labeled('Merge with',merge),button('Merge occurrences',()=>this.perform(()=>{const other=this.project.current.draft.records.find(x=>x.id===merge.value);const spans=[...r.anchor,...other.anchor].sort((a,b)=>a.start-b.start);const groups=[];for(const span of spans){const last=groups.at(-1);if(last&&span.start<=last[1])last[1]=Math.max(last[1],span.end);else groups.push([span.start,span.end]);}const map=new OffsetMap(this.doc.text),merged={...clone(r),id:uuid(),anchor:groups.map(([a,b])=>map.span(a,b)),origin:{kind:'human-merge',actor:this.project.current.actor,parents:[r.id,other.id]}};this.project.transformRecords([r.id,other.id],[merged],'merge','Retained first occurrence fields; reviewer must resolve field differences');this.changed();})));}
+            }
             if (human)
                 actions.append(button('Delete', () => this.perform(() => { this.project.remove(r.id); this.changed(); })));
         }
@@ -294,13 +318,15 @@ export class EvidenceWorkspace {
             aside.append(button(p.phase === 'frozen' ? 'Prepare authored examples for reveal' : 'Show authored suggestions', () => this.perform(async () => { await this.project.addRun(await authoredSuggestionRun(this.project, this.doc)); this.changed(); this.message = DEMO_NOTICE; }), { id: 'demo-suggest' }));
         aside.append(this.fileInput('Import prediction run', '.json', async ([f]) => { invariant(f.size <= 64 * 1024 * 1024, 'Run size limit'); await this.project.addRun(jsonParse(await f.text())); this.changed(); }));
         const analyze = button('Analyze locally', () => this.perform(() => this.analyzeCurrent()), { disabled: !this.doc, id: 'analyze' });
-        const structured = this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED);
-        analyze.title = structured ? 'Run the imported GLiNER2.5 package on this device. Spans plus enum attributes; value, unit, and relations stay empty.' : 'Run the imported GLiNER2.5 boundary package on this device. Span text and scores only; contextual fields stay empty.';
-        aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
+        const structured = this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || variant.codec===SMALL_CODEC);
+        const small=this.model?.manifest.variants.some(v=>v.codec===SMALL_CODEC);
+        analyze.title = small ? SMALL_NOTICE : structured ? 'Run the imported GLiNER2.5 package on this device. Spans plus enum attributes; value, unit, and relations stay empty.' : 'Run the imported GLiNER2.5 boundary package on this device. Span text and scores only; contextual fields stay empty.';
+        aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', small ? SMALL_NOTICE : structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
         if (!this.project.canSeeMachine) {
             aside.append(node('p', 'The human snapshot is frozen. Use Reveal comparison when ready.'));
             return;
         }
+        aside.append(button('Accept selected suggestions',()=>this.perform(()=>{const groups=new Map();for(const key of this.selectedSuggestions){const [run,id]=key.split('/');if(!groups.has(run))groups.set(run,[]);groups.get(run).push(id);}invariant(groups.size===1,'Select one explicit set from a single run');for(const [run,ids] of groups)this.project.reviewGroup(run,ids);this.selectedSuggestions.clear();this.changed();})));
         for (const run of p.runs.filter(r => r.documentId === this.doc?.id)) {
             aside.append(node('h3', run.producer.name ?? run.producer.kind), node('p', `Coverage status: ${run.status}. ${run.runtime.backend} / ${run.runtime.precision}. ${run.settings?.notice ?? run.producer.notice ?? ''}`, { class: 'muted' }));
             for (const r of run.records)
@@ -314,7 +340,7 @@ export class EvidenceWorkspace {
         aside.append(node('h2', 'Edit occurrence'), node('p', r.anchor.map(s => s.text).join(' … '), { class: 'anchor' }));
         const family = choose(Object.entries(p.schema.families).map(([id, def]) => [id, def.label ?? id]), r.family);
         aside.append(labeled('Occurrence family', family));
-        family.addEventListener('change', () => { editing.record.family = family.value; editing.record.fields = {}; this.render(); });
+        family.addEventListener('change', () => { editing.record.family = family.value; editing.record.fields = {};if(p.schema.families[family.value].documentLevel)editing.record.anchor=[]; this.render(); });
         const grid = node('div', null, { class: 'fields' }), inputs = new Map();
         for (const [name, field] of Object.entries(p.schema.families[r.family].fields)) {
             let input;
@@ -326,11 +352,18 @@ export class EvidenceWorkspace {
                 input = node('input', null, { type: field.type === 'number' ? 'number' : 'text', value: r.fields[name] == null ? '' : field.type === 'span' ? JSON.stringify(r.fields[name]) : String(r.fields[name]), 'aria-label': name });
             }
             input.dataset.field = name;
+            input.addEventListener('change',()=>{const v=input.value;r.fields[name]=v===''?null:field.type==='number'?Number(v):field.type==='boolean'?v==='true':field.type==='span'?jsonParse(v):v;});
             inputs.set(name, { input, field });
             grid.append(labeled(name, input));
         }
         aside.append(grid);
-        const reason = node('textarea', null, { rows: 2, 'aria-label': 'Review rationale', placeholder: 'Optional review rationale' });
+        const selectSpan=()=>{const input=this.root.querySelector('[data-testid=source]');invariant(input&&input.selectionEnd>input.selectionStart,'Select source text first');return new TextareaOffsetMap(this.doc.text).selection(input.selectionStart,input.selectionEnd);};
+        aside.append(button('Replace anchor with selected text',()=>this.perform(()=>{r.anchor=[selectSpan()];})),button('Add supporting selection',()=>this.perform(()=>{r.evidence??=[];r.evidence.push(selectSpan());})),button('Clear supporting evidence',()=>{r.evidence=[];this.render();}));
+        for(const span of r.evidence??[])aside.append(node('p',`Supporting evidence: ${span.text}`));
+        const targets=p.draft.records.filter(target=>target.documentId===r.documentId&&target.id!==r.id);
+        if(targets.length){const target=choose(targets.map(t=>[t.id,t.anchor.map(s=>s.text).join(' … ')]),targets[0].id),type=node('input',null,{'aria-label':'Relation type',placeholder:'Relation type'});aside.append(labeled('Related occurrence',target),labeled('Relation type',type),button('Add relation',()=>this.perform(()=>{invariant(type.value.trim(),'Enter a relation type');r.relations??=[];r.relations.push({type:type.value.trim(),targetId:target.value});})));}
+        for(const [index,rel] of (r.relations??[]).entries())aside.append(button(`Remove ${rel.type} relation`,()=>{r.relations.splice(index,1);this.render();}));
+        const reason = node('textarea' , null, { rows: 2, 'aria-label': 'Review rationale', placeholder: 'Optional review rationale' });
         aside.append(labeled('Review rationale', reason));
         const actions = node('div', null, { class: 'actions' });
         actions.append(button('Save evidence', () => this.perform(() => {
@@ -355,6 +388,7 @@ export class EvidenceWorkspace {
         app.append(box);
         if (this.panel === 'privacy') {
             box.append(node('h3', 'Local data and recovery'), node('p', 'Documents are processed on this device. No documents, annotations, filenames or review events are uploaded. Public app assets are downloaded. Browser extensions, shared devices and cloud-synced download folders are outside this application’s control.'));
+            const idle=node('input',null,{type:'number',min:5,max:3600,'aria-label':'Timing idle cutoff in seconds'});idle.value=this.timer.idleMs/1000;idle.onchange=()=>{const seconds=Number(idle.value);if(seconds>=5&&seconds<=3600){this.timer.tick();this.timer.idleMs=seconds*1000;}};box.append(labeled('Timing idle cutoff in seconds',idle),button(this.manualPause?'Resume active timing':'Pause active timing',()=>{this.manualPause=!this.manualPause;this.timer.pause(this.manualPause);this.render();}));
             box.append(node('p', 'Browser recovery is optional, contains project data and may be evicted. A portable export is your durable copy. Deleting browser data is not a promise of forensic erasure.'));
             if (this.project) {
                 if (!this.recovery.enabled)
@@ -364,20 +398,27 @@ export class EvidenceWorkspace {
                     box.append(button('Save recovery checkpoint', () => this.perform(() => this.checkpoint()), { id: 'checkpoint' }), button('Delete recovery & disable', () => this.perform(async () => { if (!confirm('Delete this project’s browser recovery copy? Current in-memory work will remain.'))
                         return; await this.recovery.forget(); this.recovery.disable(); this.saveState = 'Recovery deleted; export work to keep it'; })));
             }
+            box.append(button('Inspect storage usage',()=>this.perform(async()=>{const estimate=await navigator.storage?.estimate?.();const models=await this.modelStore.list();this.storageReport={browserBytes:estimate?.usage??null,quotaBytes:estimate?.quota??null,modelBytes:models.reduce((n,m)=>n+m.bytes,0),recoveryProjects:(await this.recovery.list()).length};})));if(this.storageReport)box.append(node('pre',JSON.stringify(this.storageReport,null,2)));
+            box.append(button('Clear all local application data',()=>this.perform(async()=>{if(!confirm('Delete installed models, browser recovery projects and app caches? Export current work first.'))return;this.modelRunner.cancel();await this.recovery.clear();for(const m of await this.modelStore.list())await this.modelStore.remove(m.manifestHash);for(const key of await caches.keys())if(key.startsWith('nextmedtator-app-'))await caches.delete(key);const registration=await navigator.serviceWorker.getRegistration();if(registration)await registration.unregister();this.model=null;this.installedModels=[];this.recoveryList=[];this.saveState='Browser application data deleted; current work remains in memory';})));
             box.append(button('List saved recovery projects', () => this.perform(async () => { this.recoveryList = await this.recovery.list(); })));
             for (const r of this.recoveryList ?? [])
                 box.append(button(`Recover ${r.id} (${r.updatedAt})`, () => this.perform(async () => { const saved = await this.recovery.read(r.id); invariant(saved, 'Recovery entry no longer exists'); await this.adopt(await ReviewProject.open(saved.data), { recoveryHash: saved.hash }); })));
-            box.append(button('Install app for offline use', () => this.perform(async () => { invariant('serviceWorker' in navigator, 'Service workers unavailable'); const registration = await navigator.serviceWorker.register(new URL('../../service-worker.js', import.meta.url), { scope: new URL('../../', import.meta.url).pathname }); await navigator.serviceWorker.ready; this.message = 'App cache installed. Reload once, then test offline. Model assets require separate qualification.'; })), button('Export local timing report', () => localDownload(new TextEncoder().encode(JSON.stringify(this.timer.report(), null, 2)), 'timing.json', 'application/json')));
+            box.append(button('Install app for offline use', () => this.perform(async () => { invariant('serviceWorker' in navigator, 'Service workers unavailable'); const registration = await navigator.serviceWorker.register(new URL('../../service-worker.js', import.meta.url), { scope: new URL('../../', import.meta.url).pathname }); await navigator.serviceWorker.ready; this.message = 'App cache installed. Reload once, then test offline. Model assets require separate qualification.'; })), button('Export local timing report', () => localDownload(new TextEncoder().encode(JSON.stringify({projectId:this.project?.current.id,actor:this.project?.current.actor,schemaHash:this.project?.current.schemaHash,waitingMs:Math.round(this.waitMs),documents:this.project?.current.documents.map(d=>({documentId:d.id,sourceHash:d.textSha256,groupId:d.groupId,split:d.split,...(d.id===this.doc?.id?this.timer:this.documentTimers.get(d.id))?.report()}))??[]}, null, 2)), 'timing.json', 'application/json')));
         }
         else if (this.panel === 'models') {
             box.append(node('h3', 'Local model packages'), node('p', 'Training and export stay external. Import a .nmt-model.zip with exact hashes, runtime version, baseline/LoRA lineage and fixtures. No package-supplied JavaScript or WASM plugins are accepted.'));
             box.append(node('p', 'Live analysis uses an imported GLiNER2.5 package. A span package predicts anchors and scores. A structured package also fills enum attributes from the span-attribute head. Value, unit, relations, and model weights are not bundled.', { class: 'banner' }));
-            box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { invariant(f.size <= MODEL_LIMITS.archive, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer())); this.model = candidate; this.modelReport = null; const structured = candidate.manifest.variants.some(v => v.codec === GLINER_STRUCTURED); const qualified = candidate.manifest.variants.some(v => CODECS[v.codec].clinicalInference); this.message = structured ? 'GLiNER2.5 structured package loaded in memory. Analyze locally fills spans and enum attributes on this device only.' : qualified ? 'GLiNER2.5 span package loaded in memory. Analyze locally uses it on this device only.' : 'Package hashes validated. This package can run tensor fixtures only.'; }));
+            box.append(button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));
+            for(const installed of this.installedModels??[])box.append(node('p',`${installed.manifest.id} · ${installed.bytes} bytes`),button('Use installed '+installed.manifest.id,()=>this.perform(async()=>{this.model=await this.modelStore.read(installed.manifestHash);invariant(this.model,'Installed package missing');this.message='Installed model loaded; works without network';})),button('Delete installed '+installed.manifest.id,()=>this.perform(async()=>{await this.modelStore.remove(installed.manifestHash);this.installedModels=await this.modelStore.list();})));
+            box.append(button('Show approved public model',()=>this.perform(async()=>{const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();})));
+            for(const entry of this.catalog?.entries??[]){const m=entry.manifest,total=m.files.reduce((n,f)=>n+f.bytes,0);box.append(node('p',`${m.id} ${entry.revision} · ${m.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage · ${m.variants.map(v=>v.backend).join(', ')} · anchored records and enums; automatic relations withheld; no anchorless records`),button('Download and install '+m.id,()=>this.perform(async()=>{this.installController=new AbortController();try{const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{this.message=`Downloading ${received} of ${total} bytes`;const message=this.root.querySelector('[data-testid=message]');if(message)message.textContent=this.message;}});const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});this.model=installed;this.message='Public model installed and hashes verified';}finally{this.installController=null;}})),button('Force stop',()=>this.installController?.abort()));}
+            box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { invariant(f.size <= MODEL_LIMITS.archive, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer())); this.model = candidate; this.modelReport = null; const small=candidate.manifest.variants.some(v=>v.codec===SMALL_CODEC);const structured = candidate.manifest.variants.some(v => v.codec === GLINER_STRUCTURED); const qualified = candidate.manifest.variants.some(v => CODECS[v.codec].clinicalInference); this.message = small ? 'GLiNER2.5-small record package loaded in memory. Anchors, enums and supported record fields; automatic relations remain unqualified.' : structured ? 'GLiNER2.5 structured package loaded in memory. Analyze locally fills spans and enum attributes on this device only.' : qualified ? 'GLiNER2.5 span package loaded in memory. Analyze locally uses it on this device only.' : 'Package hashes validated. This package can run tensor fixtures only.'; }));
             if (this.model) {
+                box.append(button('Install imported package for offline use',()=>this.perform(async()=>{this.model=await this.modelStore.install(this.model);this.message='Model package installed and read-back verified';})),button('Verify offline readiness',()=>this.perform(async()=>{invariant(navigator.serviceWorker.controller,'Install and reload the app first');invariant(await this.modelStore.read(this.model.manifestHash),'Install this model first');const report=await this.modelRunner.run(this.model,this.model.manifest.variants.find(v=>v.backend==='wasm').id);invariant(report.pass,'Model conformance failed');this.message='App controlled by installed cache; selected model stored and conformance passed. Restart with network blocked to verify the full workflow.';})));
                 const m = this.model.manifest;
                 box.append(node('p', `${m.id} ${m.version} · ${m.lineage.adapter ? 'LoRA-derived' : 'Baseline'} · ${m.license.id}`));
                 for (const v of m.variants)
-                    box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id); this.message = this.modelReport.pass ? (CODECS[v.codec].coverage === 'structured-span' ? 'Span fixtures matched. Enum attributes, value, unit, and relations were not part of this fixture.' : CODECS[v.codec].coverage === 'entity-span' ? 'Span fixtures matched. Attributes and relations were not tested.' : 'Graph fixtures passed. This codec does not extract clinical text.') : 'Fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
+                    box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id); this.message = this.modelReport.pass ? (v.codec===SMALL_CODEC ? 'Source spans, exact tokenizer IDs and native ONNX numerical head fixtures passed. This does not establish clinical accuracy.' : CODECS[v.codec].coverage === 'structured-span' ? 'Span fixtures matched. Enum attributes, value, unit, and relations were not part of this fixture.' : CODECS[v.codec].coverage === 'entity-span' ? 'Span fixtures matched. Attributes and relations were not tested.' : 'Graph fixtures passed. This codec does not extract clinical text.') : 'Fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
                 box.append(button('Unload package', () => { this.modelRunner.cancel(); this.model = null; this.modelReport = null; this.render(); }));
                 if (this.modelReport)
                     box.append(node('pre', JSON.stringify(this.modelReport, null, 2)));
@@ -388,13 +429,16 @@ export class EvidenceWorkspace {
             const checked = node('input', null, { type: 'checkbox' });
             const check = labeled('I checked the whole document for omissions and unresolved evidence across all listed families.', checked);
             check.className = 'check';
-            box.append(check, button('Mark document fully reviewed', () => this.perform(() => { invariant(checked.checked, 'Confirm omission review first'); this.project.completeness(this.doc.id, { families: Object.keys(this.project.current.schema.families), ranges: [[0, new OffsetMap(this.doc.text).length]], omissionsChecked: true }); this.changed(); this.panel = null; }), { id: 'complete' }));
+            const relations = node('input', null, { type: 'checkbox' });
+            box.append(labeled('I checked all declared relations, including absent links.', relations));
+            box.append(check, button('Mark document fully reviewed', () => this.perform(() => { invariant(checked.checked, 'Confirm omission review first'); this.project.completeness(this.doc.id, { families: Object.keys(this.project.current.schema.families), ranges: [[0, new OffsetMap(this.doc.text).length]], omissionsChecked: true, relationsChecked: relations.checked }); this.changed(); this.panel = null; }), { id: 'complete' }));
         }
         else if (this.panel === 'exports' && this.project) {
             const p = this.project.current;
             box.append(node('h3', 'Exports and independent assignments'));
             box.append(button('Export current MedTator XML', () => this.perform(() => { const { xml, losses } = exportMedTator(this.doc, p.draft.records.filter(r => r.documentId === this.doc.id), p.schema); localDownload(new TextEncoder().encode(xml), `${this.doc.id}.xml`, 'application/xml'); localDownload(new TextEncoder().encode(JSON.stringify(losses, null, 2)), `${this.doc.id}.loss-report.json`, 'application/json'); this.message = 'Legacy XML is lossy for provenance and grouped records. The separate report lists the losses.'; })), button('Export review events', () => localDownload(new TextEncoder().encode(eventCSV(p.events)), 'review-events.csv', 'text/csv')), button('Export schema', () => localDownload(new TextEncoder().encode(JSON.stringify(p.schema, null, 2)), 'schema.json', 'application/json')));
             box.append(this.fileInput('Start new project with schema JSON', '.json', async ([f]) => { const schema = validateSchema(jsonParse(await f.text())); await this.adopt(await ReviewProject.create(p.documents, schema, { mode: p.mode, actor: p.actor })); this.message = 'Created a new schema-specific project. Existing annotations were not reinterpreted.'; }));
+            box.append(this.fileInput('Preview schema revision and mapping JSON', '.json', async([f])=>{const input=jsonParse(await f.text());this.migrationProposal=await previewSchemaMigration(this.project,input.schema??input,input.mapping??{});this.message='Schema migration preview prepared; review losses before applying.';}));if(this.migrationProposal){box.append(node('pre',JSON.stringify(this.migrationProposal.report,null,2)),button('Apply reviewed schema revision',()=>this.perform(async()=>{const next=await applySchemaMigration(this.project,this.migrationProposal);if(await this.adopt(next)){this.migrationProposal=null;this.changed();this.message='New revision created; original schema, project and migration report retained.';}})));}
             box.append(button('Create blind assignment bundle', () => this.perform(async () => { const actor = prompt('Independent annotator identifier'); if (!actor)
                 return; const assignment = await this.project.blindAssignment(actor); localDownload(await exportBundle(assignment.current), `${assignment.current.id}.nmt.zip`, 'application/zip'); this.message = 'Assignment excludes predictions, human snapshots and review history. Do not use a previously exposed reviewer as independent.'; })));
             for (const s of p.snapshots) {
@@ -434,11 +478,12 @@ export class EvidenceWorkspace {
             const left = choose(choices, this.leftId ?? choices[0][0]), right = choose(choices, this.rightId ?? choices[1][0]);
             left.onchange = () => { this.leftId = left.value; };
             right.onchange = () => { this.rightId = right.value; };
-            box.append(labeled('Left / reference snapshot', left), labeled('Right / candidate snapshot', right));
-            box.append(button('Compare snapshots', () => this.perform(async () => { invariant(left.value !== right.value, 'Choose different snapshots'); this.leftId = left.value; this.rightId = right.value; this.comparison = await compareSnapshots(p.snapshots.find(s => s.id === left.value), p.snapshots.find(s => s.id === right.value), { referenceDeclared: false }); })), button('Adjudicate current human draft as third snapshot', () => this.perform(async () => { invariant(left.value !== right.value, 'Choose different input snapshots'); const rationale = prompt('Rationale for the current human evidence as the adjudicated result'); if (!rationale)
-                return; await this.project.adjudicate(left.value, right.value, p.draft.records, { rationale }); this.changed(); this.message = 'Created third adjudicated snapshot. Both inputs are unchanged; completeness requires separate confirmation.'; })));
+            const referenceDeclared=node('input',null,{type:'checkbox'}),matchMode=choose([['exact','Exact anchors'],['overlap','Overlap anchors, IoU ≥ 0.5']],'exact');box.append(labeled('Left / reference snapshot', left), labeled('Right / candidate snapshot', right),labeled('Study protocol explicitly declares the left snapshot as reference',referenceDeclared),labeled('Matching policy',matchMode));
+            box.append(button('Compare snapshots', () => this.perform(async () => { invariant(left.value !== right.value, 'Choose different snapshots'); this.leftId = left.value; this.rightId = right.value; const worker=new Worker(new URL('./compare-worker.mjs',import.meta.url),{type:'module'});try{this.comparison=await new Promise((resolve,reject)=>{worker.onmessage=({data})=>data.error?reject(new Error(data.error)):resolve(data.report);worker.onerror=()=>reject(new Error('Comparison worker failed'));worker.postMessage([p.snapshots.find(s=>s.id===left.value),p.snapshots.find(s=>s.id===right.value),{referenceDeclared:referenceDeclared.checked,mode:matchMode.value,iou:.5}]);});}finally{worker.terminate();}await this.project.addComparison(this.comparison);this.changed(); })), button('Adjudicate current human draft as third snapshot', () => this.perform(async () => { invariant(left.value !== right.value, 'Choose different input snapshots'); const rationale = prompt('Rationale for the current human evidence as the adjudicated result'); if (!rationale)
+                return; await this.project.adjudicate(left.value, right.value, p.draft.records, { rationale,unresolved:(prompt('Unresolved case identifiers, separated by commas','')||'').split(',').map(x=>x.trim()).filter(Boolean) }); this.changed(); this.message = 'Created third adjudicated snapshot. Both inputs are unchanged; completeness requires separate confirmation.'; })));
+            for(const snapshot of [p.snapshots.find(s=>s.id===left.value),p.snapshots.find(s=>s.id===right.value)])for(const r of snapshot.records)box.append(button(`Use ${r.anchor.map(s=>s.text).join(' … ')} from ${snapshot.actor} in adjudication draft`,()=>this.perform(()=>{this.project.copyAdjudicationGroup(snapshot.id,r.id);this.changed();})));
             if (this.comparison) {
-                box.append(node('pre', JSON.stringify(this.comparison, null, 2)), button('Export comparison report', () => localDownload(new TextEncoder().encode(JSON.stringify(this.comparison, null, 2)), 'comparison.json', 'application/json')));
+                box.append(button('Export comparison CSV',()=>localDownload(new TextEncoder().encode(comparisonCSV(this.comparison)),'comparison.csv','text/csv')),node('pre', JSON.stringify(this.comparison, null, 2)), button('Export comparison report', () => localDownload(new TextEncoder().encode(JSON.stringify(this.comparison, null, 2)), 'comparison.json', 'application/json')));
             }
         }
     }
@@ -462,15 +507,18 @@ function boot() {
         new EvidenceWorkspace(host);
     }
     if (assistHost)
-        mountLegacyAssist(assistHost, { openProject() {
+        mountLegacyAssist(assistHost, { async openProject(project) {
             let host = document.querySelector('nextmedtator-workspace');
             if (!host) {
                 host = document.createElement('nextmedtator-workspace');
                 document.body.append(host);
                 new EvidenceWorkspace(host, { startOpen: true });
+                if(project)await host.workspace.adopt(project);
+                host.workspace.render();
                 return;
             }
             host.workspace.open = true;
+            if(project)await host.workspace.adopt(project);
             host.workspace.render();
         } });
 }

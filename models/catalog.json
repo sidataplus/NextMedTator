@@ -1,0 +1,147 @@
+{
+  "entries": [
+    {
+      "revision": "5e2e3f51adfb0eeb7c1f83464400b4d498d41659",
+      "manifest": {
+        "format": "nextmedtator-model-v1",
+        "id": "gliner25-small-onnx-v5",
+        "version": "5e2e3f51adfb0eeb7c1f83464400b4d498d41659",
+        "runtime": "onnxruntime-web",
+        "runtimeVersion": "1.23.2",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-small-v1",
+            "revision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+            "exportRevision": "5e2e3f51adfb0eeb7c1f83464400b4d498d41659",
+            "exportRepository": "nicolasembleton/gliner2.5-small-v1-onnx",
+            "sourceRevisionVerification": "qualification-report"
+          }
+        },
+        "license": {
+          "id": "Apache-2.0",
+          "notice": "Fastino GLiNER2.5-small; ONNX export by Pastel-Cloud O\u00dc. Anchored record support only. No Clinical-Evidence LoRA."
+        },
+        "files": [
+          {
+            "path": "model.onnx",
+            "bytes": 288521577,
+            "sha256": "12dda5cf4b0e9ed3af17596cef1cdbd22185a32fcc230af4f476353b5e4ade1f",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 5800114,
+            "sha256": "7c69f17ad93c02dd5b1a0c1c59069fd46bbe560358b44f2b15f32fe59d239983",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 599060,
+            "sha256": "de5b31ccff18ebd632d5b00324d6933632986636365e3ff4eb6a9cc603c5a126",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 5939411,
+            "sha256": "ef1a000c980ad9b9d5ef08e9231a69aca17909051ba418ad3652914423d02290",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8341713,
+            "sha256": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+            "role": "tokenizer"
+          },
+          {
+            "path": "reference.json",
+            "bytes": 1183,
+            "sha256": "d4070227a6c31afc0bb7008089fc1f5d86578b9cc1da60b9540742a8bc786523",
+            "role": "fixture"
+          },
+          {
+            "path": "binding-reference.json",
+            "bytes": 1313,
+            "sha256": "708ff4fffadc84d1998b7b4494a5756c6fe6e4268abadd22831a1f15e2a0c835",
+            "role": "fixture"
+          },
+          {
+            "path": "native-reference.json",
+            "bytes": 23360,
+            "sha256": "1548ad20b8135c403e8a090897b9dcf7d69058ac4a298f27efbd63d4af3b8675",
+            "role": "fixture"
+          },
+          {
+            "path": "attrs-reference.json",
+            "bytes": 4127368,
+            "sha256": "861ee100e89aba1e66104dc8c9ac44b01423988ded32817e9e4bda7d2d21ed63",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 96346,
+            "sha256": "e476ae5b867e4cde3b5b0cae1725c1993805a8a21e9c6a904d0a170bd75d6881",
+            "role": "fixture"
+          },
+          {
+            "path": "heads-reference.json",
+            "bytes": 64084,
+            "sha256": "b47923b3994b23df5fcaa32bf3c10ff0f8a3b5f290db96a5fd231d12362aeccd",
+            "role": "fixture"
+          }
+        ],
+        "variants": [
+          {
+            "id": "wasm-fp32",
+            "backend": "wasm",
+            "precision": "fp32",
+            "codec": "gliner25-small-records-v5",
+            "graph": "model.onnx",
+            "graphs": {
+              "model": "model.onnx",
+              "attributes": "attributes.onnx",
+              "records": "records.onnx",
+              "relations": "relations.onnx"
+            },
+            "tokenizer": "tokenizer.json",
+            "fixtures": [
+              "reference.json",
+              "binding-reference.json",
+              "native-reference.json",
+              "attrs-reference.json",
+              "records-reference.json",
+              "heads-reference.json"
+            ],
+            "threshold": 0.5,
+            "pairTemperature": 1.0,
+            "automaticRelations": false,
+            "maxSequenceLength": 512,
+            "wordOverlap": 32,
+            "languageClaims": [
+              "en"
+            ],
+            "schemaCompiler": "gliner25-schema-v1",
+            "wordSplitter": "gliner25-unicode-v1",
+            "decoderRevision": "nextmedtator-small-v5",
+            "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf"
+          }
+        ],
+        "capabilities": [
+          "*"
+        ]
+      },
+      "urls": {
+        "model.onnx": "https://huggingface.co/nicolasembleton/gliner2.5-small-v1-onnx/resolve/5e2e3f51adfb0eeb7c1f83464400b4d498d41659/onnx/model.onnx",
+        "attributes.onnx": "https://huggingface.co/nicolasembleton/gliner2.5-small-v1-onnx/resolve/5e2e3f51adfb0eeb7c1f83464400b4d498d41659/onnx/attrs.onnx",
+        "records.onnx": "https://huggingface.co/nicolasembleton/gliner2.5-small-v1-onnx/resolve/5e2e3f51adfb0eeb7c1f83464400b4d498d41659/onnx/records.onnx",
+        "relations.onnx": "https://huggingface.co/nicolasembleton/gliner2.5-small-v1-onnx/resolve/5e2e3f51adfb0eeb7c1f83464400b4d498d41659/onnx/heads.onnx",
+        "tokenizer.json": "https://huggingface.co/nicolasembleton/gliner2.5-small-v1-onnx/resolve/5e2e3f51adfb0eeb7c1f83464400b4d498d41659/tokenizer.json",
+        "reference.json": "./models/reference.json",
+        "binding-reference.json": "./models/binding-reference.json",
+        "native-reference.json": "./models/native-reference.json",
+        "attrs-reference.json": "./models/attrs-reference.json",
+        "records-reference.json": "./models/records-reference.json",
+        "heads-reference.json": "./models/heads-reference.json"
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "sourceRevision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+  "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+  "results": {
+    "entities": {
+      "company": [
+        {
+          "text": "Apple",
+          "confidence": 0.9935408234596252,
+          "start": 0,
+          "end": 5
+        }
+      ],
+      "person": [
+        {
+          "text": "Tim Cook",
+          "confidence": 0.9986261129379272,
+          "start": 10,
+          "end": 18
+        }
+      ],
+      "product": [
+        {
+          "text": "iPhone 15",
+          "confidence": 0.998711347579956,
+          "start": 29,
+          "end": 38
+        }
+      ],
+      "location": [
+        {
+          "text": "Cupertino",
+          "confidence": 0.9988501071929932,
+          "start": 42,
+          "end": 51
+        }
+      ]
+    }
+  }
+}

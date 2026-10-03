@@ -41,18 +41,18 @@ export function exportMedTator(doc, records, schema) {
             }
             attrs[name] = value;
         }
-        if (r.relations?.length)
-            losses.push({ recordId: r.id, reason: 'Native record relations require explicit legacy relation mapping' });
+
         if (r.evidence?.length)
             losses.push({ recordId: r.id, reason: 'Supporting evidence retained only in native project' });
         return `<${xmlName(r.family)} ${Object.entries(attrs).map(([k, v]) => `${k}="${xmlEscape(v)}"`).join(' ')}/>`;
     });
+    for(const r of records)for(const [i,rel] of (r.relations??[]).entries()){const mapping=schema.relations?.[rel.type]?.legacy??{head:'arg0',tail:'arg1'};tags.push(`<${xmlName(rel.type)} id="${xmlEscape('relation-'+r.id+'-'+i)}" ${xmlName(mapping.head)}="${xmlEscape(r.id)}" ${xmlName(mapping.tail)}="${xmlEscape(rel.targetId)}"/>`);}
     losses.push({ reason: 'Machine lineage, review history, completeness and snapshots are retained only in the native project' });
     // Character references preserve CR across XML end-of-line normalization.
     return { xml: `<?xml version="1.0" encoding="UTF-8"?>\n<NEXTMEDTATOR><TEXT>${xmlEscape(doc.text)}</TEXT><TAGS>${tags.join('\n')}</TAGS><META/></NEXTMEDTATOR>\n`, losses };
 }
 /** Browser-only parser; native project bundles remain the authoritative interchange. */
-export async function importMedTator(xml, { mode = 'assisted', actor = 'annotator', documentId = uuid() } = {}) {
+export async function importMedTator(xml, { mode = 'assisted', actor = 'annotator', documentId = uuid(), relationMappings = {} } = {}) {
     invariant(new TextEncoder().encode(xml).length <= 64 * 1024 * 1024, 'XML size limit');
     invariant(!/<!DOCTYPE|<!ENTITY/i.test(xml), 'DTD and entity declarations are not accepted in annotation XML');
     const tree = new DOMParser().parseFromString(xml, 'application/xml');
@@ -62,11 +62,12 @@ export async function importMedTator(xml, { mode = 'assisted', actor = 'annotato
     invariant(textNode && tagsNode, 'Missing TEXT or TAGS');
     const doc = await sourceDocument(documentId, new TextEncoder().encode(textNode.textContent), { provenance: { kind: 'medtator-xml', offsetConvention: 'utf16', license: 'unknown' } }), map = new OffsetMap(doc.text);
     const schema = { id: 'medtator-import', version: '1', description: 'Inferred text attributes; load an explicit schema for typed semantics', families: {} };
-    const records = [], losses = [];
+    const records = [], losses = [], pendingRelations=[];
     for (const tag of tagsNode.children) {
         const family = xmlName(tag.tagName), raw = tag.getAttribute('spans');
         if (raw == null) {
-            losses.push({ tag: family, reason: 'Relation-only legacy tag requires explicit mapping; not imported' });
+            const mapping=relationMappings[family]??(tag.hasAttribute('arg0')&&tag.hasAttribute('arg1')?{head:'arg0',tail:'arg1'}:tag.hasAttribute('fromID')&&tag.hasAttribute('toID')?{head:'fromID',tail:'toID'}:null);
+            if(mapping){pendingRelations.push({type:family,headId:tag.getAttribute(mapping.head),tailId:tag.getAttribute(mapping.tail),mapping});for(const attr of tag.attributes)if(!['id',mapping.head,mapping.tail].includes(attr.name))losses.push({tag:family,field:attr.name,reason:'Relation attribute requires explicit native mapping'});}else losses.push({ tag: family, reason: 'Supply a relationMappings entry naming head/tail IDREF attributes; this relation was not imported' });
             continue;
         }
         const documentLevel = raw === '-1~-1';
@@ -86,6 +87,7 @@ export async function importMedTator(xml, { mode = 'assisted', actor = 'annotato
         }
         records.push({ id: tag.getAttribute('id') ?? uuid(), documentId, family, anchor, fields, origin: { kind: 'imported', source: 'medtator-xml', reviewStatus: 'unknown' } });
     }
+    for(const rel of pendingRelations){const head=records.find(r=>r.id===rel.headId),tail=records.find(r=>r.id===rel.tailId);invariant(head&&tail,'Legacy relation references missing entities');head.relations??=[];head.relations.push({type:rel.type,targetId:tail.id});schema.relations??={};schema.relations[rel.type]??={head:[],tail:[],legacy:rel.mapping};for(const [role,r] of [['head',head],['tail',tail]])if(!schema.relations[rel.type][role].includes(r.family))schema.relations[rel.type][role].push(r.family);}
     if (!Object.keys(schema.families).length)
         schema.families.entity = { fields: { concept: { type: 'text' } }, label: 'Entity' };
     const project = await ReviewProject.create([doc], schema, { mode, actor });
@@ -94,5 +96,5 @@ export async function importMedTator(xml, { mode = 'assisted', actor = 'annotato
     data.extensions.importReport = { kind: 'medtator-xml', losses };
     return { project: await ReviewProject.open(data), losses };
 }
-export function evidenceJSONL(project, snapshot) { return project.documents.map(doc => JSON.stringify({ documentId: doc.id, text: doc.text, sourceHash: doc.textSha256, split: doc.split, groupId: doc.groupId, schemaHash: project.schemaHash, snapshotHash: snapshot.hash, completeness: snapshot.completeness[doc.id] ?? null, exposure: snapshot.exposure, records: snapshot.records.filter(r => r.documentId === doc.id) })).join('\n') + '\n'; }
+export function evidenceJSONL(project, snapshot) { return project.documents.map(doc => JSON.stringify({ documentId: doc.id, text: doc.text, sourceHash: doc.textSha256, split: doc.split, groupId: doc.groupId, schemaHash: project.schemaHash, snapshotHash: snapshot.hash, schema:project.schema, modelRuns:project.runs.filter(r=>r.documentId===doc.id).map(r=>({fingerprint:r.fingerprint,producer:r.producer,runtime:r.runtime,settings:r.settings})), unresolved:snapshot.unresolved??[], completeness: snapshot.completeness[doc.id] ?? null, exposure: snapshot.exposure, records: snapshot.records.filter(r => r.documentId === doc.id) })).join('\n') + '\n'; }
 export function eventCSV(events) { return ['event_id,action,actor,time', ...events.map(e => [e.id, e.action, e.actor, e.at].map(csvCell).join(','))].join('\n'); }

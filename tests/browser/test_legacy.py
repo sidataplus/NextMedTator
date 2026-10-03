@@ -23,6 +23,30 @@ def run():
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('request',lambda r:requests.append(r.url))
             page.goto(URL);page.locator('#tab_link_annotation').wait_for();page.wait_for_function('window.app_hotpot?.vpp != null')
+            # Exercise the upgraded sanitizer through the application's method,
+            # and render the chart families used by the legacy analysis views.
+            compatibility=page.evaluate('''() => {
+                const host=document.createElement('div');
+                const dirty='<img src="x" onerror="window.__nmtInjected=true"><a href="javascript:alert(1)">unsafe</a><script>window.__nmtInjected=true</script><b>kept</b>';
+                host.innerHTML=window.app_hotpot.vpp.nmtSanitize(dirty);
+                const safe=!host.querySelector('script,[onerror],a[href]') && host.querySelector('b')?.textContent==='kept';
+                const chartHost=document.createElement('div');
+                chartHost.style.cssText='width:600px;height:400px';document.body.append(chartHost);
+                const chart=echarts.init(chartHost,null,{renderer:'svg'});
+                const options=[
+                    {series:[{type:'pie',data:[{name:'A',value:2},{name:'B',value:3}]}]},
+                    {xAxis:{},yAxis:{},series:[{type:'scatter',data:[[1,2],[2,3]]}]},
+                    {xAxis:{type:'category',data:['A','B']},yAxis:{type:'category',data:['C']},visualMap:{min:0,max:3},series:[{type:'heatmap',data:[[0,0,2],[1,0,3]]}]}
+                ];
+                const rendered=options.map(option=>{
+                    chart.setOption({...option,animation:false},true);
+                    return chartHost.querySelectorAll('svg path').length>0 && chart.getOption().series[0].data.length===2;
+                });
+                chart.dispose();chartHost.remove();
+                return {safe,rendered,injected:Boolean(window.__nmtInjected)};
+            }''')
+            assert compatibility=={'safe':True,'rendered':[True,True,True],'injected':False},compatibility
+            page.wait_for_timeout(500)
             page.wait_for_timeout(700)
             if page.locator('#start-screen').is_visible():
                 cont=page.locator('#start-screen a', has_text='Continue')
@@ -48,7 +72,8 @@ def run():
             page.get_by_role('link', name='Adjudication').click()
             page.locator('#tab_link_annotation').click()
             page.locator('.file-list-item-name', has_text='doc_01.txt.xml').wait_for()
-            page.get_by_test_id('open-workspace').click();page.get_by_test_id('sample').wait_for()
+            page.get_by_test_id('open-workspace').click();page.get_by_test_id('source').wait_for()
+            assert page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current.documents.length') == 1
             page.get_by_role('button', name='Back to MedTator', exact=True).click()
             page.locator('#tab_link_annotation').wait_for()
             page.locator('#mui_dtdlist').wait_for()

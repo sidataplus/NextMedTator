@@ -23,6 +23,18 @@
     {
       "id": "synthetic-5",
       "sha256": "7652913eb165f74d236469dd67ab359a245cd6de3763370a5f9d53fef950e02e"
+    },
+    {
+      "id": "synthetic-6",
+      "sha256": "84e9cf6a643f64a86d857da91dcd6a0883af12ef79e18e306d161d3c959f50ca"
+    },
+    {
+      "id": "synthetic-7",
+      "sha256": "e71f04c19c16229d583f2f58e0b814ded679c0dde1f14d9dd7e53c723a98a927"
+    },
+    {
+      "id": "synthetic-8",
+      "sha256": "e68946d74f596a011f8447681b05da923fd5f82c34b69a85580f8e1e128d001d"
     }
   ],
   "externalDatasetsBundled": false

@@ -1,0 +1,201 @@
+{
+  "date": "2026-10-03",
+  "scope": "Cloud Linux CPU / Chromium WASM only; public synthetic fixtures; not clinical or target-device qualification",
+  "unitTests": {
+    "passed": 88,
+    "skipped": 0,
+    "externalTokenizerArtifact": "Pinned downloaded small tokenizer compared to Python tokenizers 0.22.2"
+  },
+  "browser": [
+    {
+      "name": "assisted-review-export",
+      "pass": true,
+      "requests": 21
+    },
+    {
+      "name": "blind-freeze-reveal-compare",
+      "pass": true,
+      "requests": 24
+    },
+    {
+      "name": "opt-in-recovery-offline-export",
+      "pass": true,
+      "requests": 68
+    },
+    {
+      "name": "local-canary-import-export",
+      "pass": true,
+      "requests": 21
+    },
+    {
+      "name": "xml-unicode-roundtrip-and-xxe-rejection",
+      "pass": true,
+      "requests": 21
+    }
+  ],
+  "recovery": {
+    "multiTabLock": true,
+    "compareAndSwapConflict": true,
+    "quotaFailurePreservesPreviousCheckpoint": true,
+    "storageDenialReleasesBusyState": true
+  },
+  "parityEdges": {
+    "packageStorage": {
+      "cancelled": true,
+      "quotaAtomic": true,
+      "rollback": true
+    },
+    "legacyRelationRoundtrip": true,
+    "keyboardAndTimingControls": true,
+    "performance": {
+      "documents": 1000,
+      "switchSamples": 30,
+      "switchP95Ms": 165.12000000011176,
+      "heapBytes": 5120900,
+      "scope": "Cloud Linux Chromium; target laptops not qualified"
+    }
+  },
+  "realSmall": {
+    "realWeights": true,
+    "packageBytes": 313519734,
+    "conformance": {
+      "kind": "gliner25-small-records-v5",
+      "manifestHash": "c5f06be01ff687f250c4b64310adf34c0fc9d1d60bafcc6d6592075bcd97f048",
+      "variantId": "wasm-fp32",
+      "backend": "wasm",
+      "precision": "fp32",
+      "results": [
+        {
+          "fixture": "reference.json",
+          "pass": true,
+          "status": "complete"
+        },
+        {
+          "fixture": "binding-reference.json",
+          "pass": true,
+          "status": "complete"
+        },
+        {
+          "fixture": "native-reference.json",
+          "checks": {
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 768,
+              "maxAbsoluteError": 1.1920928955078125e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "attrs-reference.json",
+          "checks": {
+            "attr_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 128,
+              "maxAbsoluteError": 1.1920928955078125e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "records-reference.json",
+          "checks": {
+            "assign_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 20,
+              "maxAbsoluteError": 2.384185791015625e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "object_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 3.725290298461914e-09,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "latent_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.862645149230957e-09,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "heads-reference.json",
+          "checks": {
+            "rel_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.4901161193847656e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    "installedModelOfflineRestart": true,
+    "offlineInferenceReviewCompareExportReimport": true,
+    "canaryInferenceNoEgress": true,
+    "sourceContextAttributeFixtureExact": true,
+    "browser": "151.0.7922.173",
+    "requests": 102
+  },
+  "sourceRelationDiscrepancy": {
+    "sourceConfidence": 0.6271791458129883,
+    "wasmHostConfidence": 0.6318213105065253,
+    "absoluteDifference": 0.004642164693537065,
+    "sourceTolerance": 0.0001,
+    "passed": false,
+    "automaticRelationsEnabled": false
+  },
+  "dependencyAudit": {
+    "highSeverityPassed": true,
+    "remaining": {
+      "low": 1,
+      "moderate": 1
+    }
+  },
+  "cleanFrozenInstall": {
+    "pnpm": "10.18.3",
+    "packages": 118,
+    "passed": true
+  },
+  "externalGates": [
+    "actual fine-tuned LoRA",
+    "target Mac/Windows and peak memory",
+    "clinical pilot and final schema",
+    "assistive-technology review",
+    "comprehensive inherited-library security review",
+    "Cloudflare/R2 deployment and app rollback drill"
+  ],
+  "legacyRealSmall": {
+    "realWeights": true,
+    "loadedSchemaPreserved": true,
+    "liveLegacyAccept": true,
+    "portableRunExposureAndReview": true,
+    "exposedCopyCannotFreezeIndependent": true,
+    "requests": 103,
+    "browser": "151.0.7922.173"
+  }
+}

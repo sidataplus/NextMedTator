@@ -1,26 +1,37 @@
-# Build and integration
+# Build, integration and rollback
 
-The isolated `preview/` is generated from the new review workspace only. It allows local development without cloning the legacy application or installing JS packages. It is deliberately marked Engineering preview and has no qualified live model.
+The fork preserves the original MedTator annotation screen and adds an assistance column and portable evidence workspace. Changes are additive; manual annotation needs no installed model. Python renders templates only at build time. Production serves static `dist/` files with no inference service.
 
-The fork build requires the original repository at its verified baseline:
+The parity branch starts from `sidataplus/NextMedTator` main at `2c774f90cbfb9ff6b945b8bd8e1639378e1fe4fe`. It includes the existing uv/dependency refresh so the PR and CI use the same locked tooling. Original upstream source/license history is retained.
 
-```text
-sidataplus/NextMedTator
-main: 7e0fd568ee7ee9dd5c2ffe7092489cfec31b602c
+```sh
+corepack enable
+pnpm install --frozen-lockfile
+uv sync --locked
+pnpm deps:verify
+pnpm test
+pnpm build
+pnpm audit:assets
+uv run --locked python -m playwright install chromium
+pnpm test:legacy
+pnpm build:preview
+pnpm test:browser
+uv run --locked python tests/browser/test_recovery_faults.py
+uv run --locked python tests/browser/test_parity_edges.py
+pnpm test:dom
+pnpm audit --audit-level high
 ```
 
-`build_nextmedtator.py` renders the original Flask/Jinja templates with locally copied compatible dependencies. `finalize_build.mjs` extracts executable scripts, precompiles the static Vue templates, and uses the Vue runtime-only build. The annotation screen keeps the document list, source editor, schema tags, and tag table. A collapsible assistance column on that screen holds the workspace mode, local model status, and GLiNER analyze/review actions. The portable evidence project remains available from that column. Manual annotation stays available with the column collapsed and with no model imported. Copying legacy documents into the evidence project transfers source text only; typed annotation interchange uses explicit native/XML imports.
+Builds precompile repository-owned Vue templates, externalize scripts, sanitize Vue HTML output and copy pinned local runtime files. The inventory rejects static files over Cloudflare's 25 MiB limit. Large public model weights stay outside `dist/`; the reviewed catalog supplies immutable download URLs. `preview/` is a standalone engineering workspace, with the same local runtime/decoder but without the legacy page.
 
-Both static builds and the real-origin Chromium suites were executed locally for the PR #3 follow-up. `test_legacy.py` covers the original screen plus exact occurrence conformance and two-note structured analysis using tiny synthetic ONNX graphs through the real ORT WASM worker. It checks per-note freeze/reveal, automatic Assisted exposure that prevents independent blind freeze, selector and navigation protection, unchanged blind tags after acceptance, stale actions, and one package load per batch. `test_preview.py` covers review/export, blind comparison, recovery, Unicode/XML, canary egress checks, and offline inference/export/reimport with exact package lineage and variant identity. These fixtures do not establish real GLiNER quality or clinical qualification. Broader manual entity/relation and device workflows remain release gates.
+`test_legacy.py` includes synthetic real-ORT worker tests and familiar UI/sanitizer/chart checks. `test_preview.py` exercises review, independent snapshots, comparison, recovery, offline workflow, Unicode/XML and canaries on a real origin. DOM-only checks explicitly substitute hash/UUID helpers and cannot qualify storage/CSP/workers. `test_real_small.py` and `test_legacy_assist.py` require the real pinned package; see `QUALIFICATION.md`. CI's optional real-model dispatch downloads actual weights and fails on missing artifacts or failed conformance.
 
-The legacy assistance column keeps its blind tag copies and exposure history in memory for the current session. Both automatic Assisted display and explicit reveal record the note, timestamp, package hash and variant. Switching to Blind cannot turn an exposed annotation into an independent snapshot. Use the portable evidence project for durable study snapshots and exposure provenance.
+Legacy native export/open carries source, loaded schema, manual labels/binary links, model history, blind snapshots, exposure and decisions. Representability losses remain explicit in XML interchange; native bundles are authoritative. Public installed packages can be selected in both workspaces. Clinical recovery requires consent; model storage is separate.
 
-The static deployment target is `dist/`. `wrangler.jsonc` has no Worker handler. No deployment command runs as part of the tests or patch application. Cloudflare account/domain setup is deliberately not invented.
+## Release operations
 
-## Dependency and release gates
+`wrangler.jsonc` targets `dist/` as Workers Static Assets without a Worker handler. No production deployment or account/domain/R2 resource is created by builds/tests. Public hosting/R2 setup requires the operator's infrastructure and acceptance gates; this PR does not claim a deployed release.
 
-Use the tracked `pnpm-lock.yaml` with `pnpm install --frozen-lockfile`. Direct pins, dependency audits and the tracked lock remain CI gates; changing dependencies requires a reviewed lock update.
+Retain prior immutable app and model artifacts. Upgrade at explicit release boundaries. The service worker does not call `skipWaiting`, and active review is not silently migrated. Keep previous installed model versions, select the old manifest and rerun its fixtures for rollback; the installed-package test exercises this. Rehearse production app rollback with retained `dist/` plus an exported native project before public release. Schema revisions use explicit preview/loss reports, retain the prior project, and refuse stale previews.
 
-All runtime assets are copied from local packages or retained vendored sources. Files over Cloudflare's 25 MiB limit fail the build. If a qualified ORT/model artifact exceeds it, define and validate its separately hosted artifact path instead of silently disabling the limit.
-
-Offline install caches only the hashed public inventory. It does not call `skipWaiting` or silently replace code in an active study. App versions can coexist in cache; explicit old-cache cleanup remains lifecycle work.
+Locked dependency installation, asset hashes/notices, qualified model fixtures and dependency audits remain release gates. Compatibility/security exceptions are in `DEPENDENCIES.md`; executed evidence and external gates are in `STATUS.md`.
