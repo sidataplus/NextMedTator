@@ -2739,6 +2739,12 @@ var app_hotpot = {
 
         // set the resize
         this.resize();
+        // Ribbon groups can wrap after tab changes, sample loading, or resizing.
+        // Observe the menu itself so the editor always uses the remaining height.
+        this.ribbon_resize_observer = new ResizeObserver(function() {
+            app_hotpot.resize();
+        });
+        this.ribbon_resize_observer.observe(document.querySelector('#app_hotpot > nav'));
 
         // init brat
         fig_bratvis.init();
@@ -3014,7 +3020,11 @@ var app_hotpot = {
     resize: function() {
         var w = $(window).width();
         var h = $(window).height();
-        $('.main-ui').css('height', h - 145);
+        var ribbon = document.querySelector('#app_hotpot > nav');
+        var ribbon_bottom = ribbon.getBoundingClientRect().bottom;
+        // Preserve the original bottom spacing, including the splitters and
+        // analysis views whose inner rows extend beyond their container height.
+        $('.main-ui').css('height', Math.max(0, h - ribbon_bottom - 17));
 
         if (this.vpp.$data.section == 'annotation') {
             // due the svg issue, when resizing the window,
