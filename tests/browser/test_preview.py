@@ -47,7 +47,11 @@ def run():
                 results.append({'name':name,'pass':False,'error':str(e),'pageErrors':errors})
             finally:context.close()
         def assisted(page,context,requests):
-            page.get_by_test_id('sample').click();page.get_by_test_id('demo-suggest').click()
+            page.get_by_test_id('sample').click()
+            assert page.get_by_test_id('analyze').is_enabled()
+            page.get_by_test_id('analyze').click()
+            expect(page.get_by_test_id('message')).to_contain_text('Import a GLiNER2.5 boundary model package')
+            page.get_by_test_id('demo-suggest').click()
             expect(page.get_by_test_id('suggestion')).to_have_count(1)
             page.get_by_test_id('accept').click();expect(page.get_by_test_id('human-record')).to_have_count(1)
             page.get_by_role('button',name='Undo',exact=True).click();expect(page.get_by_test_id('human-record')).to_have_count(0)
