@@ -115,8 +115,8 @@ html,body {
     overflow: hidden;
 }
 #mui_editor_row nextmedtator-assist[data-open="true"] {
-    flex-basis: 380px;
-    width: 380px;
+    flex-basis: clamp(300px, 28vw, 380px);
+    width: clamp(300px, 28vw, 380px);
 }
 #mui_dtdlist {
     overflow-y: auto;
@@ -1210,8 +1210,43 @@ input[type=text].ipt-spinner-xs {
     height: 30px;
 }
 .ribbon-menu {
-    /* to meet the needs of long item list */
-    min-width: 1450px;
+    min-width: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+}
+.ribbon-menu .tabs-holder {
+    grid-column: 1;
+    grid-row: 1;
+    flex-wrap: wrap;
+}
+.ribbon-menu #app_info {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    padding: 0 10px;
+    white-space: nowrap;
+    border-bottom: 1px solid #dadbdc;
+}
+.ribbon-menu .content-holder {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-width: 0;
+}
+.ribbon-menu .content-holder .section {
+    height: auto;
+    flex-wrap: wrap;
+}
+.ribbon-menu .content-holder .group {
+    flex: 0 0 auto;
+    max-width: 100%;
+}
+@media (max-width: 1399px) {
+    .ribbon-menu .content-holder .group {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
 }
 .ribbon-toggle-group .ribbon-icon-button {
     height: 20px;

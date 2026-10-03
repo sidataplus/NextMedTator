@@ -20,17 +20,20 @@ button.primary{background:#076b74;color:#fff;border-color:#076b74}
 button:focus:not(:focus-visible){outline:none}
 .dock{height:100%;display:flex;flex-direction:column;background:#f7f9fa}
 .rail{height:100%;width:100%;border:0;border-radius:0;background:#f7f9fa;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:.04em}
-.head{padding:8px;border-bottom:1px solid #d7e1e7;display:flex;flex-direction:column;gap:6px}
+.head{padding:8px;border-bottom:1px solid #d7e1e7;display:flex;flex-direction:column;gap:4px}
+.head p{margin:0;overflow-wrap:anywhere}
+.head label{flex-direction:row;align-items:center}
+.head select{flex:1;min-width:0}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .grow{flex:1}
 .badge{border-radius:999px;padding:2px 8px;background:#e8f5ef;font-size:11px}
 .muted{color:#536976;font-size:12px}
-.body{overflow:auto;padding:8px;flex:1}
+.body{overflow:auto;padding:8px;flex:1;min-height:0}
 .card{background:#fff;border:1px solid #d7e1e7;border-radius:8px;padding:8px;margin:0 0 8px}
 .card p{margin:3px 0;overflow-wrap:anywhere}
 .anchor{font-weight:650}
 .tag{font-size:10px;letter-spacing:.04em;text-transform:uppercase}
-.message{margin:0 8px 8px;padding:8px;border-radius:6px;background:#edf4f6;overflow-wrap:anywhere}
+.message{margin:0 8px 8px;padding:8px;border-radius:6px;background:#edf4f6;overflow-wrap:anywhere;max-height:25%;overflow:auto;flex-shrink:0}
 .message.error{background:#fff0ec;border:1px solid #db927f}
 .docs{max-height:112px;overflow:auto;border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:4px 6px}
 .check{display:flex;gap:6px;align-items:center;flex-direction:row}
