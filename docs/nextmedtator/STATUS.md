@@ -1,17 +1,19 @@
 # Implementation and qualification status
 
-Validated on 2026-10-03 against checked-in PRD v1.0. This is a baseline engineering preview; the full public/clinical release is not yet qualified.
+PRD baseline validated on 2026-10-03; Phase 4 adapter follow-up validated on 2026-10-04. This is a baseline engineering preview; the full public/clinical release is not yet qualified.
 
 ## Supplied LoRA follow-up
 
-The supplied mixv1 PEFT adapter now has a reproducible export through the separate [locked Python packager](../../tools/gliner-onnx/README.md). Its metadata pins `fastino/gliner2.5-base-v1@ca906247640776a07753514055be9726f9080ead`; all 144 adapter tensors were loaded exactly. Active-adapter versus merged encoder output differs by at most 7.3e-6. The approximately 790 MB package passes six synthetic English source occurrence cases and numerical checks for the main, attribute, record and relation graphs. Actual ORT Web WASM conformance, offline installation/restart/inference, review, comparison, portable export/reopen, lineage and native Vue/CodeMirror annotation are exercised by `tests/browser/test_lora_model.py`. User weights are not committed or published. Technical conformance does not establish clinical accuracy; source-exclusive record assignment and automatic relations remain outside this app codec.
+The current adapter is `na399/gliner2.5-clinical-evidence-lora-p4@43e8dbd6d9b240498b891c74202d3e869d317c26`, exported by the separate [locked Python packager](../../tools/gliner-onnx/README.md) against the same `fastino/gliner2.5-base-v1@ca906247640776a07753514055be9726f9080ead`. All 246 rank-32 encoder/head tensors load exactly; active-adapter versus merged encoder maximum error is 8.1e-6. The 790 MB package passes six source occurrence cases, native checks for all four graphs and all 17 ORT Web fixtures. Offline installation/restart/inference, review/comparison/export/reopen, lineage, native Vue/CodeMirror annotations and the 27-note corpus pass. See the [Phase 4 technical report](qualification/clinical-p4-technical.json). Weights are not committed or published. The model card declares non-commercial research use and no redistribution. Technical conformance does not establish clinical accuracy or implement the separate ClinicalEvidence hybrid decoder.
 
 ## Generated-note validation
 
 The [generated-note follow-up](GENERATED-NOTE-VALIDATION.md) validates all 27
 supplied notes offline and in portable exports, and exercises a representative
 note in the original UI. Exact-anchor agreement with the 618 generated labels
-is 47.5% micro F1; assertion/experiencer agreement is low. These unverified
+improves from 47.5% to 68.3% micro F1 after replacing mixv1 with Phase 4.
+Assertion agreement is 74.7%, experiencer 46.6% and time frame 70.9% on the
+current adapter's matched, labeled anchors. These unverified
 references do not qualify clinical accuracy. The full 17-choice status union
 is explicitly rejected by the current eight-choice attribute head.
 

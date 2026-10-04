@@ -67,49 +67,63 @@ a supplied adapter inherits the base model's Apache-2.0 license.
 default is `LicenseRef-Hub-Base` rather than assuming all compatible bases
 share a license.
 
-## Supplied mixv1 adapter
+## Current adapter: ClinicalEvidence Phase 4
+
+The current validation package uses
+`na399/gliner2.5-clinical-evidence-lora-p4@43e8dbd6d9b240498b891c74202d3e869d317c26`.
+Download the pinned adapter, then build locally:
 
 ```sh
+uv tool run --from huggingface_hub==2.1.1 hf download na399/gliner2.5-clinical-evidence-lora-p4 --revision 43e8dbd6d9b240498b891c74202d3e869d317c26 --local-dir work/clinical-p4-adapter
 uv run --locked --project tools/gliner-onnx gliner-onnx \
-  --adapter /path/to/mixv1_adapter.zip \
+  --adapter work/clinical-p4-adapter \
   --base-model fastino/gliner2.5-base-v1 \
   --base-revision ca906247640776a07753514055be9726f9080ead \
   --base-license Apache-2.0 \
-  --id gliner25-base-mixv1 \
-  --out work/mixv1.nmt-model.zip \
-  --report test-results/mixv1-export.json
+  --adapter-license LicenseRef-Noncommercial-Research-No-Redistribution \
+  --id gliner25-clinical-evidence-p4 \
+  --out work/clinical-p4.nmt-model.zip \
+  --report test-results/clinical-p4-export.json
 ```
 
-For the submitted artifact, rank is 16 and all 144 adapter tensors target the
-encoder. The base revision comes from its original snapshot metadata. The
-generated package is about 790 MB. Native source spans and scores, all heads,
-actual ORT Web WASM conformance, offline install/restart/inference,
-accept/reject, comparison, portable export/reopen and original Vue/CodeMirror
-annotation were exercised in Cloud Chromium. This is technical validation;
-clinical accuracy and target-device qualification remain separate.
-Source extraction fixtures cover plain occurrence spans. Structured heads
-have numerical fixtures; these do not establish equivalence of every source
-record-decoding policy or clinical schema. The app retains its anchored-field
-decoder and does not implement source-exclusive global assignment.
+The adapter declares its base by name without an immutable base revision. We
+reuse the exact base revision from the mixv1 run for the controlled comparison.
+Rank is 32, alpha 64, and all 246 tensors load exactly, including encoder and
+extraction/record-head adapters. Active-adapter versus merged encoder maximum
+absolute error is 8.1e-6. The 790 MB package passes source occurrence cases
+and native numerical checks for all four graphs, including varied record
+candidate counts and relation lengths. The trained-head fingerprint is
+recorded rather than declared unchanged.
+
+The model card declares non-commercial research use and no redistribution.
+The tool license is separate; adapter/exported weights are kept outside Git
+and are not published by this workflow.
 
 ```sh
 uv run --locked --project tools/gliner-onnx python -m unittest discover -s tools/gliner-onnx/tests
-NMT_LORA_PACKAGE=work/mixv1.nmt-model.zip uv run --locked python tests/browser/test_lora_model.py
+NMT_LORA_PACKAGE=work/clinical-p4.nmt-model.zip uv run --locked python tests/browser/test_lora_model.py
+NMT_LORA_PACKAGE=work/clinical-p4.nmt-model.zip uv run --locked python tests/browser/test_lora_samples.py
+NMT_LORA_PACKAGE=work/clinical-p4.nmt-model.zip uv run --locked python tests/browser/test_lora_samples_legacy.py
 ```
 
-Build the app and engineering preview before the browser gate. The real-weight
-gate requires a package and never silently skips or substitutes fake outputs.
-CI runs bounded synthetic adapter tests for different ranks/scalings and
-dynamic stable-sort cases; user-supplied adapter weights stay outside Git.
+Build the app and engineering preview before the browser gates. The real-weight
+gates require the package and never silently skip or substitute fake outputs.
+CI runs bounded synthetic adapter tests for different ranks/scalings, DoRA,
+head-only adaptation, record candidate counts up to 192 and dynamic stable ties.
 
-The checked-in [technical report](../../docs/nextmedtator/qualification/mixv1-technical.json)
-and [original-UI screenshot](../../docs/nextmedtator/qualification/mixv1-original-ui.png)
-record this Cloud run. Record fixtures vary instances, fields and candidate
-counts; relation fixtures cover 6 and 96 words. CI also checks record inputs
-up to 192 candidates against the original source scorer.
+See the [Phase 4 technical report](../../docs/nextmedtator/qualification/clinical-p4-technical.json)
+and [generated-note comparison](../../docs/nextmedtator/GENERATED-NOTE-VALIDATION.md).
+Source extraction fixtures cover plain occurrence spans. Structured heads
+have numerical fixtures; these do not establish equivalence of every source
+record-decoding policy or clinical schema. The app retains its anchored-field
+and head-based choice decoders. The model card's separate ClinicalEvidence
+`per_anchor`/`hybrid` decoder is not implemented by this gate. Clinical accuracy
+and target-device qualification remain separate.
 
-The supplied 27-note clinical-style generated corpus is also validated through
-the app. See [generated-note validation](../../docs/nextmedtator/GENERATED-NOTE-VALIDATION.md)
-for exact scope, reproduction and agreement results. These references are
-unverified generated labels, and the contextual-field agreement is low;
-the successful runtime checks do not qualify clinical accuracy.
+## Previous adapter baseline
+
+The original rank-16 mixv1 adapter and its results remain archived in the
+[mixv1 technical report](../../docs/nextmedtator/qualification/mixv1-technical.json).
+The [adapter comparison](../../docs/nextmedtator/qualification/adapter-comparison.json)
+uses the same 27-note fixture, schema, threshold and matching protocol. These
+are unverified generated labels, not a clinical gold standard.
