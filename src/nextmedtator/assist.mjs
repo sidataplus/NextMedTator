@@ -316,22 +316,26 @@ class LegacyAssist {
         this.message='Independent annotation frozen in the portable evidence project. Analyze and reveal when ready.';
     }
     async analyzeDocuments(anns) {
-        if (!this.model)
+        // Original-screen notes stay editable while the worker runs. Retain the
+        // submitted text/filename and schema instead of rereading mutable Vue data.
+        const model=this.model;
+        anns=anns.map(ann=>({_filename:ann._filename,text:ann.text,tags:clone(ann.tags??[])}));
+        if (!model)
             throw new Error('Import a GLiNER2.5 boundary model package in this panel');
         if (!anns.length)
             throw new Error('Open a document first');
         const schema=legacySchema(legacy().data.dtd);
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
-        const qualification = qualifyForSchema(this.model, schema);
+        const qualification = qualifyForSchema(model, schema);
         if (qualification.level !== 'entity-span' && qualification.level !== 'structured-span' && qualification.level !== 'occurrence-record')
             throw new Error('This package’s codec is not a local GLiNER2.5 decoder');
         const codec = qualification.level === 'occurrence-record' ? SMALL_CODEC : qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
         const notice = codec === SMALL_CODEC ? SMALL_NOTICE : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        const variants = this.model.manifest.variants.filter(variant => variant.codec === codec);
+        const variants = model.manifest.variants.filter(variant => variant.codec === codec);
         const variant = variants.find(item => item.backend === 'wasm') ?? variants.find(item => item.backend === 'webgpu' && navigator.gpu);
         if (!variant)
             throw new Error('No browser GLiNER2.5 variant is available in the imported package');
-        if(this.qualifiedManifest!==this.model.manifestHash||this.qualifiedVariant!==variant.id){const report=await this.modelRunner.run(this.model,variant.id);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=this.model.manifestHash;this.qualifiedVariant=variant.id;}
+        if(this.qualifiedManifest!==model.manifestHash||this.qualifiedVariant!==variant.id){const report=await this.modelRunner.run(model,variant.id);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=model.manifestHash;this.qualifiedVariant=variant.id;}
         const prompt = (codec === GLINER_STRUCTURED || codec===SMALL_CODEC)
             ? schemaPrompt(schema)
             : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
@@ -344,7 +348,7 @@ class LegacyAssist {
         });
         const runSettings={codec,threshold:variant.threshold??.5,limitations:codec===SMALL_CODEC?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         const completed=new Set();let activeIndex=0;
-        try{await this.modelRunner.analyzeBatch(this.model, variant.id, requests, { onProgress: index => {
+        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { onProgress: index => {
             activeIndex=index;
             const ann = anns[index];
             this.progress = { index: index + 1, total: anns.length, filename: ann._filename ?? 'document' };
@@ -355,14 +359,14 @@ class LegacyAssist {
             const doc = { id: ann._filename ?? `document-${index + 1}`, text: requests[index].text };
             if (result.kind !== codec)
                 throw new Error('Worker did not return GLiNER span output');
-            const provenance = modelRunProvenance(this.model, variant.id, result);
+            const provenance = modelRunProvenance(model, variant.id, result);
             const records = result.records ?? spansToRecords(doc, schema, result.spans);
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
-            const project=await this.ensureProject(ann),nativeDoc=project.current.documents[0];
+            const project=await this.ensureProject(ann,schema),nativeDoc=project.current.documents[0];
             const nativeRecords=records.map(r=>({...r,documentId:nativeDoc.id}));
             const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);this.runHistory.push(nativeRun);
             completed.add(index);this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
-        } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex]),doc=project.current.documents[0],identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
+        } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],schema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'

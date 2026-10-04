@@ -113,34 +113,40 @@ export class EvidenceWorkspace {
     changed() { this.dirty = true; this.saveState = 'Unsaved changes'; }
     get doc() { return this.project?.current.documents[this.index]; }
     async analyzeCurrent() {
-        invariant(this.doc, 'Open a document first');
-        invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
-        const qualification = qualifyForSchema(this.model, this.project.current.schema);
+        // Bind every await to the source and package selected when analysis started.
+        const project=this.project,doc=this.doc,model=this.model;
+        invariant(doc, 'Open a document first');
+        invariant(model, 'Import a GLiNER2.5 boundary model package in Models');
+        const qualification = qualifyForSchema(model, project.current.schema);
         invariant(qualification.level === 'entity-span' || qualification.level === 'structured-span' || qualification.level === 'occurrence-record', 'This package’s codec is not a local GLiNER2.5 decoder');
         const codec = qualification.level === 'occurrence-record' ? SMALL_CODEC : qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
         const notice = codec === SMALL_CODEC ? SMALL_NOTICE : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        const variants = this.model.manifest.variants.filter(v => v.codec === codec);
+        const variants = model.manifest.variants.filter(v => v.codec === codec);
         const variant = variants.find(v => v.backend === 'wasm') ?? variants.find(v => v.backend === 'webgpu' && navigator.gpu);
         invariant(variant, 'No browser GLiNER2.5 variant is available in the imported package');
-        const prompt = (codec === GLINER_STRUCTURED || codec===SMALL_CODEC) ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
-        if(codec===SMALL_CODEC)validateSmallSchema(this.project.current.schema);
-        if(this.modelReport?.manifestHash!==this.model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(this.model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
-        const runSettings={codec,threshold:variant.threshold??.5,overlapPolicy:'flat',maxSequenceLength:512,wordOverlap:32,notice,limitations:codec===SMALL_CODEC?['cross-window-relations','anchorless-records',...(Object.keys(this.project.current.schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const prompt = (codec === GLINER_STRUCTURED || codec===SMALL_CODEC) ? schemaPrompt(project.current.schema) : { ...schemaEntityLabels(project.current.schema), contentCount: undefined, groups: undefined };
+        if(codec===SMALL_CODEC)validateSmallSchema(project.current.schema);
+        if(this.modelReport?.manifestHash!==model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
+        const runSettings={codec,threshold:variant.threshold??.5,overlapPolicy:'flat',maxSequenceLength:512,wordOverlap:32,notice,limitations:codec===SMALL_CODEC?['cross-window-relations','anchorless-records',...(Object.keys(project.current.schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         let result;const started=performance.now();
         try {
-            result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema: this.project.current.schema, threshold: variant.threshold });
+            result = await this.modelRunner.analyze(model, variant.id, { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema: project.current.schema, threshold: variant.threshold });
         } catch(error) {
-            const identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
-            const failed=await makeRun(this.project,this.doc,[],{...identity,producer:{...identity.producer,notice},status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}],timing:{inferenceMs:performance.now()-started}});
-            await this.project.addRun(failed);this.changed();throw error;
+            const identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
+            const failed=await makeRun(project,doc,[],{...identity,producer:{...identity.producer,notice},status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}],timing:{inferenceMs:performance.now()-started}});
+            await project.addRun(failed);if(this.project===project)this.changed();throw error;
         }
         invariant(result.kind === codec, 'Worker returned a different decoder output');
-        const provenance = modelRunProvenance(this.model, variant.id, result);
-        const records = result.records ? result.records.map(r=>({...r,documentId:this.doc.id})) : spansToRecords(this.doc, this.project.current.schema, result.spans);
-        const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, windows: result.windows ?? [], timing: { inferenceMs: performance.now()-started }, settings: runSettings, runtime: provenance.runtime });
-        await this.project.addRun(run);
-        this.changed();
-        this.message = `${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;
+        const provenance = modelRunProvenance(model, variant.id, result);
+        const records = result.records ? result.records.map(r=>({...r,documentId:doc.id})) : spansToRecords(doc, project.current.schema, result.spans);
+        const run = await makeRun(project, doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, windows: result.windows ?? [], timing: { inferenceMs: performance.now()-started }, settings: runSettings, runtime: provenance.runtime });
+        await project.addRun(run);
+        if(this.project===project){
+            this.changed();
+            this.message = project.canSeeMachine
+                ? `${records.length} local span suggestion${records.length === 1 ? '' : 's'} for ${doc.provenance?.filename??doc.id}. ${notice}`
+                : 'Local analysis finished. Suggestions stay hidden until you reveal them.';
+        }
     }
     async save() { const data = await exportBundle(this.project.current); localDownload(data, `${this.project.current.id}.nmt.zip`, 'application/zip'); this.saveState = 'Project export created; verify your downloaded file'; this.dirty = false; this.message = 'Export stays on your device. The application cannot verify a durable backup.'; }
     async checkpoint() { try{await this.recovery.checkpoint(this.project.current);}catch(error){this.dirty=true;this.saveState='Unsaved changes; recovery failed. Export this project.';throw error;} this.saveState = 'Recovery checkpoint saved in this browser; export still recommended'; this.message = 'Verified local database recovery copy. Export a portable backup.'; }
