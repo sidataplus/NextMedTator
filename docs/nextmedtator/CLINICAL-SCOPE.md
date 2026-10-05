@@ -40,6 +40,20 @@ Actual P4 ONNX was run in Chromium on two supplied generated notes, `syn7_00007`
 
 The real-browser gate verifies full source coverage, exact offsets, allowed families/concept IDs, native auto-applied tag counts, unreviewed provenance, old-run immutability, evidence export and corpus recovery, with no note egress. The browser-exported semantic schema also passes upstream `SemanticSchema.model_validate(...).verify()` at the pinned revision. See [scope browser report](qualification/clinical-scope-ui.json), [upstream validation](qualification/clinical-scope-upstream-validation.json) and the accompanying original-UI screenshots.
 
+### User-configured BPSD screenshots
+
+At the user's request, a custom **BPSD** profile selects `event_occurrence` and defines dementia-related behavioral/psychological symptoms, with explicit exclusions. This is a saved user configuration, not an additional built-in preset. Actual P4 inference in **Auto apply** mode on `syn7_00007`, `syn7_00002`, `syn7_00023` and `syn7_00014` produces 7, 3, 2 and 8 native tags, respectively. Every native/machine row is visible in the captures. All runs complete with exact source offsets, automatic copies remain unreviewed, and no note text leaves the app.
+
+The screenshots also show imperfect scope adherence: two `fall` anchors in the first note, `resting` in the second, and `re-evaluate` in the dense note survive the requested exclusions. The third note captures only questioning/shadowing and omits other relevant spans. No predictions were inserted, removed or corrected for the screenshots. These are examples of prompt-guided scope behavior, not validated BPSD labels or new clinical accuracy metrics.
+
+[Importable profile](qualification/bpsd-scope.json) · [Full capture report and predictions](qualification/bpsd-report.json) · [Scope editor](qualification/bpsd-scope-editor.png)
+
+![Custom BPSD scope with seven automatically applied native tags](qualification/bpsd-syn7_00007-auto.png)
+
+![Custom BPSD scope with eight automatically applied native tags](qualification/bpsd-syn7_00014-auto.png)
+
+![Custom BPSD scope with two automatically applied native tags](qualification/bpsd-syn7_00023-auto.png)
+
 Reproduce after building the static app:
 
 ```sh
