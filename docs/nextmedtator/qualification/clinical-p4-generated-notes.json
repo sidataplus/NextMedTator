@@ -100,8 +100,8 @@
     1
   ],
   "cloudTimingMs": {
-    "median": 4835.880000025034,
-    "max": 7178.5
+    "median": 4901.229999989271,
+    "max": 7300.420000016689
   },
   "generatedReferenceAgreement": {
     "interpretation": "Agreement with unverified generated references, not clinical accuracy",
@@ -166,13 +166,13 @@
     "enumAgreementOnExactMatchedAnchors": {
       "assertion": {
         "matchedAnchorsWithReference": 379,
-        "agree": 283,
-        "fractionAgree": 0.7467018469656992
+        "agree": 288,
+        "fractionAgree": 0.7598944591029023
       },
       "experiencer": {
         "matchedAnchorsWithReference": 146,
-        "agree": 68,
-        "fractionAgree": 0.4657534246575342
+        "agree": 74,
+        "fractionAgree": 0.5068493150684932
       },
       "time_frame": {
         "matchedAnchorsWithReference": 134,
@@ -403,7 +403,7 @@
       }
     ]
   },
-  "date": "2026-10-04",
+  "date": "2026-10-05",
   "adapterSource": {
     "repository": "na399/gliner2.5-clinical-evidence-lora-p4",
     "revision": "43e8dbd6d9b240498b891c74202d3e869d317c26",
@@ -423,5 +423,11 @@
     "noNoteEgress": true,
     "browser": "151.0.7922.173"
   },
-  "validationUnitTests": 4
+  "validationUnitTests": 4,
+  "reviewRevalidation": {
+    "attributeMask": "Encoder word mask retained through attribute crops; padded words stay masked",
+    "bothAdaptersRerun": true,
+    "appUnitTests": 120,
+    "packagerUnitTests": 10
+  }
 }

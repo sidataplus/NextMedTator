@@ -1,6 +1,6 @@
 # Implementation and qualification status
 
-PRD baseline validated on 2026-10-03; Phase 4 adapter follow-up validated on 2026-10-04. This is a baseline engineering preview; the full public/clinical release is not yet qualified.
+PRD baseline validated on 2026-10-03; Phase 4 adapter follow-up revalidated after PR review on 2026-10-05. This is a baseline engineering preview; the full public/clinical release is not yet qualified.
 
 ## Supplied LoRA follow-up
 
@@ -12,7 +12,7 @@ The [generated-note follow-up](GENERATED-NOTE-VALIDATION.md) validates all 27
 supplied notes offline and in portable exports, and exercises a representative
 note in the original UI. Exact-anchor agreement with the 618 generated labels
 improves from 47.5% to 68.3% micro F1 after replacing mixv1 with Phase 4.
-Assertion agreement is 74.7%, experiencer 46.6% and time frame 70.9% on the
+Assertion agreement is 76.0%, experiencer 50.7% and time frame 70.9% on the
 current adapter's matched, labeled anchors. These unverified
 references do not qualify clinical accuracy. The full 17-choice status union
 is explicitly rejected by the current eight-choice attribute head.

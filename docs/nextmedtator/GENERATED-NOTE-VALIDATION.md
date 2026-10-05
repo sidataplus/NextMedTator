@@ -23,14 +23,20 @@ fixtures pass in Chromium 151 with ORT Web 1.23.2 WASM. All 27 notes complete
 offline with full source coverage and valid code-point offsets, each in one
 window. The portable corpus exports and reopens with identical source texts
 and all 27 machine runs; adapter identity is retained. Requests are local
-GETs with no note bodies. Cloud median inference time is 4.84 seconds per
-note, maximum 7.18 seconds; this is not target-device qualification.
+GETs with no note bodies. Cloud median inference time is 4.90 seconds per
+note, maximum 7.30 seconds; this is not target-device qualification.
 
 The original MedTator UI also loads all 27 notes. A representative note passes
 real inference, CodeMirror span location, acceptance into a native tag and
 evidence export with its original text and adapter lineage. See the
 [screenshot](qualification/clinical-p4-generated-notes-ui.png) and
 [full report](qualification/clinical-p4-generated-notes.json).
+
+Both adapters were rerun after PR review found a lost word mask in attribute
+scoring. The encoder mask now reaches the attribute head, and padded word
+states remain masked. The tables and JSON reports below use these corrected
+runs; package weights, schema and threshold remain the same. All 120 app,
+10 packager and four generated-note unit tests pass.
 
 ## Generated-reference agreement
 
@@ -47,9 +53,9 @@ code-point range, with multiset matching for duplicates. Threshold remains
 | Micro precision agreement | 68.7% | 76.9% |
 | Micro recall agreement | 36.2% | 61.5% |
 | Micro F1 agreement | 47.5% | 68.3% |
-| Assertion on matched, labeled anchors | 40 / 223 (17.9%) | 283 / 379 (74.7%) |
-| Experiencer on matched, labeled anchors | 17 / 87 (19.5%) | 68 / 146 (46.6%) |
-| Time frame on matched, labeled anchors | 43 / 85 (50.6%) | 95 / 134 (70.9%) |
+| Assertion on matched, labeled anchors | 41 / 223 (18.4%) | 288 / 379 (76.0%) |
+| Experiencer on matched, labeled anchors | 17 / 87 (19.5%) | 74 / 146 (50.7%) |
+| Time frame on matched, labeled anchors | 44 / 85 (51.8%) | 95 / 134 (70.9%) |
 | Exact condition time evidence on matched, labeled anchors | 2 / 26 | 11 / 41 |
 
 Anchor F1 increases by **20.9 percentage points**. The context rows above use
@@ -58,14 +64,15 @@ for that selection, we also score the 204 exact anchors matched by both:
 
 | Common-anchor attribute | Labeled common anchors | mixv1 | ClinicalEvidence P4 |
 |---|---:|---:|---:|
-| Assertion | 203 | 19.2% | 74.4% |
-| Experiencer | 78 | 17.9% | 44.9% |
-| Time frame | 75 | 49.3% | 65.3% |
+| Assertion | 203 | 19.7% | 74.9% |
+| Experiencer | 78 | 17.9% | 50.0% |
+| Time frame | 75 | 50.7% | 65.3% |
 
 The [comparison report](qualification/adapter-comparison.json) retains full
 counts, per-family/per-note results, source hashes and both adapter identities.
-The [previous mixv1 report](qualification/mixv1-generated-notes.json) remains
-archived. Experiencer and exact time evidence remain weak despite improvement.
+The [mixv1 baseline report](qualification/mixv1-generated-notes.json) also
+includes the corrected-mask rerun. Experiencer and exact time evidence remain
+weak despite improvement.
 
 Unlabeled attributes are not assumed negative. Per-family and per-note results
 are retained in the report. These results describe the current app schema,

@@ -184,7 +184,7 @@
     "declaredBaseRevision": null,
     "validationBaseRevision": "ca906247640776a07753514055be9726f9080ead"
   },
-  "date": "2026-10-04",
+  "date": "2026-10-05",
   "adapterUsageDeclaration": "Model card: non-commercial research only; no redistribution. Weights are not committed or published.",
   "browserValidation": {
     "realMergedAdapterWeights": true,
@@ -205,7 +205,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "89e10a45-c648-4315-b1e1-dcbcaab81ebf",
+              "id": "12d1191d-1fbd-4a16-9024-068b2a8c1fb7",
               "documentId": "pending",
               "family": "diagnosis",
               "anchor": [
@@ -226,7 +226,7 @@
               }
             },
             {
-              "id": "080e9383-1705-4dcc-8ad1-76fc8fdd05dc",
+              "id": "a9dd412f-fd59-43a4-9126-f311f1dc95f6",
               "documentId": "pending",
               "family": "medication",
               "anchor": [
@@ -293,7 +293,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "f77380dd-36bb-4e7f-8ef4-c1dda619fff9",
+              "id": "308c13b8-3a47-441f-ad47-392a283341fe",
               "documentId": "pending",
               "family": "person",
               "anchor": [
@@ -314,7 +314,7 @@
               }
             },
             {
-              "id": "27e13a6e-e746-4b93-b7e6-b2fd0f82e7b6",
+              "id": "9d333ea4-ed17-4f24-a6ba-5d6f39ce41ac",
               "documentId": "pending",
               "family": "organization",
               "anchor": [
@@ -335,7 +335,7 @@
               }
             },
             {
-              "id": "61038c0e-be19-49cc-8441-d401033c7127",
+              "id": "fe8be9d8-35f2-4f7d-98a7-ecf98dcf3b5a",
               "documentId": "pending",
               "family": "location",
               "anchor": [
@@ -402,7 +402,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "aa59017f-724f-4809-b748-30ef117c66a8",
+              "id": "7d48b5fd-072c-4fe7-ad76-a278753cebc7",
               "documentId": "pending",
               "family": "condition",
               "anchor": [
@@ -423,7 +423,7 @@
               }
             },
             {
-              "id": "35d98cf7-65cd-49bb-9347-3a406d29573a",
+              "id": "a8df3eba-313f-49b7-913a-6967367db7d0",
               "documentId": "pending",
               "family": "condition",
               "anchor": [
@@ -490,7 +490,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "a7195d06-c9b6-4563-b0b2-28eb1111ffde",
+              "id": "e333ffc9-2df7-442c-94ff-c55ac4a2abc3",
               "documentId": "pending",
               "family": "disease",
               "anchor": [
@@ -511,7 +511,7 @@
               }
             },
             {
-              "id": "771afdef-dd69-4271-881a-adf645ffca05",
+              "id": "324cf0b7-3dbf-406f-b25b-b450564abc66",
               "documentId": "pending",
               "family": "drug",
               "anchor": [
@@ -578,7 +578,7 @@
           "status": "complete",
           "records": [
             {
-              "id": "72f23182-a1f4-4df3-a466-5a76faa171c7",
+              "id": "5abb257a-fc37-4831-b2c7-98617769b1e3",
               "documentId": "pending",
               "family": "diagnosis",
               "anchor": [
@@ -801,5 +801,12 @@
     "privateCanaryNoEgress": true,
     "enumAndAnchoredSpanSchemaInference": true,
     "browser": "151.0.7922.173"
+  },
+  "reviewRevalidation": {
+    "appUnitTests": 120,
+    "packagerUnitTests": 10,
+    "generatedNoteUnitTests": 4,
+    "existingPackagesHaveUniqueZipManifestAndFixtureEntries": true,
+    "attributeMaskRegressionRejectsOriginalBug": true
   }
 }

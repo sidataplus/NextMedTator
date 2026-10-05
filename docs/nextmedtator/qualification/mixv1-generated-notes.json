@@ -100,8 +100,8 @@
     1
   ],
   "cloudTimingMs": {
-    "median": 4796.52499999851,
-    "max": 7065.214999996126
+    "median": 4743.740000009537,
+    "max": 7235.829999983311
   },
   "generatedReferenceAgreement": {
     "interpretation": "Agreement with unverified generated references, not clinical accuracy",
@@ -166,8 +166,8 @@
     "enumAgreementOnExactMatchedAnchors": {
       "assertion": {
         "matchedAnchorsWithReference": 223,
-        "agree": 40,
-        "fractionAgree": 0.17937219730941703
+        "agree": 41,
+        "fractionAgree": 0.18385650224215247
       },
       "experiencer": {
         "matchedAnchorsWithReference": 87,
@@ -176,8 +176,8 @@
       },
       "time_frame": {
         "matchedAnchorsWithReference": 85,
-        "agree": 43,
-        "fractionAgree": 0.5058823529411764
+        "agree": 44,
+        "fractionAgree": 0.5176470588235295
       }
     },
     "conditionTimeLiteralAgreementOnMatchedAnchors": {
@@ -417,5 +417,13 @@
     "All other supplied enums/literals remain available in the fixture but are outside this run scope.",
     "No baseline-versus-LoRA or clinical accuracy claim; no threshold tuning on these notes.",
     "Full status union has 17 choices and exceeds the existing eight-query attribute head."
-  ]
+  ],
+  "date": "2026-10-05",
+  "reviewRevalidation": {
+    "attributeMask": "Encoder word mask retained through attribute crops; padded words stay masked",
+    "bothAdaptersRerun": true,
+    "appUnitTests": 120,
+    "packagerUnitTests": 10,
+    "originalUI": "Prior mixv1 original-UI check retained; current original-UI gates rerun for P4"
+  }
 }

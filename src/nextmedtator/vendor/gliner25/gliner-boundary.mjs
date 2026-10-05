@@ -229,15 +229,22 @@ export function softmax(xs) {
 }
 
 /** Crop word states to a pad-length window around the given spans. */
-export function cropWordStates(textStates, entities, pad) {
-  const L = textStates.dims[1];
+export function cropWordStates(textStates, entities, pad, wordMask = null) {
+  // The tensor axis can include codec padding. Crop around actual words and
+  // carry the encoder's mask into the attribute head, including any masked gaps.
+  let L = textStates.dims[1];
+  if (wordMask) {
+    if (wordMask.length !== L) throw new Error('Word mask does not match text states');
+    while (L > 0 && !wordMask[L - 1]) L--;
+  }
   const H = textStates.dims[2];
   const data = textStates.data;
   const ts = new Float32Array(pad * H);
   const mask = new Float32Array(pad);
   if (L <= pad) {
     ts.set(data.subarray(0, L * H));
-    mask.fill(1, 0, L);
+    if (wordMask) mask.set(wordMask.subarray(0, L));
+    else mask.fill(1, 0, L);
     return { origin: 0, ts, mask };
   }
   const minS = Math.min(...entities.map((e) => e.wordStart ?? 0));
@@ -245,7 +252,8 @@ export function cropWordStates(textStates, entities, pad) {
   const mid = Math.floor((minS + maxE) / 2);
   const origin = Math.max(0, Math.min(mid - Math.floor(pad / 2), L - pad));
   ts.set(data.subarray(origin * H, (origin + pad) * H));
-  mask.fill(1);
+  if (wordMask) mask.set(wordMask.subarray(origin, origin + pad));
+  else mask.fill(1);
   return { origin, ts, mask };
 }
 
@@ -519,6 +527,7 @@ export class GlinerBoundaryRuntime {
     const relRoleStates = results.rel_role_states ?? null;
     const extra = {
       clsLogits, textStates, relRoleStates,
+      textWordMask: wordMask,
       relRoleCount: relMarkerPositions.length,
       queryStates: results.query_states ?? null,
       candidateStates: results.candidate_states ?? null,
@@ -666,7 +675,7 @@ export class GlinerBoundaryRuntime {
 
     for (let batchStart = 0; batchStart < entities.length; batchStart += PAD_C) {
       const batch = entities.slice(batchStart, batchStart + PAD_C);
-      const { origin, ts, mask } = cropWordStates(marg.textStates, batch, PAD_L);
+      const { origin, ts, mask } = cropWordStates(marg.textStates, batch, PAD_L, marg.textWordMask);
       const indices = new BigInt64Array(PAD_Q * PAD_C * 2);
       for (let q = 0; q < PAD_Q; q++) {
         for (let c = 0; c < PAD_C; c++) {

@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-04",
+  "date": "2026-10-05",
   "protocol": {
     "source": {
       "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
@@ -108,8 +108,8 @@
     "enumAgreementOnExactMatchedAnchors": {
       "assertion": {
         "matchedAnchorsWithReference": 223,
-        "agree": 40,
-        "fractionAgree": 0.17937219730941703
+        "agree": 41,
+        "fractionAgree": 0.18385650224215247
       },
       "experiencer": {
         "matchedAnchorsWithReference": 87,
@@ -118,8 +118,8 @@
       },
       "time_frame": {
         "matchedAnchorsWithReference": 85,
-        "agree": 43,
-        "fractionAgree": 0.5058823529411764
+        "agree": 44,
+        "fractionAgree": 0.5176470588235295
       }
     },
     "conditionTimeLiteralAgreementOnMatchedAnchors": {
@@ -408,13 +408,13 @@
     "enumAgreementOnExactMatchedAnchors": {
       "assertion": {
         "matchedAnchorsWithReference": 379,
-        "agree": 283,
-        "fractionAgree": 0.7467018469656992
+        "agree": 288,
+        "fractionAgree": 0.7598944591029023
       },
       "experiencer": {
         "matchedAnchorsWithReference": 146,
-        "agree": 68,
-        "fractionAgree": 0.4657534246575342
+        "agree": 74,
+        "fractionAgree": 0.5068493150684932
       },
       "time_frame": {
         "matchedAnchorsWithReference": 134,
@@ -652,27 +652,28 @@
     "attributes": {
       "assertion": {
         "labeledCommonAnchors": 203,
-        "mixv1Agree": 39,
-        "p4Agree": 151,
-        "mixv1Fraction": 0.1921182266009852,
-        "p4Fraction": 0.7438423645320197
+        "mixv1Agree": 40,
+        "p4Agree": 152,
+        "mixv1Fraction": 0.19704433497536947,
+        "p4Fraction": 0.7487684729064039
       },
       "experiencer": {
         "labeledCommonAnchors": 78,
         "mixv1Agree": 14,
-        "p4Agree": 35,
+        "p4Agree": 39,
         "mixv1Fraction": 0.1794871794871795,
-        "p4Fraction": 0.44871794871794873
+        "p4Fraction": 0.5
       },
       "time_frame": {
         "labeledCommonAnchors": 75,
-        "mixv1Agree": 37,
+        "mixv1Agree": 38,
         "p4Agree": 49,
-        "mixv1Fraction": 0.49333333333333335,
+        "mixv1Fraction": 0.5066666666666667,
         "p4Fraction": 0.6533333333333333
       }
     },
     "fixtureSha256": "96e3120d04513d4cd3c51601def0783c8347453120b1389960a4ed8432893535"
   },
-  "interpretation": "Controlled adapter replacement under the same app schema/threshold; generated-reference agreement, not clinical accuracy."
+  "interpretation": "Controlled adapter replacement under the same app schema/threshold; generated-reference agreement, not clinical accuracy.",
+  "reviewRevalidation": "Both adapters rerun after preserving the encoder word mask in attribute scoring; same packages/schema/threshold"
 }

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {validateModelManifest,qualifyForSchema} from '../../src/nextmedtator/model-package.mjs';
 import {RECORDS_CODEC,SMALL_CODEC,analyzeSmall} from '../../src/nextmedtator/gliner-small.mjs';
-import {GlinerBoundaryRuntime} from '../../src/nextmedtator/vendor/gliner25/gliner-boundary.mjs';
+import {GlinerBoundaryRuntime,cropWordStates} from '../../src/nextmedtator/vendor/gliner25/gliner-boundary.mjs';
 import {clone} from '../../src/nextmedtator/integrity.mjs';
 
 const schema={id:'s',version:'1',families:{diagnosis:{label:'diagnosis',fields:{concept:{type:'text'}}}}};
@@ -43,4 +43,41 @@ test('fixed word padding preserves actual note words and masks every added posit
  assert.equal(feeds.text_word_mask.data.reduce((a,b)=>a+b),2);
  assert.ok(Array.from(feeds.text_word_indices.data.slice(2)).every(value=>value===0n));
  assert.deepEqual(Array.from(marg.nullLogits),[-1]);
+ assert.deepEqual(marg.textWordMask,feeds.text_word_mask.data);
+});
+
+test('attribute scoring retains the real word mask for padded and unpadded codecs',async()=>{
+ class Tensor{constructor(type,data,dims){Object.assign(this,{type,data,dims});}}
+ for(const fixedWords of [0,512]){
+  let attributeFeeds;
+  const runtime=new GlinerBoundaryRuntime({ort:{Tensor},fixedWords,tokenize:()=>[1],
+   session:{inputNames:[],outputNames:[],run:async input=>{
+    const length=input.text_word_mask.dims[1];
+    return {start_logits:{data:new Float32Array(length+1)},end_logits:{data:new Float32Array(length+1)},
+     text_states:{dims:[1,length,2],data:Float32Array.from({length:length*2},(_,i)=>i<4?i+1:99)},
+     query_states:{dims:[1,2,2],data:new Float32Array(4)}};
+   }},attrsSession:{run:async feeds=>{
+    attributeFeeds=feeds;
+    // Make decoding depend on the mask so this verifies the downstream path.
+    const logits=new Float32Array(8*16);
+    logits[16]=feeds.text_word_mask.data.reduce((a,b)=>a+b)===2?5:-5;
+    return {attr_logits:{data:logits}};
+   }}});
+  const marg=await runtime.computeMarginals('Diabetes.', ['present','absent']);
+  const [entity]=await runtime.scoreExplicitAttributes('Diabetes.',[{wordStart:0,wordEnd:1}],['present','absent'],{marg});
+  assert.deepEqual(Array.from(attributeFeeds.text_word_mask.data.slice(0,4)),[1,1,0,0]);
+  assert.equal(attributeFeeds.text_word_mask.data.reduce((a,b)=>a+b),2);
+  assert.deepEqual(Array.from(attributeFeeds.text_states.data.slice(0,6)),[1,2,3,4,0,0]);
+  assert.equal(entity.attribute,'absent');
+ }
+});
+
+test('attribute crops preserve masked gaps and use the real end for long padded states',()=>{
+ const states={dims:[1,1024,1],data:Float32Array.from({length:1024},(_,i)=>i)};
+ const mask=new Float32Array(1024);mask.fill(1,0,600);mask[350]=0;
+ const crop=cropWordStates(states,[{wordStart:590,wordEnd:600}],512,mask);
+ assert.equal(crop.origin,88);
+ assert.deepEqual(crop.mask,mask.slice(88,600));
+ assert.equal(crop.ts.at(-1),599);
+ assert.throws(()=>cropWordStates(states,[],512,new Float32Array(2)),/mask does not match/);
 });

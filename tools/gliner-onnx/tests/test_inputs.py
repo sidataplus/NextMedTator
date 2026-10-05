@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from gliner_onnx.inputs import BASE_FILES, read_adapter, resolve_base, verify_base
+from gliner_onnx.cli import fixture_paths
 
 
 class Inputs(unittest.TestCase):
@@ -35,6 +36,14 @@ class Inputs(unittest.TestCase):
         _, hash_dir = read_adapter(self.root/'a', self.root/'b')
         self.assertEqual(hash_zip, hash_dir)
         self.assertEqual(resolve_base(cfg), ('fastino/gliner2.5-base-v1', 'a'*40))
+
+    def test_source_and_head_fixtures_are_packaged_exactly_once(self):
+        source = ['source-case-0.json', 'model-reference-0.json', 'attributes-reference.json']
+        for name in [*source, 'records-reference.json', 'relations-reference.json']:
+            (self.root/name).write_text('{}')
+        paths = fixture_paths(self.root, [*source, source[1]])
+        self.assertEqual(paths, [*source, 'records-reference.json', 'relations-reference.json'])
+        self.assertEqual(len(paths), len(set(paths)))
 
     def test_reject_unsafe_and_ambiguous_archives(self):
         for member in ['../adapter_model.safetensors', '/absolute', 'windows\\file', 'arbitrary-name/adapter_config.json', 'other/adapter_config.json']:

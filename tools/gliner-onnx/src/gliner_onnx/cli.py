@@ -98,6 +98,11 @@ def source_cases(model, cases):
     return captures
 
 
+def fixture_paths(output, source_paths):
+    """Keep each fixture once in both the manifest and archive, in export order."""
+    return list(dict.fromkeys([*source_paths, *sorted(path.name for path in output.glob('*-reference.json'))]))
+
+
 def export_model(model, captures, output):
     import torch
     import numpy as np
@@ -153,8 +158,7 @@ def export_model(model, captures, output):
         reports.append({'case': i, 'sourceSpansExact': True, 'sourceScoresWithinTolerance': True, 'outputErrors': errors})
     del native
     heads = export_heads(model, output, attribute_source)
-    paths += sorted(path.name for path in output.glob('*-reference.json'))
-    return paths, {'mainExportErrors': export_error, 'sourceCases': reports, 'heads': heads}
+    return fixture_paths(output, paths), {'mainExportErrors': export_error, 'sourceCases': reports, 'heads': heads}
 
 
 def build(args):
