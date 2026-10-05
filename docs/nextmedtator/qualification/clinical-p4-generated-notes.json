@@ -448,6 +448,20 @@
     "exactMatchedGeneratedAnchors": 380,
     "negatedPainDetected": 1,
     "negatedPainReferenceSpans": 7,
-    "report": "clinical-p4-original-corpus-ui.json"
+    "report": "clinical-p4-original-corpus-ui.json",
+    "autoApply": {
+      "examples": 4,
+      "nativeTagCounts": [
+        17,
+        17,
+        20,
+        26
+      ],
+      "allNativeRowsVisible": true,
+      "machineOrigin": "machine-applied",
+      "reviewStatus": "unreviewed",
+      "realAutoModeInferencePassed": true,
+      "originalPredictionsUnchanged": true
+    }
   }
 }

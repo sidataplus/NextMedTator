@@ -4,7 +4,7 @@ import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
@@ -115,7 +115,7 @@ export function legacySchema(dtd) {
     const relations={};for(const tag of dtd?.rtags??[]){const refs=(tag.attrs??[]).filter(a=>a.vtype==='idref');if(refs.length===2)relations[tag.name]={head:Object.keys(families),tail:Object.keys(families),legacy:{head:refs[0].name,tail:refs[1].name}};}return {id:'medtator-schema',version:'1',families,...(Object.keys(relations).length?{relations}:{})};
 }
 export function legacyRecords(ann,doc,schema){
- const map=new OffsetMap(doc.text),records=(ann.tags??[]).filter(t=>t.spans&&schema.families[t.tag]).map(t=>({id:t.id,documentId:doc.id,family:t.tag,anchor:schema.families[t.tag].documentLevel?[]:t.spans.split(',').map(range=>{const [a,b]=range.split('~').map(Number);return map.selection(a,b);}),fields:Object.fromEntries(Object.entries(schema.families[t.tag].fields).map(([name])=>[name,name==='concept'?t.text:t[name]??null])),origin:{kind:'imported',source:'medtator-working-copy',reviewStatus:'unknown'}}));
+ const map=new OffsetMap(doc.text),records=(ann.tags??[]).filter(t=>t.spans&&schema.families[t.tag]).map(t=>({id:t.id,documentId:doc.id,family:t.tag,anchor:schema.families[t.tag].documentLevel?[]:t.spans.split(',').map(range=>{const [a,b]=range.split('~').map(Number);return map.selection(a,b);}),fields:Object.fromEntries(Object.entries(schema.families[t.tag].fields).map(([name,def])=>[name,name==='concept'?t.text:((def.type==='enum'&&t[name]===''&&!def.values.includes(''))?null:t[name]??null)])),origin:{kind:'imported',source:'medtator-working-copy',reviewStatus:'unknown'}}));
  for(const tag of ann.tags??[]){const rel=schema.relations?.[tag.tag];if(!rel)continue;const head=records.find(r=>r.id===tag[rel.legacy.head]),tail=records.find(r=>r.id===tag[rel.legacy.tail]);invariant(head&&tail,'Legacy relation endpoint is missing');head.relations??=[];head.relations.push({type:tag.tag,targetId:tail.id});}return records;
 }
 function node(tag, text, attrs = {}) {
@@ -282,12 +282,13 @@ class LegacyAssist {
     async ensureProject(ann,schema=legacySchema(legacy().data.dtd)) {
         const key=documentKey(ann._filename??'document',ann.text??''),hash=await fingerprint(schema);
         let project=this.projects.get(key);
-        if(!project||project.current.schemaHash!==hash){const doc=await sourceDocument('legacy-note',new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});project=await ReviewProject.create([doc],schema,{mode:this.mode,actor:'legacy-annotator'});const data=clone(project.current);data.draft.records=legacyRecords(ann,doc,schema);if(this.exposed.has(key))data.exposure=clone(this.exposure.filter(e=>e.key===key));project=await ReviewProject.open(data);this.projects.set(key,project);}
+        if(!project||project.current.schemaHash!==hash){const doc=await sourceDocument('legacy-note',new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});project=await ReviewProject.create([doc],schema,{mode:this.mode==='blind'?'blind':'assisted',actor:'legacy-annotator'});const data=clone(project.current);data.draft.records=legacyRecords(ann,doc,schema);if(this.exposed.has(key))data.exposure=clone(this.exposure.filter(e=>e.key===key));project=await ReviewProject.open(data);this.projects.set(key,project);}
         return project;
     }
     async syncProject(ann,schema=legacySchema(legacy().data.dtd)){
         const project=await this.ensureProject(ann,schema),records=legacyRecords(ann,project.current.documents[0],project.current.schema),key=documentKey(ann._filename??'document',ann.text),viewRun=this.runs.get(key);
-        const mapping=new Map(Object.entries(viewRun?.decisions??{}).filter(([,d])=>d.tagId).map(([predictionId,d])=>[d.tagId,project.current.draft.decisions[`${viewRun.nativeRunId}/${predictionId}`]?.humanId]));
+        const mapping=new Map(project.current.draft.records.filter(r=>r.origin?.legacyTagId).map(r=>[r.origin.legacyTagId,r.id]));
+        for(const [predictionId,d]of Object.entries(viewRun?.decisions??{}))if(d.tagId){const id=project.current.draft.decisions[`${viewRun.nativeRunId}/${predictionId}`]?.humanId;if(id)mapping.set(d.tagId,id);}
         for(const record of records)if(mapping.get(record.id)){const original=project.current.draft.records.find(r=>r.id===mapping.get(record.id));const legacyId=record.id;record.id=mapping.get(legacyId);record.origin={...original?.origin,legacyTagId:legacyId};}
         for(const record of records)for(const rel of record.relations??[])if(mapping.get(rel.targetId))rel.targetId=mapping.get(rel.targetId);
         if(project.current.phase!=='frozen'&&JSON.stringify(records)!==JSON.stringify(project.current.draft.records)){
@@ -331,15 +332,17 @@ class LegacyAssist {
             throw new Error('Open a document first');
         const schema=legacySchema(legacy().data.dtd);
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
+        const autoApply = this.mode === 'auto';
+        if (autoApply) for (const ann of anns) {
+            const key = documentKey(ann._filename ?? 'document', ann.text);
+            invariant(!this.blinded.has(key) || this.exposed.has(key), 'Reveal each protected note explicitly before auto apply');
+        }
         const qualification = qualifyForSchema(this.model, schema);
         if (qualification.level !== 'entity-span' && qualification.level !== 'structured-span' && qualification.level !== 'occurrence-record')
             throw new Error('This package’s codec is not a local GLiNER2.5 decoder');
-        const codec = qualification.level === 'occurrence-record' ? this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec : qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
+        const variant = selectInferenceVariant(this.model,qualification.level);
+        const codec = variant.codec;
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        const variants = this.model.manifest.variants.filter(variant => variant.codec === codec);
-        const variant = variants.find(item => item.backend === 'wasm') ?? variants.find(item => item.backend === 'webgpu' && navigator.gpu);
-        if (!variant)
-            throw new Error('No browser GLiNER2.5 variant is available in the imported package');
         if(this.qualifiedManifest!==this.model.manifestHash||this.qualifiedVariant!==variant.id){const report=await this.modelRunner.run(this.model,variant.id);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=this.model.manifestHash;this.qualifiedVariant=variant.id;}
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
@@ -371,11 +374,12 @@ class LegacyAssist {
             const nativeRecords=records.map(r=>({...r,documentId:nativeDoc.id}));
             const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);this.runHistory.push(nativeRun);
             completed.add(index);this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
+            if (autoApply) await this.applyAllSuggestions(ann);
         } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex]),doc=project.current.documents[0],identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
-            : `${notice}`;
+            : autoApply ? `Auto apply finished for ${anns.length} notes. Machine-applied tags are unreviewed; original predictions remain in the evidence project.` : `${notice}`;
     }
     chosenDocuments(onlySelected) {
         const view = legacy();
@@ -424,6 +428,53 @@ class LegacyAssist {
         view.vpp.$forceUpdate();
         return tag.id;
     }
+    async applyAllSuggestions(ann = this.current().ann) {
+        const view = legacy(), dtd = view?.data?.dtd;
+        invariant(ann && view.data.anns.includes(ann), 'Open a document first');
+        const key = documentKey(ann._filename ?? 'document', ann.text), run = this.runs.get(key);
+        invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this protected note explicitly before auto apply');
+        invariant(run?.status === 'complete', 'Auto apply requires a complete run');
+        const pending = run.records.filter(record => !run.decisions[record.id]);
+        if (!pending.length) { this.message = 'No remaining suggestions to apply. Existing and rejected tags were preserved.'; return; }
+        const project = await this.syncProject(ann);
+        invariant(project === run.project && legacy().data.dtd === dtd && project.current.documents[0].text === ann.text, 'Source or schema changed; analyze this note again');
+        invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this protected note explicitly before auto apply');
+        // Build and validate the complete batch before touching the native tags.
+        // Staging also makes native IDs unique within a family.
+        const staged = {...ann, tags:[...ann.tags]}, additions = [], replacements = [];
+        for (const record of pending) {
+            const tagDef = dtd.tag_dict[record.family];
+            invariant(tagDef && !tagDef.is_non_consuming && record.anchor.length, 'Auto apply requires an exact span-family schema mapping');
+            invariant(!record.relations?.length, 'Automatic relation application is not supported');
+            const values = {};
+            for (const attr of editableAttrs(tagDef)) {
+                const value = record.fields[attr.name];
+                invariant(value == null || typeof value === 'string', 'Review non-text attributes individually');
+                invariant(value == null || attr.vtype !== 'list' || attr.values.includes(value), 'Model attribute is outside the native schema');
+                values[attr.name] = value ?? ''; // Unknown predictions do not acquire schema defaults.
+            }
+            const tag = view.app.make_etag({spans:medtatorSpans(ann.text,record.anchor),text:record.anchor.map(s=>s.text).join(' ... ')},tagDef,staged);
+            Object.assign(tag, values); staged.tags.push(tag); additions.push({record,tag});
+            const native = legacyRecords({text:ann.text,tags:[tag]},project.current.documents[0],project.current.schema)[0];
+            replacements.push({...clone(record),documentId:native.documentId,fields:native.fields,origin:{legacyTagId:tag.id}});
+        }
+        const candidate = new ReviewProject(project.current);
+        candidate.applyMachineGroup(run.nativeRunId, replacements);
+        // Commit native tags and their evidence lineage together. No await can
+        // interleave source navigation or human editing in this section.
+        ann.tags.push(...additions.map(({tag})=>tag));
+        run.project = candidate; this.projects.set(key,candidate);
+        for (const {record,tag} of additions) run.decisions[record.id] = {status:'applied',tagId:tag.id,reviewStatus:'unreviewed'};
+        this.recordExposure({ann,key},run,'auto-apply');
+        ann._has_saved = false; view.vpp.refresh_v_anns();
+        for (const {tag} of additions) view.app.update_hint_dict_by_tag(ann,tag);
+        if (legacy().ann === ann) {
+            view.data.display_tag_name = '__all__'; view.app.cm_update_marks?.();
+            view.vpp.set_ann_unsaved(ann);
+        }
+        view.vpp.$forceUpdate(); this.apply = null; this.detail = null;
+        this.message = `Auto-applied ${additions.length} suggestions as native annotation tags. Machine-applied tags are unreviewed; existing tags and original predictions were preserved.`;
+    }
     locate(record) {
         const view = legacy();
         const ann = view?.ann;
@@ -454,8 +505,8 @@ class LegacyAssist {
         const head = node('div', null, { class: 'head' });
         const title = node('div', null, { class: 'row' });
         title.append(node('strong', 'Assistance'), node('span', null, { class: 'grow' }), button('Hide', () => this.setOpen(false), { id: 'assist-collapse', title: 'Collapse the assistance panel' }));
-        const mode = node('select', null, { 'aria-label': 'Workspace mode', 'data-testid': 'assist-mode' });
-        for (const [value, label] of [['assisted', 'Assisted'], ['blind', 'Blind']])
+        const mode = node('select', null, { 'aria-label': 'Workspace mode', 'data-testid': 'assist-mode', disabled:this.busy });
+        for (const [value, label] of [['assisted', 'Assisted'], ['auto', 'Auto apply'], ['blind', 'Blind']])
             mode.append(node('option', label, { value }));
         mode.value = this.mode;
         mode.addEventListener('change', () => { this.mode = mode.value; this.apply = null; this.render(); });
@@ -464,6 +515,7 @@ class LegacyAssist {
         const status = node('div', null, { class: 'row' });
         status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'No local model', { class: 'badge', 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
         head.append(title, labeled('Mode', mode), status, node('p', `${schema ? `Schema: ${schema}` : 'Schema: none loaded'}. Documents stay in the annotation workspace.`, { class: 'muted' }));
+        if (this.mode === 'auto') head.append(node('p', 'Analyze writes all predictions as unreviewed native tags. Apply all suggestions also uses an existing run.', {class:'muted'}));
         if (view?.ann)
             head.append(node('p', view.ann._filename ?? 'document', { class: 'muted', 'data-testid': 'assist-document' }));
         if (view?.run && this.mode !== 'blind' && (!this.blinded.has(view.key) || this.exposed.has(view.key)))
@@ -535,6 +587,9 @@ class LegacyAssist {
             this.recordExposure(view, run, 'assisted-display');
         const unresolved = run.records.filter(record => !run.decisions[record.id]).length;
         body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
+        const applied = Object.values(run.decisions).filter(d=>d.status==='applied').length;
+        if (applied) body.append(node('p', `${applied} machine-applied tags · unreviewed`, {'data-testid':'assist-auto-status'}));
+        body.append(button('Apply all suggestions', this.forCurrentNote(view.key, () => this.perform(() => this.applyAllSuggestions(view.ann))), {id:'assist-apply-all',disabled:this.busy||!unresolved||run.status!=='complete',title:'Add all remaining suggestions to this note without individual review; preserve existing and rejected tags'}));
         if (!run.records.length)
             body.append(node('p', run.status === 'complete' ? 'No suggestions in the completed run. Omission review is still required.' : 'Incomplete run. An empty result is not a negative label.', { class: 'muted' }));
         const display = node('select', null, { 'aria-label': 'Suggestion view', 'data-testid': 'assist-suggestion-view' });
@@ -545,7 +600,7 @@ class LegacyAssist {
         body.append(labeled('Suggestion view', display));
         if (this.suggestionView === 'compact') {
             const table = node('table', null, { class: 'compact', 'aria-label': 'Machine suggestions' });
-            const caption = node('caption', `${run.records.length} machine suggestions (not annotation tags)`);
+            const caption = node('caption', `${run.records.length} original machine suggestions`);
             const rows = node('tbody');
             for (const record of run.records) {
                 const row = node('tr', null, { 'data-testid': 'assist-compact-suggestion' });
@@ -554,6 +609,8 @@ class LegacyAssist {
                 const summary = [record.family.replaceAll('_occurrence', '').replaceAll('_', ' '), record.fields.assertion,
                     record.fields.time_frame, record.fields.experiencer, Number(record.score).toFixed(3)].filter(value => value != null).join(' · ');
                 cell.append(node('strong', anchor, { title: anchor }), node('small', summary, { title: summary }));
+                const decision = run.decisions[record.id];
+                if (decision) cell.append(node('small', decision.status==='applied'?`Auto-applied ${decision.tagId} · unreviewed`:decision.status==='rejected'?'Rejected':`Added ${decision.tagId}`));
                 const actions = node('td');
                 actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-compact-locate' }),
                     button('Review', this.forCurrentNote(view.key, () => { this.detail = record.id; this.apply = null; this.render(); this.root.querySelector('[data-testid="assist-suggestion"]')?.scrollIntoView({block:'nearest'}); }), { id: 'assist-details' }));
@@ -573,7 +630,7 @@ class LegacyAssist {
         for (const [name, value] of Object.entries(record.fields))
             card.append(node('p', `${name}: ${value == null ? 'Unknown' : value}`, { class: 'muted' }));
         if (decision)
-            card.append(node('p', decision.status === 'rejected' ? 'Rejected. The annotation file was not changed.' : `Added to the annotation as ${decision.tagId}. The suggestion stays here.`, { 'data-testid': 'assist-decision' }));
+            card.append(node('p', decision.status === 'rejected' ? 'Rejected. The annotation file was not changed.' : decision.status === 'applied' ? `Auto-applied as ${decision.tagId} · unreviewed. The suggestion stays here.` : `Added to the annotation as ${decision.tagId}. The suggestion stays here.`, { 'data-testid': 'assist-decision' }));
         const actions = node('div', null, { class: 'row' });
         actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-locate' }));
         if (!decision) {

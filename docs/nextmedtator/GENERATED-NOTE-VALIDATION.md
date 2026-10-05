@@ -54,6 +54,42 @@ anchor and the note with the most predictions; this includes weak results.
 | syn7_00023 | Negated pain anchor and assertion detected | 20 | 15 / 25 | 66.7% | [View](qualification/clinical-p4-syn7_00023-suggestions.png) |
 | syn7_00014 | Most machine suggestions | 26 | 19 / 26 | 73.1% | [View](qualification/clinical-p4-syn7_00014-suggestions.png) |
 
+## Auto apply screenshots
+
+The original assistance panel now offers **Auto apply** mode. Choose it before
+**Analyze note** or **Analyze selected** to write each completed run into native
+MedTator tags without individual acceptance. **Apply all suggestions** also
+applies the open note's existing complete run. Merely changing the mode does not
+write existing predictions. Existing tags and rejected decisions are preserved;
+reapplying the same run adds no duplicates. Reanalysis creates a new machine run.
+
+The entire native batch is staged and validated before tags are added. Exact
+family mappings and source spans are required, incomplete runs and automatic
+relations are rejected, and protected blind notes must be revealed explicitly.
+Unknown model enums remain empty native attributes and null project fields,
+rather than taking a schema default.
+
+These are screenshots of actual P4 predictions automatically written into the
+original source highlights and annotation table. All prediction and native-tag
+rows are visible; no attribute was corrected for these captures. The dense
+example also reruns actual P4 inference in Auto apply mode and writes all 26
+tags without an Apply-all click.
+
+| Note | Native tags auto-applied | Screenshot |
+|---|---:|---|
+| syn7_00007 | 17 | [View](qualification/clinical-p4-syn7_00007-auto-applied.png) |
+| syn7_00002 | 17 | [View](qualification/clinical-p4-syn7_00002-auto-applied.png) |
+| syn7_00023 | 20 | [View](qualification/clinical-p4-syn7_00023-auto-applied.png) |
+| syn7_00014 | 26 | [View](qualification/clinical-p4-syn7_00014-auto-applied.png) |
+
+Portable evidence exports retain the original machine run and adapter lineage.
+Applied copies have `origin.kind: machine-applied` and `reviewStatus: unreviewed`,
+with explicit run/prediction links and an automation audit event. They do not
+become independently reviewed reference annotations or complete negative labels.
+Browser gates check export/reopen, repeated application, selected-note batches,
+protected blind notes and preserved frozen annotations. Auto apply changes the
+annotation workflow; it does not fix model omissions or change agreement scores.
+
 **"Denies pain" is a real pipeline miss at threshold 0.5.** Of seven supplied
 negated-pain reference spans, only one has an exact predicted anchor and the
 negated assertion. Six are omitted, including the reported note. The same note
@@ -72,8 +108,8 @@ there is no dedicated BPSD tag type.
 Both adapters were rerun after PR review found a lost word mask in attribute
 scoring. The encoder mask now reaches the attribute head, and padded word
 states remain masked. The tables and JSON reports below use these corrected
-runs; package weights, schema and threshold remain the same. All 120 app,
-10 packager and four generated-note unit tests pass.
+runs; package weights, schema and threshold remain the same. All 125 app,
+11 packager and four generated-note unit tests pass.
 
 ## Generated-reference agreement
 

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {validateModelManifest,qualifyForSchema} from '../../src/nextmedtator/model-package.mjs';
+import {validateModelManifest,qualifyForSchema,selectInferenceVariant} from '../../src/nextmedtator/model-package.mjs';
 import {RECORDS_CODEC,SMALL_CODEC,analyzeSmall} from '../../src/nextmedtator/gliner-small.mjs';
 import {GlinerBoundaryRuntime,cropWordStates} from '../../src/nextmedtator/vendor/gliner25/gliner-boundary.mjs';
 import {clone} from '../../src/nextmedtator/integrity.mjs';
@@ -19,6 +19,19 @@ test('generic record packages require immutable merged-adapter lineage and the s
  for(const edit of [m=>delete m.lineage.adapter,m=>m.lineage.merge='equivalent-graph',m=>m.variants[0].fixedWords=8,m=>delete m.variants[0].abstentionThreshold,m=>m.variants[0].automaticRelations=true]){
   const bad=clone(good);edit(bad);assert.throws(()=>validateModelManifest(bad));
  }
+});
+test('mixed record codecs choose an available variant before selecting its decoder',()=>{
+ const m=manifest(), generic={...m.variants[0],id:'generic-gpu',backend:'webgpu'};
+ const small={...m.variants[0],id:'small-wasm',codec:SMALL_CODEC};
+ m.variants=[generic,small];validateModelManifest(m);
+ const level=qualifyForSchema({manifest:m},schema).level;
+ assert.equal(selectInferenceVariant({manifest:m},level,{webgpuAvailable:false}),small);
+ assert.equal(selectInferenceVariant({manifest:m},level,{webgpuAvailable:true}),small);
+ m.variants=[generic];
+ assert.throws(()=>selectInferenceVariant({manifest:m},level,{webgpuAvailable:false}),/No browser/);
+ assert.equal(selectInferenceVariant({manifest:m},level,{webgpuAvailable:true}),generic);
+ m.variants=[{...small,backend:'webgpu'}, {...generic,id:'generic-wasm',backend:'wasm'}];
+ assert.equal(selectInferenceVariant({manifest:m},level,{webgpuAvailable:false}).codec,RECORDS_CODEC);
 });
 test('new GLiNER codec honors source abstention and records its own identity; existing small decoding stays compatible',async()=>{
  let nullLogit=10;

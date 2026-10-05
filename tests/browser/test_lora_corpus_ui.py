@@ -1,8 +1,9 @@
 """Run every supplied note in original MedTator and photograph real suggestions.
 
 Screenshots include the reported missing negated pain, a low-agreement note,
-successful negated pain and a dense prediction list. No predictions are inserted
-or accepted to manufacture screenshots. Generated labels are unverified.
+successful negated pain and a dense prediction list. Capture the untouched raw
+list first, then the user's explicit auto-apply workflow. Generated labels are
+unverified; automatic tags are not individually reviewed.
 """
 import json
 import copy
@@ -194,12 +195,70 @@ def run():
                                  'counts':metrics['notes'][index],'f1Agreement':f1(metrics['notes'][index]),
                                  'machinePredictionsExported':True})
                 print('Captured',note['id'],len(result['records']),'actual suggestions:',reason,flush=True)
+                page.get_by_test_id('assist-mode').select_option('auto')
+                if index == dense:
+                    # Real P4 inference in Auto mode must write without any
+                    # individual acceptance or Apply-all click.
+                    page.get_by_test_id('assist-analyze').click()
+                    expect(page.get_by_test_id('assist-message')).to_contain_text('Auto apply finished for 1 notes')
+                    application = 'Analyze note in Auto apply mode'
+                else:
+                    page.get_by_test_id('assist-apply-all').click()
+                    expect(page.get_by_test_id('assist-message')).to_contain_text(f'Auto-applied {len(result["records"])} suggestions')
+                    application = 'Apply all suggestions from existing run'
+                expect(page.get_by_test_id('assist-counts')).to_have_text(f'{len(result["records"])} machine suggestions · {len(result["records"])} annotation tags')
+                expect(page.get_by_test_id('assist-auto-status')).to_have_text(f'{len(result["records"])} machine-applied tags · unreviewed')
+                expect(page.get_by_test_id('assist-apply-all')).to_be_disabled()
+                expect(page.locator('.tag-table tbody tr')).to_have_count(len(result['records']))
+                # A repeated explicit request is a no-op, including export.
+                page.evaluate('document.querySelector("nextmedtator-assist").assist.applyAllSuggestions()')
+                expect(page.locator('.tag-table tbody tr')).to_have_count(len(result['records']))
+                page.get_by_test_id('assist-suggestion-view').select_option('compact')
+                for height in [2200,2400,2600,2800,3000,3200,3400,3600]:
+                    page.set_viewport_size({'width':1600,'height':height})
+                    page.get_by_role('table',name='Machine suggestions').evaluate('el=>el.scrollIntoView({block:"start"})')
+                    fit = page.get_by_role('table',name='Machine suggestions').evaluate('''table=>{
+                        const body=table.closest('.body').getBoundingClientRect(),rows=[...table.querySelectorAll('tr')];
+                        return rows[0].getBoundingClientRect().top>=body.top-1 && rows.at(-1).getBoundingClientRect().bottom<=body.bottom+1;
+                    }''')
+                    page.locator('#mui_annlist').evaluate('el=>el.scrollTop=0')
+                    native_fit = page.locator('.tag-table').evaluate('''table=>{
+                        const pane=table.closest('#mui_annlist').getBoundingClientRect(),rows=[...table.querySelectorAll('tbody tr')],head=table.querySelector('thead').getBoundingClientRect();
+                        return rows[0].getBoundingClientRect().top>=head.bottom-1 && rows.at(-1).getBoundingClientRect().bottom<=pane.bottom-1;
+                    }''')
+                    if fit and native_fit: break
+                assert fit and native_fit, 'All native annotation and machine rows must fit the auto screenshot'
+                auto_screenshot = f'clinical-p4-{note["id"]}-auto-applied.png'
+                page.screenshot(path=str(out/auto_screenshot),full_page=True)
+                with page.expect_download() as download:
+                    page.get_by_role('button',name='Export evidence project',exact=True).click()
+                auto_bundle = out/(note['id']+'-auto-applied.nmt.zip')
+                download.value.save_as(str(auto_bundle))
+                with zipfile.ZipFile(auto_bundle) as archive:
+                    project = json.loads(archive.read('project.json'))
+                    runs = json.loads(archive.read('machine-runs/index.json'))
+                    assert len(project['draft']['records']) == len(result['records'])
+                    assert len(runs)==(2 if index==dense else 1)
+                    assert len(runs[-1]['records'])==len(result['records'])
+                    for record in project['draft']['records']:
+                        assert record['origin']['kind']=='machine-applied' and record['origin']['reviewStatus']=='unreviewed'
+                        assert record['origin']['runId']==runs[-1]['id']
+                    assert project['draft']['completeness']=={}
+                    assert all(run['producer']['lineage']==manifest['lineage'] for run in runs)
+                    assert runs[0]['records']==json.loads(zipfile.ZipFile(bundle).read('machine-runs/index.json'))[0]['records']
+                    assert archive.read(project['documents'][0]['sourceFile']).decode()==note['text']
+                examples[-1]['autoApply'] = {'action':application,'screenshot':auto_screenshot,'mode':'auto',
+                                            'viewport':page.viewport_size,'nativeTags':len(result['records']),'allNativeRowsVisible':True,
+                                            'individuallyReviewed':False,'reviewStatus':'unreviewed','repeatAddsNoDuplicates':True,
+                                            'machineProvenanceExported':True,'originalPredictionsUnchanged':True}
+                print('Captured auto apply',note['id'],len(result['records']),'native tags',flush=True)
+                page.get_by_test_id('assist-mode').select_option('assisted')
             assert not errors, errors
             assert all(r['url'].startswith(URL) and r['method']=='GET' and not r['body'] for r in requests), requests
             report = {'packageId':manifest['id'],'lineage':manifest['lineage'],'threshold':manifest['variants'][0]['threshold'],
                       'browser':browser.version,'source':fixture['source'],'scope':fixture['scope'],
                       'notesRunInOriginalUI':27,'allRunsComplete':True,'allSourceOffsetsValid':True,
-                      'noPredictionsInsertedOrAutoAccepted':True,'noNoteEgress':True,
+                      'rawScreenshotsHaveNoNativeTags':True,'autoApplyExplicitlyRequested':True,'noPredictionsInserted':True,'noNoteEgress':True,
                       'temporalMetricRepresentation':'Legacy time_text CDATA assessed through its exact retained model evidence span; machine outputs unchanged',
                       'generatedReferenceAgreement':metrics,'negatedPainChecks':pain_checks,'screenshots':examples}
             (out/'lora-original-corpus-ui.json').write_text(json.dumps(report,indent=2)+'\n')

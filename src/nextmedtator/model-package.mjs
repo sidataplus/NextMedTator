@@ -118,6 +118,13 @@ export function qualifyForSchema(packageData, schema) {
         return { level: 'structured-span', unpredicted: ['value', 'unit', 'relations'] };
     return { level: 'entity-span', unpredicted: ['assertion', 'temporality', 'experiencer', 'value', 'unit', 'relations'] };
 }
+/** Choose an available backend across every codec at the qualified task level. */
+export function selectInferenceVariant(packageData, level, {webgpuAvailable=!!globalThis.navigator?.gpu} = {}) {
+    const variants = packageData.manifest.variants.filter(v => CODECS[v.codec]?.clinicalInference && CODECS[v.codec].coverage === level);
+    const variant = variants.find(v=>v.backend==='wasm') ?? variants.find(v=>v.backend==='webgpu' && webgpuAvailable);
+    invariant(variant, 'No browser GLiNER2.5 variant is available in the imported package');
+    return variant;
+}
 export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
     invariant(Number.isFinite(atol) && Number.isFinite(rtol) && atol >= 0 && rtol >= 0, 'Invalid numerical tolerance');
     invariant(actual.length === expected.length, 'Tensor length mismatch');

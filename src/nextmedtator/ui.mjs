@@ -9,7 +9,7 @@ import { exportBundle, importBundle, localDownload } from './bundle.mjs';
 import { RecoveryStore, ActiveTimer } from './recovery.mjs';
 import { compareSnapshots, comparisonCSV } from './compare.mjs';
 import { importJSONL, importMedTator, exportMedTator, evidenceJSONL, eventCSV } from './interchange.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
 import { mountLegacyAssist } from './assist.mjs';
 import {CorpusSearch} from './corpus-search.mjs';
@@ -117,11 +117,9 @@ export class EvidenceWorkspace {
         invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
         const qualification = qualifyForSchema(this.model, this.project.current.schema);
         invariant(qualification.level === 'entity-span' || qualification.level === 'structured-span' || qualification.level === 'occurrence-record', 'This package’s codec is not a local GLiNER2.5 decoder');
-        const codec = qualification.level === 'occurrence-record' ? this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec : qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
+        const variant = selectInferenceVariant(this.model,qualification.level);
+        const codec = variant.codec;
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        const variants = this.model.manifest.variants.filter(v => v.codec === codec);
-        const variant = variants.find(v => v.backend === 'wasm') ?? variants.find(v => v.backend === 'webgpu' && navigator.gpu);
-        invariant(variant, 'No browser GLiNER2.5 variant is available in the imported package');
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec)) ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
         if(isRecordsCodec(codec))validateSmallSchema(this.project.current.schema);
         if(this.modelReport?.manifestHash!==this.model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(this.model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
@@ -280,7 +278,7 @@ export class EvidenceWorkspace {
     }
     recordCard(r, { human = false, run = null } = {}) {
         const card = node('article', null, { class: 'card', 'data-testid': human ? 'human-record' : 'suggestion' });
-        card.append(node('div', human ? 'Human annotation' : run?.producer?.kind === 'author-demo' ? 'Authored example' : 'Machine suggestion', { class: 'tag' }), node('p', r.anchor.map(s => s.text).join(' … ') || 'Document-level record', { class: 'anchor' }), node('p', `${r.family.replaceAll('_', ' ')}${r.score == null ? '' : ` · score ${r.score.toFixed(3)}`}`, { class: 'muted' }));
+        card.append(node('div', human ? (r.origin?.kind === 'machine-applied' ? 'Machine-applied · unreviewed' : 'Human annotation') : run?.producer?.kind === 'author-demo' ? 'Authored example' : 'Machine suggestion', { class: 'tag' }), node('p', r.anchor.map(s => s.text).join(' … ') || 'Document-level record', { class: 'anchor' }), node('p', `${r.family.replaceAll('_', ' ')}${r.score == null ? '' : ` · score ${r.score.toFixed(3)}`}`, { class: 'muted' }));
         for (const [k, v] of Object.entries(r.fields))
             card.append(node('p', `${k}: ${v === null ? 'Unknown / not supplied' : typeof v === 'object' ? JSON.stringify(v) : v}`, { class: 'muted' }));
         const actions = node('div', null, { class: 'actions' });

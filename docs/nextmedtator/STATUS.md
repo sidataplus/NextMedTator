@@ -23,7 +23,16 @@ from native annotation tags. Four [representative screenshots](GENERATED-NOTE-VA
 include the weakest note and negation successes/misses. Only one of seven
 generated negated-pain reference spans is detected; "Denies pain" remains a
 real miss in the reported note. The original-UI/blind-mode regression and all
-120 app unit tests pass.
+125 app unit tests pass.
+
+Auto apply mode now writes complete runs into the native table and colored
+source spans, including selected-note batches. Apply all suggestions supports
+existing runs. Four auto-applied screenshots show 17, 17, 20 and 26 native tags;
+all copies retain machine lineage and remain explicitly unreviewed. Batch
+preflight, per-run duplicate protection, enum abstention, export/reopen and
+blind-note protections pass. Two additional PR review fixes select the available
+backend before its codec and reject aliased packager output/report paths. All
+125 app and 11 standalone packager unit tests pass.
 
 ## WASM architecture follow-up
 

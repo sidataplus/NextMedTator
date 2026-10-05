@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from gliner_onnx.inputs import BASE_FILES, read_adapter, resolve_base, verify_base
-from gliner_onnx.cli import fixture_paths
+from gliner_onnx.cli import build, fixture_paths
 
 
 class Inputs(unittest.TestCase):
@@ -44,6 +44,19 @@ class Inputs(unittest.TestCase):
         paths = fixture_paths(self.root, [*source, source[1]])
         self.assertEqual(paths, [*source, 'records-reference.json', 'relations-reference.json'])
         self.assertEqual(len(paths), len(set(paths)))
+
+    def test_package_and_report_cannot_alias_even_before_export_starts(self):
+        folder = self.root/'destination'
+        folder.mkdir()
+        alias = self.root/'alias'
+        alias.symlink_to(folder, target_is_directory=True)
+        output = folder/'new-model.zip'
+        for report in [output, folder/'..'/'destination'/'new-model.zip', alias/'new-model.zip']:
+            with self.subTest(report=report), self.assertRaisesRegex(ValueError, 'distinct paths'):
+                # No adapter/import/work-directory arguments: rejection must
+                # happen before loading models or producing any artifacts.
+                build(SimpleNamespace(out=output,report=report))
+            self.assertFalse(output.exists())
 
     def test_reject_unsafe_and_ambiguous_archives(self):
         for member in ['../adapter_model.safetensors', '/absolute', 'windows\\file', 'arbitrary-name/adapter_config.json', 'other/adapter_config.json']:

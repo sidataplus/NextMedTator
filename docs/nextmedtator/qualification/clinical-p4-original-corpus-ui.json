@@ -50,7 +50,9 @@
   "notesRunInOriginalUI": 27,
   "allRunsComplete": true,
   "allSourceOffsetsValid": true,
-  "noPredictionsInsertedOrAutoAccepted": true,
+  "rawScreenshotsHaveNoNativeTags": true,
+  "autoApplyExplicitlyRequested": true,
+  "noPredictionsInserted": true,
   "noNoteEgress": true,
   "temporalMetricRepresentation": "Legacy time_text CDATA assessed through its exact retained model evidence span; machine outputs unchanged",
   "generatedReferenceAgreement": {
@@ -452,7 +454,23 @@
         "windows": 1
       },
       "f1Agreement": 0.7142857142857143,
-      "machinePredictionsExported": true
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "clinical-p4-syn7_00007-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2200
+        },
+        "nativeTags": 17,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
     },
     {
       "id": "syn7_00002",
@@ -473,7 +491,23 @@
         "windows": 1
       },
       "f1Agreement": 0.46511627906976744,
-      "machinePredictionsExported": true
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "clinical-p4-syn7_00002-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2200
+        },
+        "nativeTags": 17,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
     },
     {
       "id": "syn7_00023",
@@ -481,7 +515,7 @@
       "screenshot": "clinical-p4-syn7_00023-suggestions.png",
       "viewport": {
         "width": 1600,
-        "height": 2000
+        "height": 1800
       },
       "allMachineRowsVisible": true,
       "humanTags": 0,
@@ -494,7 +528,23 @@
         "windows": 1
       },
       "f1Agreement": 0.6666666666666666,
-      "machinePredictionsExported": true
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "clinical-p4-syn7_00023-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2600
+        },
+        "nativeTags": 20,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
     },
     {
       "id": "syn7_00014",
@@ -515,10 +565,30 @@
         "windows": 1
       },
       "f1Agreement": 0.7307692307692307,
-      "machinePredictionsExported": true
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Analyze note in Auto apply mode",
+        "screenshot": "clinical-p4-syn7_00014-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 3400
+        },
+        "nativeTags": 26,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
     }
   ],
   "date": "2026-10-05",
-  "appUnitTests": 120,
-  "originalUICompactAndBlindModeRegressionPassed": true
+  "appUnitTests": 125,
+  "standalonePackagerUnitTests": 11,
+  "originalUICompactAndBlindModeRegressionPassed": true,
+  "autoApplyBrowserRegressionPassed": true,
+  "autoApplyExportReopenPassed": true,
+  "autoApplyRetainsEarlierLineageAcrossReanalysis": true
 }

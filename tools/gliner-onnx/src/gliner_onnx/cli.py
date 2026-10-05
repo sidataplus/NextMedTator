@@ -162,6 +162,8 @@ def export_model(model, captures, output):
 
 
 def build(args):
+    if args.out.resolve() == args.report.resolve():
+        raise ValueError('--out and --report must resolve to distinct paths')
     from huggingface_hub import snapshot_download
     from gliner2 import AutoExtractor
     import torch

@@ -91,7 +91,9 @@ def check_worker_regressions(page):
     page.evaluate('window.__workerEvidence = {starts: 0, stops: 0, messages: []}')
     for name in names:
         page.locator('.file-list-item-name', has_text=name).click()
+        expect(page.get_by_test_id('assist-document')).to_have_text(name)
         page.get_by_test_id('assist-freeze').click()
+        expect(page.get_by_test_id('assist-message')).to_contain_text('Independent annotation frozen')
     page.get_by_test_id('assist-analyze-selected').click()
     expect(page.get_by_test_id('assist-message')).to_contain_text('Local analysis finished')
     evidence = page.evaluate('window.__workerEvidence')
@@ -104,6 +106,7 @@ def check_worker_regressions(page):
     expect(page.get_by_test_id('assist-counts')).to_have_count(0)
     expect(page.get_by_test_id('assist-suggestion-view')).to_have_count(0)
     expect(page.get_by_test_id('assist-compact-suggestion')).to_have_count(0)
+    expect(page.get_by_test_id('assist-apply-all')).to_have_count(0)
     expect(page.get_by_test_id('assist-reveal')).to_be_enabled()
     # Switching the selector cannot reveal a protected note.
     page.get_by_test_id('assist-mode').select_option('assisted')
@@ -111,6 +114,14 @@ def check_worker_regressions(page):
     expect(page.get_by_test_id('assist-summary')).to_have_count(0)
     expect(page.get_by_test_id('assist-counts')).to_have_count(0)
     expect(page.get_by_test_id('assist-compact-suggestion')).to_have_count(0)
+    page.get_by_test_id('assist-mode').select_option('auto')
+    expect(page.get_by_test_id('assist-apply-all')).to_have_count(0)
+    blocked = page.evaluate('''async()=>{
+        const a=document.querySelector('nextmedtator-assist').assist,before=JSON.stringify(app_hotpot.vpp.$data.anns.map(n=>n.tags));
+        try{await a.analyzeDocuments(a.chosenDocuments(true));throw Error('Expected protection');}
+        catch(e){return {message:e.message,unchanged:before===JSON.stringify(app_hotpot.vpp.$data.anns.map(n=>n.tags))};}
+    }''')
+    assert blocked['unchanged'] and 'Reveal each protected note' in blocked['message'], blocked
     page.get_by_test_id('assist-mode').select_option('blind')
     page.locator('.file-list-item-name', has_text=names[0]).click()
     expect(page.get_by_test_id('assist-document')).to_have_text(names[0])
@@ -166,6 +177,7 @@ def check_worker_regressions(page):
     page.locator('.file-list-item-name', has_text=names[0]).click()
     expect(page.get_by_test_id('assist-document')).to_have_text(names[0])
     page.get_by_test_id('assist-suggestion').nth(1).get_by_test_id('assist-reject').click()
+    expect(page.get_by_test_id('assist-apply-all')).to_be_disabled()
     assert page.evaluate('document.querySelector("nextmedtator-assist").assist.current().run.records.length') == 2
     assert page.evaluate('!!document.querySelector("nextmedtator-assist").assist.current().run.revealedAt')
     # A new note starts in Assisted mode: visibility itself must record exposure.
@@ -196,6 +208,49 @@ def check_worker_regressions(page):
     assert page.evaluate('JSON.stringify([...document.querySelector("nextmedtator-assist").assist.blindSnapshots.values()])') == frozen
     page.get_by_test_id('assist-mode').select_option('assisted')
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(2)
+    # Explicit bulk application writes all actual predictions once, preserving
+    # immutable runs and recording automation rather than individual review.
+    machine_before = page.evaluate('JSON.stringify(document.querySelector("nextmedtator-assist").assist.current().run.project.current.runs)')
+    page.get_by_test_id('assist-mode').select_option('auto')
+    page.get_by_test_id('assist-apply-all').click()
+    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 machine suggestions · 2 annotation tags')
+    expect(page.get_by_test_id('assist-auto-status')).to_have_text('2 machine-applied tags · unreviewed')
+    expect(page.get_by_test_id('assist-apply-all')).to_be_disabled()
+    assert page.evaluate('JSON.stringify(document.querySelector("nextmedtator-assist").assist.current().run.project.current.runs)') == machine_before
+    page.evaluate('''async()=>{
+        const a=document.querySelector('nextmedtator-assist').assist;
+        await a.applyAllSuggestions();
+        const p=await a.syncProject(a.current().ann);
+        if(p.current.draft.records.length!==2||p.current.draft.records.some(r=>r.origin.kind!=='machine-applied'||r.origin.reviewStatus!=='unreviewed'))throw Error('Lost auto provenance');
+        const {exportBundle,importBundle}=await import('/app/nextmedtator/bundle.mjs');
+        const {canonical}=await import('/app/nextmedtator/integrity.mjs');
+        const reopened=await importBundle(await exportBundle(p));
+        if(canonical(reopened)!==canonical(p.current))throw Error('Auto export changed project');
+    }''')
+    assert page.evaluate('app_hotpot.vpp.$data.anns[app_hotpot.vpp.$data.ann_idx].tags.length') == 2
+    # A new analysis retains the earlier automatic copies and their lineage.
+    page.get_by_test_id('assist-analyze').click()
+    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 machine suggestions · 4 annotation tags')
+    assert page.evaluate('''async()=>{
+        const a=document.querySelector('nextmedtator-assist').assist,p=await a.syncProject(a.current().ann);
+        return p.current.draft.records.length===4&&p.current.draft.records.every(r=>r.origin.kind==='machine-applied'&&r.origin.legacyTagId)&&new Set(p.current.draft.records.map(r=>r.origin.runId)).size===2;
+    }''')
+    # Auto mode applies each selected note, including notes not currently open.
+    auto_names = [page.evaluate('text=>app_hotpot.vpp.add_sample_txt_as_ann(text)._filename', NOTE) for _ in range(2)]
+    for name in names:
+        page.get_by_role('checkbox',name=name,exact=True).uncheck()
+    for name in auto_names:
+        page.get_by_role('checkbox',name=name,exact=True).check()
+    page.get_by_test_id('assist-analyze-selected').click()
+    expect(page.get_by_test_id('assist-message')).to_contain_text('Auto apply finished for 2 notes')
+    assert page.evaluate('''names=>{
+        const a=document.querySelector('nextmedtator-assist').assist;
+        return names.every(name=>{
+            const ann=app_hotpot.vpp.$data.anns.find(n=>n._filename===name),run=[...a.runs.values()].find(r=>r.filename===name);
+            return ann.tags.length===2&&new Set(ann.tags.map(t=>t.id)).size===2&&run.project.current.draft.records.every(r=>r.origin.kind==='machine-applied');
+        });
+    }''',auto_names)
+    assert page.evaluate('JSON.stringify([...document.querySelector("nextmedtator-assist").assist.blindSnapshots.values()])') == frozen
     results = ROOT / 'test-results'
     results.mkdir(exist_ok=True)
     page.screenshot(path=str(results / 'legacy-worker-review.png'), full_page=True)
@@ -204,5 +259,7 @@ def check_worker_regressions(page):
         'exact_occurrence_conformance': True, 'reject_extra_missing_misplaced_occurrences': True,
         'structured_two_note_batch': evidence, 'per_note_freeze_and_reveal': True,
         'preserve_blind_snapshot_after_accept': True,
-        'automatic_assisted_exposure_prevents_blind_freeze': exposure
+        'automatic_assisted_exposure_prevents_blind_freeze': exposure,
+        'auto_apply_all_and_batch': True, 'machine_applied_export_reopen': True,
+        'auto_apply_protects_blind_and_rejected': True
     }, indent=2))

@@ -142,6 +142,31 @@ export class ReviewProject {
         const before=clone(this.data.draft);
         this.#commit('review-group',{before,runId,recordIds,reason},p=>{p.draft.records=records;for(const r of selected){p.draft.decisions[`${runId}/${r.id}`]={status:'accepted',humanId:mapping.get(r.id),reason};delete p.draft.completeness[r.documentId];}});
     }
+    applyMachineGroup(runId, replacements) {
+        this.#editable();
+        invariant(this.canSeeMachine, 'Machine suggestions remain hidden', 'BLIND_LOCK');
+        const run = this.data.runs.find(r => r.id === runId);
+        invariant(run?.status === 'complete', 'Auto apply requires a complete run');
+        invariant(replacements.length && new Set(replacements.map(r => r.id)).size === replacements.length, 'Select distinct predictions');
+        const copies = replacements.map(replacement => {
+            const prediction = run.records.find(r => r.id === replacement.id);
+            invariant(prediction && !this.data.draft.decisions[`${runId}/${prediction.id}`], 'Prediction already decided or missing');
+            invariant(replacement.documentId === prediction.documentId && replacement.family === prediction.family && canonical(replacement.anchor) === canonical(prediction.anchor), 'Auto apply must retain the source occurrence');
+            invariant(!prediction.relations?.length && !replacement.relations?.length, 'Automatic relation application is not supported');
+            return {...clone(replacement), id:uuid(), origin:{kind:'machine-applied',actor:this.data.actor,runId,recordId:prediction.id,reviewStatus:'unreviewed',...(typeof replacement.origin?.legacyTagId==='string'?{legacyTagId:replacement.origin.legacyTagId}:{})}};
+        });
+        const records = [...this.data.draft.records, ...copies];
+        validateRecords(records, this.data.documents, this.data.schema);
+        const before = clone(this.data.draft);
+        this.#commit('machine-applied-group', {before,runId,recordIds:replacements.map(r=>r.id),reviewStatus:'unreviewed'}, p => {
+            p.draft.records = records;
+            for (const copy of copies) {
+                p.draft.decisions[`${runId}/${copy.origin.recordId}`] = {status:'applied',humanId:copy.id,reviewStatus:'unreviewed'};
+                delete p.draft.completeness[copy.documentId];
+            }
+            p.exposure.push({at:now(),kind:'auto-apply',runId});
+        });
+    }
     async snapshot({ kind = 'human', parents = [], rationale = '', unresolved = [], reasonCodes = {} } = {}) {
         invariant(this.data.phase !== 'frozen', 'Snapshot already frozen');
         invariant(['human', 'adjudicated'].includes(kind), 'Invalid snapshot kind');
