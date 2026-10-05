@@ -1,0 +1,13 @@
+{
+  "valid": true,
+  "validator": "clinical_evidence.annotation.corpus.contracts.SemanticSchema.verify",
+  "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+  "registryHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+  "schemaHash": "7de05c87f022c44c982eaa7629b5ef6c9f0ea7bca55678c26b05c83307e5eb4b",
+  "families": [
+    "event_occurrence",
+    "function_occurrence"
+  ],
+  "concepts": 2,
+  "appContractMatchesRegistry": true
+}

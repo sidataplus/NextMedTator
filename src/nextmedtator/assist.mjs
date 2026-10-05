@@ -1,11 +1,13 @@
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
+import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD} from './scope.mjs';
+import {renderScopeEditor} from './scope-ui.mjs';
 import {ModelStore} from './model-store.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
-import {isRecordsCodec,recordsNotice,validateSmallSchema} from './gliner-small.mjs';
+import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
-import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
+import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
 const styles = `
@@ -39,6 +41,9 @@ button:focus:not(:focus-visible){outline:none}
 .check{display:flex;gap:6px;align-items:center;flex-direction:row}
 label{display:flex;flex-direction:column;gap:3px;font-size:12px}
 input[type=file]{max-width:100%;font-size:11px}
+.scope{border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:8px;margin:8px 0}
+.scope p{margin:5px 0}.scope label{margin:5px 0}.scope textarea{width:100%;font:inherit;color:inherit;border:1px solid #d7e1e7;border-radius:5px;resize:vertical}
+.scope fieldset{border:1px solid #d7e1e7;margin:8px 0;padding:6px}.scope h3{margin:10px 0 5px}
 .unmatched{color:#8a3b16}
 .compact{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
 .compact td{border-bottom:1px solid #d7e1e7;padding:3px 2px;vertical-align:middle}
@@ -157,6 +162,7 @@ class LegacyAssist {
         this.openProject = openProject ?? (() => {});
         this.open = sessionStorage.getItem('nmt-assist-open') !== 'false';
         this.mode = 'assisted';
+        this.scope = null;this.scopeDraft=presetScope();this.scopeEditing=false;
         this.suggestionView = 'cards';
         this.detail = null;
         this.model = null;
@@ -234,7 +240,8 @@ class LegacyAssist {
             frozen: this.blindSnapshots.has(view?.key),
             run: view?.run ? { status: view.run.status, decisions: view.run.decisions, count: view.run.records.length } : null,
             apply: this.apply?.id ?? '',
-            suggestionView: this.suggestionView, detail: this.detail
+            suggestionView: this.suggestionView, detail: this.detail,
+            scope:this.scope?.semanticSchema.schema_hash??null,scopeEditing:this.scopeEditing
         });
     }
     async perform(action) {
@@ -279,17 +286,50 @@ class LegacyAssist {
                 ? 'GLiNER2.5 span package loaded in memory. Analyze fills spans and scores on this device.'
                 : 'Package hashes validated. This package can run tensor fixtures only.';
     }
+    checkScopeBudget(schema,variant) {
+        invariant(isRecordsCodec(variant.codec),'Clinical scopes require a GLiNER2.5 record package');
+        if(this.scopeTokenizerManifest!==this.model.manifestHash||this.scopeTokenizerPath!==variant.tokenizer){
+            this.scopeTokenizer=GlinerTokenizer.fromJson(new TextDecoder().decode(this.model.files.get(variant.tokenizer)));
+            this.scopeTokenizerManifest=this.model.manifestHash;this.scopeTokenizerPath=variant.tokenizer;
+        }
+        const prompt=schemaPrompt(schema),prefixTokens=smallPromptCost(schema,this.scopeTokenizer);
+        planWindows(this.scopeTokenizer,prompt.labels,[{text:'clinical',start:0,end:8}],{prefixTokens});
+    }
+    async applyScope() {
+        const draft=clone(this.scopeDraft),schema=compileScope(draft,legacySchema(legacy().data.dtd));
+        if(this.model)this.checkScopeBudget(schema,selectInferenceVariant(this.model,qualifyForSchema(this.model,schema).level));
+        const old=this.scope?.semanticSchema,s=draft.semanticSchema;
+        if(old&&old.name===s.name){s.parent_schema_hash=old.schema_hash;if(s.version===old.version)s.version=/^\d+$/.test(s.version)?String(Number(s.version)+1):s.version+'.1';}
+        this.scope=await freezeScope(draft);this.scopeDraft=clone(this.scope);this.scopeEditing=false;
+        for(const project of this.projects.values())project.setSuggestionScope(this.scope);
+        this.message=`Scope applied: ${this.scope.semanticSchema.name}. Analyze to create a new scoped run; existing predictions stay unchanged.`;
+    }
+    async importScope(input) {this.scopeDraft=await importScope(input);this.scopeEditing=true;this.message='Scope imported for editing. Apply scope to use it for the next analysis.';}
+    disableScope() {this.scope=null;for(const project of this.projects.values())project.setSuggestionScope(null);this.message='Scope disabled for future runs. Existing machine runs retain their recorded scopes.';if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}
+    async exportScope(semanticOnly) {
+        invariant(this.scope,'Apply a scope before exporting');
+        localDownload(new TextEncoder().encode(JSON.stringify(semanticOnly?this.scope.semanticSchema:this.scope,null,2)+'\n'),semanticOnly?'clinical-evidence-semantic-schema.json':'clinical-suggestion-scope.json','application/json');
+    }
+    async useScopeSchema() {
+        const view=legacy();invariant(view,'Original annotation workspace unavailable');
+        invariant(!view.data.anns.some(ann=>ann.tags?.length)&&!this.projects.size,'Existing annotations or evidence projects require a new task or reviewed schema migration; download this schema first');
+        const dtd=window.dtd_parser.parse(nativeScopeDTD(this.scopeDraft),'dtd');
+        view.app.set_dtd(dtd);view.data.dtd=dtd;
+        for(const ann of view.data.anns)ann._has_saved=false;
+        view.vpp.refresh_v_anns();
+        view.vpp.$forceUpdate();this.message='Clinical annotation schema loaded. Apply scope, then analyze your notes.';
+    }
     async ensureProject(ann,schema=legacySchema(legacy().data.dtd)) {
         const key=documentKey(ann._filename??'document',ann.text??''),hash=await fingerprint(schema);
         let project=this.projects.get(key);
-        if(!project||project.current.schemaHash!==hash){const doc=await sourceDocument('legacy-note',new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});project=await ReviewProject.create([doc],schema,{mode:this.mode==='blind'?'blind':'assisted',actor:'legacy-annotator'});const data=clone(project.current);data.draft.records=legacyRecords(ann,doc,schema);if(this.exposed.has(key))data.exposure=clone(this.exposure.filter(e=>e.key===key));project=await ReviewProject.open(data);this.projects.set(key,project);}
+        if(!project||project.current.schemaHash!==hash){const doc=await sourceDocument('legacy-note',new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});project=await ReviewProject.create([doc],schema,{mode:this.mode==='blind'?'blind':'assisted',actor:'legacy-annotator'});const data=clone(project.current);data.draft.records=legacyRecords(ann,doc,schema);if(this.scope)data.extensions.suggestionScope=clone(this.scope);if(this.exposed.has(key))data.exposure=clone(this.exposure.filter(e=>e.key===key));project=await ReviewProject.open(data);this.projects.set(key,project);}
         return project;
     }
     async syncProject(ann,schema=legacySchema(legacy().data.dtd)){
         const project=await this.ensureProject(ann,schema),records=legacyRecords(ann,project.current.documents[0],project.current.schema),key=documentKey(ann._filename??'document',ann.text),viewRun=this.runs.get(key);
         const mapping=new Map(project.current.draft.records.filter(r=>r.origin?.legacyTagId).map(r=>[r.origin.legacyTagId,r.id]));
         for(const [predictionId,d]of Object.entries(viewRun?.decisions??{}))if(d.tagId){const id=project.current.draft.decisions[`${viewRun.nativeRunId}/${predictionId}`]?.humanId;if(id)mapping.set(d.tagId,id);}
-        for(const record of records)if(mapping.get(record.id)){const original=project.current.draft.records.find(r=>r.id===mapping.get(record.id));const legacyId=record.id;record.id=mapping.get(legacyId);record.origin={...original?.origin,legacyTagId:legacyId};}
+        for(const record of records)if(mapping.get(record.id)){const original=project.current.draft.records.find(r=>r.id===mapping.get(record.id));const legacyId=record.id;record.id=mapping.get(legacyId);record.origin={...original?.origin,legacyTagId:legacyId};if(original?.conceptId&&JSON.stringify(original.anchor)===JSON.stringify(record.anchor))record.conceptId=original.conceptId;}
         for(const record of records)for(const rel of record.relations??[])if(mapping.get(rel.targetId))rel.targetId=mapping.get(rel.targetId);
         if(project.current.phase!=='frozen'&&JSON.stringify(records)!==JSON.stringify(project.current.draft.records)){
             if(project.current.draft.records.length)project.transformRecords(project.current.draft.records.map(r=>r.id),records,'legacy-working-copy-sync','Explicit native export of the current legacy annotation');
@@ -308,16 +348,17 @@ class LegacyAssist {
             for(const record of current)records.push({...record,id:ids.get(record.id),relations:(record.relations??[]).map(rel=>({...rel,targetId:ids.get(rel.targetId)})),origin:{kind:'imported',source:'legacy-recovery',legacyProjectId:project.current.id,legacyRecordId:record.id,reviewStatus:'preserved-in-child-project'}});
         }
         const project=await ReviewProject.create(documents,schema,{id,actor:'legacy-annotator'}),data=clone(project.current);data.draft.records=records;if(this.corpusIdentity!==id){this.corpusIdentity=id;this.corpusCreatedAt=data.createdAt;}data.createdAt=this.corpusCreatedAt;
-        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
+        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,scope:clone(this.scope),children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
         // JSON transport excludes file handles/functions; public model bytes stay in ModelStore.
         return (await ReviewProject.open(jsonParse(JSON.stringify(data)))).current;
     }
     async restoreCorpus(project){
         const saved=project.extensions.legacyWorkspace;invariant(saved?.version===1,'Unsupported legacy corpus recovery');
+        const scope=saved.scope?await importScope(saved.scope):null;
         const children=new Map();for(const child of saved.children??[])children.set(child.key,await ReviewProject.open(child.project));
         const view=legacy();invariant(view,'Original annotation workspace unavailable');
         view.app.set_vpp_data_json({dtd:clone(saved.dtd),anns:clone(saved.anns),ann_idx:saved.annIndex,mn4anns:1});
-        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'assisted';this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
+        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'assisted';this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
     }
     async freezeNote(view){
         invariant(!this.exposed.has(view.key),'This note was already exposed');
@@ -330,7 +371,8 @@ class LegacyAssist {
             throw new Error('Import a GLiNER2.5 boundary model package in this panel');
         if (!anns.length)
             throw new Error('Open a document first');
-        const schema=legacySchema(legacy().data.dtd);
+        const nativeSchema=legacySchema(legacy().data.dtd),scope=this.scope?clone(this.scope):null;
+        const schema=scope?compileScope(scope,nativeSchema):nativeSchema;
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
         const autoApply = this.mode === 'auto';
         if (autoApply) for (const ann of anns) {
@@ -342,6 +384,7 @@ class LegacyAssist {
             throw new Error('This package’s codec is not a local GLiNER2.5 decoder');
         const variant = selectInferenceVariant(this.model,qualification.level);
         const codec = variant.codec;
+        if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         if(this.qualifiedManifest!==this.model.manifestHash||this.qualifiedVariant!==variant.id){const report=await this.modelRunner.run(this.model,variant.id);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=this.model.manifestHash;this.qualifiedVariant=variant.id;}
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
@@ -352,9 +395,9 @@ class LegacyAssist {
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
             if (this.mode === 'blind')
                 this.blinded.add(key);
-            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: variant.threshold };
+            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: scope?.threshold??variant.threshold };
         });
-        const runSettings={codec,threshold:variant.threshold??.5,limitations:isRecordsCodec(codec)?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const runSettings={codec,threshold:scope?.threshold??variant.threshold??.5,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         const completed=new Set();let activeIndex=0;
         try{await this.modelRunner.analyzeBatch(this.model, variant.id, requests, { onProgress: index => {
             activeIndex=index;
@@ -530,6 +573,7 @@ class LegacyAssist {
         actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
         body.append(actions);
+        body.append(renderScopeEditor(this));
         const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
         if(!this.recoverySession.enabled)recovery.append(button('Enable local corpus recovery',()=>this.perform(async()=>{if(!confirm('Store this corpus, annotations and prediction history in this browser profile? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann,id:'assist-recovery-enable'}));
         else recovery.append(button('Save corpus checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete corpus recovery',()=>this.perform(async()=>{if(confirm('Delete this corpus recovery copy? Current in-memory annotations remain.'))await this.recoverySession.forget();})),button('Export SQLite corpus backup',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
@@ -586,6 +630,8 @@ class LegacyAssist {
         if (view.data.section === 'annotation' && !document.hidden && this.host.getClientRects().length)
             this.recordExposure(view, run, 'assisted-display');
         const unresolved = run.records.filter(record => !run.decisions[record.id]).length;
+        const runScope=run.project.current.runs.find(r=>r.id===run.nativeRunId)?.settings.scope;
+        if(runScope)body.append(node('p',`Run scope: ${runScope.profile.semanticSchema.name} · ${runScope.profile.semanticSchema.version}`,{class:'muted','data-testid':'assist-run-scope'}));
         body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
         const applied = Object.values(run.decisions).filter(d=>d.status==='applied').length;
         if (applied) body.append(node('p', `${applied} machine-applied tags · unreviewed`, {'data-testid':'assist-auto-status'}));
@@ -609,6 +655,7 @@ class LegacyAssist {
                 const summary = [record.family.replaceAll('_occurrence', '').replaceAll('_', ' '), record.fields.assertion,
                     record.fields.time_frame, record.fields.experiencer, Number(record.score).toFixed(3)].filter(value => value != null).join(' · ');
                 cell.append(node('strong', anchor, { title: anchor }), node('small', summary, { title: summary }));
+                if(record.conceptId)cell.append(node('small',`Concept: ${record.conceptId}`));
                 const decision = run.decisions[record.id];
                 if (decision) cell.append(node('small', decision.status==='applied'?`Auto-applied ${decision.tagId} · unreviewed`:decision.status==='rejected'?'Rejected':`Added ${decision.tagId}`));
                 const actions = node('td');
@@ -627,6 +674,7 @@ class LegacyAssist {
         const card = node('article', null, { class: 'card', 'data-testid': 'assist-suggestion' });
         const decision = run.decisions[record.id];
         card.append(node('div', 'Machine suggestion', { class: 'tag' }), node('p', record.anchor.map(span => span.text).join(' … '), { class: 'anchor' }), node('p', `${record.family.replaceAll('_', ' ')} · score ${Number(record.score).toFixed(3)}`, { class: 'muted' }));
+        if(record.conceptId)card.append(node('p',`Concept: ${record.conceptId}`,{class:'muted'}));
         for (const [name, value] of Object.entries(record.fields))
             card.append(node('p', `${name}: ${value == null ? 'Unknown' : value}`, { class: 'muted' }));
         if (decision)

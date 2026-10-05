@@ -1,4 +1,5 @@
 import {previewSchemaMigration,applySchemaMigration} from './migration.mjs';
+import {compileScope, importScope, scopeIdentity} from './scope.mjs';
 import {ModelStore,downloadCatalogPackage} from './model-store.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema} from './gliner-small.mjs';
 import { ReviewProject, machineSnapshot, makeRun } from './project.mjs';
@@ -115,18 +116,21 @@ export class EvidenceWorkspace {
     async analyzeCurrent() {
         invariant(this.doc, 'Open a document first');
         invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
-        const qualification = qualifyForSchema(this.model, this.project.current.schema);
+        const scope=this.project.current.extensions.suggestionScope?await importScope(this.project.current.extensions.suggestionScope):null;
+        const schema=scope?compileScope(scope,this.project.current.schema):this.project.current.schema;
+        const qualification = qualifyForSchema(this.model, schema);
         invariant(qualification.level === 'entity-span' || qualification.level === 'structured-span' || qualification.level === 'occurrence-record', 'This package’s codec is not a local GLiNER2.5 decoder');
         const variant = selectInferenceVariant(this.model,qualification.level);
         const codec = variant.codec;
+        if(scope)invariant(isRecordsCodec(codec),'Clinical scopes require a GLiNER2.5 record package');
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec)) ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
-        if(isRecordsCodec(codec))validateSmallSchema(this.project.current.schema);
+        const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec)) ? schemaPrompt(schema) : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
+        if(isRecordsCodec(codec))validateSmallSchema(schema);
         if(this.modelReport?.manifestHash!==this.model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(this.model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
-        const runSettings={codec,threshold:variant.threshold??.5,overlapPolicy:'flat',maxSequenceLength:512,wordOverlap:32,notice,limitations:isRecordsCodec(codec)?['cross-window-relations','anchorless-records',...(Object.keys(this.project.current.schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const runSettings={codec,threshold:scope?.threshold??variant.threshold??.5,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),overlapPolicy:'flat',maxSequenceLength:512,wordOverlap:32,notice,limitations:isRecordsCodec(codec)?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         let result;const started=performance.now();
         try {
-            result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema: this.project.current.schema, threshold: variant.threshold });
+            result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: scope?.threshold??variant.threshold });
         } catch(error) {
             const identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
             const failed=await makeRun(this.project,this.doc,[],{...identity,producer:{...identity.producer,notice},status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}],timing:{inferenceMs:performance.now()-started}});

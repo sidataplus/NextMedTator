@@ -236,6 +236,14 @@ export function readGlinerConfig(text) {
 }
 export function schemaEntityLabels(schema) {
     const labels = [], byLabel = new Map();
+    if (schema.entityTargets) {
+        invariant(Array.isArray(schema.entityTargets)&&schema.entityTargets.length>0&&schema.entityTargets.length<=GLINER_LIMITS.labels,'Invalid scoped entity targets');
+        for(const target of schema.entityTargets){
+            invariant(schema.families[target.family]&&typeof target.label==='string'&&target.label.trim()&&!byLabel.has(target.label),'Scoped targets need unique labels and known families');
+            byLabel.set(target.label,target.family);labels.push(target.label);
+        }
+        return {labels,byLabel};
+    }
     invariant(Object.keys(schema.families).length <= GLINER_LIMITS.labels, 'Too many entity labels for one GLiNER prompt');
     for (const [id, def] of Object.entries(schema.families)) {
         const label = String(def.label || id).trim();
@@ -248,6 +256,21 @@ export function schemaEntityLabels(schema) {
 /** Family labels, then attribute labels in the alphabetical order GLiNER2 inserts into the entity prompt. */
 export function schemaPrompt(schema) {
     const { labels, byLabel } = schemaEntityLabels(schema);
+    if(schema.clinicalScope){
+        const rows=new Map(),groups=new Map();
+        for(const [family,def]of Object.entries(schema.families))for(const [field,spec]of Object.entries(def.fields)){
+            if(spec.type!=='enum')continue;
+            const key=field+'\0'+spec.values.join('\0'),group=groups.get(key)??{field,values:spec.values,families:[]};
+            group.families.push(family);groups.set(key,group);
+            for(const value of spec.values)rows.set(`${field}: ${value}`,{field,value,label:`${field}: ${value}`});
+        }
+        const ordered=[...rows.values()].sort((a,b)=>a.label<b.label?-1:a.label>b.label?1:0);
+        const prompt=[...labels,...ordered.map(row=>row.label)];
+        invariant(prompt.length<=GLINER_LIMITS.labels&&new Set(prompt).size===prompt.length,'Structured prompt exceeds the label budget');
+        const at=new Map(ordered.map((row,index)=>[row.label,index]));
+        return {labels:prompt,contentCount:labels.length,byLabel,descriptions:Object.fromEntries(schema.entityTargets.map(t=>[t.label,t.description])),
+            groups:[...groups.values()].map(g=>({field:g.field,families:g.families,choices:g.values.map(value=>({value,index:at.get(`${g.field}: ${value}`)}))}))};
+    }
     const enums = new Map();
     for (const def of Object.values(schema.families))
         for (const [field, spec] of Object.entries(def.fields)) {

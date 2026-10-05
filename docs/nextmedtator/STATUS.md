@@ -34,6 +34,12 @@ blind-note protections pass. Two additional PR review fixes select the available
 backend before its codec and reject aliased packager output/report paths. All
 125 app and 11 standalone packager unit tests pass.
 
+## Clinical scope editor follow-up
+
+The original assistance panel now offers four broad presets and a custom concept editor bounded to all six families, anchors, fields and choice vocabularies in the pinned clinical-evidence training registry. Definitions/aliases reach the actual encoder prompt; selected families and fields constrain the inference projection. No disease-specific/BPSD preset is supplied. Unsupported list fields and the 12-choice treatment status remain visibly disabled. Existing runs retain their exact scope; native evidence exports, imported-project reanalysis and corpus recovery retain it. See [CLINICAL-SCOPE.md](CLINICAL-SCOPE.md).
+
+All **131 app unit tests pass with no skips**, including the real tokenizer. Both static builds and the 5,078-asset inventory pass, as does the original-UI regression gate. Real P4 browser runs on two supplied notes validate broad/custom scopes, source coverage/offsets, native auto apply, immutable history, export and recovery with no note egress. Broad counts are 20/14; custom care/mobility counts are 0/1, demonstrating current-model omissions rather than qualifying arbitrary-target recall. The exported semantic schema passes the training repository's own frozen-schema validator, and its full field/vocabulary projection is checked against the pinned registry. Scope descriptions guide inference; they do not establish deterministic relevance or clinical truth. Attribute/cue highlighting remains deferred.
+
 ## WASM architecture follow-up
 
 The requested browser-local backend is implemented while retaining the original Vue 2/CodeMirror annotation UI. Rust-WASM workers provide bulk schema/record/source-span validation, Unicode offsets/literal search and compatible snapshot comparison. Official SQLite-WASM in OPFS supplies atomic, hash-verified recovery, bound queries and selected-project SQLite exports. The original assistance panel adds opt-in multi-document recovery and debounced Vue-edit autosave. Native child-project model/snapshot/exposure identities are retained. Legacy IndexedDB recovery migration is explicit, hash-preserving and keeps the old copy; subsequent writes use SQLite only. See [WASM-BACKEND.md](WASM-BACKEND.md).
@@ -80,8 +86,8 @@ PR #5's two review findings are covered: SQLite failure no longer hides readable
 | AC-02 | Real downloaded small package: install, disconnect, restart, infer, review, native export/reimport. Existing real-origin suite also compares offline layers. |
 | AC-03, 18 | Canary requests stay local; injection, XXE, archive/member corruption and bounds tests pass. No complete inherited-asset security approval is claimed. |
 | AC-05 | Source/native/browser NER and record outputs, contextual labels and numerical exported-head checks pass in WASM. Automatic relation qualification is withheld; see discrepancy below. |
-| AC-06 | Distinct baseline/adapter/head identities, install/run/compare contracts pass. The actual fine-tuned LoRA is pending from the user. |
-| AC-07–11, 15 | Five-family record contracts, immutable layers, exposure, linked review/adjudication, completeness and failure coverage tests pass. Zero-shot outputs are not guaranteed to fill or correctly interpret every clinical field. |
+| AC-06 | Supplied mixv1 and ClinicalEvidence P4 adapters have distinct verified base/adapter/head identities; merge/export, install/run/compare and portable provenance pass. Clinical accuracy remains unqualified. |
+| AC-07–11, 15 | Canonical six-family clinical scopes, immutable layers, exposure, linked review/adjudication, completeness and failure coverage tests pass. Model outputs are not guaranteed to fill or correctly interpret every clinical field or custom concept. |
 | AC-12 | Actual SQLite-WASM/OPFS reload, concurrent-worker CAS, tab lock, `SQLITE_FULL`, transaction rollback, cancellation, unavailable storage, original-UI autosave and hash-preserving migration pass. |
 | AC-14 | Original synthetic corpus and walkthrough; public patient/case corpora are not redistributed. |
 | AC-16 | Worker timeout/cancellation/retry contracts and Linux performance probe pass. Target-device envelopes and peak-memory approval remain external gates. |

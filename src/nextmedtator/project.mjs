@@ -90,6 +90,7 @@ export class ReviewProject {
         this.#commit('undo', {undoes: event.id}, p => { if (event.details.undo) applyUndo(p.draft, event.details.undo); else p.draft = clone(event.details.before); });
     }
     expose(kind, snapshotIds = []) { this.#commit('assistance-exposed', {kind, snapshotIds}, p => p.exposure.push({at: now(), kind, snapshotIds: clone(snapshotIds)})); }
+    setSuggestionScope(profile) { this.#commit('suggestion-scope-configured', {schemaHash:profile?.semanticSchema.schema_hash??null}, p => {if(profile)p.extensions.suggestionScope=clone(profile);else delete p.extensions.suggestionScope;}); }
     async addComparison(report) {
         const snapshots = this.data.snapshots;
         invariant(snapshots.some(s => s.hash === report.referenceHash) && snapshots.some(s => s.hash === report.candidateHash), 'Comparison input missing');
