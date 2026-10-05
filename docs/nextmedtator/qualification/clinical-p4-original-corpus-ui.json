@@ -1,46 +1,6 @@
 {
-  "source": {
-    "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
-    "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
-    "generatorModels": [
-      "gemini-3.1-pro-high"
-    ],
-    "referenceKind": "externally-generated-labels",
-    "referenceCompleteness": "unverified",
-    "clinicalGoldStandard": false
-  },
-  "counts": {
-    "notes": 27,
-    "anchors": 618,
-    "literals": 507,
-    "families": {
-      "care_context_occurrence": 37,
-      "condition_occurrence": 260,
-      "event_occurrence": 135,
-      "function_occurrence": 62,
-      "measurement_occurrence": 3,
-      "treatment_occurrence": 121
-    }
-  },
-  "scope": {
-    "anchors": "all six supplied families",
-    "enums": [
-      "assertion",
-      "time_frame",
-      "experiencer"
-    ],
-    "literals": {
-      "condition_occurrence": [
-        "time_text"
-      ]
-    },
-    "unvalidated": "Other fields remain in references but are not silently qualified by this gate"
-  },
-  "browser": "151.0.7922.173",
-  "runtimeVersion": "1.23.2",
   "packageId": "gliner25-clinical-evidence-p4",
-  "manifestHash": "3dbc9782d8ec565c90e72f67d0b32657a72020b15f52f4953dacbfbef2f612b2",
-  "adapterLineage": {
+  "lineage": {
     "base": {
       "model": "fastino/gliner2.5-base-v1",
       "revision": "ca906247640776a07753514055be9726f9080ead",
@@ -61,48 +21,38 @@
     "merge": "merged-export",
     "trainedHeads": "2bbf9b1d11da9140dff4039c0f808c07217020244bd392de3f992068f6b4af52"
   },
-  "modelConformancePassed": true,
-  "allNotesCompleteOffline": true,
-  "allSourceSpansValid": true,
-  "portableCorpusExportReopenExact": true,
+  "threshold": 0.5,
+  "browser": "151.0.7922.173",
+  "source": {
+    "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
+    "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
+    "generatorModels": [
+      "gemini-3.1-pro-high"
+    ],
+    "referenceKind": "externally-generated-labels",
+    "referenceCompleteness": "unverified",
+    "clinicalGoldStandard": false
+  },
+  "scope": {
+    "anchors": "all six supplied families",
+    "enums": [
+      "assertion",
+      "time_frame",
+      "experiencer"
+    ],
+    "literals": {
+      "condition_occurrence": [
+        "time_text"
+      ]
+    },
+    "unvalidated": "Other fields remain in references but are not silently qualified by this gate"
+  },
+  "notesRunInOriginalUI": 27,
+  "allRunsComplete": true,
+  "allSourceOffsetsValid": true,
+  "noPredictionsInsertedOrAutoAccepted": true,
   "noNoteEgress": true,
-  "fullStatusSchemaRejectedExplicitly": {
-    "choices": 17,
-    "reason": "Enum exceeds the eight-query attribute head"
-  },
-  "windowCounts": [
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1
-  ],
-  "cloudTimingMs": {
-    "median": 4901.229999989271,
-    "max": 7300.420000016689
-  },
+  "temporalMetricRepresentation": "Legacy time_text CDATA assessed through its exact retained model evidence span; machine outputs unchanged",
   "generatedReferenceAgreement": {
     "interpretation": "Agreement with unverified generated references, not clinical accuracy",
     "exactAnchors": {
@@ -403,51 +353,172 @@
       }
     ]
   },
-  "date": "2026-10-05",
-  "adapterSource": {
-    "repository": "na399/gliner2.5-clinical-evidence-lora-p4",
-    "revision": "43e8dbd6d9b240498b891c74202d3e869d317c26",
-    "declaredBaseRevision": null,
-    "validationBaseRevision": "ca906247640776a07753514055be9726f9080ead"
-  },
-  "limitations": [
-    "Reference completeness/correctness and training overlap remain unverified.",
-    "Same app codec/prompt as mixv1; the separate ClinicalEvidence per_anchor/hybrid decoder is not implemented by this gate.",
-    "Full 17-choice status union still exceeds the eight-query attribute head.",
-    "No baseline-versus-unadapted-model or held-out clinical accuracy claim."
-  ],
-  "originalMedTatorUI": {
-    "corpusDocumentsInOriginalUI": 27,
-    "representativeId": "syn7_00007",
-    "actualLoRAInferLocateAcceptNativeTagExport": true,
-    "noNoteEgress": true,
-    "browser": "151.0.7922.173",
-    "machineSuggestionsInRepresentativeNote": 17,
-    "acceptedBehaviorTags": [
-      "pacing",
-      "verbal aggression",
-      "yelling",
-      "striking out"
-    ],
-    "nativeTagCount": 4,
-    "reviewCorrections": {
-      "experiencer": "patient"
+  "negatedPainChecks": [
+    {
+      "id": "syn7_00007",
+      "anchor": {
+        "start": 305,
+        "end": 309,
+        "text": "pain"
+      },
+      "context": "nit over the last few days. Vitals stable. Denies pain. She exhibits verbal aggression. Reside",
+      "anchorDetected": false,
+      "predictedAssertion": null
     },
-    "tagOntology": "Behavioral events use event_occurrence in the supplied six-family schema; no dedicated BPSD tag"
-  },
-  "validationUnitTests": 4,
-  "reviewRevalidation": {
-    "attributeMask": "Encoder word mask retained through attribute crops; padded words stay masked",
-    "bothAdaptersRerun": true,
-    "appUnitTests": 120,
-    "packagerUnitTests": 10
-  },
-  "originalCorpusUIValidation": {
-    "notes": 27,
-    "predictedOccurrences": 494,
-    "exactMatchedGeneratedAnchors": 380,
-    "negatedPainDetected": 1,
-    "negatedPainReferenceSpans": 7,
-    "report": "clinical-p4-original-corpus-ui.json"
-  }
+    {
+      "id": "syn7_00005",
+      "anchor": {
+        "start": 920,
+        "end": 924,
+        "text": "pain"
+      },
+      "context": "her comfort. She denied experiencing severe acute pain.\n\nMOBILITY / ADLs:\nResident requires a ",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00009",
+      "anchor": {
+        "start": 320,
+        "end": 324,
+        "text": "pain"
+      },
+      "context": "1:15 after a fall without apparent injury. Denies pain. She was up several times tonight, paci",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00017",
+      "anchor": {
+        "start": 395,
+        "end": 399,
+        "text": "pain"
+      },
+      "context": "mmediately; no distress was noted, and she denied pain initially. However, she later pointed t",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00018",
+      "anchor": {
+        "start": 488,
+        "end": 492,
+        "text": "pain"
+      },
+      "context": "ns stable and no signs of infection noted. Denies pain. Staff monitored for symptoms of sleep ",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00023",
+      "anchor": {
+        "start": 615,
+        "end": 619,
+        "text": "pain"
+      },
+      "context": " causes of behavioral change. The resident denies pain. Per daughter, PAINAD score is 0. No si",
+      "anchorDetected": true,
+      "predictedAssertion": "negated"
+    },
+    {
+      "id": "syn7_00026",
+      "anchor": {
+        "start": 1061,
+        "end": 1065,
+        "text": "pain"
+      },
+      "context": " triggers of behavioral changes. Denies untreated pain. Constipation ruled out following a lar",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "syn7_00007",
+      "selectionReason": "Reported missing Denies pain",
+      "screenshot": "clinical-p4-syn7_00007-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 17,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.7142857142857143,
+      "machinePredictionsExported": true
+    },
+    {
+      "id": "syn7_00002",
+      "selectionReason": "Lowest exact-anchor agreement",
+      "screenshot": "clinical-p4-syn7_00002-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00002",
+        "reference": 26,
+        "predicted": 17,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.46511627906976744,
+      "machinePredictionsExported": true
+    },
+    {
+      "id": "syn7_00023",
+      "selectionReason": "Successful negated pain",
+      "screenshot": "clinical-p4-syn7_00023-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 2000
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00023",
+        "reference": 25,
+        "predicted": 20,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.6666666666666666,
+      "machinePredictionsExported": true
+    },
+    {
+      "id": "syn7_00014",
+      "selectionReason": "Most machine suggestions",
+      "screenshot": "clinical-p4-syn7_00014-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 2400
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00014",
+        "reference": 26,
+        "predicted": 26,
+        "matched": 19,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.7307692307692307,
+      "machinePredictionsExported": true
+    }
+  ],
+  "date": "2026-10-05",
+  "appUnitTests": 120,
+  "originalUICompactAndBlindModeRegressionPassed": true
 }

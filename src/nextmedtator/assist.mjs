@@ -40,6 +40,12 @@ button:focus:not(:focus-visible){outline:none}
 label{display:flex;flex-direction:column;gap:3px;font-size:12px}
 input[type=file]{max-width:100%;font-size:11px}
 .unmatched{color:#8a3b16}
+.compact{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+.compact td{border-bottom:1px solid #d7e1e7;padding:3px 2px;vertical-align:middle}
+.compact td:last-child{width:110px;text-align:right}
+.compact button{font-size:10px;padding:3px 4px;margin-left:2px}
+.compact strong,.compact small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compact small{font-size:10px;color:#536976}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 `;
 
@@ -151,6 +157,8 @@ class LegacyAssist {
         this.openProject = openProject ?? (() => {});
         this.open = sessionStorage.getItem('nmt-assist-open') !== 'false';
         this.mode = 'assisted';
+        this.suggestionView = 'cards';
+        this.detail = null;
         this.model = null;
         this.modelRunner = new ConformanceWorker();this.modelStore=new ModelStore();
         this.runs = new Map();
@@ -225,7 +233,8 @@ class LegacyAssist {
             exposed: [...this.exposed],
             frozen: this.blindSnapshots.has(view?.key),
             run: view?.run ? { status: view.run.status, decisions: view.run.decisions, count: view.run.records.length } : null,
-            apply: this.apply?.id ?? ''
+            apply: this.apply?.id ?? '',
+            suggestionView: this.suggestionView, detail: this.detail
         });
     }
     async perform(action) {
@@ -457,6 +466,8 @@ class LegacyAssist {
         head.append(title, labeled('Mode', mode), status, node('p', `${schema ? `Schema: ${schema}` : 'Schema: none loaded'}. Documents stay in the annotation workspace.`, { class: 'muted' }));
         if (view?.ann)
             head.append(node('p', view.ann._filename ?? 'document', { class: 'muted', 'data-testid': 'assist-document' }));
+        if (view?.run && this.mode !== 'blind' && (!this.blinded.has(view.key) || this.exposed.has(view.key)))
+            head.append(node('p', `${view.run.records.length} machine suggestions · ${view.ann.tags?.length ?? 0} annotation tags`, { 'data-testid': 'assist-counts' }));
         dock.append(head);
         if (this.message)
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
@@ -526,8 +537,34 @@ class LegacyAssist {
         body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
         if (!run.records.length)
             body.append(node('p', run.status === 'complete' ? 'No suggestions in the completed run. Omission review is still required.' : 'Incomplete run. An empty result is not a negative label.', { class: 'muted' }));
-        for (const record of run.records)
-            body.append(this.card(view, run, record));
+        const display = node('select', null, { 'aria-label': 'Suggestion view', 'data-testid': 'assist-suggestion-view' });
+        for (const [value, label] of [['cards', 'Detailed cards'], ['compact', 'Compact list']])
+            display.append(node('option', label, { value }));
+        display.value = this.suggestionView;
+        display.addEventListener('change', () => { this.suggestionView = display.value; this.detail = null; this.apply = null; this.render(); });
+        body.append(labeled('Suggestion view', display));
+        if (this.suggestionView === 'compact') {
+            const table = node('table', null, { class: 'compact', 'aria-label': 'Machine suggestions' });
+            const caption = node('caption', `${run.records.length} machine suggestions (not annotation tags)`);
+            const rows = node('tbody');
+            for (const record of run.records) {
+                const row = node('tr', null, { 'data-testid': 'assist-compact-suggestion' });
+                const cell = node('td');
+                const anchor = record.anchor.map(span => span.text).join(' … ');
+                const summary = [record.family.replaceAll('_occurrence', '').replaceAll('_', ' '), record.fields.assertion,
+                    record.fields.time_frame, record.fields.experiencer, Number(record.score).toFixed(3)].filter(value => value != null).join(' · ');
+                cell.append(node('strong', anchor, { title: anchor }), node('small', summary, { title: summary }));
+                const actions = node('td');
+                actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-compact-locate' }),
+                    button('Review', this.forCurrentNote(view.key, () => { this.detail = record.id; this.apply = null; this.render(); this.root.querySelector('[data-testid="assist-suggestion"]')?.scrollIntoView({block:'nearest'}); }), { id: 'assist-details' }));
+                row.append(cell, actions); rows.append(row);
+            }
+            table.append(caption, rows); body.append(table);
+            const detail = run.records.find(record => record.id === this.detail);
+            if (detail) body.append(this.card(view, run, detail));
+        } else {
+            for (const record of run.records) body.append(this.card(view, run, record));
+        }
     }
     card(view, run, record) {
         const card = node('article', null, { class: 'card', 'data-testid': 'assist-suggestion' });

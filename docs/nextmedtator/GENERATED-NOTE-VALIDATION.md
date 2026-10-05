@@ -26,21 +26,48 @@ and all 27 machine runs; adapter identity is retained. Requests are local
 GETs with no note bodies. Cloud median inference time is 4.90 seconds per
 note, maximum 7.30 seconds; this is not target-device qualification.
 
-The original MedTator UI also loads all 27 notes. Its representative note has
-17 machine suggestions. The UI gate locates and explicitly adds four behavioral
-events: pacing, verbal aggression, yelling and striking out. The review form
-corrects their experiencer to patient; the original machine predictions remain
-unchanged. All four native tags export with their original text and adapter
-lineage. Behavioral events use `event_occurrence` in the supplied six-family
-schema; there is no dedicated BPSD tag type. See the
-[screenshot](qualification/clinical-p4-generated-notes-ui.png) and
-[full report](qualification/clinical-p4-generated-notes.json).
+The original MedTator UI now runs all 27 notes through **Analyze selected**.
+All runs complete with full source coverage, valid offsets and the pinned
+adapter lineage. They produce 494 predictions, including 380 exact generated
+reference matches. A compact suggestion list shows every prediction while
+the header separately counts machine suggestions and annotation tags. Detailed
+cards and explicit review/write controls remain available. Counts and lists
+remain hidden on protected blind notes.
 
-The previous screenshot came from a smoke test that accepted only the first
-care-context suggestion. Its single annotation row was not the model's total
-prediction count. The current screenshot shows multiple accepted behaviors.
-The model still misses the supplied reference for "resisting morning care";
-the screenshot does not imply complete behavioral recall.
+The [original-UI corpus report](qualification/clinical-p4-original-corpus-ui.json)
+records every note's results and the screenshot selection. Legacy `time_text`
+CDATA stores text; its exact retained model evidence span is used only for
+temporal agreement scoring. No model output is rewritten or located by guessing.
+
+## Representative machine suggestion screenshots
+
+These captures show complete, unreviewed machine lists in the original UI.
+Their annotation tables are empty because no predictions were auto-accepted.
+The browser viewport was resized until every list row was visible. We selected
+the reported pain-miss note, the lowest-agreement note, a successful negated-pain
+anchor and the note with the most predictions; this includes weak results.
+
+| Note | Selection | Machine suggestions | Exact matches / generated references | Anchor F1 agreement | Screenshot |
+|---|---|---:|---:|---:|---|
+| syn7_00007 | Reported "Denies pain" miss | 17 | 15 / 25 | 71.4% | [View](qualification/clinical-p4-syn7_00007-suggestions.png) |
+| syn7_00002 | Lowest anchor agreement | 17 | 10 / 26 | 46.5% | [View](qualification/clinical-p4-syn7_00002-suggestions.png) |
+| syn7_00023 | Negated pain anchor and assertion detected | 20 | 15 / 25 | 66.7% | [View](qualification/clinical-p4-syn7_00023-suggestions.png) |
+| syn7_00014 | Most machine suggestions | 26 | 19 / 26 | 73.1% | [View](qualification/clinical-p4-syn7_00014-suggestions.png) |
+
+**"Denies pain" is a real pipeline miss at threshold 0.5.** Of seven supplied
+negated-pain reference spans, only one has an exact predicted anchor and the
+negated assertion. Six are omitted, including the reported note. The same note
+also omits "resisting morning care". These screenshots demonstrate inference
+and its errors, and do not establish complete behavioral or negation recall.
+The negated-pain example's other attributes remain unreviewed and can be wrong.
+
+The earlier [four-tag acceptance screenshot](qualification/clinical-p4-generated-notes-ui.png)
+exercises writing pacing, verbal aggression, yelling and striking out into
+native annotations, correcting experiencer to patient, and exporting all four.
+It shows accepted tags rather than the full prediction list. That workflow
+remains recorded in the [generated-note report](qualification/clinical-p4-generated-notes.json).
+Behavioral events use `event_occurrence` in the supplied six-family schema;
+there is no dedicated BPSD tag type.
 
 Both adapters were rerun after PR review found a lost word mask in attribute
 scoring. The encoder mask now reaches the attribute head, and padded word
@@ -107,6 +134,7 @@ using [the standalone packager](../../tools/gliner-onnx/README.md). Then run:
 uv run --locked python -m unittest discover -s tests/validation
 NMT_LORA_PACKAGE=/path/to/clinical-p4.nmt-model.zip uv run --locked python tests/browser/test_lora_samples.py
 NMT_LORA_PACKAGE=/path/to/clinical-p4.nmt-model.zip uv run --locked python tests/browser/test_lora_samples_legacy.py
+NMT_LORA_PACKAGE=/path/to/clinical-p4.nmt-model.zip uv run --locked python tests/browser/test_lora_corpus_ui.py
 ```
 
 The real-weight gates require the package and never silently skip or substitute

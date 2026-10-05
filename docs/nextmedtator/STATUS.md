@@ -17,6 +17,14 @@ current adapter's matched, labeled anchors. These unverified
 references do not qualify clinical accuracy. The full 17-choice status union
 is explicitly rejected by the current eight-choice attribute head.
 
+All 27 notes also pass real batch inference in the original UI. An optional
+compact list displays complete machine suggestions and separates their count
+from native annotation tags. Four [representative screenshots](GENERATED-NOTE-VALIDATION.md)
+include the weakest note and negation successes/misses. Only one of seven
+generated negated-pain reference spans is detected; "Denies pain" remains a
+real miss in the reported note. The original-UI/blind-mode regression and all
+120 app unit tests pass.
+
 ## WASM architecture follow-up
 
 The requested browser-local backend is implemented while retaining the original Vue 2/CodeMirror annotation UI. Rust-WASM workers provide bulk schema/record/source-span validation, Unicode offsets/literal search and compatible snapshot comparison. Official SQLite-WASM in OPFS supplies atomic, hash-verified recovery, bound queries and selected-project SQLite exports. The original assistance panel adds opt-in multi-document recovery and debounced Vue-edit autosave. Native child-project model/snapshot/exposure identities are retained. Legacy IndexedDB recovery migration is explicit, hash-preserving and keeps the old copy; subsequent writes use SQLite only. See [WASM-BACKEND.md](WASM-BACKEND.md).
