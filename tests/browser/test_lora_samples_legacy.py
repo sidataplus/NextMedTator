@@ -1,6 +1,7 @@
 """Load the generated corpus and review a real LoRA suggestion in original MedTator."""
 import json
 import os
+import re
 import subprocess
 import time
 import urllib.request
@@ -12,6 +13,7 @@ from playwright.sync_api import sync_playwright, expect
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p4.nmt-model.zip'))
 URL = 'http://127.0.0.1:4193/'
+BEHAVIORS = ['pacing', 'verbal aggression', 'yelling', 'striking out']
 
 
 def verify_export(path, fixture):
@@ -19,10 +21,14 @@ def verify_export(path, fixture):
         project = json.loads(archive.read('project.json'))
         runs = json.loads(archive.read('machine-runs/index.json'))
         manifest = json.loads(package.read('manifest.json'))
-        assert len(project['documents']) == len(runs) == len(project['draft']['records']) == 1
+        assert len(project['documents']) == len(runs) == 1
+        assert len(project['draft']['records']) == len(BEHAVIORS)
         assert archive.read(project['documents'][0]['sourceFile']).decode() == fixture['notes'][0]['text']
         assert runs[0]['producer']['lineage'] == manifest['lineage']
-        assert project['draft']['records'][0]['origin']['runId'] == runs[0]['id']
+        records = project['draft']['records']
+        assert {r['anchor'][0]['text'] for r in records} == set(BEHAVIORS)
+        assert all(r['origin']['runId'] == runs[0]['id'] for r in records)
+        assert all(r['family'] == 'event_occurrence' and r['fields']['experiencer'] == 'patient' for r in records)
 
 
 def run():
@@ -72,14 +78,31 @@ def run():
             expect(page.get_by_test_id('assist-message')).to_contain_text('package loaded')
             page.get_by_test_id('assist-analyze').click()
             expect(page.get_by_test_id('assist-suggestion').first).to_be_visible()
-            page.get_by_test_id('assist-suggestion').first.get_by_test_id('assist-locate').click()
-            selected = page.evaluate('app_hotpot.codemirror.getSelection()')
-            assert selected and selected in fixture['notes'][0]['text']
-            page.get_by_test_id('assist-suggestion').first.get_by_test_id('assist-accept').click()
-            page.get_by_test_id('assist-add').click()
-            assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length') == 1
-            assert page.evaluate('app_hotpot.vpp.$data.anns.length') == 27
+            suggestion_count = page.get_by_test_id('assist-suggestion').count()
             out = ROOT/'test-results'
+            def behavior_card(text):
+                return page.get_by_test_id('assist-suggestion').filter(
+                    has=page.locator('p.anchor', has_text=re.compile('^'+re.escape(text)+'$')))
+            # Show actual behavior suggestions, then exercise multiple explicit
+            # writes. The previous smoke screenshot accepted only the first
+            # care-context prediction and hid the remaining 16 suggestions.
+            behavior_card(BEHAVIORS[0]).get_by_test_id('assist-locate').click()
+            behavior_card(BEHAVIORS[0]).scroll_into_view_if_needed()
+            page.screenshot(path=str(out/'lora-samples-behavior-suggestions.png'), full_page=True)
+            for behavior in BEHAVIORS:
+                card = behavior_card(behavior)
+                expect(card).to_have_count(1)
+                card.get_by_test_id('assist-locate').click()
+                assert page.evaluate('app_hotpot.codemirror.getSelection()') == behavior
+                card.get_by_test_id('assist-accept').click()
+                # These actions describe the resident. Exercise the review
+                # correction form rather than copying mistaken model values.
+                card.get_by_label('experiencer', exact=True).select_option('patient')
+                page.get_by_test_id('assist-add').click()
+            assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length') == len(BEHAVIORS)
+            assert page.evaluate('app_hotpot.vpp.$data.anns.length') == 27
+            behavior_card('verbal aggression').get_by_test_id('assist-locate').click()
+            behavior_card('pacing').scroll_into_view_if_needed()
             page.screenshot(path=str(out/'lora-samples-original-ui.png'), full_page=True)
             with page.expect_download() as download:
                 page.get_by_role('button', name='Export evidence project', exact=True).click()
@@ -88,7 +111,11 @@ def run():
             assert not errors, errors
             assert all(r['url'].startswith(URL) and r['method']=='GET' and not r['body'] for r in requests), requests
             report = {'corpusDocumentsInOriginalUI':27, 'representativeId':fixture['notes'][0]['id'],
-                      'actualLoRAInferLocateAcceptNativeTagExport':True, 'noNoteEgress':True, 'browser':browser.version}
+                      'actualLoRAInferLocateAcceptNativeTagExport':True, 'noNoteEgress':True, 'browser':browser.version,
+                      'machineSuggestionsInRepresentativeNote':suggestion_count,
+                      'acceptedBehaviorTags':BEHAVIORS, 'nativeTagCount':len(BEHAVIORS),
+                      'reviewCorrections':{'experiencer':'patient'},
+                      'tagOntology':'Behavioral events use event_occurrence in the supplied six-family schema; no dedicated BPSD tag'}
             (out/'lora-samples-original-ui.json').write_text(json.dumps(report,indent=2)+'\n')
             print(json.dumps(report,indent=2), flush=True)
             browser.close()

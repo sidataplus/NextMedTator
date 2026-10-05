@@ -421,7 +421,19 @@
     "representativeId": "syn7_00007",
     "actualLoRAInferLocateAcceptNativeTagExport": true,
     "noNoteEgress": true,
-    "browser": "151.0.7922.173"
+    "browser": "151.0.7922.173",
+    "machineSuggestionsInRepresentativeNote": 17,
+    "acceptedBehaviorTags": [
+      "pacing",
+      "verbal aggression",
+      "yelling",
+      "striking out"
+    ],
+    "nativeTagCount": 4,
+    "reviewCorrections": {
+      "experiencer": "patient"
+    },
+    "tagOntology": "Behavioral events use event_occurrence in the supplied six-family schema; no dedicated BPSD tag"
   },
   "validationUnitTests": 4,
   "reviewRevalidation": {

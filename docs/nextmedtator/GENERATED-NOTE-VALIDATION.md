@@ -26,11 +26,21 @@ and all 27 machine runs; adapter identity is retained. Requests are local
 GETs with no note bodies. Cloud median inference time is 4.90 seconds per
 note, maximum 7.30 seconds; this is not target-device qualification.
 
-The original MedTator UI also loads all 27 notes. A representative note passes
-real inference, CodeMirror span location, acceptance into a native tag and
-evidence export with its original text and adapter lineage. See the
+The original MedTator UI also loads all 27 notes. Its representative note has
+17 machine suggestions. The UI gate locates and explicitly adds four behavioral
+events: pacing, verbal aggression, yelling and striking out. The review form
+corrects their experiencer to patient; the original machine predictions remain
+unchanged. All four native tags export with their original text and adapter
+lineage. Behavioral events use `event_occurrence` in the supplied six-family
+schema; there is no dedicated BPSD tag type. See the
 [screenshot](qualification/clinical-p4-generated-notes-ui.png) and
 [full report](qualification/clinical-p4-generated-notes.json).
+
+The previous screenshot came from a smoke test that accepted only the first
+care-context suggestion. Its single annotation row was not the model's total
+prediction count. The current screenshot shows multiple accepted behaviors.
+The model still misses the supplied reference for "resisting morning care";
+the screenshot does not imply complete behavioral recall.
 
 Both adapters were rerun after PR review found a lost word mask in attribute
 scoring. The encoder mask now reaches the attribute head, and padded word
