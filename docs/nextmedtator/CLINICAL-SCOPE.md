@@ -40,7 +40,11 @@ Actual P4 ONNX was run in Chromium on two supplied generated notes, `syn7_00007`
 
 The real-browser gate verifies full source coverage, exact offsets, allowed families/concept IDs, native auto-applied tag counts, unreviewed provenance, old-run immutability, evidence export and corpus recovery, with no note egress. The browser-exported semantic schema also passes upstream `SemanticSchema.model_validate(...).verify()` at the pinned revision. See [scope browser report](qualification/clinical-scope-ui.json), [upstream validation](qualification/clinical-scope-upstream-validation.json) and the accompanying original-UI screenshots.
 
-### Current P7b BPSD screenshots
+### Current v3 BPSD support
+
+The updated [ClinicalEvidence v3 adapter](V3-17089-VALIDATION.md) uses model-specific broad presets at threshold 0.6, verbatim core descriptions, and explicit qualified assertion/experiencer/time-frame groups. It never queries the manual administrative choices `unspecified` or `not_applicable`, and never assumes a default from an omitted attribute. Family-specific field spans and record binding remain unavailable in this decoder. Existing scopes are not silently rewritten: select a broad v3 preset or explicitly edit unsupported fields before applying an old profile. Custom definitions and concepts stay freely editable within the pinned registry; no BPSD preset was added. Existing runs retain their original model, scope and inference-schema fingerprint.
+
+### Archived P7b BPSD screenshots
 
 [P7b validation](P7B-VALIDATION.md) uses the same four synthetic notes, user-entered BPSD definition and threshold as the archived P4 captures below. Reproduce with `NMT_LORA_PACKAGE=/path/to/clinical-p7b.nmt-model.zip uv run --locked python tests/browser/test_lora_bpsd.py`. The active package ID is visible in the original assistance panel. The model card uses v2 attribute spans; its hybrid attribute decoder remains outside this scope workflow.
 

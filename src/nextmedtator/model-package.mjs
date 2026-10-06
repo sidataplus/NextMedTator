@@ -1,3 +1,4 @@
+import {CLINICAL_V3_CODEC,CLINICAL_V3,validateClinicalV3Registry} from './clinical-v3.mjs';
 import { invariant, validId, validHash, uniqueIds, fingerprint, sha256, freeze, clone, jsonParse } from './integrity.mjs';
 import { safePath, unzipBounded } from './zip.mjs';
 export const PACKAGE_FORMAT = 'nextmedtator-model-v1';
@@ -6,6 +7,7 @@ export const MODEL_LIMITS = Object.freeze({ files: 128, file: 768 * 1024 * 1024,
 // Every executable preprocessor/decoder is shipped with the application, not with a model.
 export const CODECS = Object.freeze({
     'gliner25-small-records-v5': { purpose:'anchored-records', clinicalInference:true, coverage:'occurrence-record' },
+    [CLINICAL_V3_CODEC]: {purpose:'v3-anchors-and-shared-axes',clinicalInference:true,coverage:'occurrence-record'},
     'gliner25-records-v1': { purpose:'anchored-records', clinicalInference:true, coverage:'occurrence-record' },
     'tensor-conformance-v1': { purpose: 'graph-conformance-only', clinicalInference: false, coverage: 'tensor-fixture' },
     'gliner25-boundary-span-v1': { purpose: 'gliner25-boundary-span-extraction', clinicalInference: true, coverage: 'entity-span' },
@@ -54,11 +56,15 @@ export function validateModelManifest(m) {
             for (const name of ['model','attributes','records','relations']) invariant(m.files.some(f=>f.path===v.graphs?.[name]&&f.role==='graph'),'Record graph missing: '+name);
             invariant(m.files.some(f=>f.path===v.tokenizer&&f.role==='tokenizer'),'Record tokenizer missing');
             invariant(Number.isFinite(v.pairTemperature)&&v.pairTemperature>0,'Pair temperature required');
-            if(v.codec==='gliner25-records-v1'){
+            if(v.codec==='gliner25-records-v1'||v.codec===CLINICAL_V3_CODEC){
                 invariant(v.fixedWords===512&&v.maxSequenceLength===512,'Unsupported GLiNER fixed-axis/window contract');
                 invariant(Number.isFinite(v.abstentionThreshold)&&v.abstentionThreshold>=0&&v.abstentionThreshold<=1,'Source abstention threshold required');
                 invariant(m.lineage.adapter&&m.lineage.merge==='merged-export','Generic GLiNER package requires merged LoRA lineage');
             }
+        }
+        if(v.codec===CLINICAL_V3_CODEC){
+            invariant(v.clinicalRegistryHash===CLINICAL_V3.registryHash&&v.sharedAxes==='one_value_softmax_no_attribute_threshold'&&v.recordBinding===false,'V3 inference contract required');
+            invariant(m.files.some(f=>f.path===v.clinicalSchema&&f.role==='schema'),'V3 registry artifact required');
         }
         if (CODECS[v.codec].coverage === 'entity-span' || CODECS[v.codec].coverage === 'structured-span') {
             invariant(v.graphs?.encoder === v.graph && typeof v.graphs.boundary === 'string', 'Boundary package needs encoder and boundary graphs');
@@ -85,6 +91,7 @@ export async function importModelPackage(bytes) {
         const content = entries.get(file.path);
         invariant(content && content.length === file.bytes && await sha256(content) === file.sha256, 'Model artifact integrity mismatch');
     }
+    for(const variant of manifest.variants)if(variant.codec===CLINICAL_V3_CODEC)validateClinicalV3Registry(jsonParse(new TextDecoder('utf-8',{fatal:true}).decode(entries.get(variant.clinicalSchema))));
     return { manifest: freeze(clone(manifest)), manifestHash: await fingerprint(manifest), files: entries };
 }
 /** Reproducible model identity retained in run fingerprints, comparisons and exports. */
@@ -112,7 +119,7 @@ export function qualifyForSchema(packageData, schema) {
     if (!open)
         for (const family of Object.keys(schema.families))
             invariant(packageData.manifest.capabilities.includes(family), 'Unsupported schema family');
-    if (codecs.some(c=>c.coverage==='occurrence-record')) return {level:'occurrence-record',unpredicted:['anchorless-records','cross-window-relations']};
+    if (codecs.some(c=>c.coverage==='occurrence-record')) return {level:'occurrence-record',unpredicted:['anchorless-records','cross-window-relations',...(packageData.manifest.variants.every(v=>v.codec===CLINICAL_V3_CODEC)?['family-choice-spans','literal-spans','record-binding','relations']:[])]};
     const structured = codecs.some(c => c.coverage === 'structured-span');
     if (structured)
         return { level: 'structured-span', unpredicted: ['value', 'unit', 'relations'] };

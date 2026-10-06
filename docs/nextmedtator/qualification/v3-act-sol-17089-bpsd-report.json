@@ -1,0 +1,2391 @@
+{
+  "browser": "151.0.7922.173",
+  "modelPackage": "clinical-v3-17089.nmt-model.zip",
+  "manifestId": "gliner25-clinical-evidence-v3-act-sol-17089",
+  "lineage": {
+    "base": {
+      "model": "fastino/gliner2.5-base-v1",
+      "revision": "ca906247640776a07753514055be9726f9080ead",
+      "files": {
+        "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+        "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+        "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+        "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+        "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+      }
+    },
+    "adapter": {
+      "sha256": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+      "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+      "weightsSha256": "dccb3903ae909ed517076f262aa7399ad723b4c4b3828f9d112811862f49a0bf",
+      "configSha256": "fd286577f298db446a9946da32599302422ff0b91e5a6216c94620fd194c253a",
+      "repository": "na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089",
+      "revision": "058945fb562f3c6250450ff67b842255f872ddf4"
+    },
+    "merge": "merged-export",
+    "trainedHeads": "8ad0e38ac7880a850bf3bc7b5d5d595a5ea049ffe331892b67a62a11f637e457"
+  },
+  "source": {
+    "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
+    "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
+    "generatorModels": [
+      "gemini-3.1-pro-high"
+    ],
+    "referenceKind": "externally-generated-labels",
+    "referenceCompleteness": "unverified",
+    "clinicalGoldStandard": false
+  },
+  "customConfigurationNotPreset": true,
+  "mode": "auto",
+  "threshold": 0.6,
+  "definition": "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services.",
+  "allRunsComplete": true,
+  "allSourceOffsetsValid": true,
+  "portableEvidenceExportsVerified": true,
+  "allAutoAppliedTagsUnreviewed": true,
+  "noNoteEgress": true,
+  "scope": {
+    "format": "nextmedtator-clinical-scope-v1",
+    "threshold": 0.6,
+    "fields": {
+      "condition_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer"
+      ],
+      "measurement_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer"
+      ],
+      "treatment_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer"
+      ],
+      "event_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer"
+      ],
+      "function_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer"
+      ],
+      "care_context_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer"
+      ]
+    },
+    "semanticSchema": {
+      "schema_version": "teacher-schema/0.2",
+      "name": "BPSD",
+      "version": "1",
+      "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+      "families": [
+        "event_occurrence"
+      ],
+      "tasks": [
+        {
+          "task_id": "clinical_scope",
+          "definition": "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+        }
+      ],
+      "concepts": [],
+      "relations": [],
+      "parent_schema_hash": null,
+      "discovery_plan_hash": null,
+      "deferred_proposals": [],
+      "frozen_by": "legacy-annotator",
+      "frozen_at": "2026-10-06T03:34:19.914Z",
+      "schema_hash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+    }
+  },
+  "results": [
+    {
+      "id": "syn7_00007",
+      "predictions": 5,
+      "nativeTags": 5,
+      "allRowsVisible": true,
+      "screenshot": "v3-act-sol-17089-bpsd-syn7_00007-auto.png",
+      "viewport": {
+        "width": 1600,
+        "height": 2000
+      },
+      "anchors": [
+        "unassisted fall",
+        "verbal aggression",
+        "yelling at staff",
+        "resisting morning care",
+        "striking out at staff"
+      ]
+    },
+    {
+      "id": "syn7_00002",
+      "predictions": 3,
+      "nativeTags": 3,
+      "allRowsVisible": true,
+      "screenshot": "v3-act-sol-17089-bpsd-syn7_00002-auto.png",
+      "viewport": {
+        "width": 1600,
+        "height": 2000
+      },
+      "anchors": [
+        "sundowning",
+        "resting",
+        "restless"
+      ]
+    },
+    {
+      "id": "syn7_00023",
+      "predictions": 1,
+      "nativeTags": 1,
+      "allRowsVisible": true,
+      "screenshot": "v3-act-sol-17089-bpsd-syn7_00023-auto.png",
+      "viewport": {
+        "width": 1600,
+        "height": 2000
+      },
+      "anchors": [
+        "shadowed"
+      ]
+    },
+    {
+      "id": "syn7_00014",
+      "predictions": 4,
+      "nativeTags": 4,
+      "allRowsVisible": true,
+      "screenshot": "v3-act-sol-17089-bpsd-syn7_00014-auto.png",
+      "viewport": {
+        "width": 1600,
+        "height": 2000
+      },
+      "anchors": [
+        "restless",
+        "striking out",
+        "verbal aggression",
+        "resisting care"
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "id": "b247c92a-5810-4d24-96b7-19d7d0a32e02",
+      "createdAt": "2026-10-06T03:34:44.733Z",
+      "documentId": "legacy-note",
+      "sourceHash": "3e279dfd220c93437e2ed7b6effa925a363eb075335d05b45af777d7fdfa5eef",
+      "schemaHash": "967aa01e91507c95d6bd49879c7e5c4ad3e9022e7fcb62a50f0c7288b744fa68",
+      "producer": {
+        "kind": "model",
+        "name": "fastino/gliner2.5-base-v1",
+        "version": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+        "packageId": "gliner25-clinical-evidence-v3-act-sol-17089",
+        "manifestHash": "7f7c47b9f61abb2f54d829e6801285fedb582f1eac9c0fd4e354572d2d332850",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead",
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            }
+          },
+          "adapter": {
+            "sha256": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "weightsSha256": "dccb3903ae909ed517076f262aa7399ad723b4c4b3828f9d112811862f49a0bf",
+            "configSha256": "fd286577f298db446a9946da32599302422ff0b91e5a6216c94620fd194c253a",
+            "repository": "na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089",
+            "revision": "058945fb562f3c6250450ff67b842255f872ddf4"
+          },
+          "merge": "merged-export",
+          "trainedHeads": "8ad0e38ac7880a850bf3bc7b5d5d595a5ea049ffe331892b67a62a11f637e457"
+        },
+        "artifacts": [
+          {
+            "path": "model.onnx",
+            "bytes": 746817689,
+            "sha256": "191c3c18bbb89f32b2ff7f5059bb26638bbfc3a681cc759d4c3f5589358651db",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 6078133,
+            "sha256": "5ed00414908005e3380938bc1d3d136725ccfa52deb6f2b5da5d31f3e5e96438",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 1193806,
+            "sha256": "ba91e3285f6ef1e4fc9ac7d5569529f63b3b8b5d7b197c7427f727bbae0cd910",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 23658742,
+            "sha256": "d2c0956721b8e187e31f1de35115cd416c431895b570457e25373df2a6d054a4",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8333953,
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc",
+            "role": "tokenizer"
+          },
+          {
+            "path": "source-case-0.json",
+            "bytes": 919,
+            "sha256": "1f4911958ce051c98a1a6417a91b9e2a2c16e5b6afa09f91045a025867070fc4",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-0.json",
+            "bytes": 14590,
+            "sha256": "0e7f6239ac2aaabf52bdbf1cfcb12c6617fb9e861bbfe6a8c452f1df1e4f091d",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-1.json",
+            "bytes": 888,
+            "sha256": "103eab6b549730bbb8b7520d7ce7c59dbef94459b51624e6ed04bdb4132b427a",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-1.json",
+            "bytes": 14313,
+            "sha256": "dd3466e2dfd4a3b92355e3d03f6f03d7c4684ccd84b3cdf967c620b7f24860b5",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-2.json",
+            "bytes": 496,
+            "sha256": "b44faa2022eb95e85b9c819f778a132d836e6c67254ffd8337096dbd4bd1e895",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-2.json",
+            "bytes": 8201,
+            "sha256": "579604607bba22ac76a16785cf9d5b7d4071206f386564a78ff156017bb77ed7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-3.json",
+            "bytes": 687,
+            "sha256": "9f76f071919134e24256c0e40a47c854e3c3d36b2eec83d73363bfdcf28a78f9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-3.json",
+            "bytes": 11485,
+            "sha256": "f6c87c3159732ed42cb346265995051d90f820ba8a52924778e371222458414b",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-4.json",
+            "bytes": 436,
+            "sha256": "7ab05f5728e73587201e62f05f53d555c09f532e01539052e91bba707cef2dfd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-4.json",
+            "bytes": 7407,
+            "sha256": "1b4741ca310e52bfbead34911ade7c5c1317c39d43c7d25e6d0f3fba111f8035",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-5.json",
+            "bytes": 399,
+            "sha256": "349d411e3639f143263e7fb35dbc945ed42d83f449668f8f484c37959d48dbdd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-5.json",
+            "bytes": 12078,
+            "sha256": "f0721295cfd32b734ed03de091b2f2a2fe7892693d05670aea8d919d808b0bdc",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-6.json",
+            "bytes": 2991,
+            "sha256": "4eeeac9c086f8f0c8dcc00b8d761ea6068e2c79e0668446a9ac067ff14ac3d51",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-6.json",
+            "bytes": 91948,
+            "sha256": "a220f335ac5941f727cb624d27b4161b67db79b03a87c4c8f805f49cf66e1606",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-7.json",
+            "bytes": 1348,
+            "sha256": "ec3f06b65147ef7d9e0845b6dd300a80871e9c333cdcfe1550cec255f7792a6e",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-7.json",
+            "bytes": 72786,
+            "sha256": "88a235822aed026a6fa3b17e2b0c366c11bc31429c885dff24e1be1075a471a7",
+            "role": "fixture"
+          },
+          {
+            "path": "attributes-reference.json",
+            "bytes": 1833043,
+            "sha256": "8d2a6ee89eef6da90a30e70012909de9f05ae6064211035956adb3efd3513de2",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 191496,
+            "sha256": "cd0e314e450c44657fe13a186bb08e40ffa7ea50291ba7a7873b2322430ba76d",
+            "role": "fixture"
+          },
+          {
+            "path": "records-varied-reference.json",
+            "bytes": 526113,
+            "sha256": "7b756671cd6c7bee843419409bfde052f0bc9f140ecf3eab0e59163f541c2ba0",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-reference.json",
+            "bytes": 127574,
+            "sha256": "f68ae344785f9543e17eb649a9c45f2732eb7841fc51f25645fa26d91c381e0d",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-varied-reference.json",
+            "bytes": 1554768,
+            "sha256": "3061fd020e28078da9b051b099d11b617312a561f258983f332e7de5d08a3f72",
+            "role": "fixture"
+          },
+          {
+            "path": "clinical-schema-v3.json",
+            "bytes": 36815,
+            "sha256": "f4d6127a93171f412e81b4f06936f55bd6f54b98b58564ac3903052cd1ef345c",
+            "role": "schema"
+          }
+        ]
+      },
+      "runtime": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "version": "1.23.2",
+        "variantId": "wasm-fp32",
+        "variant": {
+          "id": "wasm-fp32",
+          "backend": "wasm",
+          "precision": "fp32",
+          "codec": "gliner25-clinical-v3-spans-v1",
+          "graph": "model.onnx",
+          "graphs": {
+            "model": "model.onnx",
+            "attributes": "attributes.onnx",
+            "records": "records.onnx",
+            "relations": "relations.onnx"
+          },
+          "tokenizer": "tokenizer.json",
+          "fixtures": [
+            "source-case-0.json",
+            "model-reference-0.json",
+            "source-case-1.json",
+            "model-reference-1.json",
+            "source-case-2.json",
+            "model-reference-2.json",
+            "source-case-3.json",
+            "model-reference-3.json",
+            "source-case-4.json",
+            "model-reference-4.json",
+            "source-case-5.json",
+            "model-reference-5.json",
+            "source-case-6.json",
+            "model-reference-6.json",
+            "source-case-7.json",
+            "model-reference-7.json",
+            "attributes-reference.json",
+            "records-reference.json",
+            "records-varied-reference.json",
+            "relations-reference.json",
+            "relations-varied-reference.json"
+          ],
+          "threshold": 0.6,
+          "clinicalSchema": "clinical-schema-v3.json",
+          "clinicalRegistryHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+          "sharedAxes": "one_value_softmax_no_attribute_threshold",
+          "recordBinding": false,
+          "thresholdSelectionSha256": "704c27e990f38f06dc16e16756f32f5fc9db06fad62b51ff341ab5283f03ffe7",
+          "fixedWords": 512,
+          "maxSequenceLength": 512,
+          "wordOverlap": 32,
+          "pairTemperature": 1,
+          "abstentionThreshold": 0.5,
+          "automaticRelations": false,
+          "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+          "exporterVersion": "0.1.0",
+          "languageClaims": [
+            "en"
+          ]
+        }
+      },
+      "settings": {
+        "codec": "gliner25-clinical-v3-spans-v1",
+        "inferenceSchema": {
+          "id": "medtator-schema",
+          "version": "1",
+          "families": {
+            "event_occurrence": {
+              "label": "clinical_event",
+              "fields": {
+                "concept": {
+                  "type": "text"
+                },
+                "assertion": {
+                  "type": "enum",
+                  "values": [
+                    "affirmed",
+                    "negated",
+                    "uncertain",
+                    "hypothetical",
+                    "ruled_out"
+                  ]
+                },
+                "time_frame": {
+                  "type": "enum",
+                  "values": [
+                    "current",
+                    "recent",
+                    "historical",
+                    "future"
+                  ]
+                },
+                "experiencer": {
+                  "type": "enum",
+                  "values": [
+                    "patient",
+                    "family",
+                    "other"
+                  ]
+                }
+              },
+              "recordParent": "event_occurrence",
+              "recordAnchorLabel": "event"
+            }
+          },
+          "entityTargets": [
+            {
+              "label": "clinical_event",
+              "family": "event_occurrence",
+              "description": "Unified clinical actions, episodes, behavioral patterns, psychological experiences, and persistent states. Not restricted to acute events. Scope: Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+            }
+          ],
+          "clinicalScope": {
+            "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+            "schemaHash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+          },
+          "clinicalV3": true,
+          "relations": {}
+        },
+        "inferenceSchemaHash": "817cce94d976de4fbf719fdecd99fc449df41b839eec0bfae2c7b36e7eda6d73",
+        "threshold": 0.6,
+        "scope": {
+          "profile": {
+            "format": "nextmedtator-clinical-scope-v1",
+            "threshold": 0.6,
+            "fields": {
+              "condition_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "measurement_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "treatment_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "event_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "function_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "care_context_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ]
+            },
+            "semanticSchema": {
+              "schema_version": "teacher-schema/0.2",
+              "name": "BPSD",
+              "version": "1",
+              "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "families": [
+                "event_occurrence"
+              ],
+              "tasks": [
+                {
+                  "task_id": "clinical_scope",
+                  "definition": "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+                }
+              ],
+              "concepts": [],
+              "relations": [],
+              "parent_schema_hash": null,
+              "discovery_plan_hash": null,
+              "deferred_proposals": [],
+              "frozen_by": "legacy-annotator",
+              "frozen_at": "2026-10-06T03:34:19.914Z",
+              "schema_hash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+            }
+          },
+          "profileHash": "65f16a923441b6d8b9555fb86ac12b1deb7a350e02e58b39d31abc8ab2aacd1d",
+          "trainingRegistry": {
+            "repository": "na399/clinical-evidence",
+            "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+            "hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547"
+          },
+          "inferenceSchema": {
+            "id": "medtator-schema",
+            "version": "1",
+            "families": {
+              "event_occurrence": {
+                "label": "clinical_event",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other"
+                    ]
+                  }
+                },
+                "recordParent": "event_occurrence",
+                "recordAnchorLabel": "event"
+              }
+            },
+            "entityTargets": [
+              {
+                "label": "clinical_event",
+                "family": "event_occurrence",
+                "description": "Unified clinical actions, episodes, behavioral patterns, psychological experiences, and persistent states. Not restricted to acute events. Scope: Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+              }
+            ],
+            "clinicalScope": {
+              "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "schemaHash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+            },
+            "clinicalV3": true,
+            "relations": {}
+          },
+          "inferenceSchemaHash": "817cce94d976de4fbf719fdecd99fc449df41b839eec0bfae2c7b36e7eda6d73",
+          "semantics": "prompt-guidance; exact family mapping, no deterministic concept-membership guarantee"
+        },
+        "limitations": [
+          "family-choice-spans-unqualified",
+          "literal-spans-unqualified",
+          "record-binding-unsupported",
+          "cross-window-relations",
+          "anchorless-records"
+        ]
+      },
+      "windows": [
+        {
+          "from": 0,
+          "to": 220,
+          "sourceRange": [
+            0,
+            1223
+          ]
+        }
+      ],
+      "timing": {},
+      "failures": [],
+      "status": "complete",
+      "coverage": [
+        [
+          0,
+          1223
+        ]
+      ],
+      "records": [
+        {
+          "id": "ca6b7ea2-7025-4dea-9c12-d9b9220d8a97",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 168,
+              "end": 183,
+              "text": "unassisted fall"
+            }
+          ],
+          "fields": {
+            "concept": "unassisted fall",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.8194167424748482,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "c0065fed-595d-4697-8387-b56f8f39150d",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 324,
+              "end": 341,
+              "text": "verbal aggression"
+            }
+          ],
+          "fields": {
+            "concept": "verbal aggression",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.9660694868121643,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "32ba9ec9-cb53-415c-8993-41d7eceea1cd",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 356,
+              "end": 372,
+              "text": "yelling at staff"
+            }
+          ],
+          "fields": {
+            "concept": "yelling at staff",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.8826404758761547,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "2b9dfd52-1c4b-4ace-8a0c-2e4d8760ebd8",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 377,
+              "end": 399,
+              "text": "resisting morning care"
+            }
+          ],
+          "fields": {
+            "concept": "resisting morning care",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.8656311167691435,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "ef14f561-bceb-466b-87e1-ef9d6b9bcb9f",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 409,
+              "end": 430,
+              "text": "striking out at staff"
+            }
+          ],
+          "fields": {
+            "concept": "striking out at staff",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.6951838762788265,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        }
+      ],
+      "fingerprint": "f09aafae46f6e2e9761de53faad3bd503fd4cf02d6ffdcfa73b707d26629ef40"
+    },
+    {
+      "id": "8288e2a3-f2b9-4aba-a521-719ecb5f762b",
+      "createdAt": "2026-10-06T03:34:48.047Z",
+      "documentId": "legacy-note",
+      "sourceHash": "145d13849d6ab9cb5b8cb5a08d7bdec409e2e6d3d5d89d3426f549623532e910",
+      "schemaHash": "967aa01e91507c95d6bd49879c7e5c4ad3e9022e7fcb62a50f0c7288b744fa68",
+      "producer": {
+        "kind": "model",
+        "name": "fastino/gliner2.5-base-v1",
+        "version": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+        "packageId": "gliner25-clinical-evidence-v3-act-sol-17089",
+        "manifestHash": "7f7c47b9f61abb2f54d829e6801285fedb582f1eac9c0fd4e354572d2d332850",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead",
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            }
+          },
+          "adapter": {
+            "sha256": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "weightsSha256": "dccb3903ae909ed517076f262aa7399ad723b4c4b3828f9d112811862f49a0bf",
+            "configSha256": "fd286577f298db446a9946da32599302422ff0b91e5a6216c94620fd194c253a",
+            "repository": "na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089",
+            "revision": "058945fb562f3c6250450ff67b842255f872ddf4"
+          },
+          "merge": "merged-export",
+          "trainedHeads": "8ad0e38ac7880a850bf3bc7b5d5d595a5ea049ffe331892b67a62a11f637e457"
+        },
+        "artifacts": [
+          {
+            "path": "model.onnx",
+            "bytes": 746817689,
+            "sha256": "191c3c18bbb89f32b2ff7f5059bb26638bbfc3a681cc759d4c3f5589358651db",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 6078133,
+            "sha256": "5ed00414908005e3380938bc1d3d136725ccfa52deb6f2b5da5d31f3e5e96438",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 1193806,
+            "sha256": "ba91e3285f6ef1e4fc9ac7d5569529f63b3b8b5d7b197c7427f727bbae0cd910",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 23658742,
+            "sha256": "d2c0956721b8e187e31f1de35115cd416c431895b570457e25373df2a6d054a4",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8333953,
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc",
+            "role": "tokenizer"
+          },
+          {
+            "path": "source-case-0.json",
+            "bytes": 919,
+            "sha256": "1f4911958ce051c98a1a6417a91b9e2a2c16e5b6afa09f91045a025867070fc4",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-0.json",
+            "bytes": 14590,
+            "sha256": "0e7f6239ac2aaabf52bdbf1cfcb12c6617fb9e861bbfe6a8c452f1df1e4f091d",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-1.json",
+            "bytes": 888,
+            "sha256": "103eab6b549730bbb8b7520d7ce7c59dbef94459b51624e6ed04bdb4132b427a",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-1.json",
+            "bytes": 14313,
+            "sha256": "dd3466e2dfd4a3b92355e3d03f6f03d7c4684ccd84b3cdf967c620b7f24860b5",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-2.json",
+            "bytes": 496,
+            "sha256": "b44faa2022eb95e85b9c819f778a132d836e6c67254ffd8337096dbd4bd1e895",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-2.json",
+            "bytes": 8201,
+            "sha256": "579604607bba22ac76a16785cf9d5b7d4071206f386564a78ff156017bb77ed7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-3.json",
+            "bytes": 687,
+            "sha256": "9f76f071919134e24256c0e40a47c854e3c3d36b2eec83d73363bfdcf28a78f9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-3.json",
+            "bytes": 11485,
+            "sha256": "f6c87c3159732ed42cb346265995051d90f820ba8a52924778e371222458414b",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-4.json",
+            "bytes": 436,
+            "sha256": "7ab05f5728e73587201e62f05f53d555c09f532e01539052e91bba707cef2dfd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-4.json",
+            "bytes": 7407,
+            "sha256": "1b4741ca310e52bfbead34911ade7c5c1317c39d43c7d25e6d0f3fba111f8035",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-5.json",
+            "bytes": 399,
+            "sha256": "349d411e3639f143263e7fb35dbc945ed42d83f449668f8f484c37959d48dbdd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-5.json",
+            "bytes": 12078,
+            "sha256": "f0721295cfd32b734ed03de091b2f2a2fe7892693d05670aea8d919d808b0bdc",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-6.json",
+            "bytes": 2991,
+            "sha256": "4eeeac9c086f8f0c8dcc00b8d761ea6068e2c79e0668446a9ac067ff14ac3d51",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-6.json",
+            "bytes": 91948,
+            "sha256": "a220f335ac5941f727cb624d27b4161b67db79b03a87c4c8f805f49cf66e1606",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-7.json",
+            "bytes": 1348,
+            "sha256": "ec3f06b65147ef7d9e0845b6dd300a80871e9c333cdcfe1550cec255f7792a6e",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-7.json",
+            "bytes": 72786,
+            "sha256": "88a235822aed026a6fa3b17e2b0c366c11bc31429c885dff24e1be1075a471a7",
+            "role": "fixture"
+          },
+          {
+            "path": "attributes-reference.json",
+            "bytes": 1833043,
+            "sha256": "8d2a6ee89eef6da90a30e70012909de9f05ae6064211035956adb3efd3513de2",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 191496,
+            "sha256": "cd0e314e450c44657fe13a186bb08e40ffa7ea50291ba7a7873b2322430ba76d",
+            "role": "fixture"
+          },
+          {
+            "path": "records-varied-reference.json",
+            "bytes": 526113,
+            "sha256": "7b756671cd6c7bee843419409bfde052f0bc9f140ecf3eab0e59163f541c2ba0",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-reference.json",
+            "bytes": 127574,
+            "sha256": "f68ae344785f9543e17eb649a9c45f2732eb7841fc51f25645fa26d91c381e0d",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-varied-reference.json",
+            "bytes": 1554768,
+            "sha256": "3061fd020e28078da9b051b099d11b617312a561f258983f332e7de5d08a3f72",
+            "role": "fixture"
+          },
+          {
+            "path": "clinical-schema-v3.json",
+            "bytes": 36815,
+            "sha256": "f4d6127a93171f412e81b4f06936f55bd6f54b98b58564ac3903052cd1ef345c",
+            "role": "schema"
+          }
+        ]
+      },
+      "runtime": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "version": "1.23.2",
+        "variantId": "wasm-fp32",
+        "variant": {
+          "id": "wasm-fp32",
+          "backend": "wasm",
+          "precision": "fp32",
+          "codec": "gliner25-clinical-v3-spans-v1",
+          "graph": "model.onnx",
+          "graphs": {
+            "model": "model.onnx",
+            "attributes": "attributes.onnx",
+            "records": "records.onnx",
+            "relations": "relations.onnx"
+          },
+          "tokenizer": "tokenizer.json",
+          "fixtures": [
+            "source-case-0.json",
+            "model-reference-0.json",
+            "source-case-1.json",
+            "model-reference-1.json",
+            "source-case-2.json",
+            "model-reference-2.json",
+            "source-case-3.json",
+            "model-reference-3.json",
+            "source-case-4.json",
+            "model-reference-4.json",
+            "source-case-5.json",
+            "model-reference-5.json",
+            "source-case-6.json",
+            "model-reference-6.json",
+            "source-case-7.json",
+            "model-reference-7.json",
+            "attributes-reference.json",
+            "records-reference.json",
+            "records-varied-reference.json",
+            "relations-reference.json",
+            "relations-varied-reference.json"
+          ],
+          "threshold": 0.6,
+          "clinicalSchema": "clinical-schema-v3.json",
+          "clinicalRegistryHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+          "sharedAxes": "one_value_softmax_no_attribute_threshold",
+          "recordBinding": false,
+          "thresholdSelectionSha256": "704c27e990f38f06dc16e16756f32f5fc9db06fad62b51ff341ab5283f03ffe7",
+          "fixedWords": 512,
+          "maxSequenceLength": 512,
+          "wordOverlap": 32,
+          "pairTemperature": 1,
+          "abstentionThreshold": 0.5,
+          "automaticRelations": false,
+          "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+          "exporterVersion": "0.1.0",
+          "languageClaims": [
+            "en"
+          ]
+        }
+      },
+      "settings": {
+        "codec": "gliner25-clinical-v3-spans-v1",
+        "inferenceSchema": {
+          "id": "medtator-schema",
+          "version": "1",
+          "families": {
+            "event_occurrence": {
+              "label": "clinical_event",
+              "fields": {
+                "concept": {
+                  "type": "text"
+                },
+                "assertion": {
+                  "type": "enum",
+                  "values": [
+                    "affirmed",
+                    "negated",
+                    "uncertain",
+                    "hypothetical",
+                    "ruled_out"
+                  ]
+                },
+                "time_frame": {
+                  "type": "enum",
+                  "values": [
+                    "current",
+                    "recent",
+                    "historical",
+                    "future"
+                  ]
+                },
+                "experiencer": {
+                  "type": "enum",
+                  "values": [
+                    "patient",
+                    "family",
+                    "other"
+                  ]
+                }
+              },
+              "recordParent": "event_occurrence",
+              "recordAnchorLabel": "event"
+            }
+          },
+          "entityTargets": [
+            {
+              "label": "clinical_event",
+              "family": "event_occurrence",
+              "description": "Unified clinical actions, episodes, behavioral patterns, psychological experiences, and persistent states. Not restricted to acute events. Scope: Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+            }
+          ],
+          "clinicalScope": {
+            "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+            "schemaHash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+          },
+          "clinicalV3": true,
+          "relations": {}
+        },
+        "inferenceSchemaHash": "817cce94d976de4fbf719fdecd99fc449df41b839eec0bfae2c7b36e7eda6d73",
+        "threshold": 0.6,
+        "scope": {
+          "profile": {
+            "format": "nextmedtator-clinical-scope-v1",
+            "threshold": 0.6,
+            "fields": {
+              "condition_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "measurement_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "treatment_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "event_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "function_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "care_context_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ]
+            },
+            "semanticSchema": {
+              "schema_version": "teacher-schema/0.2",
+              "name": "BPSD",
+              "version": "1",
+              "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "families": [
+                "event_occurrence"
+              ],
+              "tasks": [
+                {
+                  "task_id": "clinical_scope",
+                  "definition": "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+                }
+              ],
+              "concepts": [],
+              "relations": [],
+              "parent_schema_hash": null,
+              "discovery_plan_hash": null,
+              "deferred_proposals": [],
+              "frozen_by": "legacy-annotator",
+              "frozen_at": "2026-10-06T03:34:19.914Z",
+              "schema_hash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+            }
+          },
+          "profileHash": "65f16a923441b6d8b9555fb86ac12b1deb7a350e02e58b39d31abc8ab2aacd1d",
+          "trainingRegistry": {
+            "repository": "na399/clinical-evidence",
+            "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+            "hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547"
+          },
+          "inferenceSchema": {
+            "id": "medtator-schema",
+            "version": "1",
+            "families": {
+              "event_occurrence": {
+                "label": "clinical_event",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other"
+                    ]
+                  }
+                },
+                "recordParent": "event_occurrence",
+                "recordAnchorLabel": "event"
+              }
+            },
+            "entityTargets": [
+              {
+                "label": "clinical_event",
+                "family": "event_occurrence",
+                "description": "Unified clinical actions, episodes, behavioral patterns, psychological experiences, and persistent states. Not restricted to acute events. Scope: Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+              }
+            ],
+            "clinicalScope": {
+              "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "schemaHash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+            },
+            "clinicalV3": true,
+            "relations": {}
+          },
+          "inferenceSchemaHash": "817cce94d976de4fbf719fdecd99fc449df41b839eec0bfae2c7b36e7eda6d73",
+          "semantics": "prompt-guidance; exact family mapping, no deterministic concept-membership guarantee"
+        },
+        "limitations": [
+          "family-choice-spans-unqualified",
+          "literal-spans-unqualified",
+          "record-binding-unsupported",
+          "cross-window-relations",
+          "anchorless-records"
+        ]
+      },
+      "windows": [
+        {
+          "from": 0,
+          "to": 216,
+          "sourceRange": [
+            0,
+            1161
+          ]
+        }
+      ],
+      "timing": {},
+      "failures": [],
+      "status": "complete",
+      "coverage": [
+        [
+          0,
+          1161
+        ]
+      ],
+      "records": [
+        {
+          "id": "74307069-2195-46c8-ad6f-ae16bfa58827",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 187,
+              "end": 197,
+              "text": "sundowning"
+            }
+          ],
+          "fields": {
+            "concept": "sundowning",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.6849440191450982,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "5aed4913-a8ef-46dc-8fbb-ea4ca4cdd48e",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 257,
+              "end": 264,
+              "text": "resting"
+            }
+          ],
+          "fields": {
+            "concept": "resting",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.7148672759299968,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "89790d22-4de3-4be3-94b3-5dedd56d4a97",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 294,
+              "end": 302,
+              "text": "restless"
+            }
+          ],
+          "fields": {
+            "concept": "restless",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.6125945429504186,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        }
+      ],
+      "fingerprint": "ec1f7a9bbbbe49f64352cc5072d28199dae45b7f8079fe595c597b56d3e52c1c"
+    },
+    {
+      "id": "01749002-b4f0-429e-9dcb-a6b05cb7802e",
+      "createdAt": "2026-10-06T03:34:51.519Z",
+      "documentId": "legacy-note",
+      "sourceHash": "f974701413df3ceab7a8ab610dbbc97cd5062e2ba4eb9b20d9488a0424979156",
+      "schemaHash": "967aa01e91507c95d6bd49879c7e5c4ad3e9022e7fcb62a50f0c7288b744fa68",
+      "producer": {
+        "kind": "model",
+        "name": "fastino/gliner2.5-base-v1",
+        "version": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+        "packageId": "gliner25-clinical-evidence-v3-act-sol-17089",
+        "manifestHash": "7f7c47b9f61abb2f54d829e6801285fedb582f1eac9c0fd4e354572d2d332850",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead",
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            }
+          },
+          "adapter": {
+            "sha256": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "weightsSha256": "dccb3903ae909ed517076f262aa7399ad723b4c4b3828f9d112811862f49a0bf",
+            "configSha256": "fd286577f298db446a9946da32599302422ff0b91e5a6216c94620fd194c253a",
+            "repository": "na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089",
+            "revision": "058945fb562f3c6250450ff67b842255f872ddf4"
+          },
+          "merge": "merged-export",
+          "trainedHeads": "8ad0e38ac7880a850bf3bc7b5d5d595a5ea049ffe331892b67a62a11f637e457"
+        },
+        "artifacts": [
+          {
+            "path": "model.onnx",
+            "bytes": 746817689,
+            "sha256": "191c3c18bbb89f32b2ff7f5059bb26638bbfc3a681cc759d4c3f5589358651db",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 6078133,
+            "sha256": "5ed00414908005e3380938bc1d3d136725ccfa52deb6f2b5da5d31f3e5e96438",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 1193806,
+            "sha256": "ba91e3285f6ef1e4fc9ac7d5569529f63b3b8b5d7b197c7427f727bbae0cd910",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 23658742,
+            "sha256": "d2c0956721b8e187e31f1de35115cd416c431895b570457e25373df2a6d054a4",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8333953,
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc",
+            "role": "tokenizer"
+          },
+          {
+            "path": "source-case-0.json",
+            "bytes": 919,
+            "sha256": "1f4911958ce051c98a1a6417a91b9e2a2c16e5b6afa09f91045a025867070fc4",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-0.json",
+            "bytes": 14590,
+            "sha256": "0e7f6239ac2aaabf52bdbf1cfcb12c6617fb9e861bbfe6a8c452f1df1e4f091d",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-1.json",
+            "bytes": 888,
+            "sha256": "103eab6b549730bbb8b7520d7ce7c59dbef94459b51624e6ed04bdb4132b427a",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-1.json",
+            "bytes": 14313,
+            "sha256": "dd3466e2dfd4a3b92355e3d03f6f03d7c4684ccd84b3cdf967c620b7f24860b5",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-2.json",
+            "bytes": 496,
+            "sha256": "b44faa2022eb95e85b9c819f778a132d836e6c67254ffd8337096dbd4bd1e895",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-2.json",
+            "bytes": 8201,
+            "sha256": "579604607bba22ac76a16785cf9d5b7d4071206f386564a78ff156017bb77ed7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-3.json",
+            "bytes": 687,
+            "sha256": "9f76f071919134e24256c0e40a47c854e3c3d36b2eec83d73363bfdcf28a78f9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-3.json",
+            "bytes": 11485,
+            "sha256": "f6c87c3159732ed42cb346265995051d90f820ba8a52924778e371222458414b",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-4.json",
+            "bytes": 436,
+            "sha256": "7ab05f5728e73587201e62f05f53d555c09f532e01539052e91bba707cef2dfd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-4.json",
+            "bytes": 7407,
+            "sha256": "1b4741ca310e52bfbead34911ade7c5c1317c39d43c7d25e6d0f3fba111f8035",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-5.json",
+            "bytes": 399,
+            "sha256": "349d411e3639f143263e7fb35dbc945ed42d83f449668f8f484c37959d48dbdd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-5.json",
+            "bytes": 12078,
+            "sha256": "f0721295cfd32b734ed03de091b2f2a2fe7892693d05670aea8d919d808b0bdc",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-6.json",
+            "bytes": 2991,
+            "sha256": "4eeeac9c086f8f0c8dcc00b8d761ea6068e2c79e0668446a9ac067ff14ac3d51",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-6.json",
+            "bytes": 91948,
+            "sha256": "a220f335ac5941f727cb624d27b4161b67db79b03a87c4c8f805f49cf66e1606",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-7.json",
+            "bytes": 1348,
+            "sha256": "ec3f06b65147ef7d9e0845b6dd300a80871e9c333cdcfe1550cec255f7792a6e",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-7.json",
+            "bytes": 72786,
+            "sha256": "88a235822aed026a6fa3b17e2b0c366c11bc31429c885dff24e1be1075a471a7",
+            "role": "fixture"
+          },
+          {
+            "path": "attributes-reference.json",
+            "bytes": 1833043,
+            "sha256": "8d2a6ee89eef6da90a30e70012909de9f05ae6064211035956adb3efd3513de2",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 191496,
+            "sha256": "cd0e314e450c44657fe13a186bb08e40ffa7ea50291ba7a7873b2322430ba76d",
+            "role": "fixture"
+          },
+          {
+            "path": "records-varied-reference.json",
+            "bytes": 526113,
+            "sha256": "7b756671cd6c7bee843419409bfde052f0bc9f140ecf3eab0e59163f541c2ba0",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-reference.json",
+            "bytes": 127574,
+            "sha256": "f68ae344785f9543e17eb649a9c45f2732eb7841fc51f25645fa26d91c381e0d",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-varied-reference.json",
+            "bytes": 1554768,
+            "sha256": "3061fd020e28078da9b051b099d11b617312a561f258983f332e7de5d08a3f72",
+            "role": "fixture"
+          },
+          {
+            "path": "clinical-schema-v3.json",
+            "bytes": 36815,
+            "sha256": "f4d6127a93171f412e81b4f06936f55bd6f54b98b58564ac3903052cd1ef345c",
+            "role": "schema"
+          }
+        ]
+      },
+      "runtime": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "version": "1.23.2",
+        "variantId": "wasm-fp32",
+        "variant": {
+          "id": "wasm-fp32",
+          "backend": "wasm",
+          "precision": "fp32",
+          "codec": "gliner25-clinical-v3-spans-v1",
+          "graph": "model.onnx",
+          "graphs": {
+            "model": "model.onnx",
+            "attributes": "attributes.onnx",
+            "records": "records.onnx",
+            "relations": "relations.onnx"
+          },
+          "tokenizer": "tokenizer.json",
+          "fixtures": [
+            "source-case-0.json",
+            "model-reference-0.json",
+            "source-case-1.json",
+            "model-reference-1.json",
+            "source-case-2.json",
+            "model-reference-2.json",
+            "source-case-3.json",
+            "model-reference-3.json",
+            "source-case-4.json",
+            "model-reference-4.json",
+            "source-case-5.json",
+            "model-reference-5.json",
+            "source-case-6.json",
+            "model-reference-6.json",
+            "source-case-7.json",
+            "model-reference-7.json",
+            "attributes-reference.json",
+            "records-reference.json",
+            "records-varied-reference.json",
+            "relations-reference.json",
+            "relations-varied-reference.json"
+          ],
+          "threshold": 0.6,
+          "clinicalSchema": "clinical-schema-v3.json",
+          "clinicalRegistryHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+          "sharedAxes": "one_value_softmax_no_attribute_threshold",
+          "recordBinding": false,
+          "thresholdSelectionSha256": "704c27e990f38f06dc16e16756f32f5fc9db06fad62b51ff341ab5283f03ffe7",
+          "fixedWords": 512,
+          "maxSequenceLength": 512,
+          "wordOverlap": 32,
+          "pairTemperature": 1,
+          "abstentionThreshold": 0.5,
+          "automaticRelations": false,
+          "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+          "exporterVersion": "0.1.0",
+          "languageClaims": [
+            "en"
+          ]
+        }
+      },
+      "settings": {
+        "codec": "gliner25-clinical-v3-spans-v1",
+        "inferenceSchema": {
+          "id": "medtator-schema",
+          "version": "1",
+          "families": {
+            "event_occurrence": {
+              "label": "clinical_event",
+              "fields": {
+                "concept": {
+                  "type": "text"
+                },
+                "assertion": {
+                  "type": "enum",
+                  "values": [
+                    "affirmed",
+                    "negated",
+                    "uncertain",
+                    "hypothetical",
+                    "ruled_out"
+                  ]
+                },
+                "time_frame": {
+                  "type": "enum",
+                  "values": [
+                    "current",
+                    "recent",
+                    "historical",
+                    "future"
+                  ]
+                },
+                "experiencer": {
+                  "type": "enum",
+                  "values": [
+                    "patient",
+                    "family",
+                    "other"
+                  ]
+                }
+              },
+              "recordParent": "event_occurrence",
+              "recordAnchorLabel": "event"
+            }
+          },
+          "entityTargets": [
+            {
+              "label": "clinical_event",
+              "family": "event_occurrence",
+              "description": "Unified clinical actions, episodes, behavioral patterns, psychological experiences, and persistent states. Not restricted to acute events. Scope: Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+            }
+          ],
+          "clinicalScope": {
+            "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+            "schemaHash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+          },
+          "clinicalV3": true,
+          "relations": {}
+        },
+        "inferenceSchemaHash": "817cce94d976de4fbf719fdecd99fc449df41b839eec0bfae2c7b36e7eda6d73",
+        "threshold": 0.6,
+        "scope": {
+          "profile": {
+            "format": "nextmedtator-clinical-scope-v1",
+            "threshold": 0.6,
+            "fields": {
+              "condition_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "measurement_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "treatment_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "event_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "function_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "care_context_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ]
+            },
+            "semanticSchema": {
+              "schema_version": "teacher-schema/0.2",
+              "name": "BPSD",
+              "version": "1",
+              "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "families": [
+                "event_occurrence"
+              ],
+              "tasks": [
+                {
+                  "task_id": "clinical_scope",
+                  "definition": "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+                }
+              ],
+              "concepts": [],
+              "relations": [],
+              "parent_schema_hash": null,
+              "discovery_plan_hash": null,
+              "deferred_proposals": [],
+              "frozen_by": "legacy-annotator",
+              "frozen_at": "2026-10-06T03:34:19.914Z",
+              "schema_hash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+            }
+          },
+          "profileHash": "65f16a923441b6d8b9555fb86ac12b1deb7a350e02e58b39d31abc8ab2aacd1d",
+          "trainingRegistry": {
+            "repository": "na399/clinical-evidence",
+            "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+            "hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547"
+          },
+          "inferenceSchema": {
+            "id": "medtator-schema",
+            "version": "1",
+            "families": {
+              "event_occurrence": {
+                "label": "clinical_event",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other"
+                    ]
+                  }
+                },
+                "recordParent": "event_occurrence",
+                "recordAnchorLabel": "event"
+              }
+            },
+            "entityTargets": [
+              {
+                "label": "clinical_event",
+                "family": "event_occurrence",
+                "description": "Unified clinical actions, episodes, behavioral patterns, psychological experiences, and persistent states. Not restricted to acute events. Scope: Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+              }
+            ],
+            "clinicalScope": {
+              "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "schemaHash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+            },
+            "clinicalV3": true,
+            "relations": {}
+          },
+          "inferenceSchemaHash": "817cce94d976de4fbf719fdecd99fc449df41b839eec0bfae2c7b36e7eda6d73",
+          "semantics": "prompt-guidance; exact family mapping, no deterministic concept-membership guarantee"
+        },
+        "limitations": [
+          "family-choice-spans-unqualified",
+          "literal-spans-unqualified",
+          "record-binding-unsupported",
+          "cross-window-relations",
+          "anchorless-records"
+        ]
+      },
+      "windows": [
+        {
+          "from": 0,
+          "to": 211,
+          "sourceRange": [
+            0,
+            1169
+          ]
+        }
+      ],
+      "timing": {},
+      "failures": [],
+      "status": "complete",
+      "coverage": [
+        [
+          0,
+          1169
+        ]
+      ],
+      "records": [
+        {
+          "id": "2892b0ff-653f-42fb-919d-97b3cf3907a5",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 487,
+              "end": 495,
+              "text": "shadowed"
+            }
+          ],
+          "fields": {
+            "concept": "shadowed",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.9541914007210256,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        }
+      ],
+      "fingerprint": "5f6cadbd9b236a9af2d51241259bf5aa476f72e25fd78481ce5be7b74e2c1a5b"
+    },
+    {
+      "id": "ff26cc0d-e786-48b6-9d7a-0277f996926d",
+      "createdAt": "2026-10-06T03:34:55.761Z",
+      "documentId": "legacy-note",
+      "sourceHash": "c29a1c82fec2e359f3adee8a7c2fef42ebd47c4ce84ed8fc25533f606b672175",
+      "schemaHash": "967aa01e91507c95d6bd49879c7e5c4ad3e9022e7fcb62a50f0c7288b744fa68",
+      "producer": {
+        "kind": "model",
+        "name": "fastino/gliner2.5-base-v1",
+        "version": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+        "packageId": "gliner25-clinical-evidence-v3-act-sol-17089",
+        "manifestHash": "7f7c47b9f61abb2f54d829e6801285fedb582f1eac9c0fd4e354572d2d332850",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead",
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            }
+          },
+          "adapter": {
+            "sha256": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "weightsSha256": "dccb3903ae909ed517076f262aa7399ad723b4c4b3828f9d112811862f49a0bf",
+            "configSha256": "fd286577f298db446a9946da32599302422ff0b91e5a6216c94620fd194c253a",
+            "repository": "na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089",
+            "revision": "058945fb562f3c6250450ff67b842255f872ddf4"
+          },
+          "merge": "merged-export",
+          "trainedHeads": "8ad0e38ac7880a850bf3bc7b5d5d595a5ea049ffe331892b67a62a11f637e457"
+        },
+        "artifacts": [
+          {
+            "path": "model.onnx",
+            "bytes": 746817689,
+            "sha256": "191c3c18bbb89f32b2ff7f5059bb26638bbfc3a681cc759d4c3f5589358651db",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 6078133,
+            "sha256": "5ed00414908005e3380938bc1d3d136725ccfa52deb6f2b5da5d31f3e5e96438",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 1193806,
+            "sha256": "ba91e3285f6ef1e4fc9ac7d5569529f63b3b8b5d7b197c7427f727bbae0cd910",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 23658742,
+            "sha256": "d2c0956721b8e187e31f1de35115cd416c431895b570457e25373df2a6d054a4",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8333953,
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc",
+            "role": "tokenizer"
+          },
+          {
+            "path": "source-case-0.json",
+            "bytes": 919,
+            "sha256": "1f4911958ce051c98a1a6417a91b9e2a2c16e5b6afa09f91045a025867070fc4",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-0.json",
+            "bytes": 14590,
+            "sha256": "0e7f6239ac2aaabf52bdbf1cfcb12c6617fb9e861bbfe6a8c452f1df1e4f091d",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-1.json",
+            "bytes": 888,
+            "sha256": "103eab6b549730bbb8b7520d7ce7c59dbef94459b51624e6ed04bdb4132b427a",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-1.json",
+            "bytes": 14313,
+            "sha256": "dd3466e2dfd4a3b92355e3d03f6f03d7c4684ccd84b3cdf967c620b7f24860b5",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-2.json",
+            "bytes": 496,
+            "sha256": "b44faa2022eb95e85b9c819f778a132d836e6c67254ffd8337096dbd4bd1e895",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-2.json",
+            "bytes": 8201,
+            "sha256": "579604607bba22ac76a16785cf9d5b7d4071206f386564a78ff156017bb77ed7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-3.json",
+            "bytes": 687,
+            "sha256": "9f76f071919134e24256c0e40a47c854e3c3d36b2eec83d73363bfdcf28a78f9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-3.json",
+            "bytes": 11485,
+            "sha256": "f6c87c3159732ed42cb346265995051d90f820ba8a52924778e371222458414b",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-4.json",
+            "bytes": 436,
+            "sha256": "7ab05f5728e73587201e62f05f53d555c09f532e01539052e91bba707cef2dfd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-4.json",
+            "bytes": 7407,
+            "sha256": "1b4741ca310e52bfbead34911ade7c5c1317c39d43c7d25e6d0f3fba111f8035",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-5.json",
+            "bytes": 399,
+            "sha256": "349d411e3639f143263e7fb35dbc945ed42d83f449668f8f484c37959d48dbdd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-5.json",
+            "bytes": 12078,
+            "sha256": "f0721295cfd32b734ed03de091b2f2a2fe7892693d05670aea8d919d808b0bdc",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-6.json",
+            "bytes": 2991,
+            "sha256": "4eeeac9c086f8f0c8dcc00b8d761ea6068e2c79e0668446a9ac067ff14ac3d51",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-6.json",
+            "bytes": 91948,
+            "sha256": "a220f335ac5941f727cb624d27b4161b67db79b03a87c4c8f805f49cf66e1606",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-7.json",
+            "bytes": 1348,
+            "sha256": "ec3f06b65147ef7d9e0845b6dd300a80871e9c333cdcfe1550cec255f7792a6e",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-7.json",
+            "bytes": 72786,
+            "sha256": "88a235822aed026a6fa3b17e2b0c366c11bc31429c885dff24e1be1075a471a7",
+            "role": "fixture"
+          },
+          {
+            "path": "attributes-reference.json",
+            "bytes": 1833043,
+            "sha256": "8d2a6ee89eef6da90a30e70012909de9f05ae6064211035956adb3efd3513de2",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 191496,
+            "sha256": "cd0e314e450c44657fe13a186bb08e40ffa7ea50291ba7a7873b2322430ba76d",
+            "role": "fixture"
+          },
+          {
+            "path": "records-varied-reference.json",
+            "bytes": 526113,
+            "sha256": "7b756671cd6c7bee843419409bfde052f0bc9f140ecf3eab0e59163f541c2ba0",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-reference.json",
+            "bytes": 127574,
+            "sha256": "f68ae344785f9543e17eb649a9c45f2732eb7841fc51f25645fa26d91c381e0d",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-varied-reference.json",
+            "bytes": 1554768,
+            "sha256": "3061fd020e28078da9b051b099d11b617312a561f258983f332e7de5d08a3f72",
+            "role": "fixture"
+          },
+          {
+            "path": "clinical-schema-v3.json",
+            "bytes": 36815,
+            "sha256": "f4d6127a93171f412e81b4f06936f55bd6f54b98b58564ac3903052cd1ef345c",
+            "role": "schema"
+          }
+        ]
+      },
+      "runtime": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "version": "1.23.2",
+        "variantId": "wasm-fp32",
+        "variant": {
+          "id": "wasm-fp32",
+          "backend": "wasm",
+          "precision": "fp32",
+          "codec": "gliner25-clinical-v3-spans-v1",
+          "graph": "model.onnx",
+          "graphs": {
+            "model": "model.onnx",
+            "attributes": "attributes.onnx",
+            "records": "records.onnx",
+            "relations": "relations.onnx"
+          },
+          "tokenizer": "tokenizer.json",
+          "fixtures": [
+            "source-case-0.json",
+            "model-reference-0.json",
+            "source-case-1.json",
+            "model-reference-1.json",
+            "source-case-2.json",
+            "model-reference-2.json",
+            "source-case-3.json",
+            "model-reference-3.json",
+            "source-case-4.json",
+            "model-reference-4.json",
+            "source-case-5.json",
+            "model-reference-5.json",
+            "source-case-6.json",
+            "model-reference-6.json",
+            "source-case-7.json",
+            "model-reference-7.json",
+            "attributes-reference.json",
+            "records-reference.json",
+            "records-varied-reference.json",
+            "relations-reference.json",
+            "relations-varied-reference.json"
+          ],
+          "threshold": 0.6,
+          "clinicalSchema": "clinical-schema-v3.json",
+          "clinicalRegistryHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+          "sharedAxes": "one_value_softmax_no_attribute_threshold",
+          "recordBinding": false,
+          "thresholdSelectionSha256": "704c27e990f38f06dc16e16756f32f5fc9db06fad62b51ff341ab5283f03ffe7",
+          "fixedWords": 512,
+          "maxSequenceLength": 512,
+          "wordOverlap": 32,
+          "pairTemperature": 1,
+          "abstentionThreshold": 0.5,
+          "automaticRelations": false,
+          "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+          "exporterVersion": "0.1.0",
+          "languageClaims": [
+            "en"
+          ]
+        }
+      },
+      "settings": {
+        "codec": "gliner25-clinical-v3-spans-v1",
+        "inferenceSchema": {
+          "id": "medtator-schema",
+          "version": "1",
+          "families": {
+            "event_occurrence": {
+              "label": "clinical_event",
+              "fields": {
+                "concept": {
+                  "type": "text"
+                },
+                "assertion": {
+                  "type": "enum",
+                  "values": [
+                    "affirmed",
+                    "negated",
+                    "uncertain",
+                    "hypothetical",
+                    "ruled_out"
+                  ]
+                },
+                "time_frame": {
+                  "type": "enum",
+                  "values": [
+                    "current",
+                    "recent",
+                    "historical",
+                    "future"
+                  ]
+                },
+                "experiencer": {
+                  "type": "enum",
+                  "values": [
+                    "patient",
+                    "family",
+                    "other"
+                  ]
+                }
+              },
+              "recordParent": "event_occurrence",
+              "recordAnchorLabel": "event"
+            }
+          },
+          "entityTargets": [
+            {
+              "label": "clinical_event",
+              "family": "event_occurrence",
+              "description": "Unified clinical actions, episodes, behavioral patterns, psychological experiences, and persistent states. Not restricted to acute events. Scope: Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+            }
+          ],
+          "clinicalScope": {
+            "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+            "schemaHash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+          },
+          "clinicalV3": true,
+          "relations": {}
+        },
+        "inferenceSchemaHash": "817cce94d976de4fbf719fdecd99fc449df41b839eec0bfae2c7b36e7eda6d73",
+        "threshold": 0.6,
+        "scope": {
+          "profile": {
+            "format": "nextmedtator-clinical-scope-v1",
+            "threshold": 0.6,
+            "fields": {
+              "condition_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "measurement_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "treatment_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "event_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "function_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ],
+              "care_context_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer"
+              ]
+            },
+            "semanticSchema": {
+              "schema_version": "teacher-schema/0.2",
+              "name": "BPSD",
+              "version": "1",
+              "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "families": [
+                "event_occurrence"
+              ],
+              "tasks": [
+                {
+                  "task_id": "clinical_scope",
+                  "definition": "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+                }
+              ],
+              "concepts": [],
+              "relations": [],
+              "parent_schema_hash": null,
+              "discovery_plan_hash": null,
+              "deferred_proposals": [],
+              "frozen_by": "legacy-annotator",
+              "frozen_at": "2026-10-06T03:34:19.914Z",
+              "schema_hash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+            }
+          },
+          "profileHash": "65f16a923441b6d8b9555fb86ac12b1deb7a350e02e58b39d31abc8ab2aacd1d",
+          "trainingRegistry": {
+            "repository": "na399/clinical-evidence",
+            "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+            "hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547"
+          },
+          "inferenceSchema": {
+            "id": "medtator-schema",
+            "version": "1",
+            "families": {
+              "event_occurrence": {
+                "label": "clinical_event",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other"
+                    ]
+                  }
+                },
+                "recordParent": "event_occurrence",
+                "recordAnchorLabel": "event"
+              }
+            },
+            "entityTargets": [
+              {
+                "label": "clinical_event",
+                "family": "event_occurrence",
+                "description": "Unified clinical actions, episodes, behavioral patterns, psychological experiences, and persistent states. Not restricted to acute events. Scope: Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+              }
+            ],
+            "clinicalScope": {
+              "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "schemaHash": "7fb29bee52522b207242bc632fef403f54d4f7fdefba83288ff592c7ff506249"
+            },
+            "clinicalV3": true,
+            "relations": {}
+          },
+          "inferenceSchemaHash": "817cce94d976de4fbf719fdecd99fc449df41b839eec0bfae2c7b36e7eda6d73",
+          "semantics": "prompt-guidance; exact family mapping, no deterministic concept-membership guarantee"
+        },
+        "limitations": [
+          "family-choice-spans-unqualified",
+          "literal-spans-unqualified",
+          "record-binding-unsupported",
+          "cross-window-relations",
+          "anchorless-records"
+        ]
+      },
+      "windows": [
+        {
+          "from": 0,
+          "to": 288,
+          "sourceRange": [
+            0,
+            1511
+          ]
+        }
+      ],
+      "timing": {},
+      "failures": [],
+      "status": "complete",
+      "coverage": [
+        [
+          0,
+          1511
+        ]
+      ],
+      "records": [
+        {
+          "id": "57941e63-3c65-4a72-9009-2f2dfb0ba3e9",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 569,
+              "end": 577,
+              "text": "restless"
+            }
+          ],
+          "fields": {
+            "concept": "restless",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.7662538463500435,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "d248d29f-ef22-46c3-8210-e679902de80f",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 622,
+              "end": 634,
+              "text": "striking out"
+            }
+          ],
+          "fields": {
+            "concept": "striking out",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.9369050978881389,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "5c9b1ef9-0d67-4f28-a8d4-49d79e08ca21",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 1030,
+              "end": 1047,
+              "text": "verbal aggression"
+            }
+          ],
+          "fields": {
+            "concept": "verbal aggression",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.8927244236922129,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        },
+        {
+          "id": "69ad5953-4408-4803-a5c5-e25fb19d7776",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 1052,
+              "end": 1066,
+              "text": "resisting care"
+            }
+          ],
+          "fields": {
+            "concept": "resisting care",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient"
+          },
+          "evidence": [],
+          "score": 0.9114450868778768,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-clinical-v3-spans-v1"
+          }
+        }
+      ],
+      "fingerprint": "b4e44fa6e5a0ea0f60d4acc55b91924112e5d0c755804f0c010a8ed2b4a77af1"
+    }
+  ]
+}

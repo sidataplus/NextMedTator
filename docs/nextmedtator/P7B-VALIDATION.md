@@ -1,6 +1,8 @@
 # P7b model replacement and validation
 
-NextMedTator's current clinical validation package is `gliner25-clinical-evidence-p7b`, replacing the P4 package in real-weight browser gates. Import this ZIP in the original annotation assistance panel, then optionally install it for offline use. The active package ID is shown in the panel header. Previously saved P4 runs preserve their original lineage. Private research weights remain outside Git and the public small-model catalog.
+Superseded by [ClinicalEvidence v3/job 17089](V3-17089-VALIDATION.md); retained as an unchanged historical comparison.
+
+NextMedTator's archived P7b clinical validation package is `gliner25-clinical-evidence-p7b`, replacing the P4 package in real-weight browser gates. Import this ZIP in the original annotation assistance panel, then optionally install it for offline use. The active package ID is shown in the panel header. Previously saved P4 runs preserve their original lineage. Private research weights remain outside Git and the public small-model catalog.
 
 ## Pinned model and model-card findings
 

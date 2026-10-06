@@ -1,3 +1,4 @@
+import {CLINICAL_V3_CODEC,validateClinicalV3Registry} from './clinical-v3.mjs';
 import {RECORDS_CODEC,isRecordsCodec,smallRuntime,analyzeSmall} from './gliner-small.mjs';
 import { validateModelManifest, compareTensors, CODECS } from './model-package.mjs';
 import { invariant, jsonParse, sha256 } from './integrity.mjs';
@@ -33,6 +34,7 @@ async function loadModel(data) {
         const bytes = files.get(file.path);
         invariant(bytes?.length === file.bytes && await sha256(bytes) === file.sha256, 'Worker model-integrity failure');
     }
+    if(variant.codec===CLINICAL_V3_CODEC)validateClinicalV3Registry(jsonParse(new TextDecoder('utf-8',{fatal:true}).decode(files.get(variant.clinicalSchema))));
     const ort = await import('../../vendor/ort/ort.webgpu.min.mjs');
     invariant(ort.env.versions.web === manifest.runtimeVersion, 'Package/runtime version mismatch');
     ort.env.wasm.numThreads = 1;
@@ -47,7 +49,7 @@ async function loadModel(data) {
     if (isRecordsCodec(variant.codec)) {
         const tokenizer=GlinerTokenizer.fromJson(new TextDecoder().decode(files.get(variant.tokenizer)));
         const graphs={};for(const [name,path] of Object.entries(variant.graphs))graphs[name]=await openSession(ort,files,variant,path,context.sessions);
-        if(variant.codec===RECORDS_CODEC)invariant(graphs.model.outputNames.includes('null_logits'),'Generic GLiNER graph lacks source abstention output');
+        if(variant.codec!=='gliner25-small-records-v5')invariant(graphs.model.outputNames.includes('null_logits'),'Generic GLiNER graph lacks source abstention output');
         context.small=smallRuntime(ort,graphs,tokenizer,variant);return context;
     }
     if (codec.coverage === 'entity-span' || codec.coverage === 'structured-span') {

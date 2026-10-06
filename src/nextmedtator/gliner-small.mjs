@@ -1,3 +1,4 @@
+import {CLINICAL_V3_CODEC,CLINICAL_V3_NOTICE,clinicalV3Schema} from './clinical-v3.mjs';
 import {Gliner25} from './vendor/gliner25/api.mjs';
 import {decodeEntitiesV2,buildEntitiesSchemaTokens,buildRelationSchemaTokens,resolveOverlapsFlat} from './vendor/gliner25/gliner-boundary.mjs';
 import {decodeAssignedRecords} from './vendor/gliner25/joint-ie.mjs';
@@ -5,11 +6,11 @@ import {schemaPrompt, GlinerTokenizer, splitWords, planWindows, documentCoverage
 import {OffsetMap, invariant, uuid, unionSpans} from './integrity.mjs';
 export const SMALL_CODEC='gliner25-small-records-v5';
 export const RECORDS_CODEC='gliner25-records-v1';
-export const isRecordsCodec=codec=>codec===SMALL_CODEC||codec===RECORDS_CODEC;
+export const isRecordsCodec=codec=>codec===SMALL_CODEC||codec===RECORDS_CODEC||codec===CLINICAL_V3_CODEC;
 export const RECORDS_NOTICE='GLiNER2.5 with merged LoRA on this device: anchors, enum attributes and anchored record fields. Scores are uncalibrated. Automatic relations, cross-window relations and anchorless records are unsupported. Clinical accuracy is unqualified.';
-export const recordsNotice=codec=>codec===RECORDS_CODEC?RECORDS_NOTICE:SMALL_NOTICE;
+export const recordsNotice=codec=>codec===CLINICAL_V3_CODEC?CLINICAL_V3_NOTICE:codec===RECORDS_CODEC?RECORDS_NOTICE:SMALL_NOTICE;
 export const SMALL_NOTICE='Pinned GLiNER2.5-small ONNX v5: local anchors, enum attributes, anchored record fields. Automatic relations are withheld pending source-score qualification. Unqualified clinical accuracy; cross-window relations and anchorless records are unsupported.';
-export function smallRuntime(ort,sessions,tokenizer,variant){return new Gliner25({ort,session:sessions.model,headsSession:sessions.relations,attrsSession:sessions.attributes,recordsSession:sessions.records,tokenize:t=>tokenizer.encodeIds(t),pairTemperature:variant.pairTemperature??1,fixedWords:variant.codec===RECORDS_CODEC?variant.fixedWords:0});}
+export function smallRuntime(ort,sessions,tokenizer,variant){return new Gliner25({ort,session:sessions.model,headsSession:sessions.relations,attrsSession:sessions.attributes,recordsSession:sessions.records,tokenize:t=>tokenizer.encodeIds(t),pairTemperature:variant.pairTemperature??1,fixedWords:variant.codec!==SMALL_CODEC?variant.fixedWords:0});}
 export function validateSmallSchema(schema){
     schemaPrompt(schema);
     for(const family of Object.values(schema.families)){
@@ -27,6 +28,7 @@ export function smallPromptCost(schema,tokenizer,{automaticRelations=false}={}){
     return prefixTokens;
 }
 export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,automaticRelations=false,codec=SMALL_CODEC,abstentionThreshold=.5}={}){
+    if(codec===CLINICAL_V3_CODEC)schema=clinicalV3Schema(schema);
     validateSmallSchema(schema);const prompt=schemaPrompt(schema), words=splitWords(text),tokenizer=api.rt.tokenizer??{encodeIds:t=>api.rt._tokenize(t)};
     const prefixTokens=smallPromptCost(schema,tokenizer,{automaticRelations});
     const plan=planWindows(tokenizer,prompt.labels,words,{prefixTokens});
@@ -34,8 +36,8 @@ export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,auto
     for(const [windowIndex,[from,to]] of plan.windows.entries()){
         const start=source.toUTF16(words[from].start),end=source.toUTF16(words[to-1].end),chunk=text.slice(start,end);
         const marg=await api.rt.computeMarginals(chunk,prompt.labels,{maxWords:512,descriptions:prompt.descriptions});
-        if(codec===RECORDS_CODEC)invariant(marg.nullLogits?.length===prompt.labels.length,'GLiNER source abstention output missing');
-        const entities=decodeEntitiesV2({pairIndices:marg.pairIndices,pairLogits:marg.pairLogits,pairValid:marg.pairValid,candidateCount:marg.candidateCount,labels:prompt.labels.slice(0,prompt.contentCount),wordOffsets:marg.words,text:marg.normalized,threshold,pairTemperature:marg.pairTemperature}).filter(e=>codec!==RECORDS_CODEC||1/(1+Math.exp(-marg.nullLogits[prompt.labels.indexOf(e.label)]))<=abstentionThreshold);
+        if(codec!==SMALL_CODEC)invariant(marg.nullLogits?.length===prompt.labels.length,'GLiNER source abstention output missing');
+        const entities=decodeEntitiesV2({pairIndices:marg.pairIndices,pairLogits:marg.pairLogits,pairValid:marg.pairValid,candidateCount:marg.candidateCount,labels:prompt.labels.slice(0,prompt.contentCount),wordOffsets:marg.words,text:marg.normalized,threshold,pairTemperature:marg.pairTemperature}).filter(e=>codec===SMALL_CODEC||1/(1+Math.exp(-marg.nullLogits[prompt.labels.indexOf(e.label)]))<=abstentionThreshold);
         for(const e of entities){e.fields={};}
         const byLabel=prompt.byLabel;
         const width=marg.queryStates.dims[2];
@@ -79,7 +81,7 @@ export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,auto
     }
     const records=finalizeSmallRecords(all,text);
     for(const relation of relations){const locate=(mention,role)=>records.find(r=>schema.relations[relation.type][role].includes(r.family)&&r.anchor[0].start===source.toCodePoint(relation.windowStart+mention.start)&&r.anchor[0].end===source.toCodePoint(relation.windowStart+mention.end));const head=locate(relation.head,'head'),tail=locate(relation.tail,'tail');if(head&&tail){head.relations??=[];if(!head.relations.some(r=>r.type===relation.type&&r.targetId===tail.id))head.relations.push({type:relation.type,targetId:tail.id});}}
-    return {records,...documentCoverage(text,words,plan.uncovered),windows,limitations:['cross-window-relations','anchorless-records',...(!automaticRelations&&Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])],threshold,notice:recordsNotice(codec)};
+    return {records,...documentCoverage(text,words,plan.uncovered),windows,limitations:[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(!automaticRelations&&Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])],threshold,notice:recordsNotice(codec)};
 }
 /** Apply the declared flat policy to document offsets after all windows decode. */
 export function finalizeSmallRecords(records,text){

@@ -1,5 +1,6 @@
+import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
-import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD} from './scope.mjs';
+import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD, sameScope} from './scope.mjs';
 import {renderScopeEditor} from './scope-ui.mjs';
 import {ModelStore} from './model-store.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
@@ -273,11 +274,15 @@ class LegacyAssist {
     structured() {
         return !!this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
     }
+    adoptModel(candidate){
+        this.model=candidate;
+        if(!this.scope&&sameScope(this.scopeDraft,presetScope())&&candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC)this.scopeDraft=presetScope('all',CLINICAL_V3_CODEC);
+    }
     async importPackage(file) {
         if (file.size > MODEL_LIMITS.archive)
             throw new Error('Model archive exceeds 1 GiB');
         const candidate = await importModelPackage(new Uint8Array(await file.arrayBuffer()));
-        this.model = candidate;
+        this.adoptModel(candidate);
         const structured = candidate.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const qualified = candidate.manifest.variants.some(variant => CODECS[variant.codec].clinicalInference);
         this.message = structured
@@ -296,7 +301,7 @@ class LegacyAssist {
         planWindows(this.scopeTokenizer,prompt.labels,[{text:'clinical',start:0,end:8}],{prefixTokens});
     }
     async applyScope() {
-        const draft=clone(this.scopeDraft),schema=compileScope(draft,legacySchema(legacy().data.dtd));
+        const draft=clone(this.scopeDraft),schema=compileScope(draft,legacySchema(legacy().data.dtd),this.model?.manifest.variants[0]?.codec);
         if(this.model)this.checkScopeBudget(schema,selectInferenceVariant(this.model,qualifyForSchema(this.model,schema).level));
         const old=this.scope?.semanticSchema,s=draft.semanticSchema;
         if(old&&old.name===s.name){s.parent_schema_hash=old.schema_hash;if(s.version===old.version)s.version=/^\d+$/.test(s.version)?String(Number(s.version)+1):s.version+'.1';}
@@ -372,7 +377,8 @@ class LegacyAssist {
         if (!anns.length)
             throw new Error('Open a document first');
         const nativeSchema=legacySchema(legacy().data.dtd),scope=this.scope?clone(this.scope):null;
-        const schema=scope?compileScope(scope,nativeSchema):nativeSchema;
+        const activeCodec=this.model.manifest.variants[0].codec;
+        const schema=scope?compileScope(scope,nativeSchema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(nativeSchema):nativeSchema;
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
         const autoApply = this.mode === 'auto';
         if (autoApply) for (const ann of anns) {
@@ -397,7 +403,7 @@ class LegacyAssist {
                 this.blinded.add(key);
             return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: scope?.threshold??variant.threshold };
         });
-        const runSettings={codec,threshold:scope?.threshold??variant.threshold??.5,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const runSettings={codec,...(codec===CLINICAL_V3_CODEC?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),threshold:scope?.threshold??variant.threshold??.5,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         const completed=new Set();let activeIndex=0;
         try{await this.modelRunner.analyzeBatch(this.model, variant.id, requests, { onProgress: index => {
             activeIndex=index;
@@ -584,7 +590,7 @@ class LegacyAssist {
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));for(const item of this.installedModels??[])body.append(button('Use installed '+item.manifest.id,()=>this.perform(async()=>{const installed=await this.modelStore.read(item.manifestHash);invariant(installed,'Installed package missing');this.model=installed;this.message='Installed public package loaded and hashes verified';})));if(this.model)body.append(button('Install package for offline use',()=>this.perform(async()=>{this.model=await this.modelStore.install(this.model);this.message='Public model installed and read-back verified';})));
+        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));for(const item of this.installedModels??[])body.append(button('Use installed '+item.manifest.id,()=>this.perform(async()=>{const installed=await this.modelStore.read(item.manifestHash);invariant(installed,'Installed package missing');this.adoptModel(installed);this.message='Installed package loaded and hashes verified';})));if(this.model)body.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})));
         const anns = view?.data?.anns ?? [];
         if (anns.length) {
             const docs = node('div', null, { class: 'docs', 'aria-label': 'Documents to analyze' });

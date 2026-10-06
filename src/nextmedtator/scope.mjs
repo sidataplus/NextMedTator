@@ -1,3 +1,4 @@
+import {CLINICAL_V3_CODEC,CLINICAL_V3,clinicalV3Schema} from './clinical-v3.mjs';
 import {CLINICAL_CONTRACT as CONTRACT} from './clinical-contract.mjs';
 import {clone, freeze, fingerprint, invariant, canonical} from './integrity.mjs';
 import {validateSchema} from './contracts.mjs';
@@ -15,9 +16,9 @@ export const SCOPE_PRESETS = freeze([
     {id:'events-function',name:'Actions and function',families:['event_occurrence','function_occurrence'],definition:'Extract documented actions, experiences, states and functional activities.'}
 ]);
 
-export function presetScope(id='all') {
+export function presetScope(id='all',codec=null) {
     const preset=SCOPE_PRESETS.find(p=>p.id===id);invariant(preset,'Unknown broad scope preset');
-    return {format:SCOPE_FORMAT,threshold:.5,fields:Object.fromEntries(ALL.map(f=>[f,['assertion','time_frame','experiencer','time_text']])),
+    return {format:SCOPE_FORMAT,threshold:codec===CLINICAL_V3_CODEC?.6:.5,fields:Object.fromEntries(ALL.map(f=>[f,codec===CLINICAL_V3_CODEC?['assertion','time_frame','experiencer']:['assertion','time_frame','experiencer','time_text']])),
         semanticSchema:{schema_version:CONTRACT.semanticSchemaVersion,name:preset.name,version:'1',grammar_hash:CONTRACT.registryHash,
             families:[...preset.families],tasks:[{task_id:'clinical_scope',definition:preset.definition}],concepts:[],relations:[],
             parent_schema_hash:null,discovery_plan_hash:null,deferred_proposals:[],frozen_by:null,frozen_at:null,schema_hash:null}};
@@ -79,8 +80,9 @@ export async function freezeScope(profile,actor='legacy-annotator') {
     const {schema_hash,...body}=s;s.schema_hash=await fingerprint(body);
     return freeze(result);
 }
-export function fieldSupport(family,name) {
+export function fieldSupport(family,name,codec=null) {
     const field=CONTRACT.families[family]?.fields[name];
+    if(codec===CLINICAL_V3_CODEC&&!CLINICAL_V3.axes[name])return 'V3 exposes shared axes only; separate field spans have no qualified record binding';
     if(!field)return 'Outside the training grammar';
     if(field.dtype==='list')return 'Requires a multi-span record decoder';
     if(field.kind==='choice'&&field.exportValues.length>8)return `${field.exportValues.length} trained choices exceed the eight-choice head`;
@@ -88,7 +90,7 @@ export function fieldSupport(family,name) {
 }
 const sameSet=(a,b)=>a.length===b.length&&[...a].sort().join('\0')===[...b].sort().join('\0');
 /** Inference is a projection into the existing native annotation schema. */
-export function compileScope(profile,nativeSchema) {
+export function compileScope(profile,nativeSchema,codec=null) {
     validateScope(profile);validateSchema(nativeSchema);
     const s=profile.semanticSchema,families={},targets=[];
     for(const family of s.families){
@@ -97,7 +99,7 @@ export function compileScope(profile,nativeSchema) {
         invariant(native.fields.concept?.type==='text','Native span text must map to the concept field');
         const fields={concept:{type:'text'}};
         for(const name of profile.fields[family]??[]){
-            const error=fieldSupport(family,name);invariant(!error,`${family}.${name}: ${error}`);
+            const error=fieldSupport(family,name,codec);invariant(!error,`${family}.${name}: ${error}`);
             const definition=grammar.fields[name],attr=native.fields[name];
             invariant(attr,`Annotation schema is missing ${family}.${name}; use or load the generated clinical schema`);
             if(definition.kind==='choice')invariant(attr.type==='enum'&&(sameSet(attr.values,definition.values)||sameSet(attr.values,definition.exportValues)),`Annotation choices differ from training: ${family}.${name}`);
@@ -106,10 +108,11 @@ export function compileScope(profile,nativeSchema) {
         }
         families[family]={label:grammar.entityType,fields,recordParent:family,recordAnchorLabel:grammar.anchor};
         const concepts=s.concepts.filter(c=>c.family===family),task=s.tasks.map(t=>t.definition).join(' ');
-        if(concepts.length)for(const c of concepts)targets.push({label:c.concept_id,family,conceptId:c.concept_id,description:`${c.description}${c.aliases.length?' Examples: '+c.aliases.join('; ')+'.':''} Scope: ${task}`});
-        else targets.push({label:grammar.entityType,family,description:`${DESCRIPTIONS[family]} Scope: ${task}`});
+        if(concepts.length)for(const c of concepts)targets.push({label:c.concept_id,family,conceptId:c.concept_id,description:`${codec===CLINICAL_V3_CODEC?CLINICAL_V3.core[grammar.entityType]+' ':''}${c.description}${c.aliases.length?' Examples: '+c.aliases.join('; ')+'.':''} Scope: ${task}`});
+        else targets.push({label:grammar.entityType,family,description:`${codec===CLINICAL_V3_CODEC?CLINICAL_V3.core[grammar.entityType]:DESCRIPTIONS[family]} Scope: ${task}`});
     }
     const inferenceSchema={id:nativeSchema.id,version:nativeSchema.version,families,entityTargets:targets,clinicalScope:{grammarHash:CONTRACT.registryHash,schemaHash:s.schema_hash}};
+    if(codec===CLINICAL_V3_CODEC)return clinicalV3Schema(inferenceSchema);
     validateSmallSchema(inferenceSchema);
     return inferenceSchema;
 }
