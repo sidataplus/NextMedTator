@@ -229,15 +229,22 @@ export function softmax(xs) {
 }
 
 /** Crop word states to a pad-length window around the given spans. */
-export function cropWordStates(textStates, entities, pad) {
-  const L = textStates.dims[1];
+export function cropWordStates(textStates, entities, pad, wordMask = null) {
+  // The tensor axis can include codec padding. Crop around actual words and
+  // carry the encoder's mask into the attribute head, including any masked gaps.
+  let L = textStates.dims[1];
+  if (wordMask) {
+    if (wordMask.length !== L) throw new Error('Word mask does not match text states');
+    while (L > 0 && !wordMask[L - 1]) L--;
+  }
   const H = textStates.dims[2];
   const data = textStates.data;
   const ts = new Float32Array(pad * H);
   const mask = new Float32Array(pad);
   if (L <= pad) {
     ts.set(data.subarray(0, L * H));
-    mask.fill(1, 0, L);
+    if (wordMask) mask.set(wordMask.subarray(0, L));
+    else mask.fill(1, 0, L);
     return { origin: 0, ts, mask };
   }
   const minS = Math.min(...entities.map((e) => e.wordStart ?? 0));
@@ -245,7 +252,8 @@ export function cropWordStates(textStates, entities, pad) {
   const mid = Math.floor((minS + maxE) / 2);
   const origin = Math.max(0, Math.min(mid - Math.floor(pad / 2), L - pad));
   ts.set(data.subarray(origin * H, (origin + pad) * H));
-  mask.fill(1);
+  if (wordMask) mask.set(wordMask.subarray(origin, origin + pad));
+  else mask.fill(1);
   return { origin, ts, mask };
 }
 
@@ -399,7 +407,7 @@ export function decodeEntitiesV2({
  * @param {number} [opts.pairTemperature] v2 graphs: pair logit temperature (1.0 in current exports)
  */
 export class GlinerBoundaryRuntime {
-  constructor({ ort, session, tokenize, pairTemperature = 1.0, headsSession = null, attrsSession = null, recordsSession = null }) {
+  constructor({ ort, session, tokenize, pairTemperature = 1.0, headsSession = null, attrsSession = null, recordsSession = null, fixedWords = 0 }) {
     if (!ort || !session || !tokenize) throw new Error("ort, session and tokenize are required");
     this.ort = ort;
     this.session = session;
@@ -408,6 +416,7 @@ export class GlinerBoundaryRuntime {
     this.headsSession = headsSession;
     this.attrsSession = attrsSession;
     this.recordsSession = recordsSession;
+    this.fixedWords = fixedWords;
     this._cache = new Map();
     this.inputNames = new Set((session.inputNames || []).map(String));
     this.outputNames = new Set((session.outputNames || []).map(String));
@@ -458,6 +467,12 @@ export class GlinerBoundaryRuntime {
     const queryMarkerPositions=schemaKind === "relations" ? relMarkerPositions : entityMarkerPositions;
     const T = inputIds.length;
     const L = words.length;
+    const paddedL = this.fixedWords || L;
+    if (L > paddedL) throw new Error('Text exceeds the fixed word axis');
+    const wordIndices = new BigInt64Array(paddedL);
+    wordIndices.set(BigInt64Array.from(textWordFirstPositions.map(BigInt)));
+    const wordMask = new Float32Array(paddedL);
+    wordMask.fill(1, 0, L);
     let Q = queryMarkerPositions.length;
     let queryIdx = queryMarkerPositions;
     let queryMask = Array.from({ length: Q }, () => 1);
@@ -472,8 +487,8 @@ export class GlinerBoundaryRuntime {
     const feeds = {
       input_ids: new this.ort.Tensor("int64", BigInt64Array.from(inputIds.map(BigInt)), [1, T]),
       attention_mask: new this.ort.Tensor("int64", BigInt64Array.from({ length: T }, () => 1n), [1, T]),
-      text_word_indices: new this.ort.Tensor("int64", BigInt64Array.from(textWordFirstPositions.map(BigInt)), [1, L]),
-      text_word_mask: new this.ort.Tensor("float32", Float32Array.from({ length: L }, () => 1), [1, L]),
+      text_word_indices: new this.ort.Tensor("int64", wordIndices, [1, paddedL]),
+      text_word_mask: new this.ort.Tensor("float32", wordMask, [1, paddedL]),
       query_marker_indices: new this.ort.Tensor("int64", BigInt64Array.from(queryIdx.map(BigInt)), [1, Q]),
       query_marker_mask: new this.ort.Tensor("float32", Float32Array.from(queryMask), [1, Q]),
     };
@@ -512,9 +527,11 @@ export class GlinerBoundaryRuntime {
     const relRoleStates = results.rel_role_states ?? null;
     const extra = {
       clsLogits, textStates, relRoleStates,
+      textWordMask: wordMask,
       relRoleCount: relMarkerPositions.length,
       queryStates: results.query_states ?? null,
       candidateStates: results.candidate_states ?? null,
+      nullLogits: results.null_logits?.data ?? null,
     };
     if (results.pair_logits) {
       return {
@@ -658,7 +675,7 @@ export class GlinerBoundaryRuntime {
 
     for (let batchStart = 0; batchStart < entities.length; batchStart += PAD_C) {
       const batch = entities.slice(batchStart, batchStart + PAD_C);
-      const { origin, ts, mask } = cropWordStates(marg.textStates, batch, PAD_L);
+      const { origin, ts, mask } = cropWordStates(marg.textStates, batch, PAD_L, marg.textWordMask);
       const indices = new BigInt64Array(PAD_Q * PAD_C * 2);
       for (let q = 0; q < PAD_Q; q++) {
         for (let c = 0; c < PAD_C; c++) {

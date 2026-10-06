@@ -1,11 +1,13 @@
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
+import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD} from './scope.mjs';
+import {renderScopeEditor} from './scope-ui.mjs';
 import {ModelStore} from './model-store.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
-import {SMALL_CODEC,SMALL_NOTICE,validateSmallSchema} from './gliner-small.mjs';
+import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
-import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
 const styles = `
@@ -39,7 +41,16 @@ button:focus:not(:focus-visible){outline:none}
 .check{display:flex;gap:6px;align-items:center;flex-direction:row}
 label{display:flex;flex-direction:column;gap:3px;font-size:12px}
 input[type=file]{max-width:100%;font-size:11px}
+.scope{border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:8px;margin:8px 0}
+.scope p{margin:5px 0}.scope label{margin:5px 0}.scope textarea{width:100%;font:inherit;color:inherit;border:1px solid #d7e1e7;border-radius:5px;resize:vertical}
+.scope fieldset{border:1px solid #d7e1e7;margin:8px 0;padding:6px}.scope h3{margin:10px 0 5px}
 .unmatched{color:#8a3b16}
+.compact{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+.compact td{border-bottom:1px solid #d7e1e7;padding:3px 2px;vertical-align:middle}
+.compact td:last-child{width:110px;text-align:right}
+.compact button{font-size:10px;padding:3px 4px;margin-left:2px}
+.compact strong,.compact small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compact small{font-size:10px;color:#536976}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 `;
 
@@ -109,7 +120,7 @@ export function legacySchema(dtd) {
     const relations={};for(const tag of dtd?.rtags??[]){const refs=(tag.attrs??[]).filter(a=>a.vtype==='idref');if(refs.length===2)relations[tag.name]={head:Object.keys(families),tail:Object.keys(families),legacy:{head:refs[0].name,tail:refs[1].name}};}return {id:'medtator-schema',version:'1',families,...(Object.keys(relations).length?{relations}:{})};
 }
 export function legacyRecords(ann,doc,schema){
- const map=new OffsetMap(doc.text),records=(ann.tags??[]).filter(t=>t.spans&&schema.families[t.tag]).map(t=>({id:t.id,documentId:doc.id,family:t.tag,anchor:schema.families[t.tag].documentLevel?[]:t.spans.split(',').map(range=>{const [a,b]=range.split('~').map(Number);return map.selection(a,b);}),fields:Object.fromEntries(Object.entries(schema.families[t.tag].fields).map(([name])=>[name,name==='concept'?t.text:t[name]??null])),origin:{kind:'imported',source:'medtator-working-copy',reviewStatus:'unknown'}}));
+ const map=new OffsetMap(doc.text),records=(ann.tags??[]).filter(t=>t.spans&&schema.families[t.tag]).map(t=>({id:t.id,documentId:doc.id,family:t.tag,anchor:schema.families[t.tag].documentLevel?[]:t.spans.split(',').map(range=>{const [a,b]=range.split('~').map(Number);return map.selection(a,b);}),fields:Object.fromEntries(Object.entries(schema.families[t.tag].fields).map(([name,def])=>[name,name==='concept'?t.text:((def.type==='enum'&&t[name]===''&&!def.values.includes(''))?null:t[name]??null)])),origin:{kind:'imported',source:'medtator-working-copy',reviewStatus:'unknown'}}));
  for(const tag of ann.tags??[]){const rel=schema.relations?.[tag.tag];if(!rel)continue;const head=records.find(r=>r.id===tag[rel.legacy.head]),tail=records.find(r=>r.id===tag[rel.legacy.tail]);invariant(head&&tail,'Legacy relation endpoint is missing');head.relations??=[];head.relations.push({type:tag.tag,targetId:tail.id});}return records;
 }
 function node(tag, text, attrs = {}) {
@@ -151,6 +162,9 @@ class LegacyAssist {
         this.openProject = openProject ?? (() => {});
         this.open = sessionStorage.getItem('nmt-assist-open') !== 'false';
         this.mode = 'assisted';
+        this.scope = null;this.scopeDraft=presetScope();this.scopeEditing=false;
+        this.suggestionView = 'cards';
+        this.detail = null;
         this.model = null;
         this.modelRunner = new ConformanceWorker();this.modelStore=new ModelStore();
         this.runs = new Map();
@@ -225,7 +239,9 @@ class LegacyAssist {
             exposed: [...this.exposed],
             frozen: this.blindSnapshots.has(view?.key),
             run: view?.run ? { status: view.run.status, decisions: view.run.decisions, count: view.run.records.length } : null,
-            apply: this.apply?.id ?? ''
+            apply: this.apply?.id ?? '',
+            suggestionView: this.suggestionView, detail: this.detail,
+            scope:this.scope?.semanticSchema.schema_hash??null,scopeEditing:this.scopeEditing
         });
     }
     async perform(action) {
@@ -255,14 +271,14 @@ class LegacyAssist {
         requestAnimationFrame(() => window.app_hotpot?.codemirror?.refresh?.());
     }
     structured() {
-        return !!this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || variant.codec===SMALL_CODEC);
+        return !!this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
     }
     async importPackage(file) {
         if (file.size > MODEL_LIMITS.archive)
             throw new Error('Model archive exceeds 1 GiB');
         const candidate = await importModelPackage(new Uint8Array(await file.arrayBuffer()));
         this.model = candidate;
-        const structured = candidate.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || variant.codec===SMALL_CODEC);
+        const structured = candidate.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const qualified = candidate.manifest.variants.some(variant => CODECS[variant.codec].clinicalInference);
         this.message = structured
             ? 'GLiNER2.5 structured package loaded in memory. Analyze fills spans and enum attributes on this device.'
@@ -270,16 +286,50 @@ class LegacyAssist {
                 ? 'GLiNER2.5 span package loaded in memory. Analyze fills spans and scores on this device.'
                 : 'Package hashes validated. This package can run tensor fixtures only.';
     }
+    checkScopeBudget(schema,variant) {
+        invariant(isRecordsCodec(variant.codec),'Clinical scopes require a GLiNER2.5 record package');
+        if(this.scopeTokenizerManifest!==this.model.manifestHash||this.scopeTokenizerPath!==variant.tokenizer){
+            this.scopeTokenizer=GlinerTokenizer.fromJson(new TextDecoder().decode(this.model.files.get(variant.tokenizer)));
+            this.scopeTokenizerManifest=this.model.manifestHash;this.scopeTokenizerPath=variant.tokenizer;
+        }
+        const prompt=schemaPrompt(schema),prefixTokens=smallPromptCost(schema,this.scopeTokenizer);
+        planWindows(this.scopeTokenizer,prompt.labels,[{text:'clinical',start:0,end:8}],{prefixTokens});
+    }
+    async applyScope() {
+        const draft=clone(this.scopeDraft),schema=compileScope(draft,legacySchema(legacy().data.dtd));
+        if(this.model)this.checkScopeBudget(schema,selectInferenceVariant(this.model,qualifyForSchema(this.model,schema).level));
+        const old=this.scope?.semanticSchema,s=draft.semanticSchema;
+        if(old&&old.name===s.name){s.parent_schema_hash=old.schema_hash;if(s.version===old.version)s.version=/^\d+$/.test(s.version)?String(Number(s.version)+1):s.version+'.1';}
+        this.scope=await freezeScope(draft);this.scopeDraft=clone(this.scope);this.scopeEditing=false;
+        for(const project of this.projects.values())project.setSuggestionScope(this.scope);
+        this.message=`Scope applied: ${this.scope.semanticSchema.name}. Analyze to create a new scoped run; existing predictions stay unchanged.`;
+    }
+    async importScope(input) {this.scopeDraft=await importScope(input);this.scopeEditing=true;this.message='Scope imported for editing. Apply scope to use it for the next analysis.';}
+    disableScope() {this.scope=null;for(const project of this.projects.values())project.setSuggestionScope(null);this.message='Scope disabled for future runs. Existing machine runs retain their recorded scopes.';if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}
+    async exportScope(semanticOnly) {
+        invariant(this.scope,'Apply a scope before exporting');
+        localDownload(new TextEncoder().encode(JSON.stringify(semanticOnly?this.scope.semanticSchema:this.scope,null,2)+'\n'),semanticOnly?'clinical-evidence-semantic-schema.json':'clinical-suggestion-scope.json','application/json');
+    }
+    async useScopeSchema() {
+        const view=legacy();invariant(view,'Original annotation workspace unavailable');
+        invariant(!view.data.anns.some(ann=>ann.tags?.length)&&!this.projects.size,'Existing annotations or evidence projects require a new task or reviewed schema migration; download this schema first');
+        const dtd=window.dtd_parser.parse(nativeScopeDTD(this.scopeDraft),'dtd');
+        view.app.set_dtd(dtd);view.data.dtd=dtd;
+        for(const ann of view.data.anns)ann._has_saved=false;
+        view.vpp.refresh_v_anns();
+        view.vpp.$forceUpdate();this.message='Clinical annotation schema loaded. Apply scope, then analyze your notes.';
+    }
     async ensureProject(ann,schema=legacySchema(legacy().data.dtd)) {
         const key=documentKey(ann._filename??'document',ann.text??''),hash=await fingerprint(schema);
         let project=this.projects.get(key);
-        if(!project||project.current.schemaHash!==hash){const doc=await sourceDocument('legacy-note',new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});project=await ReviewProject.create([doc],schema,{mode:this.mode,actor:'legacy-annotator'});const data=clone(project.current);data.draft.records=legacyRecords(ann,doc,schema);if(this.exposed.has(key))data.exposure=clone(this.exposure.filter(e=>e.key===key));project=await ReviewProject.open(data);this.projects.set(key,project);}
+        if(!project||project.current.schemaHash!==hash){const doc=await sourceDocument('legacy-note',new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});project=await ReviewProject.create([doc],schema,{mode:this.mode==='blind'?'blind':'assisted',actor:'legacy-annotator'});const data=clone(project.current);data.draft.records=legacyRecords(ann,doc,schema);if(this.scope)data.extensions.suggestionScope=clone(this.scope);if(this.exposed.has(key))data.exposure=clone(this.exposure.filter(e=>e.key===key));project=await ReviewProject.open(data);this.projects.set(key,project);}
         return project;
     }
     async syncProject(ann,schema=legacySchema(legacy().data.dtd)){
         const project=await this.ensureProject(ann,schema),records=legacyRecords(ann,project.current.documents[0],project.current.schema),key=documentKey(ann._filename??'document',ann.text),viewRun=this.runs.get(key);
-        const mapping=new Map(Object.entries(viewRun?.decisions??{}).filter(([,d])=>d.tagId).map(([predictionId,d])=>[d.tagId,project.current.draft.decisions[`${viewRun.nativeRunId}/${predictionId}`]?.humanId]));
-        for(const record of records)if(mapping.get(record.id)){const original=project.current.draft.records.find(r=>r.id===mapping.get(record.id));const legacyId=record.id;record.id=mapping.get(legacyId);record.origin={...original?.origin,legacyTagId:legacyId};}
+        const mapping=new Map(project.current.draft.records.filter(r=>r.origin?.legacyTagId).map(r=>[r.origin.legacyTagId,r.id]));
+        for(const [predictionId,d]of Object.entries(viewRun?.decisions??{}))if(d.tagId){const id=project.current.draft.decisions[`${viewRun.nativeRunId}/${predictionId}`]?.humanId;if(id)mapping.set(d.tagId,id);}
+        for(const record of records)if(mapping.get(record.id)){const original=project.current.draft.records.find(r=>r.id===mapping.get(record.id));const legacyId=record.id;record.id=mapping.get(legacyId);record.origin={...original?.origin,legacyTagId:legacyId};if(original?.conceptId&&JSON.stringify(original.anchor)===JSON.stringify(record.anchor))record.conceptId=original.conceptId;}
         for(const record of records)for(const rel of record.relations??[])if(mapping.get(rel.targetId))rel.targetId=mapping.get(rel.targetId);
         if(project.current.phase!=='frozen'&&JSON.stringify(records)!==JSON.stringify(project.current.draft.records)){
             if(project.current.draft.records.length)project.transformRecords(project.current.draft.records.map(r=>r.id),records,'legacy-working-copy-sync','Explicit native export of the current legacy annotation');
@@ -298,16 +348,17 @@ class LegacyAssist {
             for(const record of current)records.push({...record,id:ids.get(record.id),relations:(record.relations??[]).map(rel=>({...rel,targetId:ids.get(rel.targetId)})),origin:{kind:'imported',source:'legacy-recovery',legacyProjectId:project.current.id,legacyRecordId:record.id,reviewStatus:'preserved-in-child-project'}});
         }
         const project=await ReviewProject.create(documents,schema,{id,actor:'legacy-annotator'}),data=clone(project.current);data.draft.records=records;if(this.corpusIdentity!==id){this.corpusIdentity=id;this.corpusCreatedAt=data.createdAt;}data.createdAt=this.corpusCreatedAt;
-        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
+        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,scope:clone(this.scope),children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
         // JSON transport excludes file handles/functions; public model bytes stay in ModelStore.
         return (await ReviewProject.open(jsonParse(JSON.stringify(data)))).current;
     }
     async restoreCorpus(project){
         const saved=project.extensions.legacyWorkspace;invariant(saved?.version===1,'Unsupported legacy corpus recovery');
+        const scope=saved.scope?await importScope(saved.scope):null;
         const children=new Map();for(const child of saved.children??[])children.set(child.key,await ReviewProject.open(child.project));
         const view=legacy();invariant(view,'Original annotation workspace unavailable');
         view.app.set_vpp_data_json({dtd:clone(saved.dtd),anns:clone(saved.anns),ann_idx:saved.annIndex,mn4anns:1});
-        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'assisted';this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
+        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'assisted';this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
     }
     async freezeNote(view){
         invariant(!this.exposed.has(view.key),'This note was already exposed');
@@ -320,19 +371,23 @@ class LegacyAssist {
             throw new Error('Import a GLiNER2.5 boundary model package in this panel');
         if (!anns.length)
             throw new Error('Open a document first');
-        const schema=legacySchema(legacy().data.dtd);
+        const nativeSchema=legacySchema(legacy().data.dtd),scope=this.scope?clone(this.scope):null;
+        const schema=scope?compileScope(scope,nativeSchema):nativeSchema;
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
+        const autoApply = this.mode === 'auto';
+        if (autoApply) for (const ann of anns) {
+            const key = documentKey(ann._filename ?? 'document', ann.text);
+            invariant(!this.blinded.has(key) || this.exposed.has(key), 'Reveal each protected note explicitly before auto apply');
+        }
         const qualification = qualifyForSchema(this.model, schema);
         if (qualification.level !== 'entity-span' && qualification.level !== 'structured-span' && qualification.level !== 'occurrence-record')
             throw new Error('This package’s codec is not a local GLiNER2.5 decoder');
-        const codec = qualification.level === 'occurrence-record' ? SMALL_CODEC : qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
-        const notice = codec === SMALL_CODEC ? SMALL_NOTICE : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        const variants = this.model.manifest.variants.filter(variant => variant.codec === codec);
-        const variant = variants.find(item => item.backend === 'wasm') ?? variants.find(item => item.backend === 'webgpu' && navigator.gpu);
-        if (!variant)
-            throw new Error('No browser GLiNER2.5 variant is available in the imported package');
+        const variant = selectInferenceVariant(this.model,qualification.level);
+        const codec = variant.codec;
+        if(scope)this.checkScopeBudget(schema,variant);
+        const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         if(this.qualifiedManifest!==this.model.manifestHash||this.qualifiedVariant!==variant.id){const report=await this.modelRunner.run(this.model,variant.id);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=this.model.manifestHash;this.qualifiedVariant=variant.id;}
-        const prompt = (codec === GLINER_STRUCTURED || codec===SMALL_CODEC)
+        const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
             : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
         const requests = anns.map((ann, index) => {
@@ -340,9 +395,9 @@ class LegacyAssist {
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
             if (this.mode === 'blind')
                 this.blinded.add(key);
-            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: variant.threshold };
+            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: scope?.threshold??variant.threshold };
         });
-        const runSettings={codec,threshold:variant.threshold??.5,limitations:codec===SMALL_CODEC?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const runSettings={codec,threshold:scope?.threshold??variant.threshold??.5,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         const completed=new Set();let activeIndex=0;
         try{await this.modelRunner.analyzeBatch(this.model, variant.id, requests, { onProgress: index => {
             activeIndex=index;
@@ -362,11 +417,12 @@ class LegacyAssist {
             const nativeRecords=records.map(r=>({...r,documentId:nativeDoc.id}));
             const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);this.runHistory.push(nativeRun);
             completed.add(index);this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
+            if (autoApply) await this.applyAllSuggestions(ann);
         } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex]),doc=project.current.documents[0],identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
-            : `${notice}`;
+            : autoApply ? `Auto apply finished for ${anns.length} notes. Machine-applied tags are unreviewed; original predictions remain in the evidence project.` : `${notice}`;
     }
     chosenDocuments(onlySelected) {
         const view = legacy();
@@ -415,6 +471,53 @@ class LegacyAssist {
         view.vpp.$forceUpdate();
         return tag.id;
     }
+    async applyAllSuggestions(ann = this.current().ann) {
+        const view = legacy(), dtd = view?.data?.dtd;
+        invariant(ann && view.data.anns.includes(ann), 'Open a document first');
+        const key = documentKey(ann._filename ?? 'document', ann.text), run = this.runs.get(key);
+        invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this protected note explicitly before auto apply');
+        invariant(run?.status === 'complete', 'Auto apply requires a complete run');
+        const pending = run.records.filter(record => !run.decisions[record.id]);
+        if (!pending.length) { this.message = 'No remaining suggestions to apply. Existing and rejected tags were preserved.'; return; }
+        const project = await this.syncProject(ann);
+        invariant(project === run.project && legacy().data.dtd === dtd && project.current.documents[0].text === ann.text, 'Source or schema changed; analyze this note again');
+        invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this protected note explicitly before auto apply');
+        // Build and validate the complete batch before touching the native tags.
+        // Staging also makes native IDs unique within a family.
+        const staged = {...ann, tags:[...ann.tags]}, additions = [], replacements = [];
+        for (const record of pending) {
+            const tagDef = dtd.tag_dict[record.family];
+            invariant(tagDef && !tagDef.is_non_consuming && record.anchor.length, 'Auto apply requires an exact span-family schema mapping');
+            invariant(!record.relations?.length, 'Automatic relation application is not supported');
+            const values = {};
+            for (const attr of editableAttrs(tagDef)) {
+                const value = record.fields[attr.name];
+                invariant(value == null || typeof value === 'string', 'Review non-text attributes individually');
+                invariant(value == null || attr.vtype !== 'list' || attr.values.includes(value), 'Model attribute is outside the native schema');
+                values[attr.name] = value ?? ''; // Unknown predictions do not acquire schema defaults.
+            }
+            const tag = view.app.make_etag({spans:medtatorSpans(ann.text,record.anchor),text:record.anchor.map(s=>s.text).join(' ... ')},tagDef,staged);
+            Object.assign(tag, values); staged.tags.push(tag); additions.push({record,tag});
+            const native = legacyRecords({text:ann.text,tags:[tag]},project.current.documents[0],project.current.schema)[0];
+            replacements.push({...clone(record),documentId:native.documentId,fields:native.fields,origin:{legacyTagId:tag.id}});
+        }
+        const candidate = new ReviewProject(project.current);
+        candidate.applyMachineGroup(run.nativeRunId, replacements);
+        // Commit native tags and their evidence lineage together. No await can
+        // interleave source navigation or human editing in this section.
+        ann.tags.push(...additions.map(({tag})=>tag));
+        run.project = candidate; this.projects.set(key,candidate);
+        for (const {record,tag} of additions) run.decisions[record.id] = {status:'applied',tagId:tag.id,reviewStatus:'unreviewed'};
+        this.recordExposure({ann,key},run,'auto-apply');
+        ann._has_saved = false; view.vpp.refresh_v_anns();
+        for (const {tag} of additions) view.app.update_hint_dict_by_tag(ann,tag);
+        if (legacy().ann === ann) {
+            view.data.display_tag_name = '__all__'; view.app.cm_update_marks?.();
+            view.vpp.set_ann_unsaved(ann);
+        }
+        view.vpp.$forceUpdate(); this.apply = null; this.detail = null;
+        this.message = `Auto-applied ${additions.length} suggestions as native annotation tags. Machine-applied tags are unreviewed; existing tags and original predictions were preserved.`;
+    }
     locate(record) {
         const view = legacy();
         const ann = view?.ann;
@@ -445,8 +548,8 @@ class LegacyAssist {
         const head = node('div', null, { class: 'head' });
         const title = node('div', null, { class: 'row' });
         title.append(node('strong', 'Assistance'), node('span', null, { class: 'grow' }), button('Hide', () => this.setOpen(false), { id: 'assist-collapse', title: 'Collapse the assistance panel' }));
-        const mode = node('select', null, { 'aria-label': 'Workspace mode', 'data-testid': 'assist-mode' });
-        for (const [value, label] of [['assisted', 'Assisted'], ['blind', 'Blind']])
+        const mode = node('select', null, { 'aria-label': 'Workspace mode', 'data-testid': 'assist-mode', disabled:this.busy });
+        for (const [value, label] of [['assisted', 'Assisted'], ['auto', 'Auto apply'], ['blind', 'Blind']])
             mode.append(node('option', label, { value }));
         mode.value = this.mode;
         mode.addEventListener('change', () => { this.mode = mode.value; this.apply = null; this.render(); });
@@ -455,8 +558,12 @@ class LegacyAssist {
         const status = node('div', null, { class: 'row' });
         status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'No local model', { class: 'badge', 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
         head.append(title, labeled('Mode', mode), status, node('p', `${schema ? `Schema: ${schema}` : 'Schema: none loaded'}. Documents stay in the annotation workspace.`, { class: 'muted' }));
+        if(this.model)head.append(node('p', 'Active model: '+this.model.manifest.id, { class: 'muted', 'data-testid': 'assist-model-identity' }));
+        if (this.mode === 'auto') head.append(node('p', 'Analyze writes all predictions as unreviewed native tags. Apply all suggestions also uses an existing run.', {class:'muted'}));
         if (view?.ann)
             head.append(node('p', view.ann._filename ?? 'document', { class: 'muted', 'data-testid': 'assist-document' }));
+        if (view?.run && this.mode !== 'blind' && (!this.blinded.has(view.key) || this.exposed.has(view.key)))
+            head.append(node('p', `${view.run.records.length} machine suggestions · ${view.ann.tags?.length ?? 0} annotation tags`, { 'data-testid': 'assist-counts' }));
         dock.append(head);
         if (this.message)
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
@@ -467,12 +574,13 @@ class LegacyAssist {
         actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
         body.append(actions);
+        body.append(renderScopeEditor(this));
         const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
         if(!this.recoverySession.enabled)recovery.append(button('Enable local corpus recovery',()=>this.perform(async()=>{if(!confirm('Store this corpus, annotations and prediction history in this browser profile? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann,id:'assist-recovery-enable'}));
         else recovery.append(button('Save corpus checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete corpus recovery',()=>this.perform(async()=>{if(confirm('Delete this corpus recovery copy? Current in-memory annotations remain.'))await this.recoverySession.forget();})),button('Export SQLite corpus backup',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
         recovery.append(button('List saved corpora',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore corpus '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the current in-memory corpus with this recovery copy? Export unsaved files first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));body.append(recovery);
         body.append(node('p', this.structured()
-            ? (this.model.manifest.variants.some(v=>v.codec===SMALL_CODEC)?SMALL_NOTICE:'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
+            ? (this.model.manifest.variants.some(v=>isRecordsCodec(v.codec))?recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec):'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
@@ -523,20 +631,55 @@ class LegacyAssist {
         if (view.data.section === 'annotation' && !document.hidden && this.host.getClientRects().length)
             this.recordExposure(view, run, 'assisted-display');
         const unresolved = run.records.filter(record => !run.decisions[record.id]).length;
+        const runScope=run.project.current.runs.find(r=>r.id===run.nativeRunId)?.settings.scope;
+        if(runScope)body.append(node('p',`Run scope: ${runScope.profile.semanticSchema.name} · ${runScope.profile.semanticSchema.version}`,{class:'muted','data-testid':'assist-run-scope'}));
         body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
+        const applied = Object.values(run.decisions).filter(d=>d.status==='applied').length;
+        if (applied) body.append(node('p', `${applied} machine-applied tags · unreviewed`, {'data-testid':'assist-auto-status'}));
+        body.append(button('Apply all suggestions', this.forCurrentNote(view.key, () => this.perform(() => this.applyAllSuggestions(view.ann))), {id:'assist-apply-all',disabled:this.busy||!unresolved||run.status!=='complete',title:'Add all remaining suggestions to this note without individual review; preserve existing and rejected tags'}));
         if (!run.records.length)
             body.append(node('p', run.status === 'complete' ? 'No suggestions in the completed run. Omission review is still required.' : 'Incomplete run. An empty result is not a negative label.', { class: 'muted' }));
-        for (const record of run.records)
-            body.append(this.card(view, run, record));
+        const display = node('select', null, { 'aria-label': 'Suggestion view', 'data-testid': 'assist-suggestion-view' });
+        for (const [value, label] of [['cards', 'Detailed cards'], ['compact', 'Compact list']])
+            display.append(node('option', label, { value }));
+        display.value = this.suggestionView;
+        display.addEventListener('change', () => { this.suggestionView = display.value; this.detail = null; this.apply = null; this.render(); });
+        body.append(labeled('Suggestion view', display));
+        if (this.suggestionView === 'compact') {
+            const table = node('table', null, { class: 'compact', 'aria-label': 'Machine suggestions' });
+            const caption = node('caption', `${run.records.length} original machine suggestions`);
+            const rows = node('tbody');
+            for (const record of run.records) {
+                const row = node('tr', null, { 'data-testid': 'assist-compact-suggestion' });
+                const cell = node('td');
+                const anchor = record.anchor.map(span => span.text).join(' … ');
+                const summary = [record.family.replaceAll('_occurrence', '').replaceAll('_', ' '), record.fields.assertion,
+                    record.fields.time_frame, record.fields.experiencer, Number(record.score).toFixed(3)].filter(value => value != null).join(' · ');
+                cell.append(node('strong', anchor, { title: anchor }), node('small', summary, { title: summary }));
+                if(record.conceptId)cell.append(node('small',`Concept: ${record.conceptId}`));
+                const decision = run.decisions[record.id];
+                if (decision) cell.append(node('small', decision.status==='applied'?`Auto-applied ${decision.tagId} · unreviewed`:decision.status==='rejected'?'Rejected':`Added ${decision.tagId}`));
+                const actions = node('td');
+                actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-compact-locate' }),
+                    button('Review', this.forCurrentNote(view.key, () => { this.detail = record.id; this.apply = null; this.render(); this.root.querySelector('[data-testid="assist-suggestion"]')?.scrollIntoView({block:'nearest'}); }), { id: 'assist-details' }));
+                row.append(cell, actions); rows.append(row);
+            }
+            table.append(caption, rows); body.append(table);
+            const detail = run.records.find(record => record.id === this.detail);
+            if (detail) body.append(this.card(view, run, detail));
+        } else {
+            for (const record of run.records) body.append(this.card(view, run, record));
+        }
     }
     card(view, run, record) {
         const card = node('article', null, { class: 'card', 'data-testid': 'assist-suggestion' });
         const decision = run.decisions[record.id];
         card.append(node('div', 'Machine suggestion', { class: 'tag' }), node('p', record.anchor.map(span => span.text).join(' … '), { class: 'anchor' }), node('p', `${record.family.replaceAll('_', ' ')} · score ${Number(record.score).toFixed(3)}`, { class: 'muted' }));
+        if(record.conceptId)card.append(node('p',`Concept: ${record.conceptId}`,{class:'muted'}));
         for (const [name, value] of Object.entries(record.fields))
             card.append(node('p', `${name}: ${value == null ? 'Unknown' : value}`, { class: 'muted' }));
         if (decision)
-            card.append(node('p', decision.status === 'rejected' ? 'Rejected. The annotation file was not changed.' : `Added to the annotation as ${decision.tagId}. The suggestion stays here.`, { 'data-testid': 'assist-decision' }));
+            card.append(node('p', decision.status === 'rejected' ? 'Rejected. The annotation file was not changed.' : decision.status === 'applied' ? `Auto-applied as ${decision.tagId} · unreviewed. The suggestion stays here.` : `Added to the annotation as ${decision.tagId}. The suggestion stays here.`, { 'data-testid': 'assist-decision' }));
         const actions = node('div', null, { class: 'row' });
         actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-locate' }));
         if (!decision) {

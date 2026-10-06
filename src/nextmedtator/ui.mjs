@@ -1,6 +1,7 @@
 import {previewSchemaMigration,applySchemaMigration} from './migration.mjs';
+import {compileScope, importScope, scopeIdentity} from './scope.mjs';
 import {ModelStore,downloadCatalogPackage} from './model-store.mjs';
-import {SMALL_CODEC,SMALL_NOTICE,validateSmallSchema} from './gliner-small.mjs';
+import {isRecordsCodec,recordsNotice,validateSmallSchema} from './gliner-small.mjs';
 import { ReviewProject, machineSnapshot, makeRun } from './project.mjs';
 import { DEMO_SCHEMA, validateSchema } from './contracts.mjs';
 import { demoProject, authoredSuggestionRun, DEMO_NOTICE } from './samples.mjs';
@@ -9,7 +10,7 @@ import { exportBundle, importBundle, localDownload } from './bundle.mjs';
 import { RecoveryStore, ActiveTimer } from './recovery.mjs';
 import { compareSnapshots, comparisonCSV } from './compare.mjs';
 import { importJSONL, importMedTator, exportMedTator, evidenceJSONL, eventCSV } from './interchange.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
 import { mountLegacyAssist } from './assist.mjs';
 import {CorpusSearch} from './corpus-search.mjs';
@@ -115,20 +116,21 @@ export class EvidenceWorkspace {
     async analyzeCurrent() {
         invariant(this.doc, 'Open a document first');
         invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
-        const qualification = qualifyForSchema(this.model, this.project.current.schema);
+        const scope=this.project.current.extensions.suggestionScope?await importScope(this.project.current.extensions.suggestionScope):null;
+        const schema=scope?compileScope(scope,this.project.current.schema):this.project.current.schema;
+        const qualification = qualifyForSchema(this.model, schema);
         invariant(qualification.level === 'entity-span' || qualification.level === 'structured-span' || qualification.level === 'occurrence-record', 'This package’s codec is not a local GLiNER2.5 decoder');
-        const codec = qualification.level === 'occurrence-record' ? SMALL_CODEC : qualification.level === 'structured-span' ? GLINER_STRUCTURED : GLINER_CODEC;
-        const notice = codec === SMALL_CODEC ? SMALL_NOTICE : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        const variants = this.model.manifest.variants.filter(v => v.codec === codec);
-        const variant = variants.find(v => v.backend === 'wasm') ?? variants.find(v => v.backend === 'webgpu' && navigator.gpu);
-        invariant(variant, 'No browser GLiNER2.5 variant is available in the imported package');
-        const prompt = (codec === GLINER_STRUCTURED || codec===SMALL_CODEC) ? schemaPrompt(this.project.current.schema) : { ...schemaEntityLabels(this.project.current.schema), contentCount: undefined, groups: undefined };
-        if(codec===SMALL_CODEC)validateSmallSchema(this.project.current.schema);
+        const variant = selectInferenceVariant(this.model,qualification.level);
+        const codec = variant.codec;
+        if(scope)invariant(isRecordsCodec(codec),'Clinical scopes require a GLiNER2.5 record package');
+        const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
+        const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec)) ? schemaPrompt(schema) : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
+        if(isRecordsCodec(codec))validateSmallSchema(schema);
         if(this.modelReport?.manifestHash!==this.model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(this.model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
-        const runSettings={codec,threshold:variant.threshold??.5,overlapPolicy:'flat',maxSequenceLength:512,wordOverlap:32,notice,limitations:codec===SMALL_CODEC?['cross-window-relations','anchorless-records',...(Object.keys(this.project.current.schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const runSettings={codec,threshold:scope?.threshold??variant.threshold??.5,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),overlapPolicy:'flat',maxSequenceLength:512,wordOverlap:32,notice,limitations:isRecordsCodec(codec)?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         let result;const started=performance.now();
         try {
-            result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema: this.project.current.schema, threshold: variant.threshold });
+            result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: scope?.threshold??variant.threshold });
         } catch(error) {
             const identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
             const failed=await makeRun(this.project,this.doc,[],{...identity,producer:{...identity.producer,notice},status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}],timing:{inferenceMs:performance.now()-started}});
@@ -280,7 +282,7 @@ export class EvidenceWorkspace {
     }
     recordCard(r, { human = false, run = null } = {}) {
         const card = node('article', null, { class: 'card', 'data-testid': human ? 'human-record' : 'suggestion' });
-        card.append(node('div', human ? 'Human annotation' : run?.producer?.kind === 'author-demo' ? 'Authored example' : 'Machine suggestion', { class: 'tag' }), node('p', r.anchor.map(s => s.text).join(' … ') || 'Document-level record', { class: 'anchor' }), node('p', `${r.family.replaceAll('_', ' ')}${r.score == null ? '' : ` · score ${r.score.toFixed(3)}`}`, { class: 'muted' }));
+        card.append(node('div', human ? (r.origin?.kind === 'machine-applied' ? 'Machine-applied · unreviewed' : 'Human annotation') : run?.producer?.kind === 'author-demo' ? 'Authored example' : 'Machine suggestion', { class: 'tag' }), node('p', r.anchor.map(s => s.text).join(' … ') || 'Document-level record', { class: 'anchor' }), node('p', `${r.family.replaceAll('_', ' ')}${r.score == null ? '' : ` · score ${r.score.toFixed(3)}`}`, { class: 'muted' }));
         for (const [k, v] of Object.entries(r.fields))
             card.append(node('p', `${k}: ${v === null ? 'Unknown / not supplied' : typeof v === 'object' ? JSON.stringify(v) : v}`, { class: 'muted' }));
         const actions = node('div', null, { class: 'actions' });
@@ -326,10 +328,10 @@ export class EvidenceWorkspace {
             aside.append(button(p.phase === 'frozen' ? 'Prepare authored examples for reveal' : 'Show authored suggestions', () => this.perform(async () => { await this.project.addRun(await authoredSuggestionRun(this.project, this.doc)); this.changed(); this.message = DEMO_NOTICE; }), { id: 'demo-suggest' }));
         aside.append(this.fileInput('Import prediction run', '.json', async ([f]) => { invariant(f.size <= 64 * 1024 * 1024, 'Run size limit'); await this.project.addRun(jsonParse(await f.text())); this.changed(); }));
         const analyze = button('Analyze locally', () => this.perform(() => this.analyzeCurrent()), { disabled: !this.doc, id: 'analyze' });
-        const structured = this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || variant.codec===SMALL_CODEC);
-        const small=this.model?.manifest.variants.some(v=>v.codec===SMALL_CODEC);
-        analyze.title = small ? SMALL_NOTICE : structured ? 'Run the imported GLiNER2.5 package on this device. Spans plus enum attributes; value, unit, and relations stay empty.' : 'Run the imported GLiNER2.5 boundary package on this device. Span text and scores only; contextual fields stay empty.';
-        aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', small ? SMALL_NOTICE : structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
+        const structured = this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
+        const small=this.model?.manifest.variants.some(v=>isRecordsCodec(v.codec));
+        analyze.title = small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'Run the imported GLiNER2.5 package on this device. Spans plus enum attributes; value, unit, and relations stay empty.' : 'Run the imported GLiNER2.5 boundary package on this device. Span text and scores only; contextual fields stay empty.';
+        aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
         if (!this.project.canSeeMachine) {
             aside.append(node('p', 'The human snapshot is frozen. Use Reveal comparison when ready.'));
             return;
@@ -422,13 +424,13 @@ export class EvidenceWorkspace {
             for(const installed of this.installedModels??[])box.append(node('p',`${installed.manifest.id} · ${installed.bytes} bytes`),button('Use installed '+installed.manifest.id,()=>this.perform(async()=>{this.model=await this.modelStore.read(installed.manifestHash);invariant(this.model,'Installed package missing');this.message='Installed model loaded; works without network';})),button('Delete installed '+installed.manifest.id,()=>this.perform(async()=>{await this.modelStore.remove(installed.manifestHash);this.installedModels=await this.modelStore.list();})));
             box.append(button('Show approved public model',()=>this.perform(async()=>{const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();})));
             for(const entry of this.catalog?.entries??[]){const m=entry.manifest,total=m.files.reduce((n,f)=>n+f.bytes,0);box.append(node('p',`${m.id} ${entry.revision} · ${m.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage · ${m.variants.map(v=>v.backend).join(', ')} · anchored records and enums; automatic relations withheld; no anchorless records`),button('Download and install '+m.id,()=>this.perform(async()=>{this.installController=new AbortController();try{const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{this.message=`Downloading ${received} of ${total} bytes`;const message=this.root.querySelector('[data-testid=message]');if(message)message.textContent=this.message;}});const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});this.model=installed;this.message='Public model installed and hashes verified';}finally{this.installController=null;}})),button('Force stop',()=>this.installController?.abort()));}
-            box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { invariant(f.size <= MODEL_LIMITS.archive, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer())); this.model = candidate; this.modelReport = null; const small=candidate.manifest.variants.some(v=>v.codec===SMALL_CODEC);const structured = candidate.manifest.variants.some(v => v.codec === GLINER_STRUCTURED); const qualified = candidate.manifest.variants.some(v => CODECS[v.codec].clinicalInference); this.message = small ? 'GLiNER2.5-small record package loaded in memory. Anchors, enums and supported record fields; automatic relations remain unqualified.' : structured ? 'GLiNER2.5 structured package loaded in memory. Analyze locally fills spans and enum attributes on this device only.' : qualified ? 'GLiNER2.5 span package loaded in memory. Analyze locally uses it on this device only.' : 'Package hashes validated. This package can run tensor fixtures only.'; }));
+            box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { invariant(f.size <= MODEL_LIMITS.archive, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer())); this.model = candidate; this.modelReport = null; const small=candidate.manifest.variants.some(v=>isRecordsCodec(v.codec));const structured = candidate.manifest.variants.some(v => v.codec === GLINER_STRUCTURED); const qualified = candidate.manifest.variants.some(v => CODECS[v.codec].clinicalInference); this.message = small ? 'GLiNER2.5 record package loaded in memory. Anchors, enums and supported record fields; automatic relations remain unqualified.' : structured ? 'GLiNER2.5 structured package loaded in memory. Analyze locally fills spans and enum attributes on this device only.' : qualified ? 'GLiNER2.5 span package loaded in memory. Analyze locally uses it on this device only.' : 'Package hashes validated. This package can run tensor fixtures only.'; }));
             if (this.model) {
                 box.append(button('Install imported package for offline use',()=>this.perform(async()=>{this.model=await this.modelStore.install(this.model);this.message='Model package installed and read-back verified';})),button('Verify offline readiness',()=>this.perform(async()=>{invariant(navigator.serviceWorker.controller,'Install and reload the app first');invariant(await this.modelStore.read(this.model.manifestHash),'Install this model first');const report=await this.modelRunner.run(this.model,this.model.manifest.variants.find(v=>v.backend==='wasm').id);invariant(report.pass,'Model conformance failed');this.message='App controlled by installed cache; selected model stored and conformance passed. Restart with network blocked to verify the full workflow.';})));
                 const m = this.model.manifest;
                 box.append(node('p', `${m.id} ${m.version} · ${m.lineage.adapter ? 'LoRA-derived' : 'Baseline'} · ${m.license.id}`));
                 for (const v of m.variants)
-                    box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id); this.message = this.modelReport.pass ? (v.codec===SMALL_CODEC ? 'Source spans, exact tokenizer IDs and native ONNX numerical head fixtures passed. This does not establish clinical accuracy.' : CODECS[v.codec].coverage === 'structured-span' ? 'Span fixtures matched. Enum attributes, value, unit, and relations were not part of this fixture.' : CODECS[v.codec].coverage === 'entity-span' ? 'Span fixtures matched. Attributes and relations were not tested.' : 'Graph fixtures passed. This codec does not extract clinical text.') : 'Fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
+                    box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id); this.message = this.modelReport.pass ? (isRecordsCodec(v.codec) ? 'Source spans, exact tokenizer IDs and native ONNX numerical head fixtures passed. This does not establish clinical accuracy.' : CODECS[v.codec].coverage === 'structured-span' ? 'Span fixtures matched. Enum attributes, value, unit, and relations were not part of this fixture.' : CODECS[v.codec].coverage === 'entity-span' ? 'Span fixtures matched. Attributes and relations were not tested.' : 'Graph fixtures passed. This codec does not extract clinical text.') : 'Fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
                 box.append(button('Unload package', () => { this.modelRunner.cancel(); this.model = null; this.modelReport = null; this.render(); }));
                 if (this.modelReport)
                     box.append(node('pre', JSON.stringify(this.modelReport, null, 2)));

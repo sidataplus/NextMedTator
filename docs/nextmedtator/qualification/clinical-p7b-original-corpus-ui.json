@@ -1,0 +1,588 @@
+{
+  "packageId": "gliner25-clinical-evidence-p7b",
+  "lineage": {
+    "base": {
+      "model": "fastino/gliner2.5-base-v1",
+      "revision": "ca906247640776a07753514055be9726f9080ead",
+      "files": {
+        "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+        "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+        "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+        "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+        "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+      }
+    },
+    "adapter": {
+      "sha256": "3c11a0faf9afa1688301c2eb741d4a74f10cc9407a8cbfff59ea898540c6ba3f",
+      "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+      "weightsSha256": "7243ce447c53a7629ba1bc5b59c670da970f30c93cfeb4c49e21708fcc5ba51d",
+      "configSha256": "8afbbd4125ce0b7572ef272aa42c6e7f5c05de2721d589cf4d4d9e80f9a3d643"
+    },
+    "merge": "merged-export",
+    "trainedHeads": "1d7ac71ff21ccd1dca771417327ebc3661307cd01ba6c5f23450e9c3c14b31e7"
+  },
+  "threshold": 0.5,
+  "browser": "151.0.7922.173",
+  "source": {
+    "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
+    "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
+    "generatorModels": [
+      "gemini-3.1-pro-high"
+    ],
+    "referenceKind": "externally-generated-labels",
+    "referenceCompleteness": "unverified",
+    "clinicalGoldStandard": false
+  },
+  "scope": {
+    "anchors": "all six supplied families",
+    "enums": [
+      "assertion",
+      "time_frame",
+      "experiencer"
+    ],
+    "literals": {
+      "condition_occurrence": [
+        "time_text"
+      ]
+    },
+    "unvalidated": "Other fields remain in references but are not silently qualified by this gate"
+  },
+  "notesRunInOriginalUI": 27,
+  "allRunsComplete": true,
+  "allSourceOffsetsValid": true,
+  "rawScreenshotsHaveNoNativeTags": true,
+  "autoApplyExplicitlyRequested": true,
+  "noPredictionsInserted": true,
+  "noNoteEgress": true,
+  "temporalMetricRepresentation": "Legacy time_text CDATA assessed through its exact retained model evidence span; machine outputs unchanged",
+  "generatedReferenceAgreement": {
+    "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+    "exactAnchors": {
+      "reference": 618,
+      "predicted": 418,
+      "matched": 335,
+      "precisionAgreement": 0.8014354066985646,
+      "recallAgreement": 0.5420711974110033,
+      "f1Agreement": 0.6467181467181468
+    },
+    "byFamily": {
+      "care_context_occurrence": {
+        "reference": 37,
+        "predicted": 37,
+        "matched": 21,
+        "precisionAgreement": 0.5675675675675675,
+        "recallAgreement": 0.5675675675675675,
+        "f1Agreement": 0.5675675675675675
+      },
+      "condition_occurrence": {
+        "reference": 260,
+        "predicted": 156,
+        "matched": 130,
+        "precisionAgreement": 0.8333333333333334,
+        "recallAgreement": 0.5,
+        "f1Agreement": 0.625
+      },
+      "event_occurrence": {
+        "reference": 135,
+        "predicted": 80,
+        "matched": 53,
+        "precisionAgreement": 0.6625,
+        "recallAgreement": 0.3925925925925926,
+        "f1Agreement": 0.49302325581395356
+      },
+      "function_occurrence": {
+        "reference": 62,
+        "predicted": 57,
+        "matched": 49,
+        "precisionAgreement": 0.8596491228070176,
+        "recallAgreement": 0.7903225806451613,
+        "f1Agreement": 0.823529411764706
+      },
+      "measurement_occurrence": {
+        "reference": 3,
+        "predicted": 1,
+        "matched": 1,
+        "precisionAgreement": 1.0,
+        "recallAgreement": 0.3333333333333333,
+        "f1Agreement": 0.5
+      },
+      "treatment_occurrence": {
+        "reference": 121,
+        "predicted": 87,
+        "matched": 81,
+        "precisionAgreement": 0.9310344827586207,
+        "recallAgreement": 0.6694214876033058,
+        "f1Agreement": 0.7788461538461537
+      }
+    },
+    "enumAgreementOnExactMatchedAnchors": {
+      "assertion": {
+        "matchedAnchorsWithReference": 334,
+        "agree": 209,
+        "fractionAgree": 0.625748502994012
+      },
+      "experiencer": {
+        "matchedAnchorsWithReference": 129,
+        "agree": 84,
+        "fractionAgree": 0.6511627906976745
+      },
+      "time_frame": {
+        "matchedAnchorsWithReference": 124,
+        "agree": 82,
+        "fractionAgree": 0.6612903225806451
+      }
+    },
+    "conditionTimeLiteralAgreementOnMatchedAnchors": {
+      "matchedAnchorsWithTimeReference": 37,
+      "exactTimeSpansAgree": 15
+    },
+    "notes": [
+      {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 17,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00005",
+        "reference": 23,
+        "predicted": 18,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00000",
+        "reference": 33,
+        "predicted": 24,
+        "matched": 20,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00002",
+        "reference": 26,
+        "predicted": 11,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00001",
+        "reference": 23,
+        "predicted": 17,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00003",
+        "reference": 24,
+        "predicted": 15,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00004",
+        "reference": 17,
+        "predicted": 16,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00008",
+        "reference": 18,
+        "predicted": 12,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00009",
+        "reference": 18,
+        "predicted": 9,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00013",
+        "reference": 21,
+        "predicted": 17,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00011",
+        "reference": 27,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00006",
+        "reference": 20,
+        "predicted": 12,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00014",
+        "reference": 26,
+        "predicted": 22,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00010",
+        "reference": 20,
+        "predicted": 16,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00015",
+        "reference": 22,
+        "predicted": 14,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00016",
+        "reference": 21,
+        "predicted": 16,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00017",
+        "reference": 26,
+        "predicted": 20,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00018",
+        "reference": 26,
+        "predicted": 12,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00012",
+        "reference": 16,
+        "predicted": 12,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00019",
+        "reference": 24,
+        "predicted": 20,
+        "matched": 18,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00022",
+        "reference": 17,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00020",
+        "reference": 28,
+        "predicted": 16,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00023",
+        "reference": 25,
+        "predicted": 15,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00021",
+        "reference": 29,
+        "predicted": 14,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00024",
+        "reference": 21,
+        "predicted": 18,
+        "matched": 17,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00026",
+        "reference": 26,
+        "predicted": 11,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00027",
+        "reference": 16,
+        "predicted": 14,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      }
+    ]
+  },
+  "negatedPainChecks": [
+    {
+      "id": "syn7_00007",
+      "anchor": {
+        "start": 305,
+        "end": 309,
+        "text": "pain"
+      },
+      "context": "nit over the last few days. Vitals stable. Denies pain. She exhibits verbal aggression. Reside",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00005",
+      "anchor": {
+        "start": 920,
+        "end": 924,
+        "text": "pain"
+      },
+      "context": "her comfort. She denied experiencing severe acute pain.\n\nMOBILITY / ADLs:\nResident requires a ",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00009",
+      "anchor": {
+        "start": 320,
+        "end": 324,
+        "text": "pain"
+      },
+      "context": "1:15 after a fall without apparent injury. Denies pain. She was up several times tonight, paci",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00017",
+      "anchor": {
+        "start": 395,
+        "end": 399,
+        "text": "pain"
+      },
+      "context": "mmediately; no distress was noted, and she denied pain initially. However, she later pointed t",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00018",
+      "anchor": {
+        "start": 488,
+        "end": 492,
+        "text": "pain"
+      },
+      "context": "ns stable and no signs of infection noted. Denies pain. Staff monitored for symptoms of sleep ",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00023",
+      "anchor": {
+        "start": 615,
+        "end": 619,
+        "text": "pain"
+      },
+      "context": " causes of behavioral change. The resident denies pain. Per daughter, PAINAD score is 0. No si",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00026",
+      "anchor": {
+        "start": 1061,
+        "end": 1065,
+        "text": "pain"
+      },
+      "context": " triggers of behavioral changes. Denies untreated pain. Constipation ruled out following a lar",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "syn7_00007",
+      "selectionReason": "Reported missing Denies pain",
+      "screenshot": "gliner25-clinical-evidence-p7b-syn7_00007-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 17,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.6666666666666666,
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "gliner25-clinical-evidence-p7b-syn7_00007-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2200
+        },
+        "nativeTags": 17,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
+    },
+    {
+      "id": "syn7_00002",
+      "selectionReason": "Lowest exact-anchor agreement",
+      "screenshot": "gliner25-clinical-evidence-p7b-syn7_00002-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00002",
+        "reference": 26,
+        "predicted": 11,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.3783783783783784,
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "gliner25-clinical-evidence-p7b-syn7_00002-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2200
+        },
+        "nativeTags": 11,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
+    },
+    {
+      "id": "syn7_00005",
+      "selectionReason": "Negated pain omitted by model",
+      "screenshot": "gliner25-clinical-evidence-p7b-syn7_00005-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00005",
+        "reference": 23,
+        "predicted": 18,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.5365853658536586,
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "gliner25-clinical-evidence-p7b-syn7_00005-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2400
+        },
+        "nativeTags": 18,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
+    },
+    {
+      "id": "syn7_00000",
+      "selectionReason": "Most machine suggestions",
+      "screenshot": "gliner25-clinical-evidence-p7b-syn7_00000-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 2200
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00000",
+        "reference": 33,
+        "predicted": 24,
+        "matched": 20,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.7017543859649122,
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Analyze note in Auto apply mode",
+        "screenshot": "gliner25-clinical-evidence-p7b-syn7_00000-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 3200
+        },
+        "nativeTags": 24,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
+    }
+  ],
+  "date": "2026-10-05"
+}
