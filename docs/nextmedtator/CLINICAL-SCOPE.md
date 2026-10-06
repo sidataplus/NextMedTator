@@ -11,6 +11,14 @@ The original MedTator assistance panel now has an opt-in **Build / edit scope** 
 5. Click **Apply scope**, then **Analyze note** or **Analyze selected**. Applying a scope creates a frozen, fingerprinted profile for future analysis. Existing runs retain their scope and predictions. Reapplying the same named scope records its parent hash and increments an unchanged version. **Use loaded schema** disables the scope for future runs.
 6. Review suggestions, or explicitly choose **Auto apply**. Auto-applied copies remain unreviewed and retain their machine lineage. Export the scope for reuse, the training semantic schema for upstream workflows, or the evidence project for source text, predictions, native tags and provenance together.
 
+## Adjust the suggestion threshold
+
+**Suggestion threshold** is visible above **Analyze note** and **Analyze selected**, and beside **Analyze locally** in the evidence workspace. Enter a value from 0 to 1. Lower values retain more candidate spans; higher values are stricter. The v3 model default is 0.6. **Use default** returns to the applied scope's threshold, or the model default when no scope is active. Applying a scope clears the override so the newly applied scope controls the next run; switching an already loaded model clears the override too.
+
+This is a threshold for extracting anchors, not a separate threshold for shared-axis attributes. Changes affect the next analysis, including Auto apply. They do not refilter an existing run, remove existing native tags, or rewrite a frozen scope. Review or reanalyze the note to use a different threshold. **Apply all suggestions** continues to apply the predictions from its existing run.
+
+Each analysis captures one effective value for the whole batch and records `settings.threshold` and `settings.thresholdSource` (`user`, `scope`, or `model`). Failed and cancelled runs retain the same settings. The original interface displays **Run threshold** with the result; portable evidence exports retain every run's settings. The original corpus recovery also retains the override. The evidence workspace resets the override when opening another project. Empty, nonnumeric and out-of-range values fail before inference; the control is disabled while analysis is running.
+
 ## Training boundary
 
 The authority is [`na399/clinical-evidence` at `f6cadc1bb52bc8475f33d9bb0e0c072427954d92`](https://github.com/na399/clinical-evidence/tree/f6cadc1bb52bc8475f33d9bb0e0c072427954d92), specifically its registry and `annotation/corpus/contracts.py`. The pinned grammar is `clinical-evidence/0.1`, registry SHA-256 `80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547`. Semantic exports use `teacher-schema/0.2` and the upstream hash algorithm.

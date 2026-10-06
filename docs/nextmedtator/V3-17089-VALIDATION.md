@@ -27,9 +27,19 @@ The original MedTator UI is retained. Fresh v3 presets use 0.6 and supported sha
 
 ## Executed engineering gates
 
-All **134 app unit tests** and **11 standalone packager tests** pass without skips. Both static builds and the 5,079-asset inventory pass, as does the original-UI regression gate. Native ONNX checks cover four graphs and eight source cases. All **21 ORT Web fixtures** pass, including exact v3 shared-axis outputs for negated pain, a family experiencer and a historical event.
+All **136 app unit tests** and **11 standalone packager tests** pass without skips. Both static builds and the 5,080-asset inventory pass, as does the original-UI regression gate. Native ONNX checks cover four graphs and eight source cases. All **21 ORT Web fixtures** pass, including exact v3 shared-axis outputs for negated pain, a family experiencer and a historical event.
 
 Actual browser checks cover hash-verified model installation, offline restart/inference, review, snapshot comparison, portable export/reopen, immutable lineage, the private canary, and original Vue/CodeMirror accept/reject/export. Both the offline engineering workspace and original annotation UI process all 27 supplied notes with complete source coverage, valid code-point offsets and identical agreement results. Representative native Auto apply runs contain 15, 14, 13 and 22 tags; duplicate protection, unreviewed provenance and unchanged source predictions pass. No predictions are inserted or corrected and no note text leaves the app.
+
+## User-adjustable extraction threshold
+
+The original assistance panel and evidence workspace expose **Suggestion threshold** beside analysis. The v3 default stays 0.6; a user override can be any number from 0 to 1. **Use default** restores the applied scope or model default. This threshold applies to anchor extraction, while qualified shared axes continue to use their one-value softmax without an attribute threshold. Changes affect future analysis and Auto apply; existing runs and native tags are preserved. Every run records the effective threshold and whether it came from the user, scope, or model.
+
+The focused real-ONNX browser gate changes a user-authored BPSD scope from 0.6 to 0.9: `syn7_00007` has five suggestions at 0.6 and one at 0.9. The two-note batch consistently uses 0.9. Its original run, frozen scope, corpus transport and portable export remain unchanged. Invalid values are rejected and the control is disabled while busy. The engineering workspace's source note changes from three to two suggestions. Editing and starting analysis with one click passes in both interfaces. These are extraction-control checks, not new accuracy metrics; the 27-note diagnostics below remain at 0.6.
+
+[Threshold validation report](qualification/suggestion-threshold.json) · [Original UI at 0.6](qualification/suggestion-threshold-06.png) · [Original UI at 0.9](qualification/suggestion-threshold-09.png)
+
+Reproduce the additional gate with `NMT_LORA_PACKAGE=/path/to/clinical-v3-17089.nmt-model.zip .venv/bin/python tests/browser/test_threshold.py` after building both interfaces. It requires real weights and runs the two browsers sequentially.
 
 ## Generated-reference diagnostics
 
