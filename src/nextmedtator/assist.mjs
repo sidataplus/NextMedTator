@@ -43,7 +43,7 @@ button:focus:not(:focus-visible){outline:none}
 .check{display:flex;gap:6px;align-items:center;flex-direction:row}
 label{display:flex;flex-direction:column;gap:3px;font-size:12px}
 input[type=file]{max-width:100%;font-size:11px}
-.threshold{margin:0 0 8px}.threshold label{flex-direction:row;align-items:center}.threshold input{width:75px;margin-left:auto;border:1px solid #d7e1e7;border-radius:5px;padding:5px}.threshold p{margin:4px 0}.threshold button{margin-top:4px}
+.threshold{margin:0 0 8px}.threshold-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.threshold output{font-weight:650;font-variant-numeric:tabular-nums}.threshold input[type=range]{width:100%;margin:6px 0;padding:0;accent-color:#076b74;cursor:pointer}.threshold p{margin:4px 0}.threshold button{margin-top:4px}
 .scope{border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:8px;margin:8px 0}
 .scope p{margin:5px 0}.scope label{margin:5px 0}.scope textarea{width:100%;font:inherit;color:inherit;border:1px solid #d7e1e7;border-radius:5px;resize:vertical}
 .scope fieldset{border:1px solid #d7e1e7;margin:8px 0;padding:6px}.scope h3{margin:10px 0 5px}
@@ -164,7 +164,7 @@ class LegacyAssist {
         this.root = host.attachShadow({ mode: 'open' });
         this.openProject = openProject ?? (() => {});
         this.open = sessionStorage.getItem('nmt-assist-open') !== 'false';
-        this.mode = 'assisted';
+        this.mode = 'auto';
         this.thresholdOverride = null;
         this.scope = null;this.scopeDraft=presetScope();this.scopeEditing=false;
         this.suggestionView = 'cards';
@@ -367,7 +367,7 @@ class LegacyAssist {
         const children=new Map();for(const child of saved.children??[])children.set(child.key,await ReviewProject.open(child.project));
         const view=legacy();invariant(view,'Original annotation workspace unavailable');
         view.app.set_vpp_data_json({dtd:clone(saved.dtd),anns:clone(saved.anns),ann_idx:saved.annIndex,mn4anns:1});
-        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'assisted';this.thresholdOverride=saved.thresholdOverride??null;this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
+        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'auto';this.thresholdOverride=saved.thresholdOverride??null;this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
     }
     async freezeNote(view){
         invariant(!this.exposed.has(view.key),'This note was already exposed');

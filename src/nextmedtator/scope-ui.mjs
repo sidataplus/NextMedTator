@@ -1,3 +1,4 @@
+import {thresholdControl,suggestionThreshold} from './threshold.mjs';
 import {CLINICAL_CONTRACT, SCOPE_PRESETS, FAMILY_TITLES, presetScope, fieldSupport, nativeScopeDTD} from './scope.mjs';
 import {localDownload} from './bundle.mjs';
 import {jsonParse} from './integrity.mjs';
@@ -23,7 +24,7 @@ export function renderScopeEditor(assist){
     section.append(input('Scope name',s.name,v=>s.name=v,{id:'scope-name',maxlength:100}),input('Scope version',s.version,v=>s.version=v,{id:'scope-version',maxlength:40}));
     for(const [index,task]of s.tasks.entries())section.append(input(index?'Additional scope definition':'Scope definition',task.definition,v=>task.definition=v,{id:index?'scope-additional-definition':'scope-definition',area:true,rows:3,maxlength:1000}));
     section.append(node('p','Descriptions can state included concepts and exclusions. They guide the model; relevance still needs review.',{class:'muted'}));
-    section.append(input('Suggestion threshold',draft.threshold,v=>draft.threshold=Number(v),{id:'scope-threshold',type:'number',min:0,max:1,step:.05}));
+    section.append(thresholdControl({override:draft.threshold,variant:assist.model?.manifest.variants[0],disabled:assist.busy,id:'scope-threshold',onChange:(value,render)=>{draft.threshold=value==null?suggestionThreshold(null,null,assist.model?.manifest.variants[0]).threshold:Number(value);if(render)assist.render();}}));
     const families=node('fieldset');families.append(node('legend','Training record families'));
     for(const [family,title]of Object.entries(FAMILY_TITLES)){
         const check=node('input',null,{type:'checkbox','aria-label':title,'data-testid':'scope-family-'+family});check.checked=s.families.includes(family);

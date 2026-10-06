@@ -76,6 +76,7 @@ def run():
                 app_hotpot.vpp.$data.mn4anns=1;app_hotpot.vpp.set_ann_idx(0);return names;
             }''', {'notes':fixture['notes'],'dtdText':'\n'.join(lines)})
             assert len(names) == 27
+            page.get_by_test_id('assist-mode').select_option('assisted')
             page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(PACKAGE))
             expect(page.get_by_test_id('assist-message')).to_contain_text('package loaded')
             for name in names:

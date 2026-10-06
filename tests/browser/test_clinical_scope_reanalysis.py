@@ -40,6 +40,7 @@ def run():
             page.get_by_label('Import local model package',exact=True).set_input_files(str(PACKAGE))
             expect(page.get_by_test_id('message')).to_contain_text('record package loaded')
             page.get_by_role('button',name='Models',exact=True).click()
+            page.get_by_test_id('analysis-mode').select_option('assisted')
             page.get_by_test_id('analyze').click()
             page.wait_for_function('''()=>{const w=document.querySelector('nextmedtator-workspace').workspace;return w.project.current.runs.length===3&&!w.busy;}''',timeout=300000)
             project=page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current')

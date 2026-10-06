@@ -17,6 +17,8 @@ import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTUR
 import { mountLegacyAssist } from './assist.mjs';
 import {CorpusSearch} from './corpus-search.mjs';
 const styles = `
+.threshold-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.threshold output{font-weight:650;font-variant-numeric:tabular-nums}.threshold input[type=range]{width:100%;margin:6px 0;padding:0;accent-color:#076b74;cursor:pointer}
+
 :host { --ink:#1a3041;--muted:#536976;--paper:#fff;--line:#d7e1e7;--accent:#076b74; color:var(--ink);font:15px/1.5 system-ui,sans-serif; }
 *{box-sizing:border-box} button,input,select,textarea{font:inherit} button,.file{border:1px solid var(--line);border-radius:7px;background:white;color:var(--ink);padding:7px 11px;cursor:pointer;display:inline-block}button:hover,.file:hover{background:#eef5f7}button:disabled{opacity:.5;cursor:not-allowed}button.primary{background:var(--accent);color:white;border-color:var(--accent)}:focus-visible{outline:3px solid #137aab;outline-offset:2px}button:focus:not(:focus-visible){outline:none}input,select,textarea{border:1px solid var(--line);border-radius:5px;padding:7px;max-width:100%;color:var(--ink)}textarea{width:100%}label{display:flex;flex-direction:column;gap:4px}input[type=file]{max-width:235px;font-size:12px}.app{position:fixed;inset:18px;z-index:10020;display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 80px #162b4a44;overflow:hidden}.app.full{position:relative;inset:auto;border:0;box-shadow:none;min-height:100vh;border-radius:0}.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:12px 18px}.brand{font-size:21px;font-weight:750;letter-spacing:-.6px}.badge{border-radius:20px;padding:3px 9px;background:#e8f5ef;font-size:12px}.stage{background:#f2f5f7}.muted{color:var(--muted);font-size:13px}.grow{flex:1}.toolbar{display:flex;gap:7px;padding:10px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}.main{display:grid;grid-template-columns:205px minmax(260px,1fr) 370px;flex:1;min-height:460px;overflow:auto}.documents{background:#f7f9fa;border-right:1px solid var(--line);padding:14px;overflow:auto}.documents button{display:block;text-align:left;width:100%;margin:6px 0;word-break:break-word}.documents button[aria-current=true]{border-color:var(--accent);background:#e6f2f3}.source{padding:20px;overflow:auto;min-width:0}.source textarea{white-space:pre-wrap;min-height:300px;resize:vertical;background:#fbfcfd;line-height:1.8;font-size:var(--source-size,17px);border:1px solid var(--line);tab-size:4}.panel{padding:16px;border-left:1px solid var(--line);overflow:auto;max-height:75vh}.card{padding:12px;border:1px solid var(--line);border-radius:9px;margin:10px 0;background:white}.card p{margin:5px 0;overflow-wrap:anywhere}.anchor{font-weight:650}.actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fields label{font-size:12px}.status{min-height:37px;border-top:1px solid var(--line);padding:8px 18px;font-size:13px;background:#f7f9fa}.message{margin:10px 18px;padding:10px;border-radius:7px;background:#edf4f6;overflow-wrap:anywhere}.message.error{background:#fff0ec;border:1px solid #db927f}.welcome{max-width:850px;margin:40px auto;padding:24px}.welcome h1{font-size:34px;letter-spacing:-1px;line-height:1.2}.welcome p{font-size:16px}.welcome .choices{display:flex;gap:15px;flex-wrap:wrap;margin:25px 0}.details{padding:14px 18px;border-bottom:1px solid var(--line);max-height:55vh;overflow:auto}.details h3{margin:4px 0 12px}.details pre{max-height:220px;overflow:auto;white-space:pre-wrap;background:#f7f9fa;padding:10px}.banner{padding:7px 18px;background:#fff9e9;border-bottom:1px solid #ebdfb7;font-size:12px}.closed{position:fixed;right:18px;bottom:16px;z-index:10010;border-color:var(--accent);box-shadow:0 4px 20px #193a4522}.check{display:flex;flex-direction:row;align-items:center;gap:8px}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:16px 0 8px}.tag{font-size:11px;text-transform:uppercase;letter-spacing:.4px}.source-note{font-size:12px;color:var(--muted)}.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hidden{display:none!important}@media(max-width:1000px){.main{grid-template-columns:155px 1fr}.panel{grid-column:1/-1;border-top:1px solid var(--line);max-height:none}.app{inset:4px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 `;
@@ -41,6 +43,7 @@ export class EvidenceWorkspace {
         this.project = null;
         this.index = 0;
         this.mode = 'assisted';
+        this.applicationMode = 'auto';
         this.thresholdOverride = null;
         this.actor = 'annotator';
         this.message = '';
@@ -80,7 +83,7 @@ export class EvidenceWorkspace {
         this.model=candidate;
     }
     async perform(action) { if (this.busy)
-        return; this.busy = true; this.root.querySelector('.app')?.setAttribute('aria-busy', 'true'); for(const input of this.root.querySelectorAll('.threshold input'))input.disabled=true; for (const b of this.root.querySelectorAll('button'))
+        return; this.busy = true; this.root.querySelector('.app')?.setAttribute('aria-busy', 'true'); for(const input of this.root.querySelectorAll('.threshold input,[data-testid=analysis-mode]'))input.disabled=true; for (const b of this.root.querySelectorAll('button'))
         if (b.textContent !== 'Force stop')
             b.disabled = true; try {
         this.timer.pause(true);
@@ -124,6 +127,7 @@ export class EvidenceWorkspace {
     async analyzeCurrent() {
         invariant(this.doc, 'Open a document first');
         invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
+        const autoApply=this.applicationMode==='auto'&&this.project.canSeeMachine;
         const scope=this.project.current.extensions.suggestionScope?await importScope(this.project.current.extensions.suggestionScope):null;
         const activeCodec=this.model.manifest.variants[0].codec;
         const schema=scope?compileScope(scope,this.project.current.schema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(this.project.current.schema):this.project.current.schema;
@@ -151,8 +155,10 @@ export class EvidenceWorkspace {
         const records = result.records ? result.records.map(r=>({...r,documentId:this.doc.id})) : spansToRecords(this.doc, this.project.current.schema, result.spans);
         const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, windows: result.windows ?? [], timing: { inferenceMs: performance.now()-started }, settings: runSettings, runtime: provenance.runtime });
         await this.project.addRun(run);
+        const applied=autoApply&&run.status==='complete'&&records.length>0;
+        if(applied)this.project.applyMachineGroup(run.id,records);
         this.changed();
-        this.message = `${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;
+        this.message = applied?`${records.length} auto-applied suggestions · unreviewed. ${notice}`:`${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;
     }
     async save() { const data = await exportBundle(this.project.current); localDownload(data, `${this.project.current.id}.nmt.zip`, 'application/zip'); this.saveState = 'Project export created; verify your downloaded file'; this.dirty = false; this.message = 'Export stays on your device. The application cannot verify a durable backup.'; }
     async checkpoint() { try{await this.recovery.checkpoint(this.project.current);}catch(error){this.dirty=true;this.saveState='Unsaved changes; recovery failed. Export this project.';throw error;} this.saveState = 'Recovery checkpoint saved in this browser; export still recommended'; this.message = 'Verified local database recovery copy. Export a portable backup.'; }
@@ -277,8 +283,8 @@ export class EvidenceWorkspace {
     renderWelcome(app) {
         const w = node('div', null, { class: 'welcome' });
         w.append(node('h1', 'Your evidence. Your device.'), node('p', 'Review structured clinical evidence with portable projects, independent snapshots, and no document upload. Existing MedTator annotation remains available in the original workspace.'), node('p', 'Synthetic examples include authored suggestions, which are not model output. A span package predicts anchors and scores. A structured package also fills schema enum attributes from the exported span-attribute head. Measurement value, unit, and relations stay empty.', { class: 'muted' }));
-        const mode = choose([['assisted', 'Assisted annotation'], ['blind', 'Blind annotation, compare later']], this.mode);
-        mode.addEventListener('change', () => { this.mode = mode.value; });
+        const mode = choose([['auto','Auto apply annotation'],['assisted', 'Assisted annotation'], ['blind', 'Blind annotation, compare later']], this.mode==='blind'?'blind':this.applicationMode);
+        mode.addEventListener('change', () => { this.mode = mode.value==='blind'?'blind':'assisted';if(mode.value!=='blind')this.applicationMode=mode.value; });
         const actor = node('input', null, { value: this.actor, maxlength: 100, 'aria-label': 'Annotator identifier' });
         actor.addEventListener('input', () => { this.actor = actor.value; });
         w.append(labeled('Workflow', mode), labeled('Local annotator identifier', actor));
@@ -341,6 +347,10 @@ export class EvidenceWorkspace {
         const structured = this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const small=this.model?.manifest.variants.some(v=>isRecordsCodec(v.codec));
         analyze.title = small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'Run the imported GLiNER2.5 package on this device. Spans plus enum attributes; value, unit, and relations stay empty.' : 'Run the imported GLiNER2.5 boundary package on this device. Span text and scores only; contextual fields stay empty.';
+        const applicationMode=choose([['auto','Auto apply'],['assisted','Assisted']],this.applicationMode);
+        applicationMode.dataset.testid='analysis-mode';applicationMode.disabled=this.busy||!this.project.canSeeMachine;
+        applicationMode.addEventListener('change',()=>{this.applicationMode=applicationMode.value;});
+        aside.append(labeled('Analysis mode',applicationMode),node('p','Auto apply adds predictions as unreviewed records. Existing annotations and machine runs are preserved.',{class:'muted'}));
         aside.append(thresholdControl({override:this.thresholdOverride,scope:p.extensions.suggestionScope,variant:this.model?.manifest.variants[0],disabled:this.busy,id:'threshold',onChange:(value,render)=>{this.thresholdOverride=value;if(render)this.render();}}));
         aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
         if (!this.project.canSeeMachine) {

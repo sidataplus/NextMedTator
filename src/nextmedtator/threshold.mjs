@@ -11,19 +11,29 @@ export function suggestionThreshold(override, scope, variant) {
 export function thresholdControl({override, scope, variant, disabled, id, onChange}) {
     const section = document.createElement('div');
     section.className = 'threshold';
+    const heading = document.createElement('div');
+    heading.className = 'threshold-title';
     const label = document.createElement('label');
-    label.textContent = 'Suggestion threshold';
+    label.textContent = 'Suggestion threshold'; label.htmlFor = id;
     const input = document.createElement('input');
-    input.type = 'number'; input.min = '0'; input.max = '1'; input.step = 'any';
+    input.id = id; input.type = 'range'; input.min = '0'; input.max = '1';
+    // Preserve exact existing defaults; user movements select hundredths.
+    input.step = 'any';
     input.dataset.testid = id; input.dataset.focusKey = id;
     input.disabled = disabled;
     input.value = override ?? suggestionThreshold(null, scope, variant).threshold;
-    input.required = true;
     input.setAttribute('aria-describedby', id + '-help');
-    input.addEventListener('input', () => onChange(input.value, false));
-    // Keep the clicked Analyze button mounted when editing ends on blur.
-    input.addEventListener('change', () => input.reportValidity());
-    label.append(input);
+    const output = document.createElement('output');
+    output.htmlFor = id; output.dataset.testid = id + '-value';
+    output.value = input.value;
+    input.setAttribute('aria-valuetext', input.value);
+    input.addEventListener('input', () => {
+        input.value = String(Math.round(Number(input.value) * 100) / 100);
+        output.value = input.value;
+        input.setAttribute('aria-valuetext', input.value);
+        onChange(input.value, false);
+    });
+    heading.append(label, output);
     const reset = document.createElement('button');
     reset.type = 'button'; reset.textContent = 'Use default'; reset.disabled = disabled;
     reset.dataset.testid = id + '-reset';
@@ -32,6 +42,6 @@ export function thresholdControl({override, scope, variant, disabled, id, onChan
     help.id = id + '-help'; help.className = 'muted';
     const baseline = suggestionThreshold(null, scope, variant);
     help.textContent = `0–1. Lower includes more spans; higher is stricter. Applies to the next analysis. ${baseline.thresholdSource === 'scope' ? 'Scope' : 'Model'} default: ${baseline.threshold}.`;
-    section.append(label, reset, help);
+    section.append(heading, input, reset, help);
     return section;
 }

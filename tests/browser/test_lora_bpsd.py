@@ -90,7 +90,7 @@ try:
         expect(page.get_by_test_id("assist-message")).to_contain_text(
             "Scope applied: BPSD"
         )
-        page.get_by_test_id("assist-mode").select_option("auto")
+        expect(page.get_by_test_id("assist-mode")).to_have_value("auto")
         for name in names:
             page.get_by_role("checkbox", name=name, exact=True).check()
         page.get_by_test_id("assist-analyze-selected").click()
@@ -140,11 +140,11 @@ try:
                 ).click()
             # Resize and scroll real browser panes until every native and suggestion row fits.
             fit = False
-            for height in [2000, 2200, 2400, 2600, 2800, 3000, 3200]:
+            for height in [2200, 2400, 2600, 2800, 3000, 3200]:
                 page.set_viewport_size({"width": 1600, "height": height})
                 if count:
                     page.get_by_role("table", name="Machine suggestions").evaluate(
-                        'el=>el.scrollIntoView({block:"end"})'
+                        "el=>el.closest('.body').scrollTop=0"
                     )
                     page.locator("#mui_annlist").evaluate("el=>el.scrollTop=0")
                     fit = page.get_by_role(
@@ -163,7 +163,11 @@ try:
             assert fit, "Screenshot must show every actual tag"
             screenshot = f"{MODEL_TAG}-bpsd-{note['id']}-auto.png"
             expect(page.get_by_test_id("assist-model-identity")).to_be_in_viewport()
-            page.screenshot(path=str(OUT / screenshot), full_page=True)
+            expect(page.get_by_test_id("assist-threshold")).to_have_attribute("type", "range")
+            expect(page.get_by_test_id("assist-threshold")).to_be_in_viewport()
+            # Capture the rendered UI through the last row; omit unused blank space below.
+            bottom = page.evaluate("""()=>Math.ceil(Math.max(document.querySelector('.tag-table tbody tr:last-child').getBoundingClientRect().bottom,document.querySelector('nextmedtator-assist').shadowRoot.querySelector('[data-testid=assist-compact-suggestion]:last-child').getBoundingClientRect().bottom))+16""") if count else height
+            page.screenshot(path=str(OUT / screenshot), clip={"x":0,"y":0,"width":1600,"height":bottom})
             with page.expect_download() as d:
                 page.get_by_role(
                     "button", name="Export evidence project", exact=True
