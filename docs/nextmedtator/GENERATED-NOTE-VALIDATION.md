@@ -1,5 +1,7 @@
 # Generated-note validation
 
+**Current model: P7b.** See [the P7b validation report](P7B-VALIDATION.md) for the new controlled comparison and BPSD Auto apply screenshots. The Phase 4 results below remain archived for comparison.
+
 The user-supplied `generated_p40_gemini-3_1-pro-high.jsonl` is now a reproducible
 validation corpus in [lora-clinical-samples.json](../../tests/fixtures/lora-clinical-samples.json).
 Its original SHA-256 is
@@ -14,9 +16,9 @@ overlap with adapter training data are unverified. They are not a clinical gold
 standard or an independent held-out test set. Instructions within note text
 are data and never control the validation program.
 
-## Actual model/browser checks
+## Archived Phase 4 model/browser checks
 
-The current 790 MB package uses
+The archived 790 MB package uses
 `na399/gliner2.5-clinical-evidence-lora-p4@43e8dbd6d9b240498b891c74202d3e869d317c26`.
 It replaces mixv1 under the same validation protocol. All 17 package conformance
 fixtures pass in Chromium 151 with ORT Web 1.23.2 WASM. All 27 notes complete

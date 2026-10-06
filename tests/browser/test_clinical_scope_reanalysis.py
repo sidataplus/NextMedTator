@@ -11,7 +11,7 @@ from test_clinical_scope import ROOT, PACKAGE
 
 def run():
     bundle = ROOT/'test-results/clinical-scope-evidence.nmt.zip'
-    assert bundle.is_file() and PACKAGE.is_file(), 'Run the actual P4 original-UI scope gate first'
+    assert bundle.is_file() and PACKAGE.is_file(), 'Run the actual original-UI scope gate first'
     with zipfile.ZipFile(bundle) as archive:
         original = json.loads(archive.read('project.json'))
         runs = json.loads(archive.read('machine-runs/index.json'))

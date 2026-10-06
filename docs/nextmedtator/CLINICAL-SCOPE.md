@@ -40,7 +40,11 @@ Actual P4 ONNX was run in Chromium on two supplied generated notes, `syn7_00007`
 
 The real-browser gate verifies full source coverage, exact offsets, allowed families/concept IDs, native auto-applied tag counts, unreviewed provenance, old-run immutability, evidence export and corpus recovery, with no note egress. The browser-exported semantic schema also passes upstream `SemanticSchema.model_validate(...).verify()` at the pinned revision. See [scope browser report](qualification/clinical-scope-ui.json), [upstream validation](qualification/clinical-scope-upstream-validation.json) and the accompanying original-UI screenshots.
 
-### User-configured BPSD screenshots
+### Current P7b BPSD screenshots
+
+[P7b validation](P7B-VALIDATION.md) uses the same four synthetic notes, user-entered BPSD definition and threshold as the archived P4 captures below. Reproduce with `NMT_LORA_PACKAGE=/path/to/clinical-p7b.nmt-model.zip uv run --locked python tests/browser/test_lora_bpsd.py`. The active package ID is visible in the original assistance panel. The model card uses v2 attribute spans; its hybrid attribute decoder remains outside this scope workflow.
+
+### Archived P4 user-configured BPSD screenshots
 
 At the user's request, a custom **BPSD** profile selects `event_occurrence` and defines dementia-related behavioral/psychological symptoms, with explicit exclusions. This is a saved user configuration, not an additional built-in preset. Actual P4 inference in **Auto apply** mode on `syn7_00007`, `syn7_00002`, `syn7_00023` and `syn7_00014` produces 7, 3, 2 and 8 native tags, respectively. Every native/machine row is visible in the captures. All runs complete with exact source offsets, automatic copies remain unreviewed, and no note text leaves the app.
 

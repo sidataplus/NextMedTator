@@ -11,7 +11,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[2]
-PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p4.nmt-model.zip'))
+PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p7b.nmt-model.zip'))
 URL = 'http://127.0.0.1:4193/'
 BEHAVIORS = ['pacing', 'verbal aggression', 'yelling', 'striking out']
 

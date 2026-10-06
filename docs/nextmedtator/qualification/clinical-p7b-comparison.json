@@ -1,0 +1,784 @@
+{
+  "date": "2026-10-05",
+  "protocol": {
+    "source": {
+      "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
+      "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
+      "generatorModels": [
+        "gemini-3.1-pro-high"
+      ],
+      "referenceKind": "externally-generated-labels",
+      "referenceCompleteness": "unverified",
+      "clinicalGoldStandard": false
+    },
+    "scope": {
+      "anchors": "all six supplied families",
+      "enums": [
+        "assertion",
+        "time_frame",
+        "experiencer"
+      ],
+      "literals": {
+        "condition_occurrence": [
+          "time_text"
+        ]
+      },
+      "unvalidated": "Other fields remain in references but are not silently qualified by this gate"
+    },
+    "threshold": 0.5,
+    "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+    "match": "Exact family and half-open Unicode code-point span; multiset matching"
+  },
+  "clinicalP4": {
+    "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+    "exactAnchors": {
+      "reference": 618,
+      "predicted": 494,
+      "matched": 380,
+      "precisionAgreement": 0.7692307692307693,
+      "recallAgreement": 0.6148867313915858,
+      "f1Agreement": 0.683453237410072
+    },
+    "byFamily": {
+      "care_context_occurrence": {
+        "reference": 37,
+        "predicted": 37,
+        "matched": 24,
+        "precisionAgreement": 0.6486486486486487,
+        "recallAgreement": 0.6486486486486487,
+        "f1Agreement": 0.6486486486486487
+      },
+      "condition_occurrence": {
+        "reference": 260,
+        "predicted": 181,
+        "matched": 156,
+        "precisionAgreement": 0.861878453038674,
+        "recallAgreement": 0.6,
+        "f1Agreement": 0.7074829931972788
+      },
+      "event_occurrence": {
+        "reference": 135,
+        "predicted": 114,
+        "matched": 62,
+        "precisionAgreement": 0.543859649122807,
+        "recallAgreement": 0.45925925925925926,
+        "f1Agreement": 0.497991967871486
+      },
+      "function_occurrence": {
+        "reference": 62,
+        "predicted": 63,
+        "matched": 51,
+        "precisionAgreement": 0.8095238095238095,
+        "recallAgreement": 0.8225806451612904,
+        "f1Agreement": 0.8160000000000001
+      },
+      "measurement_occurrence": {
+        "reference": 3,
+        "predicted": 1,
+        "matched": 1,
+        "precisionAgreement": 1.0,
+        "recallAgreement": 0.3333333333333333,
+        "f1Agreement": 0.5
+      },
+      "treatment_occurrence": {
+        "reference": 121,
+        "predicted": 98,
+        "matched": 86,
+        "precisionAgreement": 0.8775510204081632,
+        "recallAgreement": 0.7107438016528925,
+        "f1Agreement": 0.7853881278538812
+      }
+    },
+    "enumAgreementOnExactMatchedAnchors": {
+      "assertion": {
+        "matchedAnchorsWithReference": 379,
+        "agree": 288,
+        "fractionAgree": 0.7598944591029023
+      },
+      "experiencer": {
+        "matchedAnchorsWithReference": 146,
+        "agree": 74,
+        "fractionAgree": 0.5068493150684932
+      },
+      "time_frame": {
+        "matchedAnchorsWithReference": 134,
+        "agree": 95,
+        "fractionAgree": 0.7089552238805971
+      }
+    },
+    "conditionTimeLiteralAgreementOnMatchedAnchors": {
+      "matchedAnchorsWithTimeReference": 41,
+      "exactTimeSpansAgree": 11
+    },
+    "notes": [
+      {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 17,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00005",
+        "reference": 23,
+        "predicted": 17,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00000",
+        "reference": 33,
+        "predicted": 24,
+        "matched": 21,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00002",
+        "reference": 26,
+        "predicted": 17,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00001",
+        "reference": 23,
+        "predicted": 19,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00003",
+        "reference": 24,
+        "predicted": 19,
+        "matched": 16,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00004",
+        "reference": 17,
+        "predicted": 16,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00008",
+        "reference": 18,
+        "predicted": 15,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00009",
+        "reference": 18,
+        "predicted": 12,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00013",
+        "reference": 21,
+        "predicted": 22,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00011",
+        "reference": 27,
+        "predicted": 20,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00006",
+        "reference": 20,
+        "predicted": 16,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00014",
+        "reference": 26,
+        "predicted": 26,
+        "matched": 19,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00010",
+        "reference": 20,
+        "predicted": 22,
+        "matched": 18,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00015",
+        "reference": 22,
+        "predicted": 15,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00016",
+        "reference": 21,
+        "predicted": 21,
+        "matched": 16,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00017",
+        "reference": 26,
+        "predicted": 22,
+        "matched": 16,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00018",
+        "reference": 26,
+        "predicted": 17,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00012",
+        "reference": 16,
+        "predicted": 14,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00019",
+        "reference": 24,
+        "predicted": 21,
+        "matched": 19,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00022",
+        "reference": 17,
+        "predicted": 16,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00020",
+        "reference": 28,
+        "predicted": 16,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00023",
+        "reference": 25,
+        "predicted": 20,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00021",
+        "reference": 29,
+        "predicted": 14,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00024",
+        "reference": 21,
+        "predicted": 20,
+        "matched": 18,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00026",
+        "reference": 26,
+        "predicted": 19,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00027",
+        "reference": 16,
+        "predicted": 17,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      }
+    ]
+  },
+  "clinicalP7b": {
+    "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+    "exactAnchors": {
+      "reference": 618,
+      "predicted": 418,
+      "matched": 335,
+      "precisionAgreement": 0.8014354066985646,
+      "recallAgreement": 0.5420711974110033,
+      "f1Agreement": 0.6467181467181468
+    },
+    "byFamily": {
+      "care_context_occurrence": {
+        "reference": 37,
+        "predicted": 37,
+        "matched": 21,
+        "precisionAgreement": 0.5675675675675675,
+        "recallAgreement": 0.5675675675675675,
+        "f1Agreement": 0.5675675675675675
+      },
+      "condition_occurrence": {
+        "reference": 260,
+        "predicted": 156,
+        "matched": 130,
+        "precisionAgreement": 0.8333333333333334,
+        "recallAgreement": 0.5,
+        "f1Agreement": 0.625
+      },
+      "event_occurrence": {
+        "reference": 135,
+        "predicted": 80,
+        "matched": 53,
+        "precisionAgreement": 0.6625,
+        "recallAgreement": 0.3925925925925926,
+        "f1Agreement": 0.49302325581395356
+      },
+      "function_occurrence": {
+        "reference": 62,
+        "predicted": 57,
+        "matched": 49,
+        "precisionAgreement": 0.8596491228070176,
+        "recallAgreement": 0.7903225806451613,
+        "f1Agreement": 0.823529411764706
+      },
+      "measurement_occurrence": {
+        "reference": 3,
+        "predicted": 1,
+        "matched": 1,
+        "precisionAgreement": 1.0,
+        "recallAgreement": 0.3333333333333333,
+        "f1Agreement": 0.5
+      },
+      "treatment_occurrence": {
+        "reference": 121,
+        "predicted": 87,
+        "matched": 81,
+        "precisionAgreement": 0.9310344827586207,
+        "recallAgreement": 0.6694214876033058,
+        "f1Agreement": 0.7788461538461537
+      }
+    },
+    "enumAgreementOnExactMatchedAnchors": {
+      "assertion": {
+        "matchedAnchorsWithReference": 334,
+        "agree": 209,
+        "fractionAgree": 0.625748502994012
+      },
+      "experiencer": {
+        "matchedAnchorsWithReference": 129,
+        "agree": 84,
+        "fractionAgree": 0.6511627906976745
+      },
+      "time_frame": {
+        "matchedAnchorsWithReference": 124,
+        "agree": 82,
+        "fractionAgree": 0.6612903225806451
+      }
+    },
+    "conditionTimeLiteralAgreementOnMatchedAnchors": {
+      "matchedAnchorsWithTimeReference": 37,
+      "exactTimeSpansAgree": 15
+    },
+    "notes": [
+      {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 17,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00005",
+        "reference": 23,
+        "predicted": 18,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00000",
+        "reference": 33,
+        "predicted": 24,
+        "matched": 20,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00002",
+        "reference": 26,
+        "predicted": 11,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00001",
+        "reference": 23,
+        "predicted": 17,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00003",
+        "reference": 24,
+        "predicted": 15,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00004",
+        "reference": 17,
+        "predicted": 16,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00008",
+        "reference": 18,
+        "predicted": 12,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00009",
+        "reference": 18,
+        "predicted": 9,
+        "matched": 7,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00013",
+        "reference": 21,
+        "predicted": 17,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00011",
+        "reference": 27,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00006",
+        "reference": 20,
+        "predicted": 12,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00014",
+        "reference": 26,
+        "predicted": 22,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00010",
+        "reference": 20,
+        "predicted": 16,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00015",
+        "reference": 22,
+        "predicted": 14,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00016",
+        "reference": 21,
+        "predicted": 16,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00017",
+        "reference": 26,
+        "predicted": 20,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00018",
+        "reference": 26,
+        "predicted": 12,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00012",
+        "reference": 16,
+        "predicted": 12,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00019",
+        "reference": 24,
+        "predicted": 20,
+        "matched": 18,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00022",
+        "reference": 17,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00020",
+        "reference": 28,
+        "predicted": 16,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00023",
+        "reference": 25,
+        "predicted": 15,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00021",
+        "reference": 29,
+        "predicted": 14,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00024",
+        "reference": 21,
+        "predicted": 18,
+        "matched": 17,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00026",
+        "reference": 26,
+        "predicted": 11,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00027",
+        "reference": 16,
+        "predicted": 14,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      }
+    ]
+  },
+  "f1DeltaPercentagePoints": -3.6735090691925265,
+  "bpsdScope": {
+    "modelInputsEqual": true,
+    "comparisonExcludes": "Only clinicalScope.schemaHash, which includes each freeze timestamp; prompts, family mappings, fields, values and grammar are equal",
+    "definition": "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services.",
+    "threshold": 0.5,
+    "clinicalP4": [
+      {
+        "id": "syn7_00007",
+        "predictions": 7,
+        "nativeTags": 7,
+        "allRowsVisible": true,
+        "screenshot": "bpsd-syn7_00007-auto.png",
+        "viewport": {
+          "width": 1600,
+          "height": 2000
+        },
+        "anchors": [
+          "fall",
+          "pacing",
+          "verbal aggression",
+          "yelling",
+          "resisting morning care",
+          "striking out at staff",
+          "fall"
+        ]
+      },
+      {
+        "id": "syn7_00002",
+        "predictions": 3,
+        "nativeTags": 3,
+        "allRowsVisible": true,
+        "screenshot": "bpsd-syn7_00002-auto.png",
+        "viewport": {
+          "width": 1600,
+          "height": 2000
+        },
+        "anchors": [
+          "sundowning",
+          "resting",
+          "restless"
+        ]
+      },
+      {
+        "id": "syn7_00023",
+        "predictions": 2,
+        "nativeTags": 2,
+        "allRowsVisible": true,
+        "screenshot": "bpsd-syn7_00023-auto.png",
+        "viewport": {
+          "width": 1600,
+          "height": 2000
+        },
+        "anchors": [
+          "questioning staff",
+          "shadowed"
+        ]
+      },
+      {
+        "id": "syn7_00014",
+        "predictions": 8,
+        "nativeTags": 8,
+        "allRowsVisible": true,
+        "screenshot": "bpsd-syn7_00014-auto.png",
+        "viewport": {
+          "width": 1600,
+          "height": 2000
+        },
+        "anchors": [
+          "agitation",
+          "restless",
+          "striking out",
+          "yelling",
+          "verbal aggression",
+          "resisting care",
+          "fell asleep",
+          "re-evaluate"
+        ]
+      }
+    ],
+    "clinicalP7b": [
+      {
+        "id": "syn7_00007",
+        "predictions": 7,
+        "nativeTags": 7,
+        "allRowsVisible": true,
+        "screenshot": "p7b-bpsd-syn7_00007-auto.png",
+        "viewport": {
+          "width": 1600,
+          "height": 2200
+        },
+        "anchors": [
+          "fall",
+          "pacing",
+          "verbal aggression",
+          "yelling",
+          "striking out at staff",
+          "declining behavior",
+          "fall"
+        ]
+      },
+      {
+        "id": "syn7_00002",
+        "predictions": 2,
+        "nativeTags": 2,
+        "allRowsVisible": true,
+        "screenshot": "p7b-bpsd-syn7_00002-auto.png",
+        "viewport": {
+          "width": 1600,
+          "height": 2000
+        },
+        "anchors": [
+          "sundowning",
+          "outburst of end-stage agitation"
+        ]
+      },
+      {
+        "id": "syn7_00023",
+        "predictions": 2,
+        "nativeTags": 2,
+        "allRowsVisible": true,
+        "screenshot": "p7b-bpsd-syn7_00023-auto.png",
+        "viewport": {
+          "width": 1600,
+          "height": 2000
+        },
+        "anchors": [
+          "questioning staff",
+          "shadowed"
+        ]
+      },
+      {
+        "id": "syn7_00014",
+        "predictions": 5,
+        "nativeTags": 5,
+        "allRowsVisible": true,
+        "screenshot": "p7b-bpsd-syn7_00014-auto.png",
+        "viewport": {
+          "width": 1600,
+          "height": 2000
+        },
+        "anchors": [
+          "restless",
+          "striking out",
+          "yelling",
+          "aggression",
+          "resisting care"
+        ]
+      }
+    ]
+  },
+  "interpretation": "Agreement against unverified generated labels; P7b has higher precision and lower recall with the existing app decoder, not a clinical accuracy or native-hybrid evaluation"
+}

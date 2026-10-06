@@ -1,4 +1,4 @@
-"""Real P4 scope gate in the original MedTator UI; no injected predictions."""
+"""Real LoRA scope gate in the original MedTator UI; no injected predictions."""
 import json
 import os
 import subprocess
@@ -9,12 +9,12 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[2]
-PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p4.nmt-model.zip'))
+PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p7b.nmt-model.zip'))
 URL = 'http://127.0.0.1:4195/'
 
 
 def run():
-    assert PACKAGE.is_file(), 'Actual merged P4 package required'
+    assert PACKAGE.is_file(), 'Actual merged adapter package required'
     fixture = json.loads((ROOT/'tests/fixtures/lora-clinical-samples.json').read_text())
     notes = [fixture['notes'][0], fixture['notes'][23]]
     out = ROOT/'test-results'
@@ -66,7 +66,7 @@ def run():
             page.wait_for_function('''()=>{const a=document.querySelector('nextmedtator-assist').assist;return a.runHistory.length===2&&!a.busy;}''', timeout=300000)
             before = page.evaluate('''()=>document.querySelector('nextmedtator-assist').assist.runHistory.map(r=>JSON.parse(JSON.stringify(r)))''')
             assert all(r['status']=='complete' for r in before), before
-            print('Broad scope actual P4 counts', [len(r['records']) for r in before], flush=True)
+            print('Broad scope actual adapter counts', [len(r['records']) for r in before], flush=True)
             # Two freely entered concepts, no disease-specific preset.
             page.get_by_test_id('scope-edit').click()
             page.get_by_test_id('scope-preset').select_option('events-function')

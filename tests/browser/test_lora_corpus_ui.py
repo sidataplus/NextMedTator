@@ -1,7 +1,7 @@
 """Run every supplied note in original MedTator and photograph real suggestions.
 
 Screenshots include the reported missing negated pain, a low-agreement note,
-successful negated pain and a dense prediction list. Capture the untouched raw
+a negated-pain success or omission and a dense prediction list. Capture the untouched raw
 list first, then the user's explicit auto-apply workflow. Generated labels are
 unverified; automatic tags are not individually reviewed.
 """
@@ -23,12 +23,12 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/'scripts'))
 from prepare_validation_notes import agreement
 
-PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p4.nmt-model.zip'))
+PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p7b.nmt-model.zip'))
 URL = 'http://127.0.0.1:4194/'
 
 
 def run():
-    assert PACKAGE.is_file(), 'Actual P4 package required; no mock/skip path'
+    assert PACKAGE.is_file(), 'Actual merged adapter package required; no mock/skip path'
     fixture = json.loads((ROOT/'tests/fixtures/lora-clinical-samples.json').read_text())
     with zipfile.ZipFile(PACKAGE) as package:
         manifest = json.loads(package.read('manifest.json'))
@@ -140,10 +140,17 @@ def run():
                 return 2*row['matched']/(row['predicted']+row['reference']) if row['predicted']+row['reference'] else 0
             low = min(range(27), key=lambda i:(f1(metrics['notes'][i]),fixture['notes'][i]['id']))
             dense = max(range(27), key=lambda i:len(batch[i]['records']))
-            pain_success = next(row for row in pain_checks if row['anchorDetected'] and row['predictedAssertion']=='negated')
-            negated = next(i for i,note in enumerate(fixture['notes']) if note['id']==pain_success['id'])
+            pain_success = next((row for row in pain_checks if row['anchorDetected'] and row['predictedAssertion']=='negated'), None)
+            pain_example = pain_success or next(row for row in pain_checks if row['id']!=fixture['notes'][0]['id'])
+            if pain_success:
+                pain_reason = 'Successful negated pain'
+            elif pain_example['anchorDetected']:
+                pain_reason = 'Negated pain assertion incorrect'
+            else:
+                pain_reason = 'Negated pain omitted by model'
+            negated = next(i for i,note in enumerate(fixture['notes']) if note['id']==pain_example['id'])
             selections = [(0,'Reported missing Denies pain'),(low,'Lowest exact-anchor agreement'),
-                          (negated,'Successful negated pain'),(dense,'Most machine suggestions')]
+                          (negated,pain_reason),(dense,'Most machine suggestions')]
             examples = []
             for index, reason in selections:
                 note, result = fixture['notes'][index], batch[index]
@@ -159,7 +166,7 @@ def run():
                         cm.setSelection(cm.posFromIndex(start),cm.posFromIndex(start+'Denies pain.'.length));
                         cm.scrollIntoView({from:cm.posFromIndex(start),to:cm.posFromIndex(start+12)},80);
                     }''')
-                elif index == negated:
+                elif index == negated and pain_success:
                     card = page.get_by_test_id('assist-compact-suggestion').filter(has=page.locator('strong',has_text=re.compile('^pain$')))
                     expect(card).to_have_count(1)
                     card.get_by_test_id('assist-compact-locate').click()
@@ -177,7 +184,7 @@ def run():
                     }''')
                     if fit: break
                 assert fit, 'All actual suggestion rows must fit the screenshot'
-                screenshot = f'clinical-p4-{note["id"]}-suggestions.png'
+                screenshot = f'{manifest["id"]}-{note["id"]}-suggestions.png'
                 page.screenshot(path=str(out/screenshot), full_page=True)
                 with page.expect_download() as download:
                     page.get_by_role('button',name='Export evidence project',exact=True).click()
@@ -197,7 +204,7 @@ def run():
                 print('Captured',note['id'],len(result['records']),'actual suggestions:',reason,flush=True)
                 page.get_by_test_id('assist-mode').select_option('auto')
                 if index == dense:
-                    # Real P4 inference in Auto mode must write without any
+                    # Real adapter inference in Auto mode must write without any
                     # individual acceptance or Apply-all click.
                     page.get_by_test_id('assist-analyze').click()
                     expect(page.get_by_test_id('assist-message')).to_contain_text('Auto apply finished for 1 notes')
@@ -228,7 +235,7 @@ def run():
                     }''')
                     if fit and native_fit: break
                 assert fit and native_fit, 'All native annotation and machine rows must fit the auto screenshot'
-                auto_screenshot = f'clinical-p4-{note["id"]}-auto-applied.png'
+                auto_screenshot = f'{manifest["id"]}-{note["id"]}-auto-applied.png'
                 page.screenshot(path=str(out/auto_screenshot),full_page=True)
                 with page.expect_download() as download:
                     page.get_by_role('button',name='Export evidence project',exact=True).click()

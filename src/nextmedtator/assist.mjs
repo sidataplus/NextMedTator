@@ -558,6 +558,7 @@ class LegacyAssist {
         const status = node('div', null, { class: 'row' });
         status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'No local model', { class: 'badge', 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
         head.append(title, labeled('Mode', mode), status, node('p', `${schema ? `Schema: ${schema}` : 'Schema: none loaded'}. Documents stay in the annotation workspace.`, { class: 'muted' }));
+        if(this.model)head.append(node('p', 'Active model: '+this.model.manifest.id, { class: 'muted', 'data-testid': 'assist-model-identity' }));
         if (this.mode === 'auto') head.append(node('p', 'Analyze writes all predictions as unreviewed native tags. Apply all suggestions also uses an existing run.', {class:'muted'}));
         if (view?.ann)
             head.append(node('p', view.ann._filename ?? 'document', { class: 'muted', 'data-testid': 'assist-document' }));

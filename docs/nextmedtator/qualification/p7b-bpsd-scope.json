@@ -1,0 +1,65 @@
+{
+  "format": "nextmedtator-clinical-scope-v1",
+  "threshold": 0.5,
+  "fields": {
+    "condition_occurrence": [
+      "assertion",
+      "time_frame",
+      "experiencer",
+      "time_text"
+    ],
+    "measurement_occurrence": [
+      "assertion",
+      "time_frame",
+      "experiencer",
+      "time_text"
+    ],
+    "treatment_occurrence": [
+      "assertion",
+      "time_frame",
+      "experiencer",
+      "time_text"
+    ],
+    "event_occurrence": [
+      "assertion",
+      "time_frame",
+      "experiencer",
+      "time_text"
+    ],
+    "function_occurrence": [
+      "assertion",
+      "time_frame",
+      "experiencer",
+      "time_text"
+    ],
+    "care_context_occurrence": [
+      "assertion",
+      "time_frame",
+      "experiencer",
+      "time_text"
+    ]
+  },
+  "semanticSchema": {
+    "schema_version": "teacher-schema/0.2",
+    "name": "BPSD",
+    "version": "1",
+    "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+    "families": [
+      "event_occurrence"
+    ],
+    "tasks": [
+      {
+        "task_id": "clinical_scope",
+        "definition": "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
+      }
+    ],
+    "concepts": [],
+    "relations": [],
+    "parent_schema_hash": null,
+    "discovery_plan_hash": null,
+    "deferred_proposals": [],
+    "frozen_by": "legacy-annotator",
+    "frozen_at": "2026-10-06T00:21:57.022Z",
+    "schema_hash": "df15edeb1ca33f9322fa6845660b5658b4822ee21ed49082be5f81251f5b14b0"
+  }
+}

@@ -67,9 +67,61 @@ a supplied adapter inherits the base model's Apache-2.0 license.
 default is `LicenseRef-Hub-Base` rather than assuming all compatible bases
 share a license.
 
-## Current adapter: ClinicalEvidence Phase 4
+## Current adapter: ClinicalEvidence P7b
 
-The current validation package uses
+The current validation package is `gliner25-clinical-evidence-p7b`, using
+`na399/clinical-evidence-gliner2.5-lora-p7b@ac4b10b7d961bfa5ce79703fb2f689c2f93be261`.
+The owner temporarily enabled a public download. Once cached, export and browser
+inference do not need access to the adapter repository. Its metadata does not
+pin a base revision, so this controlled comparison keeps the same base as P4.
+
+```sh
+uv tool run --from huggingface_hub==2.1.1 hf download na399/clinical-evidence-gliner2.5-lora-p7b --revision ac4b10b7d961bfa5ce79703fb2f689c2f93be261 --local-dir work/clinical-p7b-adapter
+uv run --locked --project tools/gliner-onnx gliner-onnx \
+  --adapter work/clinical-p7b-adapter \
+  --base-model fastino/gliner2.5-base-v1 \
+  --base-revision ca906247640776a07753514055be9726f9080ead \
+  --base-license Apache-2.0 \
+  --adapter-license LicenseRef-Research-Group-Only-No-Redistribution \
+  --id gliner25-clinical-evidence-p7b \
+  --out work/clinical-p7b.nmt-model.zip \
+  --report test-results/clinical-p7b-export.json
+```
+
+Use `--base-dir` to reuse a cached base checkpoint; the tool still verifies its
+bytes against the immutable Hub revision. If the adapter is private again,
+use an authorized `HF_TOKEN` environment value for the download. Never commit
+credentials or weights. The P7b license restricts use to the owner's research
+group and grants no redistribution rights; temporary public access does not
+change that declaration.
+
+Import the resulting ZIP through **Local model package** in the original
+annotation panel. The active model ID is displayed; **Install package for
+offline use** persists that package locally. Existing P4 runs retain P4 lineage.
+The app's public catalog remains a separate, permissively licensed small model;
+it does not distribute this research checkpoint.
+
+The card specifies v2 positive-only attribute labels, with offset joins and
+absence-implied defaults in its hybrid decoder. It reports that record-choice
+binding did not pass qualification. This package uses the existing app-owned
+anchored-record/choice-head decoder, which does not implement that hybrid path.
+Do not interpret its choice fields as qualified v2 attribute predictions.
+Attribute/cue work remains deferred. The card's BPSD entity F1 of 0.84 is a
+source-reported metric with different prompts/threshold selection; it is not
+our browser result.
+
+See [P7b validation and screenshots](../../docs/nextmedtator/P7B-VALIDATION.md).
+
+```sh
+NMT_LORA_PACKAGE=work/clinical-p7b.nmt-model.zip uv run --locked python tests/browser/test_lora_model.py
+NMT_LORA_PACKAGE=work/clinical-p7b.nmt-model.zip uv run --locked python tests/browser/test_lora_samples.py
+NMT_LORA_PACKAGE=work/clinical-p7b.nmt-model.zip uv run --locked python tests/browser/test_lora_corpus_ui.py
+NMT_LORA_PACKAGE=work/clinical-p7b.nmt-model.zip uv run --locked python tests/browser/test_lora_bpsd.py
+```
+
+## Archived adapter: ClinicalEvidence Phase 4
+
+The archived Phase 4 package uses
 `na399/gliner2.5-clinical-evidence-lora-p4@43e8dbd6d9b240498b891c74202d3e869d317c26`.
 Download the pinned adapter, then build locally:
 
