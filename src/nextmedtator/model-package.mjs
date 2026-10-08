@@ -53,7 +53,7 @@ export function validateModelManifest(m) {
             invariant(typeof v.threshold === 'number' && v.threshold >= 0 && v.threshold <= 1, 'Invalid span threshold');
         if (CODECS[v.codec].coverage === 'occurrence-record') {
             invariant(v.automaticRelations!==true,'Automatic model relations are not source-score qualified in this app release');
-            for (const name of ['model','attributes','records','relations']) invariant(m.files.some(f=>f.path===v.graphs?.[name]&&f.role==='graph'),'Record graph missing: '+name);
+            for (const name of (v.codec===CLINICAL_V3_CODEC?['model','attributes']:['model','attributes','records','relations'])) invariant(m.files.some(f=>f.path===v.graphs?.[name]&&f.role==='graph'),'Record graph missing: '+name);
             invariant(m.files.some(f=>f.path===v.tokenizer&&f.role==='tokenizer'),'Record tokenizer missing');
             invariant(Number.isFinite(v.pairTemperature)&&v.pairTemperature>0,'Pair temperature required');
             if(v.codec==='gliner25-records-v1'||v.codec===CLINICAL_V3_CODEC){
@@ -65,6 +65,11 @@ export function validateModelManifest(m) {
         if(v.codec===CLINICAL_V3_CODEC){
             invariant(v.clinicalRegistryHash===CLINICAL_V3.registryHash&&v.sharedAxes==='one_value_softmax_no_attribute_threshold'&&v.recordBinding===false,'V3 inference contract required');
             invariant(m.files.some(f=>f.path===v.clinicalSchema&&f.role==='schema'),'V3 registry artifact required');
+            if(v.clinicalRelease){
+                validHash(v.clinicalRelease.runtimeFingerprint);validHash(v.clinicalRelease.adapterFingerprint);
+                invariant(v.clinicalRelease.registryHash===CLINICAL_V3.registryHash&&v.clinicalRelease.coreThreshold===v.threshold,'Clinical release threshold/registry mismatch');
+                invariant(['small','base'].includes(v.clinicalRelease.modelSize),'Clinical release model size required');
+            }
         }
         if (CODECS[v.codec].coverage === 'entity-span' || CODECS[v.codec].coverage === 'structured-span') {
             invariant(v.graphs?.encoder === v.graph && typeof v.graphs.boundary === 'string', 'Boundary package needs encoder and boundary graphs');
@@ -211,4 +216,27 @@ export class ConformanceWorker {
         this.cancelled = true;
         this.reject?.(new Error('Cancelled: local model worker stopped'));
     }
+}
+
+/** Candidate position is not an identity. Match legal intervals within each query. */
+export function compareCandidateSpans(actual,expected){
+    const names=['pair_indices','pair_logits','pair_valid'];
+    if(names.some(name=>JSON.stringify(actual[name]?.dims)!==JSON.stringify(expected[name]?.dims)))return {pass:false,reason:'candidate-shape-mismatch'};
+    const [batch,queries,count]=expected.pair_logits.dims;
+    let intervals=0,mismatches=0,maxAbsoluteError=0,setsExact=true;
+    const make=(values,b,q)=>{
+        const result=new Map(),indices=values.pair_indices.data,logits=values.pair_logits.data,valid=values.pair_valid.data;
+        for(let c=0;c<count;c++){
+            const i=(b*queries+q)*count+c;if(!valid[i])continue;
+            const key=String(indices[i*2])+':'+String(indices[i*2+1]);
+            if(result.has(key))return null;result.set(key,Number(logits[i]));
+        }
+        return result;
+    };
+    for(let b=0;b<batch;b++)for(let q=0;q<queries;q++){
+        const a=make(actual,b,q),e=make(expected,b,q);
+        if(!a||!e||a.size!==e.size||[...e.keys()].some(key=>!a.has(key))){setsExact=false;mismatches++;continue;}
+        for(const [key,value]of e){const got=a.get(key),check=compareTensors([got],[value],expected.pair_logits.tolerance??{});intervals++;mismatches+=check.mismatches;maxAbsoluteError=Math.max(maxAbsoluteError,check.maxAbsoluteError);}
+    }
+    return {pass:setsExact&&mismatches===0,setsExact,intervals,mismatches,maxAbsoluteError};
 }

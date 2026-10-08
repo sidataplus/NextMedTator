@@ -1,0 +1,71 @@
+{
+  "baseMainCommit": "95d87b19e9daf07d8c5de3e870ac25ac918a6227",
+  "checks": {
+    "appUnit": {
+      "pass": true,
+      "tests": 141,
+      "skipped": 0
+    },
+    "packagerUnit": {
+      "pass": true,
+      "tests": 12
+    },
+    "generatedNoteUnit": {
+      "pass": true,
+      "tests": 4
+    },
+    "distBuildAndAssetInventory": {
+      "pass": true,
+      "assets": 5081
+    },
+    "previewBuildAndAssetInventory": {
+      "pass": true,
+      "assets": 64
+    },
+    "lockedPackagerResolution": {
+      "pass": true
+    },
+    "originalUIRegression": {
+      "pass": true
+    },
+    "workspaceRegression": {
+      "pass": true
+    },
+    "baseRealPackage": {
+      "pass": true,
+      "fixtures": 17
+    },
+    "smallRealPackage": {
+      "pass": true,
+      "fixtures": 17
+    },
+    "baseCorpusWorkspace": {
+      "pass": true,
+      "notes": 27
+    },
+    "baseCorpusOriginalUI": {
+      "pass": true,
+      "notes": 27
+    },
+    "smallCorpusWorkspace": {
+      "pass": true,
+      "notes": 27
+    },
+    "directDependencyVersionVerification": {
+      "pass": true,
+      "network": "Node environment proxy enabled"
+    }
+  },
+  "testedSourceSha256": {
+    "src/nextmedtator/clinical-v3.mjs": "536568ad6e16d80ca420bc5f7d179befd2dcff8b8d67ec837a252f5cb967f2d0",
+    "src/nextmedtator/gliner-small.mjs": "a8bf7e0702bd76f6be1a45b7cb4e170464da9c2198e02e0450fd50e73ba0b340",
+    "src/nextmedtator/inference-options.mjs": "2cd39a6ef42987ae153f509dc6c3cb30fd434c65eb4131f7da041f5636d1e729",
+    "src/nextmedtator/model-package.mjs": "87c3f8f3036c5715ef9c27a85ed68e71753e085a032b5af4aa1dfd5e33e3299c",
+    "src/nextmedtator/onnx-worker.mjs": "fb451634a81389a35949d38200ebde8a716f81e1ac617c1f6b74eb3331903ffa",
+    "src/nextmedtator/threshold.mjs": "c55c5c2115df8b1017302a5d9472e23fbfbaece4fc9f6af30eaec1677e6ab2f6",
+    "tools/gliner-onnx/src/gliner_onnx/clinical_release.py": "1803c59e7ecb3d2004dcf1d0f81256a9add246d489ec58bb59c37696b11a402c",
+    "tools/gliner-onnx/src/gliner_onnx/cli.py": "1e8c044078f43f456882f0ae230eee5b69e9684231bcf83c25ebc271e3bc38b6",
+    "tools/gliner-onnx/src/gliner_onnx/export.py": "9b98d57622cccee8951190cd40df759e52c4de60c1cffd44fcde72fffe89e096"
+  },
+  "scope": "Local engineering checks. Private weights are outside Git. Clinical validation and adapted WASM IG are not qualified. External GitHub CI is not included in this report."
+}

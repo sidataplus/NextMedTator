@@ -1,0 +1,402 @@
+{
+  "source": {
+    "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
+    "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
+    "generatorModels": [
+      "gemini-3.1-pro-high"
+    ],
+    "referenceKind": "externally-generated-labels",
+    "referenceCompleteness": "unverified",
+    "clinicalGoldStandard": false
+  },
+  "counts": {
+    "notes": 27,
+    "anchors": 618,
+    "literals": 507,
+    "families": {
+      "care_context_occurrence": 37,
+      "condition_occurrence": 260,
+      "event_occurrence": 135,
+      "function_occurrence": 62,
+      "measurement_occurrence": 3,
+      "treatment_occurrence": 121
+    }
+  },
+  "scope": {
+    "anchors": "all six supplied families with verbatim v3 core descriptions",
+    "enums": [
+      "assertion",
+      "experiencer",
+      "time_frame"
+    ],
+    "literals": {},
+    "unvalidated": "Family-specific field spans and record bindings are not exposed by the v3 decoder",
+    "protocol": "v3 qualified AttributeGroups at frozen threshold 0.7; differs from archived P4/P7b protocol"
+  },
+  "browser": "151.0.7922.173",
+  "runtimeVersion": "1.23.2",
+  "packageId": "gliner25-clinical-v3-small",
+  "manifestHash": "125c0b6db951baf6580f7b98bfc9a3aaf51247ac3ebdfb21c7aa420f9b5ba2a4",
+  "adapterLineage": {
+    "base": {
+      "model": "fastino/gliner2.5-small-v1",
+      "revision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+      "files": {
+        "config.json": "0b7d9e1401ceeb83e992ec66d2f93bff7e5646428f1b4706ec527cf88f53578a",
+        "encoder_config/config.json": "db837d0dc587f5858687ef860c1f400de10f3c3e44f88daef8cbda80d74e4c9c",
+        "model.safetensors": "4ee982787ace270d4bf15dbcb28ced38e0aa201372347114ceedd6336055de2b",
+        "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+        "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+      }
+    },
+    "adapter": {
+      "sha256": "614ee536435ed9585686ffa8d0a1c13f898ef3269d082db5e8a4b870e2f56fa4",
+      "baseRevision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+      "weightsSha256": "e7831a30a3e55960efaabe4dc8f3f9a81a512ce155ffd0c6c9f0363dec320991",
+      "configSha256": "78197555d7f44881625afe50258230f687ee1cdd2e41d6767be64358000c46e7",
+      "repository": "na399/clinical-evidence-gliner2.5-small-lora-v3-act-sol",
+      "revision": "82386c7a9776d3c14ed73d6310273a1c9d354d55"
+    },
+    "merge": "merged-export",
+    "trainedHeads": "ebc5842a374e549eae1cb13b4abee0bf2e0d4569ec9c498a8838b1ae7e1a7cf4"
+  },
+  "modelConformancePassed": true,
+  "allNotesCompleteOffline": true,
+  "allSourceSpansValid": true,
+  "portableCorpusExportReopenExact": true,
+  "noNoteEgress": true,
+  "fullStatusSchemaRejectedExplicitly": {
+    "choices": 17,
+    "reason": "Enum exceeds the eight-query attribute head"
+  },
+  "windowCounts": [
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "cloudTimingMs": {
+    "median": 777.7549999952316,
+    "max": 2749.5750000178814
+  },
+  "generatedReferenceAgreement": {
+    "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+    "exactAnchors": {
+      "reference": 618,
+      "predicted": 331,
+      "matched": 281,
+      "precisionAgreement": 0.8489425981873112,
+      "recallAgreement": 0.4546925566343042,
+      "f1Agreement": 0.5922023182297155
+    },
+    "byFamily": {
+      "care_context_occurrence": {
+        "reference": 37,
+        "predicted": 22,
+        "matched": 18,
+        "precisionAgreement": 0.8181818181818182,
+        "recallAgreement": 0.4864864864864865,
+        "f1Agreement": 0.6101694915254238
+      },
+      "condition_occurrence": {
+        "reference": 260,
+        "predicted": 131,
+        "matched": 111,
+        "precisionAgreement": 0.8473282442748091,
+        "recallAgreement": 0.4269230769230769,
+        "f1Agreement": 0.567774936061381
+      },
+      "event_occurrence": {
+        "reference": 135,
+        "predicted": 44,
+        "matched": 30,
+        "precisionAgreement": 0.6818181818181818,
+        "recallAgreement": 0.2222222222222222,
+        "f1Agreement": 0.33519553072625696
+      },
+      "function_occurrence": {
+        "reference": 62,
+        "predicted": 50,
+        "matched": 43,
+        "precisionAgreement": 0.86,
+        "recallAgreement": 0.6935483870967742,
+        "f1Agreement": 0.7678571428571428
+      },
+      "measurement_occurrence": {
+        "reference": 3,
+        "predicted": 1,
+        "matched": 1,
+        "precisionAgreement": 1.0,
+        "recallAgreement": 0.3333333333333333,
+        "f1Agreement": 0.5
+      },
+      "treatment_occurrence": {
+        "reference": 121,
+        "predicted": 83,
+        "matched": 78,
+        "precisionAgreement": 0.9397590361445783,
+        "recallAgreement": 0.6446280991735537,
+        "f1Agreement": 0.7647058823529412
+      }
+    },
+    "enumAgreementOnExactMatchedAnchors": {
+      "assertion": {
+        "matchedAnchorsWithReference": 280,
+        "agree": 232,
+        "fractionAgree": 0.8285714285714286
+      },
+      "experiencer": {
+        "matchedAnchorsWithReference": 106,
+        "agree": 104,
+        "fractionAgree": 0.9811320754716981
+      },
+      "time_frame": {
+        "matchedAnchorsWithReference": 102,
+        "agree": 79,
+        "fractionAgree": 0.7745098039215687
+      }
+    },
+    "conditionTimeLiteralAgreementOnMatchedAnchors": {},
+    "notes": [
+      {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 10,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00005",
+        "reference": 23,
+        "predicted": 14,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00000",
+        "reference": 33,
+        "predicted": 17,
+        "matched": 17,
+        "status": "complete",
+        "windows": 2
+      },
+      {
+        "id": "syn7_00002",
+        "reference": 26,
+        "predicted": 12,
+        "matched": 6,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00001",
+        "reference": 23,
+        "predicted": 13,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00003",
+        "reference": 24,
+        "predicted": 13,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00004",
+        "reference": 17,
+        "predicted": 14,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00008",
+        "reference": 18,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00009",
+        "reference": 18,
+        "predicted": 10,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00013",
+        "reference": 21,
+        "predicted": 15,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00011",
+        "reference": 27,
+        "predicted": 11,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00006",
+        "reference": 20,
+        "predicted": 13,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00014",
+        "reference": 26,
+        "predicted": 15,
+        "matched": 12,
+        "status": "complete",
+        "windows": 2
+      },
+      {
+        "id": "syn7_00010",
+        "reference": 20,
+        "predicted": 15,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00015",
+        "reference": 22,
+        "predicted": 9,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00016",
+        "reference": 21,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00017",
+        "reference": 26,
+        "predicted": 11,
+        "matched": 9,
+        "status": "complete",
+        "windows": 2
+      },
+      {
+        "id": "syn7_00018",
+        "reference": 26,
+        "predicted": 10,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00012",
+        "reference": 16,
+        "predicted": 11,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00019",
+        "reference": 24,
+        "predicted": 13,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00022",
+        "reference": 17,
+        "predicted": 13,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00020",
+        "reference": 28,
+        "predicted": 13,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00023",
+        "reference": 25,
+        "predicted": 10,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00021",
+        "reference": 29,
+        "predicted": 8,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00024",
+        "reference": 21,
+        "predicted": 15,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00026",
+        "reference": 26,
+        "predicted": 9,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00027",
+        "reference": 16,
+        "predicted": 7,
+        "matched": 5,
+        "status": "complete",
+        "windows": 1
+      }
+    ]
+  }
+}

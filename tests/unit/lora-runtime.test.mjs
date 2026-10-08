@@ -1,8 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {validateModelManifest,qualifyForSchema,selectInferenceVariant} from '../../src/nextmedtator/model-package.mjs';
+import {validateModelManifest,qualifyForSchema,selectInferenceVariant,compareCandidateSpans} from '../../src/nextmedtator/model-package.mjs';
 import {RECORDS_CODEC,SMALL_CODEC,analyzeSmall} from '../../src/nextmedtator/gliner-small.mjs';
 import {GlinerBoundaryRuntime,cropWordStates} from '../../src/nextmedtator/vendor/gliner25/gliner-boundary.mjs';
+import {CLINICAL_V3_CODEC,CLINICAL_V3} from '../../src/nextmedtator/clinical-v3.mjs';
 import {clone} from '../../src/nextmedtator/integrity.mjs';
 
 const schema={id:'s',version:'1',families:{diagnosis:{label:'diagnosis',fields:{concept:{type:'text'}}}}};
@@ -93,4 +94,24 @@ test('attribute crops preserve masked gaps and use the real end for long padded 
  assert.deepEqual(crop.mask,mask.slice(88,600));
  assert.equal(crop.ts.at(-1),599);
  assert.throws(()=>cropWordStates(states,[],512,new Float32Array(2)),/mask does not match/);
+});
+
+
+test('v3 span packages can omit uncalled record/relation graphs while record packages require them',()=>{
+ const m=manifest(),v=m.variants[0];v.codec=CLINICAL_V3_CODEC;delete v.graphs.records;delete v.graphs.relations;
+ m.files=m.files.filter(f=>!['records.onnx','relations.onnx'].includes(f.path));m.files.push({path:'schema.json',bytes:1,sha256:'c'.repeat(64),role:'schema'});
+ Object.assign(v,{clinicalSchema:'schema.json',clinicalRegistryHash:CLINICAL_V3.registryHash,sharedAxes:'one_value_softmax_no_attribute_threshold',recordBinding:false,
+ clinicalRelease:{modelSize:'base',runtimeFingerprint:'d'.repeat(64),adapterFingerprint:'e'.repeat(64),registryHash:CLINICAL_V3.registryHash,coreThreshold:.6},threshold:.6});
+ validateModelManifest(m);const bad=clone(m);bad.variants[0].clinicalRelease.coreThreshold=.7;assert.throws(()=>validateModelManifest(bad),/threshold/);
+ const records=clone(m);records.variants[0].codec=RECORDS_CODEC;assert.throws(()=>validateModelManifest(records),/Record graph missing/);
+});
+
+
+test('candidate conformance matches coordinates without accepting missing spans or changed scores',()=>{
+ const expected={pair_indices:{dims:[1,1,2,2],data:[0,1,2,3]},pair_valid:{dims:[1,1,2],data:[1,1]},pair_logits:{dims:[1,1,2],data:[2,7],tolerance:{atol:1e-4,rtol:1e-4}}};
+ const actual={pair_indices:{dims:[1,1,2,2],data:[2n,3n,0n,1n]},pair_valid:{dims:[1,1,2],data:[1,1]},pair_logits:{dims:[1,1,2],data:[7,2]}};
+ assert(compareCandidateSpans(actual,expected).pass);
+ actual.pair_logits.data=[7,3];assert(!compareCandidateSpans(actual,expected).pass);
+ actual.pair_logits.data=[7,2];actual.pair_indices.data=[2n,4n,0n,1n];assert(!compareCandidateSpans(actual,expected).pass);
+ actual.pair_indices.data=[0n,1n,0n,1n];assert(!compareCandidateSpans(actual,expected).pass);
 });

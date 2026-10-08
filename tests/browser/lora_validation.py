@@ -4,7 +4,7 @@ import json
 import zipfile
 
 V3_CODEC = 'gliner25-clinical-v3-spans-v1'
-DEFAULT_PACKAGE = '/workspace/work/clinical-v3-17089.nmt-model.zip'
+DEFAULT_PACKAGE = '/workspace/work/clinical-v3-base.nmt-model.zip'
 
 
 def validation_fixture(fixture, package):
@@ -25,5 +25,5 @@ def validation_fixture(fixture, package):
     fixture['scope'] = {'anchors': 'all six supplied families with verbatim v3 core descriptions',
                         'enums': list(registry['shared_axes']), 'literals': {},
                         'unvalidated': 'Family-specific field spans and record bindings are not exposed by the v3 decoder',
-                        'protocol': 'v3 qualified AttributeGroups at frozen threshold 0.6; differs from archived P4/P7b protocol'}
+                        'protocol': f"v3 qualified AttributeGroups at frozen threshold {variant['threshold']}; differs from archived P4/P7b protocol"}
     return fixture, manifest

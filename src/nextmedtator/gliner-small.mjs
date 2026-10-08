@@ -1,4 +1,4 @@
-import {CLINICAL_V3_CODEC,CLINICAL_V3_NOTICE,clinicalV3Schema} from './clinical-v3.mjs';
+import {CLINICAL_V3_CODEC,CLINICAL_V3_NOTICE,clinicalV3Schema,clinicalV3Prompt} from './clinical-v3.mjs';
 import {Gliner25} from './vendor/gliner25/api.mjs';
 import {decodeEntitiesV2,buildEntitiesSchemaTokens,buildRelationSchemaTokens,resolveOverlapsFlat} from './vendor/gliner25/gliner-boundary.mjs';
 import {decodeAssignedRecords} from './vendor/gliner25/joint-ie.mjs';
@@ -10,7 +10,7 @@ export const isRecordsCodec=codec=>codec===SMALL_CODEC||codec===RECORDS_CODEC||c
 export const RECORDS_NOTICE='GLiNER2.5 with merged LoRA on this device: anchors, enum attributes and anchored record fields. Scores are uncalibrated. Automatic relations, cross-window relations and anchorless records are unsupported. Clinical accuracy is unqualified.';
 export const recordsNotice=codec=>codec===CLINICAL_V3_CODEC?CLINICAL_V3_NOTICE:codec===RECORDS_CODEC?RECORDS_NOTICE:SMALL_NOTICE;
 export const SMALL_NOTICE='Pinned GLiNER2.5-small ONNX v5: local anchors, enum attributes, anchored record fields. Automatic relations are withheld pending source-score qualification. Unqualified clinical accuracy; cross-window relations and anchorless records are unsupported.';
-export function smallRuntime(ort,sessions,tokenizer,variant){return new Gliner25({ort,session:sessions.model,headsSession:sessions.relations,attrsSession:sessions.attributes,recordsSession:sessions.records,tokenize:t=>tokenizer.encodeIds(t),pairTemperature:variant.pairTemperature??1,fixedWords:variant.codec!==SMALL_CODEC?variant.fixedWords:0});}
+export function smallRuntime(ort,sessions,tokenizer,variant){const api=new Gliner25({ort,session:sessions.model,headsSession:sessions.relations,attrsSession:sessions.attributes,recordsSession:sessions.records,tokenize:t=>tokenizer.encodeIds(t),pairTemperature:variant.pairTemperature??1,fixedWords:variant.codec!==SMALL_CODEC?variant.fixedWords:0});api.rt.completeClinicalPrompt=!!variant.clinicalRelease;return api;}
 export function validateSmallSchema(schema){
     schemaPrompt(schema);
     for(const family of Object.values(schema.families)){
@@ -20,8 +20,9 @@ export function validateSmallSchema(schema){
     }
     invariant(Object.keys(schema.relations??{}).length<=8,'Relation type budget exceeded');
 }
-export function smallPromptCost(schema,tokenizer,{automaticRelations=false}={}){
-    const prompt=schemaPrompt(schema),cost=tokens=>[...tokens,'[SEP_TEXT]'].reduce((n,t)=>n+tokenizer.encodeIds(t).length,0)+tokenizer.encodeIds('.').length;
+function inferencePrompt(schema,complete){const prompt=schemaPrompt(schema);return complete?clinicalV3Prompt(schema,{labels:prompt.labels.slice(0,prompt.contentCount),byLabel:prompt.byLabel},{complete:true}):prompt;}
+export function smallPromptCost(schema,tokenizer,{automaticRelations=false,completeClinicalPrompt=false}={}){
+    const prompt=inferencePrompt(schema,completeClinicalPrompt),cost=tokens=>[...tokens,'[SEP_TEXT]'].reduce((n,t)=>n+tokenizer.encodeIds(t).length,0)+tokenizer.encodeIds('.').length;
     let prefixTokens=cost(buildEntitiesSchemaTokens(prompt.labels,{descriptions:prompt.descriptions}));
     for(const [family,def]of Object.entries(schema.families)){const fields=Object.entries(def.fields).filter(([name,spec])=>name!=='concept'&&spec.type!=='enum').map(([name])=>name);if(fields.length)prefixTokens=Math.max(prefixTokens,cost(buildEntitiesSchemaTokens([def.recordAnchorLabel??def.label??family,...fields],{parent:def.recordParent??def.label??family})));}
     if(automaticRelations){const tokens=Object.keys(schema.relations??{}).flatMap((type,i)=>[...(i?['[SEP_STRUCT]']:[]),...buildRelationSchemaTokens(type)]);prefixTokens=Math.max(prefixTokens,cost(tokens));}
@@ -29,15 +30,15 @@ export function smallPromptCost(schema,tokenizer,{automaticRelations=false}={}){
 }
 export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,automaticRelations=false,codec=SMALL_CODEC,abstentionThreshold=.5}={}){
     if(codec===CLINICAL_V3_CODEC)schema=clinicalV3Schema(schema);
-    validateSmallSchema(schema);const prompt=schemaPrompt(schema), words=splitWords(text),tokenizer=api.rt.tokenizer??{encodeIds:t=>api.rt._tokenize(t)};
-    const prefixTokens=smallPromptCost(schema,tokenizer,{automaticRelations});
+    validateSmallSchema(schema);const prompt=inferencePrompt(schema,api.rt.completeClinicalPrompt), words=splitWords(text),tokenizer=api.rt.tokenizer??{encodeIds:t=>api.rt._tokenize(t)};
+    const prefixTokens=smallPromptCost(schema,tokenizer,{automaticRelations,completeClinicalPrompt:api.rt.completeClinicalPrompt});
     const plan=planWindows(tokenizer,prompt.labels,words,{prefixTokens});
     const source=new OffsetMap(text), all=[], relations=[], windows=[];
     for(const [windowIndex,[from,to]] of plan.windows.entries()){
         const start=source.toUTF16(words[from].start),end=source.toUTF16(words[to-1].end),chunk=text.slice(start,end);
         const marg=await api.rt.computeMarginals(chunk,prompt.labels,{maxWords:512,descriptions:prompt.descriptions});
         if(codec!==SMALL_CODEC)invariant(marg.nullLogits?.length===prompt.labels.length,'GLiNER source abstention output missing');
-        const entities=decodeEntitiesV2({pairIndices:marg.pairIndices,pairLogits:marg.pairLogits,pairValid:marg.pairValid,candidateCount:marg.candidateCount,labels:prompt.labels.slice(0,prompt.contentCount),wordOffsets:marg.words,text:marg.normalized,threshold,pairTemperature:marg.pairTemperature}).filter(e=>codec===SMALL_CODEC||1/(1+Math.exp(-marg.nullLogits[prompt.labels.indexOf(e.label)]))<=abstentionThreshold);
+        const entities=decodeEntitiesV2({pairIndices:marg.pairIndices,pairLogits:marg.pairLogits,pairValid:marg.pairValid,candidateCount:marg.candidateCount,labels:prompt.labels.slice(0,prompt.contentCount),wordOffsets:marg.words,text:marg.normalized,threshold,pairTemperature:marg.pairTemperature}).filter(e=>prompt.byLabel.has(e.label)).filter(e=>codec===SMALL_CODEC||1/(1+Math.exp(-marg.nullLogits[prompt.labels.indexOf(e.label)]))<=abstentionThreshold);
         for(const e of entities){e.fields={};}
         const byLabel=prompt.byLabel;
         const width=marg.queryStates.dims[2];

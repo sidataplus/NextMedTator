@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = Path(
-    os.environ.get("NMT_LORA_PACKAGE", "/workspace/work/clinical-v3-17089.nmt-model.zip")
+    os.environ.get("NMT_LORA_PACKAGE", "/workspace/work/clinical-v3-base.nmt-model.zip")
 )
 assert PACKAGE.is_file(), "An actual exported model package is required"
 with zipfile.ZipFile(PACKAGE) as archive:

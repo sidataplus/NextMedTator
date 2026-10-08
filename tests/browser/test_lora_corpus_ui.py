@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT/'scripts'))
 from prepare_validation_notes import agreement
 from lora_validation import validation_fixture
 
-PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-v3-17089.nmt-model.zip'))
+PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-v3-base.nmt-model.zip'))
 URL = 'http://127.0.0.1:4194/'
 
 
