@@ -18,3 +18,11 @@ test('invalid input cannot silently become zero or run with a default',()=>{
         assert.throws(()=>suggestionThreshold(value,null,{threshold:.6}),/between 0 and 1/);
     assert.equal(suggestionThreshold(null,null,{}).threshold,.5);
 });
+
+
+test('selected clinical releases retain their frozen model threshold across user and scope overrides',()=>{
+ for(const threshold of [.6,.7]){
+  const variant={threshold,clinicalRelease:{coreThreshold:threshold}};
+  assert.deepEqual(suggestionThreshold(.2,{threshold:.9},variant),{threshold,thresholdSource:'model'});
+ }
+});

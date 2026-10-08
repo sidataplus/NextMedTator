@@ -280,7 +280,7 @@ class LegacyAssist {
     adoptModel(candidate){
         if(this.model&&this.model.manifestHash!==candidate.manifestHash)this.thresholdOverride=null;
         this.model=candidate;
-        if(!this.scope&&sameScope(this.scopeDraft,presetScope())&&candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC)this.scopeDraft=presetScope('all',CLINICAL_V3_CODEC);
+        if(!this.scope&&sameScope(this.scopeDraft,presetScope())&&candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC)this.scopeDraft=presetScope('all',CLINICAL_V3_CODEC,candidate.manifest.variants[0].threshold);
     }
     async importPackage(file) {
         if (file.size > MODEL_LIMITS.archive)
@@ -301,7 +301,7 @@ class LegacyAssist {
             this.scopeTokenizer=GlinerTokenizer.fromJson(new TextDecoder().decode(this.model.files.get(variant.tokenizer)));
             this.scopeTokenizerManifest=this.model.manifestHash;this.scopeTokenizerPath=variant.tokenizer;
         }
-        const prompt=schemaPrompt(schema),prefixTokens=smallPromptCost(schema,this.scopeTokenizer);
+        const prompt=schemaPrompt(schema),prefixTokens=smallPromptCost(schema,this.scopeTokenizer,{completeClinicalPrompt:!!variant.clinicalRelease});
         planWindows(this.scopeTokenizer,prompt.labels,[{text:'clinical',start:0,end:8}],{prefixTokens});
     }
     async applyScope() {

@@ -101,6 +101,21 @@ class Main(nn.Module):
                 text, query, gather(rel_marker_indices, rel_marker_mask), candidates.candidate_states, null)
 
 
+CLINICAL_INPUTS = MAIN_INPUTS[:6]
+CLINICAL_OUTPUTS = ['start_logits', 'end_logits', 'pair_indices', 'pair_logits', 'pair_valid', 'text_states', 'query_states', 'null_logits']
+
+
+class ClinicalMain(Main):
+    """Expose only the encoder, span proposals and states used by v3 axes."""
+    def forward(self, input_ids, attention_mask, text_word_indices, text_word_mask,
+                query_marker_indices, query_marker_mask):
+        dummy = query_marker_indices[:, :1] * 0
+        mask = query_marker_mask[:, :1] * 0
+        values = super().forward(input_ids, attention_mask, text_word_indices, text_word_mask,
+                                 query_marker_indices, query_marker_mask, dummy, mask, dummy, mask)
+        return tuple(values[MAIN_OUTPUTS.index(name)] for name in CLINICAL_OUTPUTS)
+
+
 class Attributes(nn.Module):
     def __init__(self, model):
         super().__init__()
@@ -258,12 +273,14 @@ def head_feeds(hidden):
     }
 
 
-def export_heads(model, output, attribute_source):
+def export_heads(model, output, attribute_source, *, clinical=False):
     feeds = head_feeds(model.hidden_size)
     modules = {'attributes': Attributes(model), 'records': Records(model), 'relations': Relations(model)}
     names = {'attributes': ['attr_logits'], 'records': ['assign_logits', 'object_logits', 'latent_logits'], 'relations': ['rel_logits']}
     reports = {}
     for name, module in modules.items():
+        if clinical and name != 'attributes':
+            continue
         dynamic = {key: {1: 'axis_'+key} for key in feeds[name]}
         # Shared axes are intentionally named consistently for related inputs.
         dynamic.update({key: {1: 'words'} for key in ['text_states'] if key in feeds[name]})

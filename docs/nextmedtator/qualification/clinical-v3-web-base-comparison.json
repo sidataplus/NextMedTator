@@ -1,0 +1,7312 @@
+{
+  "model": "base",
+  "threshold": 0.6,
+  "adapterRevision": "b5db08ccd2581690f30a448428ba7659e1469eeb",
+  "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+  "runtime": {
+    "python": "3.12.14",
+    "torch": "2.11.0+cpu",
+    "transformers": "4.57.6",
+    "peft": "0.21.2",
+    "numpy": "2.5.3",
+    "tokenizers": "0.22.2"
+  },
+  "runtimeFingerprint": "aec77e5692a8cf808fc0568a64b5ad882f4b8bbdedf6c3ba7b7f90b1a3d066d7",
+  "scope": "96 existing synthetic cue cases; full 18-query official schema; exact anchor coverage accepts any returned core type, and is not typed entity recall. Legacy cue labels include ambiguous resolved/recent cases. Not clinical validation.",
+  "summary": {
+    "n": 96,
+    "forcedCorrect": 89,
+    "exactAnchorFound": 95,
+    "exactAnchorAndAxisCorrect": 88
+  },
+  "groups": {
+    "assertion": {
+      "n": 48,
+      "forcedCorrect": 45,
+      "exactAnchorFound": 48,
+      "exactAnchorAndAxisCorrect": 45
+    },
+    "temporality": {
+      "n": 24,
+      "forcedCorrect": 21,
+      "exactAnchorFound": 23,
+      "exactAnchorAndAxisCorrect": 20
+    },
+    "experiencer": {
+      "n": 24,
+      "forcedCorrect": 23,
+      "exactAnchorFound": 24,
+      "exactAnchorAndAxisCorrect": 23
+    }
+  },
+  "rows": [
+    {
+      "id": "assertion-01",
+      "sentenceId": "Patient denies suicidal ideation today.",
+      "text": "Patient denies suicidal ideation today.",
+      "anchor": {
+        "start": 15,
+        "end": 32,
+        "text": "suicidal ideation"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 8,
+          "end": 14,
+          "text": "denies"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -5.413975715637207,
+        -12.953695297241211,
+        4.769521713256836,
+        -13.994246482849121,
+        -8.389741897583008
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "suicidal ideation",
+          "start": 15,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9740777015686035,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999603033065796
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9214574098587036
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_event",
+          "text": "suicidal ideation",
+          "start": 15,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.7089630365371704,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999603033065796
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9214574098587036
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1641.7035509948619
+    },
+    {
+      "id": "assertion-02",
+      "sentenceId": "No fever was noted overnight.",
+      "text": "No fever was noted overnight.",
+      "anchor": {
+        "start": 3,
+        "end": 8,
+        "text": "fever"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 2,
+          "text": "No"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -5.866399765014648,
+        -16.17374610900879,
+        4.062714099884033,
+        -16.577476501464844,
+        -11.069865226745605
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "fever",
+          "start": 3,
+          "end": 8,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9861627221107483,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999510049819946
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.9999672174453735
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1556.060962000629
+    },
+    {
+      "id": "assertion-03",
+      "sentenceId": "There is no evidence of pneumonia.",
+      "text": "There is no evidence of pneumonia.",
+      "anchor": {
+        "start": 24,
+        "end": 33,
+        "text": "pneumonia"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 9,
+          "end": 20,
+          "text": "no evidence"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -8.473103523254395,
+        -14.204394340515137,
+        7.036335468292236,
+        0.5517395734786987,
+        -7.451436996459961
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "pneumonia",
+          "start": 24,
+          "end": 33,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9973662495613098,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9984747767448425
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1674.3082629982382
+    },
+    {
+      "id": "assertion-04",
+      "sentenceId": "The patient is without agitation.",
+      "text": "The patient is without agitation.",
+      "anchor": {
+        "start": 23,
+        "end": 32,
+        "text": "agitation"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 15,
+          "end": 22,
+          "text": "without"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -5.033556938171387,
+        -13.950702667236328,
+        7.522747993469238,
+        -16.403318405151367,
+        -10.041268348693848
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "agitation",
+          "start": 23,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.8826296925544739,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999964237213135
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1685.8927949797362
+    },
+    {
+      "id": "assertion-05",
+      "sentenceId": "She reports no chest pain.",
+      "text": "She reports no chest pain.",
+      "anchor": {
+        "start": 15,
+        "end": 25,
+        "text": "chest pain"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 12,
+          "end": 14,
+          "text": "no"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -4.9961466789245605,
+        -11.258238792419434,
+        4.468045234680176,
+        -12.760781288146973,
+        -7.5710859298706055
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "chest pain",
+          "start": 15,
+          "end": 25,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9820926189422607,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999163150787354
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999719858169556
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.999996542930603
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1745.1877359999344
+    },
+    {
+      "id": "assertion-06",
+      "sentenceId": "He does not have hallucinations.",
+      "text": "He does not have hallucinations.",
+      "anchor": {
+        "start": 17,
+        "end": 31,
+        "text": "hallucinations"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 8,
+          "end": 11,
+          "text": "not"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -7.560257434844971,
+        -12.498842239379883,
+        7.47358512878418,
+        -12.570947647094727,
+        -7.144675254821777
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "hallucinations",
+          "start": 17,
+          "end": 31,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9983028173446655,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999992847442627
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1675.5321800010279
+    },
+    {
+      "id": "assertion-07",
+      "sentenceId": "Examination is negative for edema.",
+      "text": "Examination is negative for edema.",
+      "anchor": {
+        "start": 28,
+        "end": 33,
+        "text": "edema"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 15,
+          "end": 27,
+          "text": "negative for"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "ruled out",
+      "forcedCorrect": false,
+      "logits": [
+        -3.0040481090545654,
+        -10.941214561462402,
+        0.6256972551345825,
+        1.3920729160308838,
+        -6.133351802825928
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": false,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "edema",
+          "start": 28,
+          "end": 33,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.98012375831604,
+          "attributes": {
+            "assertion": {
+              "value": "ruled_out",
+              "label": "ruled out",
+              "confidence": 0.6767901182174683
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.999995231628418
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999966621398926
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1603.2361419929657
+    },
+    {
+      "id": "assertion-08",
+      "sentenceId": "Cough is absent on assessment.",
+      "text": "Cough is absent on assessment.",
+      "anchor": {
+        "start": 0,
+        "end": 5,
+        "text": "Cough"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 9,
+          "end": 15,
+          "text": "absent"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -4.751662731170654,
+        -14.323495864868164,
+        6.422513484954834,
+        -7.03670072555542,
+        -9.244775772094727
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Cough",
+          "start": 0,
+          "end": 5,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9953118562698364,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999843835830688
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999990463256836
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1566.8414999963716
+    },
+    {
+      "id": "assertion-09",
+      "sentenceId": "There are no signs of infection.",
+      "text": "There are no signs of infection.",
+      "anchor": {
+        "start": 22,
+        "end": 31,
+        "text": "infection"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 10,
+          "end": 18,
+          "text": "no signs"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -9.224950790405273,
+        -12.760668754577637,
+        6.713905334472656,
+        -2.7782764434814453,
+        -4.611416816711426
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "infection",
+          "start": 22,
+          "end": 31,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9959677457809448,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999123811721802
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1599.1876260086428
+    },
+    {
+      "id": "assertion-10",
+      "sentenceId": "The patient remains free of seizures.",
+      "text": "The patient remains free of seizures.",
+      "anchor": {
+        "start": 28,
+        "end": 36,
+        "text": "seizures"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 20,
+          "end": 27,
+          "text": "free of"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        0.7856370210647583,
+        -11.585259437561035,
+        3.6533761024475098,
+        -5.132702827453613,
+        -5.049525260925293
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "seizures",
+          "start": 28,
+          "end": 36,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9952414035797119,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.945942759513855
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1626.204399013659
+    },
+    {
+      "id": "assertion-11",
+      "sentenceId": "She explicitly denies hearing voices.",
+      "text": "She explicitly denies hearing voices.",
+      "anchor": {
+        "start": 22,
+        "end": 36,
+        "text": "hearing voices"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 15,
+          "end": 21,
+          "text": "denies"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -6.770175457000732,
+        -12.854535102844238,
+        5.678811073303223,
+        -13.82724380493164,
+        -9.451508522033691
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_event",
+          "text": "hearing voices",
+          "start": 22,
+          "end": 36,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9960189461708069,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999958276748657
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999995231628418
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999998807907104
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1562.5899110164028
+    },
+    {
+      "id": "assertion-12",
+      "sentenceId": "Shortness of breath was not reported.",
+      "text": "Shortness of breath was not reported.",
+      "anchor": {
+        "start": 0,
+        "end": 19,
+        "text": "Shortness of breath"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 24,
+          "end": 27,
+          "text": "not"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -5.957695484161377,
+        -13.323911666870117,
+        4.801003456115723,
+        -9.221772193908691,
+        -7.4553680419921875
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Shortness of breath",
+          "start": 0,
+          "end": 19,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9938030242919922,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999731779098511
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999961853027344
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999995231628418
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1579.3766419810709
+    },
+    {
+      "id": "assertion-13",
+      "sentenceId": "No vomiting since admission.",
+      "text": "No vomiting since admission.",
+      "anchor": {
+        "start": 3,
+        "end": 11,
+        "text": "vomiting"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 2,
+          "text": "No"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -5.505273818969727,
+        -13.64773178100586,
+        4.755321025848389,
+        -13.552938461303711,
+        -9.988771438598633
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "vomiting",
+          "start": 3,
+          "end": 11,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9670287370681763,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999645948410034
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999992847442627
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.8589298725128174
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1543.6570619931445
+    },
+    {
+      "id": "assertion-14",
+      "sentenceId": "The examination found neither tremor nor rigidity.",
+      "text": "The examination found neither tremor nor rigidity.",
+      "anchor": {
+        "start": 30,
+        "end": 36,
+        "text": "tremor"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 22,
+          "end": 29,
+          "text": "neither"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -6.424663543701172,
+        -13.182129859924316,
+        7.121670722961426,
+        -7.065001487731934,
+        -9.466753959655762
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "rigidity",
+          "start": 41,
+          "end": 49,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9990116357803345,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999992847442627
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "tremor",
+          "start": 30,
+          "end": 36,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9982445240020752,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999978542327881
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1554.7129310143646
+    },
+    {
+      "id": "assertion-15",
+      "sentenceId": "Headache has resolved completely.",
+      "text": "Headache has resolved completely.",
+      "anchor": {
+        "start": 0,
+        "end": 8,
+        "text": "Headache"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 13,
+          "end": 21,
+          "text": "resolved"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": false,
+      "logits": [
+        7.79998254776001,
+        -13.379965782165527,
+        -11.118821144104004,
+        -14.153886795043945,
+        -8.162421226501465
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": false,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Headache",
+          "start": 0,
+          "end": 8,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9896500110626221,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999998807907104
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999964237213135
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1535.1927049923688
+    },
+    {
+      "id": "assertion-16",
+      "sentenceId": "There is no current bleeding.",
+      "text": "There is no current bleeding.",
+      "anchor": {
+        "start": 20,
+        "end": 28,
+        "text": "bleeding"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 9,
+          "end": 11,
+          "text": "no"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -7.904667854309082,
+        -14.417373657226562,
+        6.943687915802002,
+        -13.415153503417969,
+        -9.687387466430664
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "bleeding",
+          "start": 20,
+          "end": 28,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9948062300682068,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999995231628418
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1557.0855510013644
+    },
+    {
+      "id": "assertion-17",
+      "sentenceId": "Patient may have hallucinations at night.",
+      "text": "Patient may have hallucinations at night.",
+      "anchor": {
+        "start": 17,
+        "end": 31,
+        "text": "hallucinations"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 8,
+          "end": 11,
+          "text": "may"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -6.8245978355407715,
+        -3.786731243133545,
+        -20.4470272064209,
+        -22.772706985473633,
+        6.778557777404785
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "hallucinations",
+          "start": 17,
+          "end": 31,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9887199997901917,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.999972939491272
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999971389770508
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1628.8241220172495
+    },
+    {
+      "id": "assertion-18",
+      "sentenceId": "Possible pneumonia is being evaluated.",
+      "text": "Possible pneumonia is being evaluated.",
+      "anchor": {
+        "start": 9,
+        "end": 18,
+        "text": "pneumonia"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "Possible"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -8.99817180633545,
+        -11.836858749389648,
+        -17.690643310546875,
+        -18.599092483520508,
+        7.696627616882324
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "pneumonia",
+          "start": 9,
+          "end": 18,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9985382556915283,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999998807907104
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1582.878826011438
+    },
+    {
+      "id": "assertion-19",
+      "sentenceId": "The clinician suspects delirium.",
+      "text": "The clinician suspects delirium.",
+      "anchor": {
+        "start": 23,
+        "end": 31,
+        "text": "delirium"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 14,
+          "end": 22,
+          "text": "suspects"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -7.7046284675598145,
+        -12.23134708404541,
+        -17.441558837890625,
+        -18.047719955444336,
+        7.73708438873291
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "delirium",
+          "start": 23,
+          "end": 31,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9969618916511536,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9999997615814209
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999998807907104
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1568.6437290278263
+    },
+    {
+      "id": "assertion-20",
+      "sentenceId": "There is concern for a pulmonary embolism.",
+      "text": "There is concern for a pulmonary embolism.",
+      "anchor": {
+        "start": 23,
+        "end": 41,
+        "text": "pulmonary embolism"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 9,
+          "end": 20,
+          "text": "concern for"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -4.675782680511475,
+        -3.9188528060913086,
+        -12.755366325378418,
+        -15.537123680114746,
+        5.238199710845947
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "pulmonary embolism",
+          "start": 23,
+          "end": 41,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9963071346282959,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.999845027923584
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999997615814209
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1608.9775010186713
+    },
+    {
+      "id": "assertion-21",
+      "sentenceId": "An infection cannot be excluded.",
+      "text": "An infection cannot be excluded.",
+      "anchor": {
+        "start": 3,
+        "end": 12,
+        "text": "infection"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 13,
+          "end": 31,
+          "text": "cannot be excluded"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -7.618586540222168,
+        -8.349788665771484,
+        -2.5599865913391113,
+        -0.6980685591697693,
+        3.180037260055542
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "infection",
+          "start": 3,
+          "end": 12,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9928876757621765,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9766245484352112
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1580.4141309927218
+    },
+    {
+      "id": "assertion-22",
+      "sentenceId": "Chest pain might reflect ischemia.",
+      "text": "Chest pain might reflect ischemia.",
+      "anchor": {
+        "start": 25,
+        "end": 33,
+        "text": "ischemia"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 11,
+          "end": 16,
+          "text": "might"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -7.886367321014404,
+        -10.484634399414062,
+        -19.25265884399414,
+        -19.15961456298828,
+        7.404605865478516
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "ischemia",
+          "start": 25,
+          "end": 33,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9967259168624878,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9999997615814209
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "Chest pain",
+          "start": 0,
+          "end": 10,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9858003854751587,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999611377716064
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999998807907104
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1550.296390982112
+    },
+    {
+      "id": "assertion-23",
+      "sentenceId": "Findings are suggestive of heart failure.",
+      "text": "Findings are suggestive of heart failure.",
+      "anchor": {
+        "start": 27,
+        "end": 40,
+        "text": "heart failure"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 13,
+          "end": 26,
+          "text": "suggestive of"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -6.803210735321045,
+        -10.413466453552246,
+        -15.420132637023926,
+        -13.949130058288574,
+        5.302645683288574
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "heart failure",
+          "start": 27,
+          "end": 40,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9966188669204712,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9999942779541016
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999992847442627
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1636.9060800061561
+    },
+    {
+      "id": "assertion-24",
+      "sentenceId": "It is unclear whether seizures occurred.",
+      "text": "It is unclear whether seizures occurred.",
+      "anchor": {
+        "start": 22,
+        "end": 30,
+        "text": "seizures"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 6,
+          "end": 21,
+          "text": "unclear whether"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -4.9116106033325195,
+        -11.732412338256836,
+        -6.588642597198486,
+        -12.819758415222168,
+        6.739232063293457
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "seizures",
+          "start": 22,
+          "end": 30,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9958667755126953,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9999896287918091
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999998807907104
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1567.7627569821198
+    },
+    {
+      "id": "assertion-25",
+      "sentenceId": "The differential includes meningitis.",
+      "text": "The differential includes meningitis.",
+      "anchor": {
+        "start": 26,
+        "end": 36,
+        "text": "meningitis"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 25,
+          "text": "differential includes"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -5.383804798126221,
+        -10.278800964355469,
+        -9.3536958694458,
+        -2.1808109283447266,
+        4.788890361785889
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "meningitis",
+          "start": 26,
+          "end": 36,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9962524771690369,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9990217685699463
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1553.117609990295
+    },
+    {
+      "id": "assertion-26",
+      "sentenceId": "Probable depression requires further assessment.",
+      "text": "Probable depression requires further assessment.",
+      "anchor": {
+        "start": 9,
+        "end": 19,
+        "text": "depression"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "Probable"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -7.837123870849609,
+        -9.688846588134766,
+        -17.69057273864746,
+        -17.980451583862305,
+        6.672611236572266
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "depression",
+          "start": 9,
+          "end": 19,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9943801760673523,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9999994039535522
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999593496322632
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1552.7670409937855
+    },
+    {
+      "id": "assertion-27",
+      "sentenceId": "Rule out appendicitis before discharge.",
+      "text": "Rule out appendicitis before discharge.",
+      "anchor": {
+        "start": 9,
+        "end": 21,
+        "text": "appendicitis"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "Rule out"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "ruled out",
+      "forcedCorrect": false,
+      "logits": [
+        -6.768626689910889,
+        -13.705411911010742,
+        -7.556077003479004,
+        4.759396553039551,
+        -7.140453815460205
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": false,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "appendicitis",
+          "start": 9,
+          "end": 21,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9856977462768555,
+          "attributes": {
+            "assertion": {
+              "value": "ruled_out",
+              "label": "ruled out",
+              "confidence": 0.9999788999557495
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9923791885375977
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1554.5126660144888
+    },
+    {
+      "id": "assertion-28",
+      "sentenceId": "There could be an underlying arrhythmia.",
+      "text": "There could be an underlying arrhythmia.",
+      "anchor": {
+        "start": 29,
+        "end": 39,
+        "text": "arrhythmia"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 6,
+          "end": 11,
+          "text": "could"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -6.981843948364258,
+        -3.033242702484131,
+        -13.124213218688965,
+        -17.32080841064453,
+        5.300930023193359
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "arrhythmia",
+          "start": 29,
+          "end": 39,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9869490265846252,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9997552037239075
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999988079071045
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1572.8737229947
+    },
+    {
+      "id": "assertion-29",
+      "sentenceId": "Patient reports suicidal ideation today.",
+      "text": "Patient reports suicidal ideation today.",
+      "anchor": {
+        "start": 16,
+        "end": 33,
+        "text": "suicidal ideation"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 8,
+          "end": 15,
+          "text": "reports"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        5.103026390075684,
+        -12.17976188659668,
+        -11.564385414123535,
+        -15.34241771697998,
+        -5.846012592315674
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "suicidal ideation",
+          "start": 16,
+          "end": 33,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9654611349105835,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.999982476234436
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.9526464939117432
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1603.7582650023978
+    },
+    {
+      "id": "assertion-30",
+      "sentenceId": "Fever is present on examination.",
+      "text": "Fever is present on examination.",
+      "anchor": {
+        "start": 0,
+        "end": 5,
+        "text": "Fever"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 9,
+          "end": 16,
+          "text": "present"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        8.229045867919922,
+        -12.943381309509277,
+        -12.953873634338379,
+        -14.397128105163574,
+        -5.155918598175049
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Fever",
+          "start": 0,
+          "end": 5,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9934539794921875,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999984502792358
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1563.2475829916075
+    },
+    {
+      "id": "assertion-31",
+      "sentenceId": "He endorses persistent chest pain.",
+      "text": "He endorses persistent chest pain.",
+      "anchor": {
+        "start": 23,
+        "end": 33,
+        "text": "chest pain"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 3,
+          "end": 11,
+          "text": "endorses"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        4.965617656707764,
+        -9.900192260742188,
+        -9.097674369812012,
+        -11.637337684631348,
+        -4.290759086608887
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "chest pain",
+          "start": 23,
+          "end": 33,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9863367676734924,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999032020568848
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999933242797852
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999960660934448
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1567.9752390133217
+    },
+    {
+      "id": "assertion-32",
+      "sentenceId": "Examination confirms bilateral edema.",
+      "text": "Examination confirms bilateral edema.",
+      "anchor": {
+        "start": 31,
+        "end": 36,
+        "text": "edema"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 12,
+          "end": 20,
+          "text": "confirms"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.240779876708984,
+        -11.091460227966309,
+        -10.469608306884766,
+        -10.178994178771973,
+        -5.069995880126953
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "edema",
+          "start": 31,
+          "end": 36,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9783819913864136,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999954700469971
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999997615814209
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1570.324610976968
+    },
+    {
+      "id": "assertion-33",
+      "sentenceId": "The patient has an active cough.",
+      "text": "The patient has an active cough.",
+      "anchor": {
+        "start": 26,
+        "end": 31,
+        "text": "cough"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 12,
+          "end": 15,
+          "text": "has"
+        },
+        {
+          "start": 19,
+          "end": 25,
+          "text": "active"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.359996318817139,
+        -12.411904335021973,
+        -11.357230186462402,
+        -13.489474296569824,
+        -6.93090295791626
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "cough",
+          "start": 26,
+          "end": 31,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9900268316268921,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999994039535522
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1591.37038901099
+    },
+    {
+      "id": "assertion-34",
+      "sentenceId": "She describes recurrent headaches.",
+      "text": "She describes recurrent headaches.",
+      "anchor": {
+        "start": 24,
+        "end": 33,
+        "text": "headaches"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 13,
+          "text": "describes"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.376883506774902,
+        -12.594860076904297,
+        -12.366302490234375,
+        -13.914107322692871,
+        -5.373805046081543
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "headaches",
+          "start": 24,
+          "end": 33,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9834574460983276,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999971389770508
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999994039535522
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1606.3452239905018
+    },
+    {
+      "id": "assertion-35",
+      "sentenceId": "Hallucinations were observed by nursing staff.",
+      "text": "Hallucinations were observed by nursing staff.",
+      "anchor": {
+        "start": 0,
+        "end": 14,
+        "text": "Hallucinations"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 20,
+          "end": 28,
+          "text": "observed"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.948173522949219,
+        -11.826862335205078,
+        -10.16441535949707,
+        -13.63569164276123,
+        -4.702356338500977
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Hallucinations",
+          "start": 0,
+          "end": 14,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9867405295372009,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999967813491821
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999991655349731
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999995231628418
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1633.1618380208965
+    },
+    {
+      "id": "assertion-36",
+      "sentenceId": "Bleeding continues despite pressure.",
+      "text": "Bleeding continues despite pressure.",
+      "anchor": {
+        "start": 0,
+        "end": 8,
+        "text": "Bleeding"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 9,
+          "end": 18,
+          "text": "continues"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.175302982330322,
+        -11.074572563171387,
+        -7.801767826080322,
+        -12.95644474029541,
+        -6.162115097045898
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Bleeding",
+          "start": 0,
+          "end": 8,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.985358476638794,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999979734420776
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999996423721313
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1577.9830449901056
+    },
+    {
+      "id": "assertion-37",
+      "sentenceId": "The patient complains of nausea.",
+      "text": "The patient complains of nausea.",
+      "anchor": {
+        "start": 25,
+        "end": 31,
+        "text": "nausea"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 12,
+          "end": 24,
+          "text": "complains of"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.8356475830078125,
+        -12.304709434509277,
+        -9.08669376373291,
+        -13.41385555267334,
+        -5.532383918762207
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "nausea",
+          "start": 25,
+          "end": 31,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9942125678062439,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999984502792358
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999998807907104
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1585.4778490029275
+    },
+    {
+      "id": "assertion-38",
+      "sentenceId": "A seizure was witnessed overnight.",
+      "text": "A seizure was witnessed overnight.",
+      "anchor": {
+        "start": 2,
+        "end": 9,
+        "text": "seizure"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 14,
+          "end": 23,
+          "text": "witnessed"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        6.865495204925537,
+        -16.565250396728516,
+        -16.941699981689453,
+        -20.905141830444336,
+        -10.328632354736328
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_event",
+          "text": "seizure",
+          "start": 2,
+          "end": 9,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9913546442985535,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.9999996423721313
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1575.7238939986564
+    },
+    {
+      "id": "assertion-39",
+      "sentenceId": "The examination demonstrates tremor.",
+      "text": "The examination demonstrates tremor.",
+      "anchor": {
+        "start": 29,
+        "end": 35,
+        "text": "tremor"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 16,
+          "end": 28,
+          "text": "demonstrates"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.921507358551025,
+        -12.962446212768555,
+        -12.067930221557617,
+        -13.450532913208008,
+        -5.875582695007324
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "tremor",
+          "start": 29,
+          "end": 35,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9939945340156555,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.999998927116394
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1569.5314990007319
+    },
+    {
+      "id": "assertion-40",
+      "sentenceId": "Pneumonia was confirmed on imaging.",
+      "text": "Pneumonia was confirmed on imaging.",
+      "anchor": {
+        "start": 0,
+        "end": 9,
+        "text": "Pneumonia"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 14,
+          "end": 23,
+          "text": "confirmed"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.860051155090332,
+        -12.390809059143066,
+        -12.184310913085938,
+        -9.222150802612305,
+        -4.84738302230835
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Pneumonia",
+          "start": 0,
+          "end": 9,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9939889907836914,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999970197677612
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999812841415405
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1565.3375989932101
+    },
+    {
+      "id": "assertion-41",
+      "sentenceId": "Patient denies hallucinations but reports agitation today.",
+      "text": "Patient denies hallucinations but reports agitation today.",
+      "anchor": {
+        "start": 42,
+        "end": 51,
+        "text": "agitation"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 34,
+          "end": 41,
+          "text": "reports"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.080679416656494,
+        -15.7355318069458,
+        -8.321496963500977,
+        -18.04630470275879,
+        -7.931724548339844
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "hallucinations",
+          "start": 15,
+          "end": 29,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.998970627784729,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999957084655762
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999233484268188
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_event",
+          "text": "agitation",
+          "start": 42,
+          "end": 51,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9332116842269897,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999994039535522
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.999882698059082
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1552.7416430122685
+    },
+    {
+      "id": "assertion-42",
+      "sentenceId": "Patient denies hallucinations but reports agitation today.",
+      "text": "Patient denies hallucinations but reports agitation today.",
+      "anchor": {
+        "start": 15,
+        "end": 29,
+        "text": "hallucinations"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 8,
+          "end": 14,
+          "text": "denies"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -5.477424621582031,
+        -14.404096603393555,
+        7.2307915687561035,
+        -11.56576919555664,
+        -6.327107906341553
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "hallucinations",
+          "start": 15,
+          "end": 29,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.998970627784729,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999957084655762
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999233484268188
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_event",
+          "text": "agitation",
+          "start": 42,
+          "end": 51,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9332116842269897,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999994039535522
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.999882698059082
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1618.0101920035668
+    },
+    {
+      "id": "assertion-43",
+      "sentenceId": "No fever, but a persistent cough is present.",
+      "text": "No fever, but a persistent cough is present.",
+      "anchor": {
+        "start": 27,
+        "end": 32,
+        "text": "cough"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 36,
+          "end": 43,
+          "text": "present"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        8.39476490020752,
+        -12.051896095275879,
+        -4.8055949211120605,
+        -12.161481857299805,
+        -5.091777324676514
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "cough",
+          "start": 27,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9942505359649658,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999966621398926
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "fever",
+          "start": 3,
+          "end": 8,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9927690029144287,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999933242797852
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1616.4613229921088
+    },
+    {
+      "id": "assertion-44",
+      "sentenceId": "No fever, but a persistent cough is present.",
+      "text": "No fever, but a persistent cough is present.",
+      "anchor": {
+        "start": 3,
+        "end": 8,
+        "text": "fever"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 2,
+          "text": "No"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -4.911276817321777,
+        -13.367300033569336,
+        7.106574058532715,
+        -12.418268203735352,
+        -7.258401870727539
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "cough",
+          "start": 27,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9942505359649658,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999966621398926
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "fever",
+          "start": 3,
+          "end": 8,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9927690029144287,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9999933242797852
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1599.7503960097674
+    },
+    {
+      "id": "assertion-45",
+      "sentenceId": "Chest pain is present without shortness of breath.",
+      "text": "Chest pain is present without shortness of breath.",
+      "anchor": {
+        "start": 0,
+        "end": 10,
+        "text": "Chest pain"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "affirmed",
+      "cueSpans": [
+        {
+          "start": 14,
+          "end": 21,
+          "text": "present"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "assertion",
+      "forcedPrediction": "affirmed",
+      "forcedCorrect": true,
+      "logits": [
+        7.327469825744629,
+        -11.840688705444336,
+        -3.978233814239502,
+        -13.007820129394531,
+        -6.5656304359436035
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "shortness of breath",
+          "start": 30,
+          "end": 49,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9968127608299255,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9998666048049927
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999974966049194
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999997615814209
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "Chest pain",
+          "start": 0,
+          "end": 10,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9918124675750732,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999867677688599
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1617.7180490049068
+    },
+    {
+      "id": "assertion-46",
+      "sentenceId": "Chest pain is present without shortness of breath.",
+      "text": "Chest pain is present without shortness of breath.",
+      "anchor": {
+        "start": 30,
+        "end": 49,
+        "text": "shortness of breath"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 22,
+          "end": 29,
+          "text": "without"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -3.9927423000335693,
+        -11.711836814880371,
+        4.982254505157471,
+        -12.82290267944336,
+        -6.922995567321777
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "shortness of breath",
+          "start": 30,
+          "end": 49,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9968127608299255,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.9998666048049927
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999974966049194
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999997615814209
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "Chest pain",
+          "start": 0,
+          "end": 10,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9918124675750732,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999867677688599
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1643.5905040125363
+    },
+    {
+      "id": "assertion-47",
+      "sentenceId": "Possible delirium, although hallucinations are clearly absent.",
+      "text": "Possible delirium, although hallucinations are clearly absent.",
+      "anchor": {
+        "start": 9,
+        "end": 17,
+        "text": "delirium"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "uncertain",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "Possible"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "assertion",
+      "forcedPrediction": "uncertain",
+      "forcedCorrect": true,
+      "logits": [
+        -7.228822708129883,
+        -9.397651672363281,
+        -5.565043926239014,
+        -10.257479667663574,
+        7.3681321144104
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "hallucinations",
+          "start": 28,
+          "end": 42,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9990484118461609,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.999245285987854
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "delirium",
+          "start": 9,
+          "end": 17,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9969455599784851,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9999970197677612
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999988079071045
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1695.5604779941496
+    },
+    {
+      "id": "assertion-48",
+      "sentenceId": "Possible delirium, although hallucinations are clearly absent.",
+      "text": "Possible delirium, although hallucinations are clearly absent.",
+      "anchor": {
+        "start": 28,
+        "end": 42,
+        "text": "hallucinations"
+      },
+      "group": "assertion",
+      "labels": [
+        "affirmed",
+        "negated",
+        "uncertain"
+      ],
+      "expectedLabel": "negated",
+      "cueSpans": [
+        {
+          "start": 55,
+          "end": 61,
+          "text": "absent"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "assertion",
+      "forcedPrediction": "negated",
+      "forcedCorrect": true,
+      "logits": [
+        -7.750439167022705,
+        -13.140596389770508,
+        4.495186805725098,
+        -3.8860206604003906,
+        -3.064035654067993
+      ],
+      "axisLabels": [
+        "affirmed",
+        "hypothetical",
+        "negated",
+        "ruled out",
+        "uncertain"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "hallucinations",
+          "start": 28,
+          "end": 42,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9990484118461609,
+          "attributes": {
+            "assertion": {
+              "value": "negated",
+              "label": "negated",
+              "confidence": 0.999245285987854
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "delirium",
+          "start": 9,
+          "end": 17,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9969455599784851,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9999970197677612
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999988079071045
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1862.641169980634
+    },
+    {
+      "id": "temporality-01",
+      "sentenceId": "The patient had agitation last year.",
+      "text": "The patient had agitation last year.",
+      "anchor": {
+        "start": 16,
+        "end": 25,
+        "text": "agitation"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "historical",
+      "cueSpans": [
+        {
+          "start": 26,
+          "end": 35,
+          "text": "last year"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "historical",
+      "forcedCorrect": true,
+      "logits": [
+        -9.171070098876953,
+        -23.97657012939453,
+        6.3771538734436035,
+        -4.2652788162231445
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_event",
+          "text": "agitation",
+          "start": 16,
+          "end": 25,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9950644373893738,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "historical",
+              "label": "historical",
+              "confidence": 0.9999760389328003
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1784.4321070006117
+    },
+    {
+      "id": "temporality-02",
+      "sentenceId": "A history of seizures was documented.",
+      "text": "A history of seizures was documented.",
+      "anchor": {
+        "start": 13,
+        "end": 21,
+        "text": "seizures"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "historical",
+      "cueSpans": [
+        {
+          "start": 2,
+          "end": 12,
+          "text": "history of"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "historical",
+      "forcedCorrect": true,
+      "logits": [
+        -10.163568496704102,
+        -20.571792602539062,
+        8.450535774230957,
+        -16.91236114501953
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "seizures",
+          "start": 13,
+          "end": 21,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9930118918418884,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "historical",
+              "label": "historical",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1706.9328259967733
+    },
+    {
+      "id": "temporality-03",
+      "sentenceId": "She experienced depression during adolescence.",
+      "text": "She experienced depression during adolescence.",
+      "anchor": {
+        "start": 16,
+        "end": 26,
+        "text": "depression"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "historical",
+      "cueSpans": [
+        {
+          "start": 27,
+          "end": 45,
+          "text": "during adolescence"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "historical",
+      "forcedCorrect": true,
+      "logits": [
+        -4.46928071975708,
+        -18.189002990722656,
+        6.605571746826172,
+        -8.78846263885498
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_event",
+          "text": "depression",
+          "start": 16,
+          "end": 26,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9541280269622803,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "historical",
+              "label": "historical",
+              "confidence": 0.9999842643737793
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1790.937727986602
+    },
+    {
+      "id": "temporality-04",
+      "sentenceId": "Pneumonia occurred three months ago.",
+      "text": "Pneumonia occurred three months ago.",
+      "anchor": {
+        "start": 0,
+        "end": 9,
+        "text": "Pneumonia"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "historical",
+      "cueSpans": [
+        {
+          "start": 19,
+          "end": 35,
+          "text": "three months ago"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "recent",
+      "forcedCorrect": false,
+      "logits": [
+        -8.655430793762207,
+        -21.02566909790039,
+        -11.032649040222168,
+        6.614389896392822
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": false,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Pneumonia",
+          "start": 0,
+          "end": 9,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9925185441970825,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.9999997615814209
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1689.3520419835113
+    },
+    {
+      "id": "temporality-05",
+      "sentenceId": "There was prior chest pain before admission.",
+      "text": "There was prior chest pain before admission.",
+      "anchor": {
+        "start": 16,
+        "end": 26,
+        "text": "chest pain"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "historical",
+      "cueSpans": [
+        {
+          "start": 10,
+          "end": 15,
+          "text": "prior"
+        },
+        {
+          "start": 27,
+          "end": 43,
+          "text": "before admission"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "historical",
+      "forcedCorrect": true,
+      "logits": [
+        -6.553499221801758,
+        -21.379493713378906,
+        5.47890567779541,
+        -7.787489891052246
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "chest pain",
+          "start": 16,
+          "end": 26,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9879756569862366,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999998807907104
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "historical",
+              "label": "historical",
+              "confidence": 0.9999922513961792
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1819.9769990169443
+    },
+    {
+      "id": "temporality-06",
+      "sentenceId": "The headache resolved yesterday.",
+      "text": "The headache resolved yesterday.",
+      "anchor": {
+        "start": 4,
+        "end": 12,
+        "text": "headache"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "historical",
+      "cueSpans": [
+        {
+          "start": 13,
+          "end": 31,
+          "text": "resolved yesterday"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "recent",
+      "forcedCorrect": false,
+      "logits": [
+        -5.1633830070495605,
+        -17.365568161010742,
+        -14.444413185119629,
+        4.717715263366699
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": false,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "headache",
+          "start": 4,
+          "end": 12,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9737992882728577,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999994039535522
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.9999488592147827
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1737.2318890120368
+    },
+    {
+      "id": "temporality-07",
+      "sentenceId": "He previously had an episode of delirium.",
+      "text": "He previously had an episode of delirium.",
+      "anchor": {
+        "start": 32,
+        "end": 40,
+        "text": "delirium"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "historical",
+      "cueSpans": [
+        {
+          "start": 3,
+          "end": 13,
+          "text": "previously"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "historical",
+      "forcedCorrect": true,
+      "logits": [
+        -7.3205766677856445,
+        -18.6444091796875,
+        7.921732425689697,
+        -11.038249969482422
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "delirium",
+          "start": 32,
+          "end": 40,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.8895578384399414,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "historical",
+              "label": "historical",
+              "confidence": 0.9999997615814209
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1649.7444410051685
+    },
+    {
+      "id": "temporality-08",
+      "sentenceId": "Remote childhood asthma was noted.",
+      "text": "Remote childhood asthma was noted.",
+      "anchor": {
+        "start": 17,
+        "end": 23,
+        "text": "asthma"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "historical",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 16,
+          "text": "Remote childhood"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "historical",
+      "forcedCorrect": true,
+      "logits": [
+        -5.06771993637085,
+        -19.470365524291992,
+        6.868976593017578,
+        -14.097115516662598
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "asthma",
+          "start": 17,
+          "end": 23,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9943132400512695,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "historical",
+              "label": "historical",
+              "confidence": 0.9999934434890747
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1636.7067950195633
+    },
+    {
+      "id": "temporality-09",
+      "sentenceId": "The patient currently has agitation.",
+      "text": "The patient currently has agitation.",
+      "anchor": {
+        "start": 26,
+        "end": 35,
+        "text": "agitation"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "current",
+      "cueSpans": [
+        {
+          "start": 12,
+          "end": 21,
+          "text": "currently"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "current",
+      "forcedCorrect": true,
+      "logits": [
+        7.464900016784668,
+        -12.348419189453125,
+        -13.526053428649902,
+        -11.469476699829102
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "agitation",
+          "start": 26,
+          "end": 35,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9727708697319031,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999996423721313
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1639.8008709948044
+    },
+    {
+      "id": "temporality-10",
+      "sentenceId": "Fever is present today.",
+      "text": "Fever is present today.",
+      "anchor": {
+        "start": 0,
+        "end": 5,
+        "text": "Fever"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "current",
+      "cueSpans": [
+        {
+          "start": 17,
+          "end": 22,
+          "text": "today"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "current",
+      "forcedCorrect": true,
+      "logits": [
+        4.045592308044434,
+        -14.205368041992188,
+        -14.684563636779785,
+        -2.2455027103424072
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Fever",
+          "start": 0,
+          "end": 5,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9926002621650696,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999997615814209
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.998150646686554
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1615.7896849908866
+    },
+    {
+      "id": "temporality-11",
+      "sentenceId": "She reports chest pain right now.",
+      "text": "She reports chest pain right now.",
+      "anchor": {
+        "start": 12,
+        "end": 22,
+        "text": "chest pain"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "current",
+      "cueSpans": [
+        {
+          "start": 23,
+          "end": 32,
+          "text": "right now"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "current",
+      "forcedCorrect": true,
+      "logits": [
+        3.2304787635803223,
+        -9.94992733001709,
+        -10.824604988098145,
+        -4.034617900848389
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "chest pain",
+          "start": 12,
+          "end": 22,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9859265089035034,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999055862426758
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999624490737915
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9992982149124146
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1620.8547759742942
+    },
+    {
+      "id": "temporality-12",
+      "sentenceId": "Headache continues at this visit.",
+      "text": "Headache continues at this visit.",
+      "anchor": {
+        "start": 0,
+        "end": 8,
+        "text": "Headache"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "current",
+      "cueSpans": [
+        {
+          "start": 9,
+          "end": 18,
+          "text": "continues"
+        },
+        {
+          "start": 22,
+          "end": 32,
+          "text": "this visit"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "current",
+      "forcedCorrect": true,
+      "logits": [
+        4.812743186950684,
+        -10.935789108276367,
+        -13.764430046081543,
+        -4.262185573577881
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Headache",
+          "start": 0,
+          "end": 8,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9913697242736816,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999997615814209
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9998853206634521
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1675.9556029865053
+    },
+    {
+      "id": "temporality-13",
+      "sentenceId": "He is experiencing active nausea.",
+      "text": "He is experiencing active nausea.",
+      "anchor": {
+        "start": 26,
+        "end": 32,
+        "text": "nausea"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "current",
+      "cueSpans": [
+        {
+          "start": 3,
+          "end": 18,
+          "text": "is experiencing"
+        },
+        {
+          "start": 19,
+          "end": 25,
+          "text": "active"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "current",
+      "forcedCorrect": true,
+      "logits": [
+        7.140745639801025,
+        -11.863363265991211,
+        -13.479098320007324,
+        -9.946249008178711
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "nausea",
+          "start": 26,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9936347007751465,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999990463256836
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1685.7386810006574
+    },
+    {
+      "id": "temporality-14",
+      "sentenceId": "Current symptoms include dizziness.",
+      "text": "Current symptoms include dizziness.",
+      "anchor": {
+        "start": 25,
+        "end": 34,
+        "text": "dizziness"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "current",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 7,
+          "text": "Current"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "current",
+      "forcedCorrect": true,
+      "logits": [
+        7.429052352905273,
+        -13.374783515930176,
+        -14.268527030944824,
+        -12.82441520690918
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "dizziness",
+          "start": 25,
+          "end": 34,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9961766004562378,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999986886978149
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1642.1498699928634
+    },
+    {
+      "id": "temporality-15",
+      "sentenceId": "Hallucinations are ongoing this morning.",
+      "text": "Hallucinations are ongoing this morning.",
+      "anchor": {
+        "start": 0,
+        "end": 14,
+        "text": "Hallucinations"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "current",
+      "cueSpans": [
+        {
+          "start": 19,
+          "end": 26,
+          "text": "ongoing"
+        },
+        {
+          "start": 27,
+          "end": 39,
+          "text": "this morning"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "recent",
+      "forcedCorrect": false,
+      "logits": [
+        -5.627522945404053,
+        -20.063499450683594,
+        -18.456201553344727,
+        6.8048624992370605
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": false,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Hallucinations",
+          "start": 0,
+          "end": 14,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.8804712295532227,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999998807907104
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.9999960660934448
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_event",
+          "text": "Hallucinations",
+          "start": 0,
+          "end": 14,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.7819515466690063,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999998807907104
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "recent",
+              "label": "recent",
+              "confidence": 0.9999960660934448
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1697.0680149970576
+    },
+    {
+      "id": "temporality-16",
+      "sentenceId": "There is bleeding at present.",
+      "text": "There is bleeding at present.",
+      "anchor": {
+        "start": 9,
+        "end": 17,
+        "text": "bleeding"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "current",
+      "cueSpans": [
+        {
+          "start": 18,
+          "end": 28,
+          "text": "at present"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "current",
+      "forcedCorrect": true,
+      "logits": [
+        6.284445285797119,
+        -12.05970573425293,
+        -13.485160827636719,
+        -9.092412948608398
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "bleeding",
+          "start": 9,
+          "end": 17,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9943695664405823,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999964237213135
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999997615814209
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1655.6349309976213
+    },
+    {
+      "id": "temporality-17",
+      "sentenceId": "Nausea is expected after tomorrow's chemotherapy.",
+      "text": "Nausea is expected after tomorrow's chemotherapy.",
+      "anchor": {
+        "start": 0,
+        "end": 6,
+        "text": "Nausea"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "future",
+      "cueSpans": [
+        {
+          "start": 10,
+          "end": 18,
+          "text": "expected"
+        },
+        {
+          "start": 25,
+          "end": 33,
+          "text": "tomorrow"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "future",
+      "forcedCorrect": true,
+      "logits": [
+        -1.7554012537002563,
+        4.190803527832031,
+        -16.285127639770508,
+        -13.877086639404297
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Nausea",
+          "start": 0,
+          "end": 6,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.994691789150238,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9998698234558105
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9973911046981812
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_treatment",
+          "text": "chemotherapy",
+          "start": 36,
+          "end": 48,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9925817251205444,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999549388885498
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9999774694442749
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1649.5162569917738
+    },
+    {
+      "id": "temporality-18",
+      "sentenceId": "The clinician anticipates postoperative pain tomorrow.",
+      "text": "The clinician anticipates postoperative pain tomorrow.",
+      "anchor": {
+        "start": 40,
+        "end": 44,
+        "text": "pain"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "future",
+      "cueSpans": [
+        {
+          "start": 14,
+          "end": 25,
+          "text": "anticipates"
+        },
+        {
+          "start": 45,
+          "end": 53,
+          "text": "tomorrow"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "future",
+      "forcedCorrect": true,
+      "logits": [
+        -4.938222408294678,
+        0.9194118976593018,
+        -12.319990158081055,
+        -13.307121276855469
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": false,
+      "exactAnchorAndAxisCorrect": false,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "postoperative pain",
+          "start": 26,
+          "end": 44,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.913824200630188,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.7250068783760071
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.999893307685852
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9996649026870728
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1712.5793490267824
+    },
+    {
+      "id": "temporality-19",
+      "sentenceId": "Monitor for fever during the coming week.",
+      "text": "Monitor for fever during the coming week.",
+      "anchor": {
+        "start": 12,
+        "end": 17,
+        "text": "fever"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "future",
+      "cueSpans": [
+        {
+          "start": 29,
+          "end": 40,
+          "text": "coming week"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "future",
+      "forcedCorrect": true,
+      "logits": [
+        -3.0749495029449463,
+        1.275490641593933,
+        -13.799059867858887,
+        -11.11444091796875
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "fever",
+          "start": 12,
+          "end": 17,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.8717795610427856,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.6881268620491028
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999964237213135
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9872588515281677
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1653.160479007056
+    },
+    {
+      "id": "temporality-20",
+      "sentenceId": "Seizures could occur after medication withdrawal next month.",
+      "text": "Seizures could occur after medication withdrawal next month.",
+      "anchor": {
+        "start": 0,
+        "end": 8,
+        "text": "Seizures"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "future",
+      "cueSpans": [
+        {
+          "start": 49,
+          "end": 59,
+          "text": "next month"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "future",
+      "forcedCorrect": true,
+      "logits": [
+        -4.385463237762451,
+        5.653282165527344,
+        -16.66170883178711,
+        -11.734579086303711
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Seizures",
+          "start": 0,
+          "end": 8,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9769504070281982,
+          "attributes": {
+            "assertion": {
+              "value": "hypothetical",
+              "label": "hypothetical",
+              "confidence": 0.9826861619949341
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9999563694000244
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_treatment",
+          "text": "medication withdrawal",
+          "start": 27,
+          "end": 48,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9508306384086609,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9969803690910339
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999994039535522
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9992209672927856
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_event",
+          "text": "medication withdrawal",
+          "start": 27,
+          "end": 48,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.7209560871124268,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9969803690910339
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999994039535522
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9992209672927856
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1629.1858550102916
+    },
+    {
+      "id": "temporality-21",
+      "sentenceId": "The team expects delirium after the upcoming operation.",
+      "text": "The team expects delirium after the upcoming operation.",
+      "anchor": {
+        "start": 17,
+        "end": 25,
+        "text": "delirium"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "future",
+      "cueSpans": [
+        {
+          "start": 9,
+          "end": 16,
+          "text": "expects"
+        },
+        {
+          "start": 36,
+          "end": 44,
+          "text": "upcoming"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "future",
+      "forcedCorrect": true,
+      "logits": [
+        -1.3284022808074951,
+        4.16748571395874,
+        -15.093128204345703,
+        -16.07561492919922
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "delirium",
+          "start": 17,
+          "end": 25,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9917820692062378,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9994328618049622
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999655485153198
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9959130883216858
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_treatment",
+          "text": "operation",
+          "start": 45,
+          "end": 54,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9790880680084229,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9974452257156372
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.999734103679657
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9998985528945923
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1635.778662021039
+    },
+    {
+      "id": "temporality-22",
+      "sentenceId": "She may develop edema in the next few days.",
+      "text": "She may develop edema in the next few days.",
+      "anchor": {
+        "start": 16,
+        "end": 21,
+        "text": "edema"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "future",
+      "cueSpans": [
+        {
+          "start": 29,
+          "end": 42,
+          "text": "next few days"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "future",
+      "forcedCorrect": true,
+      "logits": [
+        -5.032656669616699,
+        6.24695348739624,
+        -19.064807891845703,
+        -13.26656723022461
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "edema",
+          "start": 16,
+          "end": 21,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9918519854545593,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9976499676704407
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9999873638153076
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1624.8935489857104
+    },
+    {
+      "id": "temporality-23",
+      "sentenceId": "A future recurrence of depression is possible.",
+      "text": "A future recurrence of depression is possible.",
+      "anchor": {
+        "start": 23,
+        "end": 33,
+        "text": "depression"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "future",
+      "cueSpans": [
+        {
+          "start": 2,
+          "end": 19,
+          "text": "future recurrence"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "future",
+      "forcedCorrect": true,
+      "logits": [
+        -4.544428825378418,
+        4.218467712402344,
+        -14.538261413574219,
+        -16.648653030395508
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "depression",
+          "start": 23,
+          "end": 33,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9584388732910156,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9983779191970825
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999997615814209
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.9998435974121094
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1626.766717992723
+    },
+    {
+      "id": "temporality-24",
+      "sentenceId": "Potential bleeding tomorrow will require monitoring.",
+      "text": "Potential bleeding tomorrow will require monitoring.",
+      "anchor": {
+        "start": 10,
+        "end": 18,
+        "text": "bleeding"
+      },
+      "group": "temporality",
+      "labels": [
+        "current",
+        "historical",
+        "future"
+      ],
+      "expectedLabel": "future",
+      "cueSpans": [
+        {
+          "start": 19,
+          "end": 27,
+          "text": "tomorrow"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "time frame",
+      "forcedPrediction": "future",
+      "forcedCorrect": true,
+      "logits": [
+        -4.456199645996094,
+        4.507904052734375,
+        -17.642675399780273,
+        -12.987465858459473
+      ],
+      "axisLabels": [
+        "current",
+        "future",
+        "historical",
+        "recent"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "bleeding",
+          "start": 10,
+          "end": 18,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9766204357147217,
+          "attributes": {
+            "assertion": {
+              "value": "uncertain",
+              "label": "uncertain",
+              "confidence": 0.9867514371871948
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "future",
+              "label": "future",
+              "confidence": 0.999872088432312
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1583.734262996586
+    },
+    {
+      "id": "experiencer-01",
+      "sentenceId": "The mother has depression; the patient feels well.",
+      "text": "The mother has depression; the patient feels well.",
+      "anchor": {
+        "start": 15,
+        "end": 25,
+        "text": "depression"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "family",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 10,
+          "text": "mother"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "family",
+      "forcedCorrect": true,
+      "logits": [
+        6.024692535400391,
+        -7.428064346313477,
+        -4.3191046714782715
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "depression",
+          "start": 15,
+          "end": 25,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9941459894180298,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999997615814209
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.9999663829803467
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_event",
+          "text": "feels well",
+          "start": 39,
+          "end": 49,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.89496248960495,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9995490908622742
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9982247948646545
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999411106109619
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1651.7767920158803
+    },
+    {
+      "id": "experiencer-02",
+      "sentenceId": "His father was diagnosed with dementia.",
+      "text": "His father was diagnosed with dementia.",
+      "anchor": {
+        "start": 30,
+        "end": 38,
+        "text": "dementia"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "family",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 10,
+          "text": "father"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "family",
+      "forcedCorrect": true,
+      "logits": [
+        6.291017055511475,
+        -8.332047462463379,
+        -7.931021690368652
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "dementia",
+          "start": 30,
+          "end": 38,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9957889914512634,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999996423721313
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.9999988079071045
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999878406524658
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1625.9286729909945
+    },
+    {
+      "id": "experiencer-03",
+      "sentenceId": "Her sister experiences recurrent seizures.",
+      "text": "Her sister experiences recurrent seizures.",
+      "anchor": {
+        "start": 33,
+        "end": 41,
+        "text": "seizures"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "family",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 10,
+          "text": "sister"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "family",
+      "forcedCorrect": true,
+      "logits": [
+        6.383882522583008,
+        -3.5681657791137695,
+        -8.77939224243164
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_event",
+          "text": "seizures",
+          "start": 33,
+          "end": 41,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9625604152679443,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.9999520778656006
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1594.325366022531
+    },
+    {
+      "id": "experiencer-04",
+      "sentenceId": "The patient's brother has asthma.",
+      "text": "The patient's brother has asthma.",
+      "anchor": {
+        "start": 26,
+        "end": 32,
+        "text": "asthma"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "family",
+      "cueSpans": [
+        {
+          "start": 14,
+          "end": 21,
+          "text": "brother"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "family",
+      "forcedCorrect": true,
+      "logits": [
+        6.259827613830566,
+        -3.4526004791259766,
+        -6.760231971740723
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "asthma",
+          "start": 26,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9951695799827576,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999998807907104
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.9999371767044067
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1606.650484027341
+    },
+    {
+      "id": "experiencer-05",
+      "sentenceId": "A grandmother had hallucinations in later life.",
+      "text": "A grandmother had hallucinations in later life.",
+      "anchor": {
+        "start": 18,
+        "end": 32,
+        "text": "hallucinations"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "family",
+      "cueSpans": [
+        {
+          "start": 2,
+          "end": 13,
+          "text": "grandmother"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "family",
+      "forcedCorrect": true,
+      "logits": [
+        5.524518013000488,
+        -6.750495433807373,
+        -8.21182918548584
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "hallucinations",
+          "start": 18,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9079999923706055,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.9999942779541016
+            },
+            "time_frame": {
+              "value": "historical",
+              "label": "historical",
+              "confidence": 0.9999914169311523
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1577.8153749997728
+    },
+    {
+      "id": "experiencer-06",
+      "sentenceId": "Her son reports frequent headaches.",
+      "text": "Her son reports frequent headaches.",
+      "anchor": {
+        "start": 25,
+        "end": 34,
+        "text": "headaches"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "family",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 7,
+          "text": "son"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "family",
+      "forcedCorrect": true,
+      "logits": [
+        4.629850387573242,
+        -1.7924354076385498,
+        -3.6949734687805176
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "headaches",
+          "start": 25,
+          "end": 34,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9889561533927917,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999983310699463
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.998136043548584
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999985694885254
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1574.4155519932974
+    },
+    {
+      "id": "experiencer-07",
+      "sentenceId": "The daughter has a persistent cough.",
+      "text": "The daughter has a persistent cough.",
+      "anchor": {
+        "start": 30,
+        "end": 35,
+        "text": "cough"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "family",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 12,
+          "text": "daughter"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "family",
+      "forcedCorrect": true,
+      "logits": [
+        5.358965873718262,
+        -4.9856061935424805,
+        -3.561448812484741
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "cough",
+          "start": 30,
+          "end": 35,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9944649338722229,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999996423721313
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.9998341798782349
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1581.5923349873628
+    },
+    {
+      "id": "experiencer-08",
+      "sentenceId": "A maternal uncle has Parkinson disease.",
+      "text": "A maternal uncle has Parkinson disease.",
+      "anchor": {
+        "start": 21,
+        "end": 38,
+        "text": "Parkinson disease"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "family",
+      "cueSpans": [
+        {
+          "start": 2,
+          "end": 16,
+          "text": "maternal uncle"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "family",
+      "forcedCorrect": true,
+      "logits": [
+        4.335826873779297,
+        -5.145552158355713,
+        -5.858623504638672
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "Parkinson disease",
+          "start": 21,
+          "end": 38,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9902141690254211,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999963045120239
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.9998862743377686
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999997615814209
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1565.4050569864921
+    },
+    {
+      "id": "experiencer-09",
+      "sentenceId": "The roommate has a fever.",
+      "text": "The roommate has a fever.",
+      "anchor": {
+        "start": 19,
+        "end": 24,
+        "text": "fever"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "other",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 12,
+          "text": "roommate"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "other",
+      "forcedCorrect": true,
+      "logits": [
+        -1.8610962629318237,
+        4.500306129455566,
+        -3.6745173931121826
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "fever",
+          "start": 19,
+          "end": 24,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9922478199005127,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999983310699463
+            },
+            "experiencer": {
+              "value": "other",
+              "label": "other",
+              "confidence": 0.9979953765869141
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999996423721313
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1577.16531099868
+    },
+    {
+      "id": "experiencer-10",
+      "sentenceId": "A coworker reports nausea.",
+      "text": "A coworker reports nausea.",
+      "anchor": {
+        "start": 19,
+        "end": 25,
+        "text": "nausea"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "other",
+      "cueSpans": [
+        {
+          "start": 2,
+          "end": 10,
+          "text": "coworker"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "other",
+      "forcedCorrect": true,
+      "logits": [
+        -6.706520080566406,
+        5.423503398895264,
+        -2.345879554748535
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "nausea",
+          "start": 19,
+          "end": 25,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9859384894371033,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999854564666748
+            },
+            "experiencer": {
+              "value": "other",
+              "label": "other",
+              "confidence": 0.9995723366737366
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999990463256836
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1576.6241830133367
+    },
+    {
+      "id": "experiencer-11",
+      "sentenceId": "The caregiver has chronic back pain.",
+      "text": "The caregiver has chronic back pain.",
+      "anchor": {
+        "start": 26,
+        "end": 35,
+        "text": "back pain"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "other",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 13,
+          "text": "caregiver"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "other",
+      "forcedCorrect": true,
+      "logits": [
+        0.665865421295166,
+        1.8429197072982788,
+        -3.4092674255371094
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "back pain",
+          "start": 26,
+          "end": 35,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9733788371086121,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999957084655762
+            },
+            "experiencer": {
+              "value": "other",
+              "label": "other",
+              "confidence": 0.7613703608512878
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999990463256836
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1616.7814749933314
+    },
+    {
+      "id": "experiencer-12",
+      "sentenceId": "A neighbor experiences dizziness.",
+      "text": "A neighbor experiences dizziness.",
+      "anchor": {
+        "start": 23,
+        "end": 32,
+        "text": "dizziness"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "other",
+      "cueSpans": [
+        {
+          "start": 2,
+          "end": 10,
+          "text": "neighbor"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "other",
+      "forcedCorrect": true,
+      "logits": [
+        -3.0916500091552734,
+        5.9348578453063965,
+        -5.6643385887146
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "dizziness",
+          "start": 23,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9899219870567322,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999977350234985
+            },
+            "experiencer": {
+              "value": "other",
+              "label": "other",
+              "confidence": 0.9998706579208374
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999998807907104
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1582.622917019762
+    },
+    {
+      "id": "experiencer-13",
+      "sentenceId": "The nurse describes her own migraine.",
+      "text": "The nurse describes her own migraine.",
+      "anchor": {
+        "start": 28,
+        "end": 36,
+        "text": "migraine"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "other",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 9,
+          "text": "nurse"
+        },
+        {
+          "start": 20,
+          "end": 27,
+          "text": "her own"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": false,
+      "logits": [
+        -7.393217086791992,
+        -3.287949800491333,
+        6.399452209472656
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": false,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "migraine",
+          "start": 28,
+          "end": 36,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9874244332313538,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999958276748657
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999369382858276
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.999997615814209
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1616.0023940028623
+    },
+    {
+      "id": "experiencer-14",
+      "sentenceId": "A visiting friend has an active cough.",
+      "text": "A visiting friend has an active cough.",
+      "anchor": {
+        "start": 32,
+        "end": 37,
+        "text": "cough"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "other",
+      "cueSpans": [
+        {
+          "start": 11,
+          "end": 17,
+          "text": "friend"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "other",
+      "forcedCorrect": true,
+      "logits": [
+        -2.134782552719116,
+        5.471071720123291,
+        -2.652731418609619
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "cough",
+          "start": 32,
+          "end": 37,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9905907511711121,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999996423721313
+            },
+            "experiencer": {
+              "value": "other",
+              "label": "other",
+              "confidence": 0.9992067217826843
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1623.4296670008916
+    },
+    {
+      "id": "experiencer-15",
+      "sentenceId": "Another resident is experiencing agitation.",
+      "text": "Another resident is experiencing agitation.",
+      "anchor": {
+        "start": 33,
+        "end": 42,
+        "text": "agitation"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "other",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 16,
+          "text": "Another resident"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "other",
+      "forcedCorrect": true,
+      "logits": [
+        -10.648224830627441,
+        7.129611968994141,
+        -2.61055850982666
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_event",
+          "text": "agitation",
+          "start": 33,
+          "end": 42,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9875681400299072,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 1.0
+            },
+            "experiencer": {
+              "value": "other",
+              "label": "other",
+              "confidence": 0.9999411106109619
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1668.1214049749542
+    },
+    {
+      "id": "experiencer-16",
+      "sentenceId": "The clinician's colleague has pneumonia.",
+      "text": "The clinician's colleague has pneumonia.",
+      "anchor": {
+        "start": 30,
+        "end": 39,
+        "text": "pneumonia"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "other",
+      "cueSpans": [
+        {
+          "start": 16,
+          "end": 25,
+          "text": "colleague"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "other",
+      "forcedCorrect": true,
+      "logits": [
+        -6.977977752685547,
+        6.362143516540527,
+        -4.633844375610352
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "pneumonia",
+          "start": 30,
+          "end": 39,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9958991408348083,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999998807907104
+            },
+            "experiencer": {
+              "value": "other",
+              "label": "other",
+              "confidence": 0.9999816417694092
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1572.7564000117127
+    },
+    {
+      "id": "experiencer-17",
+      "sentenceId": "The patient reports chest pain.",
+      "text": "The patient reports chest pain.",
+      "anchor": {
+        "start": 20,
+        "end": 30,
+        "text": "chest pain"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "patient",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 11,
+          "text": "patient"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": true,
+      "logits": [
+        -11.758102416992188,
+        -7.207879543304443,
+        4.368546962738037
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "chest pain",
+          "start": 20,
+          "end": 30,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9827808141708374,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999109506607056
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999904632568359
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999830722808838
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1587.2099050029647
+    },
+    {
+      "id": "experiencer-18",
+      "sentenceId": "She describes her own depression.",
+      "text": "She describes her own depression.",
+      "anchor": {
+        "start": 22,
+        "end": 32,
+        "text": "depression"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "patient",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 3,
+          "text": "She"
+        },
+        {
+          "start": 14,
+          "end": 21,
+          "text": "her own"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": true,
+      "logits": [
+        -12.043046951293945,
+        -9.313187599182129,
+        6.7476487159729
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "depression",
+          "start": 22,
+          "end": 32,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9825432300567627,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999984502792358
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999998807907104
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999995231628418
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1615.8963250054512
+    },
+    {
+      "id": "experiencer-19",
+      "sentenceId": "He is experiencing headaches.",
+      "text": "He is experiencing headaches.",
+      "anchor": {
+        "start": 19,
+        "end": 28,
+        "text": "headaches"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "patient",
+      "cueSpans": [
+        {
+          "start": 0,
+          "end": 2,
+          "text": "He"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": true,
+      "logits": [
+        -14.485705375671387,
+        -10.874373435974121,
+        7.453980922698975
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "headaches",
+          "start": 19,
+          "end": 28,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9935644268989563,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999992847442627
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 1.0
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999998807907104
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1649.5432739902753
+    },
+    {
+      "id": "experiencer-20",
+      "sentenceId": "The patient herself has a fever.",
+      "text": "The patient herself has a fever.",
+      "anchor": {
+        "start": 26,
+        "end": 31,
+        "text": "fever"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "patient",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 19,
+          "text": "patient herself"
+        }
+      ],
+      "scopeChallenge": false,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": true,
+      "logits": [
+        -12.27045726776123,
+        -8.295135498046875,
+        6.908220291137695
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "fever",
+          "start": 26,
+          "end": 31,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9898764491081238,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999978542327881
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999997615814209
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999995231628418
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1715.1833180105314
+    },
+    {
+      "id": "experiencer-21",
+      "sentenceId": "His mother reports that he has seizures.",
+      "text": "His mother reports that he has seizures.",
+      "anchor": {
+        "start": 31,
+        "end": 39,
+        "text": "seizures"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "patient",
+      "cueSpans": [
+        {
+          "start": 7,
+          "end": 9,
+          "text": "he"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": true,
+      "logits": [
+        -3.1296634674072266,
+        -3.9819605350494385,
+        6.4629411697387695
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "seizures",
+          "start": 31,
+          "end": 39,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9930199980735779,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999878406524658
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999027252197266
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999995231628418
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1752.673443988897
+    },
+    {
+      "id": "experiencer-22",
+      "sentenceId": "Her daughter says the patient has hallucinations.",
+      "text": "Her daughter says the patient has hallucinations.",
+      "anchor": {
+        "start": 34,
+        "end": 48,
+        "text": "hallucinations"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "patient",
+      "cueSpans": [
+        {
+          "start": 22,
+          "end": 29,
+          "text": "patient"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": true,
+      "logits": [
+        -5.793998718261719,
+        -4.95611047744751,
+        7.6200151443481445
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "hallucinations",
+          "start": 34,
+          "end": 48,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9936229586601257,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999905824661255
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999949932098389
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1651.502128021093
+    },
+    {
+      "id": "experiencer-23",
+      "sentenceId": "The patient has nausea, unlike her healthy sister.",
+      "text": "The patient has nausea, unlike her healthy sister.",
+      "anchor": {
+        "start": 16,
+        "end": 22,
+        "text": "nausea"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "patient",
+      "cueSpans": [
+        {
+          "start": 4,
+          "end": 11,
+          "text": "patient"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": true,
+      "logits": [
+        -7.368834495544434,
+        -5.886561393737793,
+        7.504196643829346
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "nausea",
+          "start": 16,
+          "end": 22,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.993698239326477,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.999996542930603
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999980926513672
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999997615814209
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1650.9573780058417
+    },
+    {
+      "id": "experiencer-24",
+      "sentenceId": "The mother has asthma but the patient has a cough.",
+      "text": "The mother has asthma but the patient has a cough.",
+      "anchor": {
+        "start": 44,
+        "end": 49,
+        "text": "cough"
+      },
+      "group": "experiencer",
+      "labels": [
+        "patient",
+        "family",
+        "other"
+      ],
+      "expectedLabel": "patient",
+      "cueSpans": [
+        {
+          "start": 30,
+          "end": 37,
+          "text": "patient"
+        }
+      ],
+      "scopeChallenge": true,
+      "axis": "experiencer",
+      "forcedPrediction": "patient",
+      "forcedCorrect": true,
+      "logits": [
+        -6.484852313995361,
+        -6.512824058532715,
+        6.3365397453308105
+      ],
+      "axisLabels": [
+        "family",
+        "other",
+        "patient"
+      ],
+      "exactAnchorFound": true,
+      "exactAnchorAndAxisCorrect": true,
+      "returnedSpans": [
+        {
+          "entity_type": "clinical_condition",
+          "text": "asthma",
+          "start": 15,
+          "end": 21,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9963741898536682,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999995231628418
+            },
+            "experiencer": {
+              "value": "family",
+              "label": "family",
+              "confidence": 0.9999936819076538
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 1.0
+            }
+          }
+        },
+        {
+          "entity_type": "clinical_condition",
+          "text": "cough",
+          "start": 44,
+          "end": 49,
+          "offset_unit": "python_unicode_codepoint",
+          "confidence": 0.9730226397514343,
+          "attributes": {
+            "assertion": {
+              "value": "affirmed",
+              "label": "affirmed",
+              "confidence": 0.9999961853027344
+            },
+            "experiencer": {
+              "value": "patient",
+              "label": "patient",
+              "confidence": 0.9999946355819702
+            },
+            "time_frame": {
+              "value": "current",
+              "label": "current",
+              "confidence": 0.9999995231628418
+            }
+          }
+        }
+      ],
+      "elapsedMs": 1667.0268260058947
+    }
+  ]
+}

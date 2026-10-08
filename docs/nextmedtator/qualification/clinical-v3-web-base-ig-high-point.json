@@ -1,0 +1,125 @@
+{
+  "scope": "Completed checkpoints from the initial, interrupted six-case native probe. Raw token scores are not present in this log. This is partial evidence, not a complete six-case result. Timings include competition with other qualification jobs and are not used as performance measurements.",
+  "completedRuns": [
+    {
+      "id": "assertion-01",
+      "baseline": "PAD",
+      "points": 16,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 8543.989141995553
+    },
+    {
+      "id": "assertion-01",
+      "baseline": "PAD",
+      "points": 32,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 15192.168506997405
+    },
+    {
+      "id": "assertion-01",
+      "baseline": "PAD",
+      "points": 64,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 38061.0086619854
+    },
+    {
+      "id": "assertion-01",
+      "baseline": "PAD",
+      "points": 128,
+      "complete": true,
+      "top1CueHit": true,
+      "elapsedMs": 143411.94902698044
+    },
+    {
+      "id": "assertion-01",
+      "baseline": "MASK",
+      "points": 16,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 7708.137487992644
+    },
+    {
+      "id": "assertion-01",
+      "baseline": "MASK",
+      "points": 32,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 14608.11279999325
+    },
+    {
+      "id": "assertion-01",
+      "baseline": "MASK",
+      "points": 64,
+      "complete": true,
+      "top1CueHit": true,
+      "elapsedMs": 29553.224291012157
+    },
+    {
+      "id": "assertion-03",
+      "baseline": "PAD",
+      "points": 16,
+      "complete": false,
+      "top1CueHit": false,
+      "elapsedMs": 7388.703906006413
+    },
+    {
+      "id": "assertion-03",
+      "baseline": "PAD",
+      "points": 32,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 15010.390523995738
+    },
+    {
+      "id": "assertion-03",
+      "baseline": "PAD",
+      "points": 64,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 35423.009252990596
+    },
+    {
+      "id": "assertion-03",
+      "baseline": "PAD",
+      "points": 128,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 84341.84143299353
+    },
+    {
+      "id": "assertion-03",
+      "baseline": "PAD",
+      "points": 256,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 122520.22233599564
+    },
+    {
+      "id": "assertion-03",
+      "baseline": "MASK",
+      "points": 16,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 15782.817223021993
+    },
+    {
+      "id": "assertion-03",
+      "baseline": "MASK",
+      "points": 32,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 19220.071424992057
+    },
+    {
+      "id": "assertion-03",
+      "baseline": "MASK",
+      "points": 64,
+      "complete": false,
+      "top1CueHit": true,
+      "elapsedMs": 30946.94583301316
+    }
+  ]
+}

@@ -1,0 +1,695 @@
+{
+  "realMergedAdapterWeights": true,
+  "packageId": "gliner25-clinical-v3-small",
+  "packageBytes": 301708146,
+  "baseRevision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+  "adapterHash": "614ee536435ed9585686ffa8d0a1c13f898ef3269d082db5e8a4b870e2f56fa4",
+  "browserConformance": {
+    "kind": "gliner25-clinical-v3-spans-v1",
+    "manifestHash": "125c0b6db951baf6580f7b98bfc9a3aaf51247ac3ebdfb21c7aa420f9b5ba2a4",
+    "variantId": "wasm-fp32",
+    "backend": "wasm",
+    "precision": "fp32",
+    "wasmThreads": 4,
+    "results": [
+      {
+        "fixture": "source-case-0.json",
+        "pass": true,
+        "status": "complete",
+        "records": [
+          {
+            "id": "7f2348e2-ae37-4789-bda8-65401ffa4732",
+            "documentId": "pending",
+            "family": "clinical_condition",
+            "anchor": [
+              {
+                "start": 37,
+                "end": 42,
+                "text": "cough"
+              }
+            ],
+            "fields": {
+              "concept": "cough",
+              "assertion": "affirmed",
+              "experiencer": "patient",
+              "time_frame": "current"
+            },
+            "evidence": [],
+            "score": 0.9861812744521875,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          }
+        ]
+      },
+      {
+        "fixture": "model-reference-0.json",
+        "checks": {
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 8.106231689453125e-06,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "candidates": {
+            "pass": true,
+            "setsExact": true,
+            "intervals": 378,
+            "mismatches": 0,
+            "maxAbsoluteError": 1.71661376953125e-05
+          }
+        },
+        "rawCandidateChecks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 1.71661376953125e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-1.json",
+        "pass": true,
+        "status": "complete",
+        "records": [
+          {
+            "id": "7a3a5ddc-dcd5-4b5f-a99d-8cbdb1eb402d",
+            "documentId": "pending",
+            "family": "clinical_condition",
+            "anchor": [
+              {
+                "start": 25,
+                "end": 35,
+                "text": "chest pain"
+              }
+            ],
+            "fields": {
+              "concept": "chest pain",
+              "assertion": "negated",
+              "experiencer": "patient",
+              "time_frame": "current"
+            },
+            "evidence": [],
+            "score": 0.9436635424286863,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          }
+        ]
+      },
+      {
+        "fixture": "model-reference-1.json",
+        "checks": {
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 7.62939453125e-06,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "candidates": {
+            "pass": true,
+            "setsExact": true,
+            "intervals": 378,
+            "mismatches": 0,
+            "maxAbsoluteError": 1.621246337890625e-05
+          }
+        },
+        "rawCandidateChecks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 1.621246337890625e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-2.json",
+        "pass": true,
+        "status": "complete",
+        "records": [
+          {
+            "id": "dbc54953-420a-4621-aebe-70152a5c25d7",
+            "documentId": "pending",
+            "family": "clinical_condition",
+            "anchor": [
+              {
+                "start": 22,
+                "end": 28,
+                "text": "asthma"
+              }
+            ],
+            "fields": {
+              "concept": "asthma",
+              "assertion": "affirmed",
+              "experiencer": "patient",
+              "time_frame": "historical"
+            },
+            "evidence": [],
+            "score": 0.9720240707767802,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          }
+        ]
+      },
+      {
+        "fixture": "model-reference-2.json",
+        "checks": {
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 4.76837158203125e-06,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "candidates": {
+            "pass": true,
+            "setsExact": true,
+            "intervals": 504,
+            "mismatches": 0,
+            "maxAbsoluteError": 1.430511474609375e-05
+          }
+        },
+        "rawCandidateChecks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 1.430511474609375e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-3.json",
+        "pass": true,
+        "status": "complete",
+        "records": [
+          {
+            "id": "847c36c5-a278-4448-90d1-be265e5f6c34",
+            "documentId": "pending",
+            "family": "clinical_condition",
+            "anchor": [
+              {
+                "start": 31,
+                "end": 37,
+                "text": "asthma"
+              }
+            ],
+            "fields": {
+              "concept": "asthma",
+              "assertion": "affirmed",
+              "experiencer": "patient",
+              "time_frame": "current"
+            },
+            "evidence": [],
+            "score": 0.975153003419498,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          }
+        ]
+      },
+      {
+        "fixture": "model-reference-3.json",
+        "checks": {
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 7.62939453125e-06,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "candidates": {
+            "pass": true,
+            "setsExact": true,
+            "intervals": 648,
+            "mismatches": 0,
+            "maxAbsoluteError": 1.71661376953125e-05
+          }
+        },
+        "rawCandidateChecks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 1.71661376953125e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-4.json",
+        "pass": true,
+        "status": "complete",
+        "records": []
+      },
+      {
+        "fixture": "model-reference-4.json",
+        "checks": {
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 7.62939453125e-06,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "candidates": {
+            "pass": true,
+            "setsExact": true,
+            "intervals": 504,
+            "mismatches": 0,
+            "maxAbsoluteError": 1.430511474609375e-05
+          }
+        },
+        "rawCandidateChecks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 1.430511474609375e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-5.json",
+        "pass": true,
+        "status": "complete",
+        "records": []
+      },
+      {
+        "fixture": "model-reference-5.json",
+        "checks": {
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 1.1444091796875e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "candidates": {
+            "pass": true,
+            "setsExact": true,
+            "intervals": 3456,
+            "mismatches": 0,
+            "maxAbsoluteError": 3.62396240234375e-05
+          }
+        },
+        "rawCandidateChecks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 3.62396240234375e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-6.json",
+        "pass": true,
+        "status": "complete",
+        "records": [
+          {
+            "id": "f88f10a0-a90e-4061-a382-5a92c2c91f1c",
+            "documentId": "pending",
+            "family": "clinical_condition",
+            "anchor": [
+              {
+                "start": 19,
+                "end": 23,
+                "text": "pain"
+              }
+            ],
+            "fields": {
+              "concept": "pain",
+              "assertion": "negated",
+              "experiencer": "patient",
+              "time_frame": "current"
+            },
+            "evidence": [],
+            "score": 0.713769605147147,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          },
+          {
+            "id": "0408639c-d957-4b5e-97db-30f7be97b896",
+            "documentId": "pending",
+            "family": "clinical_condition",
+            "anchor": [
+              {
+                "start": 40,
+                "end": 48,
+                "text": "dementia"
+              }
+            ],
+            "fields": {
+              "concept": "dementia",
+              "assertion": "affirmed",
+              "experiencer": "family",
+              "time_frame": "current"
+            },
+            "evidence": [],
+            "score": 0.9774230767272529,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          },
+          {
+            "id": "6c3a4e91-3192-439a-b2fe-14409717c22b",
+            "documentId": "pending",
+            "family": "clinical_event",
+            "anchor": [
+              {
+                "start": 76,
+                "end": 84,
+                "text": "agitated"
+              }
+            ],
+            "fields": {
+              "concept": "agitated",
+              "assertion": "affirmed",
+              "experiencer": "patient",
+              "time_frame": "recent"
+            },
+            "evidence": [],
+            "score": 0.9898157352095325,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          }
+        ]
+      },
+      {
+        "fixture": "model-reference-6.json",
+        "checks": {
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 1.1801719665527344e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "candidates": {
+            "pass": true,
+            "setsExact": true,
+            "intervals": 2754,
+            "mismatches": 0,
+            "maxAbsoluteError": 2.47955322265625e-05
+          }
+        },
+        "rawCandidateChecks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 2.47955322265625e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-7.json",
+        "pass": true,
+        "status": "complete",
+        "records": [
+          {
+            "id": "4499f107-d40e-4173-91cf-54834fbede97",
+            "documentId": "pending",
+            "family": "clinical_event",
+            "anchor": [
+              {
+                "start": 7,
+                "end": 13,
+                "text": "pacing"
+              }
+            ],
+            "fields": {
+              "concept": "pacing",
+              "assertion": "affirmed",
+              "experiencer": "patient",
+              "time_frame": "current"
+            },
+            "evidence": [],
+            "score": 0.8981601905627188,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          },
+          {
+            "id": "a40f92b0-e2f2-4604-89ea-8ad83b775e1b",
+            "documentId": "pending",
+            "family": "clinical_event",
+            "anchor": [
+              {
+                "start": 15,
+                "end": 23,
+                "text": "shouting"
+              }
+            ],
+            "fields": {
+              "concept": "shouting",
+              "assertion": "affirmed",
+              "experiencer": "patient",
+              "time_frame": "current"
+            },
+            "evidence": [],
+            "score": 0.7916151371303112,
+            "origin": {
+              "kind": "model",
+              "codec": "gliner25-clinical-v3-spans-v1"
+            }
+          }
+        ]
+      },
+      {
+        "fixture": "model-reference-7.json",
+        "checks": {
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 6.198883056640625e-06,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "candidates": {
+            "pass": true,
+            "setsExact": true,
+            "intervals": 3420,
+            "mismatches": 0,
+            "maxAbsoluteError": 3.0517578125e-05
+          }
+        },
+        "rawCandidateChecks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 3.0517578125e-05,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "attributes-reference.json",
+        "checks": {
+          "attr_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 128,
+            "maxAbsoluteError": 6.556510925292969e-07,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": null,
+        "pass": true
+      }
+    ],
+    "pass": true
+  },
+  "installedModelOfflineRestart": true,
+  "offlineInferenceReviewCompareExportReopen": true,
+  "adapterLineagePreserved": true,
+  "originalVueCodeMirrorAcceptRejectExport": true,
+  "privateCanaryNoEgress": true,
+  "enumAndAnchoredSpanSchemaInference": false,
+  "v3SourceAttributeFixturesPassed": true,
+  "browser": "151.0.7922.173"
+}
