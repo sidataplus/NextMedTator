@@ -11,6 +11,7 @@ from .inputs import BASE_FILES, digest, read_adapter, resolve_base, verify_base
 
 SOURCE_REVISION = '55656fbfa01d3d4a77485e1a1eeeaf682990ccdf'
 CODEC = 'gliner25-records-v1'
+V3_CODEC = 'gliner25-clinical-v3-spans-v1'
 CASES = [
     ('The patient has diabetes and takes metformin.', ['diagnosis', 'medication', 'symptom']),
     ('John works at Google in Seattle.', ['person', 'organization', 'location']),
@@ -53,7 +54,7 @@ def merge_adapter(model, adapter):
                     'trainedHeads': h.hexdigest() if heads else 'unchanged'}
 
 
-def source_cases(model, cases):
+def source_cases(model, cases, clinical=None, threshold=.5):
     from .export import MAIN_INPUTS, WORDS
     import torch
     from gliner2.training.trainer import ExtractorCollator
@@ -63,8 +64,15 @@ def source_cases(model, cases):
     for text, labels in cases:
         if not text or len(labels) < 1 or len(labels) > 64 or len(set(labels)) != len(labels):
             raise ValueError('Validation cases need text and 1–64 unique labels')
-        schema = model.create_schema().entities(labels)
-        result = model.extract_entities(text, labels, include_confidence=True, include_spans=True)
+        if clinical:
+            from gliner2 import AttributeGroup
+            descriptions={label:clinical['core_entities'][label] for label in labels}
+            schema=model.create_schema().entities(descriptions)
+            schema.entity_attributes({axis['group']:AttributeGroup(labels=sorted(row['span_label'].split(': ',1)[1] for row in axis['labels']),qualify_labels=True) for axis in clinical['shared_axes'].values()})
+            result=model.extract(text,schema,threshold=threshold,include_confidence=True,include_spans=True)
+        else:
+            schema = model.create_schema().entities(labels)
+            result = model.extract_entities(text, labels, include_confidence=True, include_spans=True,threshold=threshold)
         schemas, _ = model._build_schema_dicts_and_metadata([schema])
         batch = collate([(text, schemas[0])])
         feeds = {}
@@ -88,13 +96,17 @@ def source_cases(model, cases):
             for hit in hits:
                 rows.append({'id': str(len(rows)), 'documentId': 'pending', 'family': label,
                              'anchor': [{'start': hit['start'], 'end': hit['end'], 'text': hit['text']}],
-                             'fields': {'concept': hit['text']}, 'evidence': []})
+                             'fields': {'concept': hit['text'], **({field:hit[axis['group']]['label'].replace('ruled out','ruled_out') for field,axis in clinical['shared_axes'].items()} if clinical else {})}, 'evidence': []})
         app_schema = {'id': 'export-source-case', 'version': '1',
                       'families': {label: {'label': label, 'fields': {'concept': {'type': 'text'}}} for label in labels}}
+        if clinical:
+            app_schema['clinicalV3']=True
+            for definition in app_schema['families'].values():
+                definition['fields'].update({field:{'type':'enum','values':[row['value'] for row in axis['labels']]} for field,axis in clinical['shared_axes'].items()})
         tokens = [token for group in batch.schema_tokens_list[0] for token in group] + ['[SEP_TEXT]'] + [row[0] for row in WhitespaceTokenSplitter()(text)]
         token_rows = [{'text': token, 'ids': model.processor.tokenizer.encode(token, add_special_tokens=False)} for token in dict.fromkeys(tokens)]
         captures.append({'text': text, 'labels': labels, 'schema': app_schema, 'records': rows, 'tokenRows': token_rows,
-                         'source': result, 'feeds': feeds, 'threshold': .5})
+                         'source': result, 'feeds': feeds, 'threshold': threshold, 'clinical': clinical})
     return captures
 
 
@@ -139,7 +151,7 @@ def export_model(model, captures, output):
                 if not valid[qi, ci] or start >= end or start < 0 or end > len(words):
                     continue
                 score = float(1/(1+np.exp(-logits[qi, ci]/model.boundary_settings.pair_temperature)))
-                if score >= .5:
+                if score >= case['threshold']:
                     scored[(int(start), int(end))] = score
             selected = resolve_overlaps([(score, start, end) for (start, end), score in scored.items()],
                                         'flat', score=lambda r:r[0], start=lambda r:r[1], end=lambda r:r[2])
@@ -188,22 +200,39 @@ def build(args):
             cases = [(row['text'], row['labels']) for row in json.loads(args.cases.read_text())]
         if not cases or len(cases) > 32:
             raise ValueError('Provide 1–32 source conformance cases')
+        clinical=None
+        thresholds=None
+        if bool(args.clinical_schema)!=bool(args.thresholds):
+            raise ValueError('--clinical-schema and --thresholds must be supplied together')
+        if args.clinical_schema:
+            clinical=json.loads(args.clinical_schema.read_text())
+            thresholds=json.loads(args.thresholds.read_text())
+            if clinical.get('registry_sha256')!='80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547' or thresholds.get('shared_axes')!='one_value_softmax_no_attribute_threshold':
+                raise ValueError('Unsupported ClinicalEvidence v3 registry or attribute contract')
+            for field,axis in clinical['shared_axes'].items():
+                if field not in ['assertion','experiencer','time_frame'] or len(axis['labels'])>8:
+                    raise ValueError('Unsupported shared-axis contract')
         captures = source_cases(model, cases)
+        if clinical:
+            captures+=source_cases(model,[('The patient denies pain. Her mother has dementia. Last year the patient was agitated.',list(clinical['core_entities'])),('She is pacing, shouting and resisting morning care. No hallucinations. Café 👩‍⚕️.', ['clinical_event'])],clinical,thresholds['clinical_core'])
         graphs = scratch/'graphs'
         graphs.mkdir()
         fixtures, export_report = export_model(model, captures, graphs)
         model.processor.tokenizer.save_pretrained(str(graphs))
+        if clinical:
+            (graphs/'clinical-schema-v3.json').write_text(args.clinical_schema.read_text())
         package_id = args.id or base_model.split('/')[-1]+'-lora-'+adapter_hash[:12]
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}', package_id):
             raise ValueError('Invalid package ID')
         names = ['model.onnx', 'attributes.onnx', 'records.onnx', 'relations.onnx', 'tokenizer.json', *fixtures]
+        if clinical:names.append('clinical-schema-v3.json')
         files = []
         for name in names:
             path = graphs/name
             if path.stat().st_size > 768*1024*1024:
                 raise ValueError(f'Graph exceeds browser package member limit: {name}')
             files.append({'path': name, 'bytes': path.stat().st_size, 'sha256': digest(path),
-                          'role': 'graph' if name.endswith('.onnx') else 'tokenizer' if name=='tokenizer.json' else 'fixture'})
+                          'role': 'graph' if name.endswith('.onnx') else 'tokenizer' if name=='tokenizer.json' else 'schema' if name=='clinical-schema-v3.json' else 'fixture'})
         if sum(f['bytes'] for f in files) > 1024*1024*1024:
             raise ValueError('Package exceeds browser total size limit')
         manifest = {'format': 'nextmedtator-model-v1', 'id': package_id, 'version': adapter_hash,
@@ -211,13 +240,15 @@ def build(args):
                     'lineage': {'base': {'model': base_model, 'revision': revision, 'files': hashes},
                                 'adapter': {'sha256': adapter_hash, 'baseRevision': revision,
                                             'weightsSha256': digest(adapter/'adapter_model.safetensors'),
-                                            'configSha256': digest(adapter/'adapter_config.json')},
+                                            'configSha256': digest(adapter/'adapter_config.json'),
+                                            **({'repository':args.adapter_repository,'revision':args.adapter_revision} if args.adapter_repository else {})},
                                 'merge': 'merged-export', 'trainedHeads': merge_report['trainedHeads']},
                     'license': {'id': args.adapter_license, 'notice': 'Base '+base_model+': '+args.base_license+'. Adapter: '+args.adapter_license+'. Export conformance does not establish clinical accuracy.'},
                     'files': files, 'capabilities': ['*'], 'variants': [{
-                        'id': 'wasm-fp32', 'backend': 'wasm', 'precision': 'fp32', 'codec': CODEC,
+                        'id': 'wasm-fp32', 'backend': 'wasm', 'precision': 'fp32', 'codec': V3_CODEC if clinical else CODEC,
                         'graph': 'model.onnx', 'graphs': {k: k+'.onnx' for k in ['model', 'attributes', 'records', 'relations']},
-                        'tokenizer': 'tokenizer.json', 'fixtures': fixtures, 'threshold': .5,
+                        'tokenizer': 'tokenizer.json', 'fixtures': fixtures, 'threshold': thresholds['clinical_core'] if clinical else .5,
+                        **({'clinicalSchema':'clinical-schema-v3.json','clinicalRegistryHash':clinical['registry_sha256'],'sharedAxes':thresholds['shared_axes'],'recordBinding':False,'thresholdSelectionSha256':thresholds['selection_sha256']} if clinical else {}),
                         'fixedWords': 512, 'maxSequenceLength': 512, 'wordOverlap': 32,
                         'pairTemperature': model.boundary_settings.pair_temperature,
                         'abstentionThreshold': model.boundary_settings.abstention_threshold,
@@ -259,12 +290,18 @@ def main():
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--report', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, default=Path('work/gliner-onnx'))
+    parser.add_argument('--clinical-schema',type=Path,help='ClinicalEvidence v3 span registry; enables the v3 shared-axis codec without record binding')
+    parser.add_argument('--thresholds',type=Path,help='Frozen v3 validation-selected thresholds')
+    parser.add_argument('--adapter-repository')
+    parser.add_argument('--adapter-revision')
     parser.add_argument('--cases', type=Path, help='Optional synthetic conformance JSON list: {text,labels}')
     parser.add_argument('--adapter-license', default='LicenseRef-User-Provided')
     parser.add_argument('--base-license', default='LicenseRef-Hub-Base', help='License declared by the pinned base model card')
     parser.add_argument('--id')
     parser.add_argument('--threads', type=int, default=2)
     args = parser.parse_args()
+    if bool(args.adapter_repository)!=bool(args.adapter_revision) or (args.adapter_revision and not re.fullmatch('[a-f0-9]{40}',args.adapter_revision)):
+        parser.error('Provide both --adapter-repository and its immutable --adapter-revision')
     if not 1 <= args.threads <= 32:
         parser.error('--threads must be 1–32')
     try:

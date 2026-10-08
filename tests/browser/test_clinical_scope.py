@@ -51,6 +51,7 @@ def run():
             # Replace only the empty task schema through the real UI.
             page.get_by_test_id('scope-use-schema').click()
             expect(page.get_by_test_id('assist-message')).to_contain_text('Clinical annotation schema loaded')
+            page.get_by_test_id('assist-mode').select_option('assisted')
             page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(PACKAGE))
             expect(page.get_by_test_id('assist-message')).to_contain_text('package loaded')
             assert page.get_by_test_id('scope-field-treatment_occurrence-status').is_disabled()

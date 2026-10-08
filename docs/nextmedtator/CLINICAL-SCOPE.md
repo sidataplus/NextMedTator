@@ -9,7 +9,15 @@ The original MedTator assistance panel now has an opt-in **Build / edit scope** 
 3. Edit the scope name, definition, version, selected families and threshold. State inclusions and exclusions in the definition. Add any desired concepts with stable lowercase identifiers, a training family, a description and optional aliases/examples. Families with concepts query those targets; families without concepts query their broad clinical category. Deselect a family to omit it from future inference.
 4. Inspect **Training fields and decoder support**. Field names and choice values are fixed by training; supported fields can be selected freely. The generated native annotation schema must contain every requested field. Missing fields, altered vocabularies, invalid identifiers and oversized prompts produce an error rather than silently dropping requested data.
 5. Click **Apply scope**, then **Analyze note** or **Analyze selected**. Applying a scope creates a frozen, fingerprinted profile for future analysis. Existing runs retain their scope and predictions. Reapplying the same named scope records its parent hash and increments an unchanged version. **Use loaded schema** disables the scope for future runs.
-6. Review suggestions, or explicitly choose **Auto apply**. Auto-applied copies remain unreviewed and retain their machine lineage. Export the scope for reuse, the training semantic schema for upstream workflows, or the evidence project for source text, predictions, native tags and provenance together.
+6. **Auto apply** is selected by default: analyzing a note adds predictions as unreviewed native tags. Choose **Assisted** to review suggestions before applying them, or **Blind** for an independent annotation workflow. Recovered corpora retain an explicitly saved mode. Auto-applied copies retain their machine lineage. Export the scope for reuse, the training semantic schema for upstream workflows, or the evidence project for source text, predictions, native tags and provenance together.
+
+## Adjust the suggestion threshold
+
+**Suggestion threshold** is visible above **Analyze note** and **Analyze selected**, and beside **Analyze locally** in the evidence workspace. Move the slider from 0 to 1; its current value is displayed beside the label. Drag it or use the arrow keys (hundredths), Home (0), and End (1). The scope editor uses the same slider. Lower values retain more candidate spans; higher values are stricter. The v3 model default is 0.6. **Use default** returns to the applied scope's threshold, or the model default when no scope is active. Applying a scope clears the override so the newly applied scope controls the next run; switching an already loaded model clears the override too.
+
+This is a threshold for extracting anchors, not a separate threshold for shared-axis attributes. Changes affect the next analysis, including Auto apply. They do not refilter an existing run, remove existing native tags, or rewrite a frozen scope. Review or reanalyze the note to use a different threshold. **Apply all suggestions** continues to apply the predictions from its existing run.
+
+Each analysis captures one effective value for the whole batch and records `settings.threshold` and `settings.thresholdSource` (`user`, `scope`, or `model`). Failed and cancelled runs retain the same settings. The original interface displays **Run threshold** with the result; portable evidence exports retain every run's settings. The original corpus recovery also retains the override. The evidence workspace resets the override when opening another project. The slider bounds user selections to 0–1; invalid programmatic thresholds still fail before inference. The slider and mode control are disabled while analysis is running.
 
 ## Training boundary
 
@@ -40,7 +48,11 @@ Actual P4 ONNX was run in Chromium on two supplied generated notes, `syn7_00007`
 
 The real-browser gate verifies full source coverage, exact offsets, allowed families/concept IDs, native auto-applied tag counts, unreviewed provenance, old-run immutability, evidence export and corpus recovery, with no note egress. The browser-exported semantic schema also passes upstream `SemanticSchema.model_validate(...).verify()` at the pinned revision. See [scope browser report](qualification/clinical-scope-ui.json), [upstream validation](qualification/clinical-scope-upstream-validation.json) and the accompanying original-UI screenshots.
 
-### Current P7b BPSD screenshots
+### Current v3 BPSD support
+
+The updated [ClinicalEvidence v3 adapter](V3-17089-VALIDATION.md) uses model-specific broad presets at threshold 0.6, verbatim core descriptions, and explicit qualified assertion/experiencer/time-frame groups. It never queries the manual administrative choices `unspecified` or `not_applicable`, and never assumes a default from an omitted attribute. Family-specific field spans and record binding remain unavailable in this decoder. Existing scopes are not silently rewritten: select a broad v3 preset or explicitly edit unsupported fields before applying an old profile. Custom definitions and concepts stay freely editable within the pinned registry; no BPSD preset was added. Existing runs retain their original model, scope and inference-schema fingerprint.
+
+### Archived P7b BPSD screenshots
 
 [P7b validation](P7B-VALIDATION.md) uses the same four synthetic notes, user-entered BPSD definition and threshold as the archived P4 captures below. Reproduce with `NMT_LORA_PACKAGE=/path/to/clinical-p7b.nmt-model.zip uv run --locked python tests/browser/test_lora_bpsd.py`. The active package ID is visible in the original assistance panel. The model card uses v2 attribute spans; its hybrid attribute decoder remains outside this scope workflow.
 

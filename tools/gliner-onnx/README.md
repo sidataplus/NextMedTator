@@ -67,9 +67,62 @@ a supplied adapter inherits the base model's Apache-2.0 license.
 default is `LicenseRef-Hub-Base` rather than assuming all compatible bases
 share a license.
 
-## Current adapter: ClinicalEvidence P7b
+## Current adapter: ClinicalEvidence v3, ACT/Sol job 17089
 
-The current validation package is `gliner25-clinical-evidence-p7b`, using
+The default real-weight gates now use `gliner25-clinical-evidence-v3-act-sol-17089`.
+Read the [pinned model card](https://huggingface.co/na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089/blob/058945fb562f3c6250450ff67b842255f872ddf4/README.md)
+and [qualification report](../../docs/nextmedtator/V3-17089-VALIDATION.md).
+The adapter was trained against Phase 8/v3 ACT/Sol relabeling. Its v3 codec
+uses verbatim clinical-core descriptions, explicit qualified shared axes,
+one-value softmax without an attribute threshold, and the frozen 0.6 span
+threshold. Family-specific choice/literal spans are not record-bound by this
+codec; those scope fields remain unavailable. The base record/relation graphs
+are numerically checked for package compatibility but are not used for v3
+record binding or automatic relations. Attribute/cue highlighting remains deferred.
+
+```sh
+uv tool run --from huggingface_hub==2.1.1 hf download \
+  na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089 \
+  --revision 058945fb562f3c6250450ff67b842255f872ddf4 \
+  --local-dir work/clinical-v3-17089-adapter
+uv run --locked --project tools/gliner-onnx gliner-onnx \
+  --adapter work/clinical-v3-17089-adapter \
+  --adapter-repository na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089 \
+  --adapter-revision 058945fb562f3c6250450ff67b842255f872ddf4 \
+  --base-model fastino/gliner2.5-base-v1 \
+  --base-revision ca906247640776a07753514055be9726f9080ead \
+  --base-license Apache-2.0 \
+  --adapter-license LicenseRef-Research-Group-Only-No-Redistribution \
+  --clinical-schema work/clinical-v3-17089-adapter/schema_v3.json \
+  --thresholds work/clinical-v3-17089-adapter/thresholds.json \
+  --id gliner25-clinical-evidence-v3-act-sol-17089 \
+  --out work/clinical-v3-17089.nmt-model.zip \
+  --report test-results/clinical-v3-17089-export.json
+```
+
+Use `--base-dir` for a cached checkpoint; its bytes are still checked against
+the immutable Hub reference. For a private repository, supply an authorized
+`HF_TOKEN` through the environment. Weights remain outside Git and the public
+catalog. Temporary public availability does not change the research-only,
+no-redistribution declaration. The model card's public base revision is a
+verified matching reference, not evidence of the historical training resolver.
+
+Import the resulting ZIP into the original annotation assistance panel.
+Its active identity is visible; local installation supports offline use.
+Old runs retain their previous lineage and scope. Existing packages still use
+their original codecs. The v3 flags are optional: the independent packager
+continues to accept other compatible GLiNER2.5 PEFT adapters.
+
+```sh
+NMT_LORA_PACKAGE=work/clinical-v3-17089.nmt-model.zip uv run --locked python tests/browser/test_lora_model.py
+NMT_LORA_PACKAGE=work/clinical-v3-17089.nmt-model.zip uv run --locked python tests/browser/test_lora_samples.py
+NMT_LORA_PACKAGE=work/clinical-v3-17089.nmt-model.zip uv run --locked python tests/browser/test_lora_corpus_ui.py
+NMT_LORA_PACKAGE=work/clinical-v3-17089.nmt-model.zip uv run --locked python tests/browser/test_lora_bpsd.py
+```
+
+## Archived adapter: ClinicalEvidence P7b
+
+The archived validation package is `gliner25-clinical-evidence-p7b`, using
 `na399/clinical-evidence-gliner2.5-lora-p7b@ac4b10b7d961bfa5ce79703fb2f689c2f93be261`.
 The owner temporarily enabled a public download. Once cached, export and browser
 inference do not need access to the adapter repository. Its metadata does not

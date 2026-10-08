@@ -74,6 +74,7 @@ def run():
             }''', {'notes':fixture['notes'],'dtdText':'\n'.join(lines)})
             assert len(names)==27
             page.locator('.file-list-item-name', has_text=names[0]).click()
+            page.get_by_test_id('assist-mode').select_option('assisted')
             page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(PACKAGE))
             expect(page.get_by_test_id('assist-message')).to_contain_text('package loaded')
             page.get_by_test_id('assist-analyze').click()

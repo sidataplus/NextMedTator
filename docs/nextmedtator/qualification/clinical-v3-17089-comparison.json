@@ -1,0 +1,985 @@
+{
+  "sameSupplied27Notes": true,
+  "same618UnverifiedReferences": true,
+  "clinicalGoldStandard": false,
+  "weightsOnlyControlledComparison": false,
+  "reason": "V3 uses verbatim clinical-core labels/descriptions, explicit qualified shared axes and threshold 0.6. Archived P4/P7b use the prior anchored-record/choice-head protocol at threshold 0.5; literals are not exposed in v3.",
+  "p4": {
+    "protocol": "archived v1 record codec at 0.5",
+    "agreement": {
+      "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+      "exactAnchors": {
+        "reference": 618,
+        "predicted": 494,
+        "matched": 380,
+        "precisionAgreement": 0.7692307692307693,
+        "recallAgreement": 0.6148867313915858,
+        "f1Agreement": 0.683453237410072
+      },
+      "byFamily": {
+        "care_context_occurrence": {
+          "reference": 37,
+          "predicted": 37,
+          "matched": 24,
+          "precisionAgreement": 0.6486486486486487,
+          "recallAgreement": 0.6486486486486487,
+          "f1Agreement": 0.6486486486486487
+        },
+        "condition_occurrence": {
+          "reference": 260,
+          "predicted": 181,
+          "matched": 156,
+          "precisionAgreement": 0.861878453038674,
+          "recallAgreement": 0.6,
+          "f1Agreement": 0.7074829931972788
+        },
+        "event_occurrence": {
+          "reference": 135,
+          "predicted": 114,
+          "matched": 62,
+          "precisionAgreement": 0.543859649122807,
+          "recallAgreement": 0.45925925925925926,
+          "f1Agreement": 0.497991967871486
+        },
+        "function_occurrence": {
+          "reference": 62,
+          "predicted": 63,
+          "matched": 51,
+          "precisionAgreement": 0.8095238095238095,
+          "recallAgreement": 0.8225806451612904,
+          "f1Agreement": 0.8160000000000001
+        },
+        "measurement_occurrence": {
+          "reference": 3,
+          "predicted": 1,
+          "matched": 1,
+          "precisionAgreement": 1.0,
+          "recallAgreement": 0.3333333333333333,
+          "f1Agreement": 0.5
+        },
+        "treatment_occurrence": {
+          "reference": 121,
+          "predicted": 98,
+          "matched": 86,
+          "precisionAgreement": 0.8775510204081632,
+          "recallAgreement": 0.7107438016528925,
+          "f1Agreement": 0.7853881278538812
+        }
+      },
+      "enumAgreementOnExactMatchedAnchors": {
+        "assertion": {
+          "matchedAnchorsWithReference": 379,
+          "agree": 288,
+          "fractionAgree": 0.7598944591029023
+        },
+        "experiencer": {
+          "matchedAnchorsWithReference": 146,
+          "agree": 74,
+          "fractionAgree": 0.5068493150684932
+        },
+        "time_frame": {
+          "matchedAnchorsWithReference": 134,
+          "agree": 95,
+          "fractionAgree": 0.7089552238805971
+        }
+      },
+      "conditionTimeLiteralAgreementOnMatchedAnchors": {
+        "matchedAnchorsWithTimeReference": 41,
+        "exactTimeSpansAgree": 11
+      },
+      "notes": [
+        {
+          "id": "syn7_00007",
+          "reference": 25,
+          "predicted": 17,
+          "matched": 15,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00005",
+          "reference": 23,
+          "predicted": 17,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00000",
+          "reference": 33,
+          "predicted": 24,
+          "matched": 21,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00002",
+          "reference": 26,
+          "predicted": 17,
+          "matched": 10,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00001",
+          "reference": 23,
+          "predicted": 19,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00003",
+          "reference": 24,
+          "predicted": 19,
+          "matched": 16,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00004",
+          "reference": 17,
+          "predicted": 16,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00008",
+          "reference": 18,
+          "predicted": 15,
+          "matched": 15,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00009",
+          "reference": 18,
+          "predicted": 12,
+          "matched": 8,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00013",
+          "reference": 21,
+          "predicted": 22,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00011",
+          "reference": 27,
+          "predicted": 20,
+          "matched": 15,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00006",
+          "reference": 20,
+          "predicted": 16,
+          "matched": 10,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00014",
+          "reference": 26,
+          "predicted": 26,
+          "matched": 19,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00010",
+          "reference": 20,
+          "predicted": 22,
+          "matched": 18,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00015",
+          "reference": 22,
+          "predicted": 15,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00016",
+          "reference": 21,
+          "predicted": 21,
+          "matched": 16,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00017",
+          "reference": 26,
+          "predicted": 22,
+          "matched": 16,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00018",
+          "reference": 26,
+          "predicted": 17,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00012",
+          "reference": 16,
+          "predicted": 14,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00019",
+          "reference": 24,
+          "predicted": 21,
+          "matched": 19,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00022",
+          "reference": 17,
+          "predicted": 16,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00020",
+          "reference": 28,
+          "predicted": 16,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00023",
+          "reference": 25,
+          "predicted": 20,
+          "matched": 15,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00021",
+          "reference": 29,
+          "predicted": 14,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00024",
+          "reference": 21,
+          "predicted": 20,
+          "matched": 18,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00026",
+          "reference": 26,
+          "predicted": 19,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00027",
+          "reference": 16,
+          "predicted": 17,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        }
+      ]
+    }
+  },
+  "p7b": {
+    "protocol": "archived v1 record codec at 0.5, not the P7b v2 hybrid decoder",
+    "agreement": {
+      "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+      "exactAnchors": {
+        "reference": 618,
+        "predicted": 418,
+        "matched": 335,
+        "precisionAgreement": 0.8014354066985646,
+        "recallAgreement": 0.5420711974110033,
+        "f1Agreement": 0.6467181467181468
+      },
+      "byFamily": {
+        "care_context_occurrence": {
+          "reference": 37,
+          "predicted": 37,
+          "matched": 21,
+          "precisionAgreement": 0.5675675675675675,
+          "recallAgreement": 0.5675675675675675,
+          "f1Agreement": 0.5675675675675675
+        },
+        "condition_occurrence": {
+          "reference": 260,
+          "predicted": 156,
+          "matched": 130,
+          "precisionAgreement": 0.8333333333333334,
+          "recallAgreement": 0.5,
+          "f1Agreement": 0.625
+        },
+        "event_occurrence": {
+          "reference": 135,
+          "predicted": 80,
+          "matched": 53,
+          "precisionAgreement": 0.6625,
+          "recallAgreement": 0.3925925925925926,
+          "f1Agreement": 0.49302325581395356
+        },
+        "function_occurrence": {
+          "reference": 62,
+          "predicted": 57,
+          "matched": 49,
+          "precisionAgreement": 0.8596491228070176,
+          "recallAgreement": 0.7903225806451613,
+          "f1Agreement": 0.823529411764706
+        },
+        "measurement_occurrence": {
+          "reference": 3,
+          "predicted": 1,
+          "matched": 1,
+          "precisionAgreement": 1.0,
+          "recallAgreement": 0.3333333333333333,
+          "f1Agreement": 0.5
+        },
+        "treatment_occurrence": {
+          "reference": 121,
+          "predicted": 87,
+          "matched": 81,
+          "precisionAgreement": 0.9310344827586207,
+          "recallAgreement": 0.6694214876033058,
+          "f1Agreement": 0.7788461538461537
+        }
+      },
+      "enumAgreementOnExactMatchedAnchors": {
+        "assertion": {
+          "matchedAnchorsWithReference": 334,
+          "agree": 209,
+          "fractionAgree": 0.625748502994012
+        },
+        "experiencer": {
+          "matchedAnchorsWithReference": 129,
+          "agree": 84,
+          "fractionAgree": 0.6511627906976745
+        },
+        "time_frame": {
+          "matchedAnchorsWithReference": 124,
+          "agree": 82,
+          "fractionAgree": 0.6612903225806451
+        }
+      },
+      "conditionTimeLiteralAgreementOnMatchedAnchors": {
+        "matchedAnchorsWithTimeReference": 37,
+        "exactTimeSpansAgree": 15
+      },
+      "notes": [
+        {
+          "id": "syn7_00007",
+          "reference": 25,
+          "predicted": 17,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00005",
+          "reference": 23,
+          "predicted": 18,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00000",
+          "reference": 33,
+          "predicted": 24,
+          "matched": 20,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00002",
+          "reference": 26,
+          "predicted": 11,
+          "matched": 7,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00001",
+          "reference": 23,
+          "predicted": 17,
+          "matched": 15,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00003",
+          "reference": 24,
+          "predicted": 15,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00004",
+          "reference": 17,
+          "predicted": 16,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00008",
+          "reference": 18,
+          "predicted": 12,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00009",
+          "reference": 18,
+          "predicted": 9,
+          "matched": 7,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00013",
+          "reference": 21,
+          "predicted": 17,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00011",
+          "reference": 27,
+          "predicted": 15,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00006",
+          "reference": 20,
+          "predicted": 12,
+          "matched": 9,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00014",
+          "reference": 26,
+          "predicted": 22,
+          "matched": 15,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00010",
+          "reference": 20,
+          "predicted": 16,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00015",
+          "reference": 22,
+          "predicted": 14,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00016",
+          "reference": 21,
+          "predicted": 16,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00017",
+          "reference": 26,
+          "predicted": 20,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00018",
+          "reference": 26,
+          "predicted": 12,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00012",
+          "reference": 16,
+          "predicted": 12,
+          "matched": 9,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00019",
+          "reference": 24,
+          "predicted": 20,
+          "matched": 18,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00022",
+          "reference": 17,
+          "predicted": 15,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00020",
+          "reference": 28,
+          "predicted": 16,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00023",
+          "reference": 25,
+          "predicted": 15,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00021",
+          "reference": 29,
+          "predicted": 14,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00024",
+          "reference": 21,
+          "predicted": 18,
+          "matched": 17,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00026",
+          "reference": 26,
+          "predicted": 11,
+          "matched": 8,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00027",
+          "reference": 16,
+          "predicted": 14,
+          "matched": 10,
+          "status": "complete",
+          "windows": 1
+        }
+      ]
+    }
+  },
+  "v3_17089": {
+    "protocol": "v3 core and shared-axis codec at frozen 0.6",
+    "agreement": {
+      "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+      "exactAnchors": {
+        "reference": 618,
+        "predicted": 409,
+        "matched": 331,
+        "precisionAgreement": 0.8092909535452323,
+        "recallAgreement": 0.5355987055016181,
+        "f1Agreement": 0.6445959104186952
+      },
+      "byFamily": {
+        "care_context_occurrence": {
+          "reference": 37,
+          "predicted": 26,
+          "matched": 19,
+          "precisionAgreement": 0.7307692307692307,
+          "recallAgreement": 0.5135135135135135,
+          "f1Agreement": 0.6031746031746031
+        },
+        "condition_occurrence": {
+          "reference": 260,
+          "predicted": 157,
+          "matched": 134,
+          "precisionAgreement": 0.8535031847133758,
+          "recallAgreement": 0.5153846153846153,
+          "f1Agreement": 0.6426858513189448
+        },
+        "event_occurrence": {
+          "reference": 135,
+          "predicted": 80,
+          "matched": 47,
+          "precisionAgreement": 0.5875,
+          "recallAgreement": 0.34814814814814815,
+          "f1Agreement": 0.43720930232558136
+        },
+        "function_occurrence": {
+          "reference": 62,
+          "predicted": 54,
+          "matched": 47,
+          "precisionAgreement": 0.8703703703703703,
+          "recallAgreement": 0.7580645161290323,
+          "f1Agreement": 0.8103448275862069
+        },
+        "measurement_occurrence": {
+          "reference": 3,
+          "predicted": 2,
+          "matched": 2,
+          "precisionAgreement": 1.0,
+          "recallAgreement": 0.6666666666666666,
+          "f1Agreement": 0.8
+        },
+        "treatment_occurrence": {
+          "reference": 121,
+          "predicted": 90,
+          "matched": 82,
+          "precisionAgreement": 0.9111111111111111,
+          "recallAgreement": 0.6776859504132231,
+          "f1Agreement": 0.7772511848341233
+        }
+      },
+      "enumAgreementOnExactMatchedAnchors": {
+        "assertion": {
+          "matchedAnchorsWithReference": 330,
+          "agree": 284,
+          "fractionAgree": 0.8606060606060606
+        },
+        "experiencer": {
+          "matchedAnchorsWithReference": 124,
+          "agree": 121,
+          "fractionAgree": 0.9758064516129032
+        },
+        "time_frame": {
+          "matchedAnchorsWithReference": 114,
+          "agree": 89,
+          "fractionAgree": 0.7807017543859649
+        }
+      },
+      "conditionTimeLiteralAgreementOnMatchedAnchors": {},
+      "notes": [
+        {
+          "id": "syn7_00007",
+          "reference": 25,
+          "predicted": 15,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00005",
+          "reference": 23,
+          "predicted": 13,
+          "matched": 10,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00000",
+          "reference": 33,
+          "predicted": 21,
+          "matched": 18,
+          "status": "complete",
+          "windows": 2
+        },
+        {
+          "id": "syn7_00002",
+          "reference": 26,
+          "predicted": 14,
+          "matched": 9,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00001",
+          "reference": 23,
+          "predicted": 16,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00003",
+          "reference": 24,
+          "predicted": 15,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00004",
+          "reference": 17,
+          "predicted": 16,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00008",
+          "reference": 18,
+          "predicted": 16,
+          "matched": 14,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00009",
+          "reference": 18,
+          "predicted": 13,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00013",
+          "reference": 21,
+          "predicted": 17,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00011",
+          "reference": 27,
+          "predicted": 14,
+          "matched": 9,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00006",
+          "reference": 20,
+          "predicted": 12,
+          "matched": 8,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00014",
+          "reference": 26,
+          "predicted": 22,
+          "matched": 16,
+          "status": "complete",
+          "windows": 2
+        },
+        {
+          "id": "syn7_00010",
+          "reference": 20,
+          "predicted": 18,
+          "matched": 16,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00015",
+          "reference": 22,
+          "predicted": 13,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00016",
+          "reference": 21,
+          "predicted": 16,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00017",
+          "reference": 26,
+          "predicted": 19,
+          "matched": 15,
+          "status": "complete",
+          "windows": 2
+        },
+        {
+          "id": "syn7_00018",
+          "reference": 26,
+          "predicted": 12,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00012",
+          "reference": 16,
+          "predicted": 12,
+          "matched": 10,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00019",
+          "reference": 24,
+          "predicted": 18,
+          "matched": 16,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00022",
+          "reference": 17,
+          "predicted": 13,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00020",
+          "reference": 28,
+          "predicted": 15,
+          "matched": 13,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00023",
+          "reference": 25,
+          "predicted": 13,
+          "matched": 12,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00021",
+          "reference": 29,
+          "predicted": 13,
+          "matched": 11,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00024",
+          "reference": 21,
+          "predicted": 15,
+          "matched": 15,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00026",
+          "reference": 26,
+          "predicted": 14,
+          "matched": 9,
+          "status": "complete",
+          "windows": 1
+        },
+        {
+          "id": "syn7_00027",
+          "reference": 16,
+          "predicted": 14,
+          "matched": 8,
+          "status": "complete",
+          "windows": 1
+        }
+      ]
+    }
+  },
+  "v3NegatedPainChecks": [
+    {
+      "id": "syn7_00007",
+      "anchor": {
+        "start": 305,
+        "end": 309,
+        "text": "pain"
+      },
+      "detected": false,
+      "assertion": null
+    },
+    {
+      "id": "syn7_00005",
+      "anchor": {
+        "start": 920,
+        "end": 924,
+        "text": "pain"
+      },
+      "detected": false,
+      "assertion": null
+    },
+    {
+      "id": "syn7_00009",
+      "anchor": {
+        "start": 320,
+        "end": 324,
+        "text": "pain"
+      },
+      "detected": false,
+      "assertion": null
+    },
+    {
+      "id": "syn7_00017",
+      "anchor": {
+        "start": 395,
+        "end": 399,
+        "text": "pain"
+      },
+      "detected": false,
+      "assertion": null
+    },
+    {
+      "id": "syn7_00018",
+      "anchor": {
+        "start": 488,
+        "end": 492,
+        "text": "pain"
+      },
+      "detected": false,
+      "assertion": null
+    },
+    {
+      "id": "syn7_00023",
+      "anchor": {
+        "start": 615,
+        "end": 619,
+        "text": "pain"
+      },
+      "detected": false,
+      "assertion": null
+    },
+    {
+      "id": "syn7_00026",
+      "anchor": {
+        "start": 1061,
+        "end": 1065,
+        "text": "pain"
+      },
+      "detected": false,
+      "assertion": null
+    }
+  ]
+}

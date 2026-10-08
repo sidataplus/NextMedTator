@@ -1,0 +1,583 @@
+{
+  "packageId": "gliner25-clinical-evidence-v3-act-sol-17089",
+  "lineage": {
+    "base": {
+      "model": "fastino/gliner2.5-base-v1",
+      "revision": "ca906247640776a07753514055be9726f9080ead",
+      "files": {
+        "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+        "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+        "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+        "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+        "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+      }
+    },
+    "adapter": {
+      "sha256": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+      "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+      "weightsSha256": "dccb3903ae909ed517076f262aa7399ad723b4c4b3828f9d112811862f49a0bf",
+      "configSha256": "fd286577f298db446a9946da32599302422ff0b91e5a6216c94620fd194c253a",
+      "repository": "na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089",
+      "revision": "058945fb562f3c6250450ff67b842255f872ddf4"
+    },
+    "merge": "merged-export",
+    "trainedHeads": "8ad0e38ac7880a850bf3bc7b5d5d595a5ea049ffe331892b67a62a11f637e457"
+  },
+  "threshold": 0.6,
+  "browser": "151.0.7922.173",
+  "source": {
+    "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
+    "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
+    "generatorModels": [
+      "gemini-3.1-pro-high"
+    ],
+    "referenceKind": "externally-generated-labels",
+    "referenceCompleteness": "unverified",
+    "clinicalGoldStandard": false
+  },
+  "scope": {
+    "anchors": "all six supplied families with verbatim v3 core descriptions",
+    "enums": [
+      "assertion",
+      "experiencer",
+      "time_frame"
+    ],
+    "literals": {},
+    "unvalidated": "Family-specific field spans and record bindings are not exposed by the v3 decoder",
+    "protocol": "v3 qualified AttributeGroups at frozen threshold 0.6; differs from archived P4/P7b protocol"
+  },
+  "notesRunInOriginalUI": 27,
+  "allRunsComplete": true,
+  "allSourceOffsetsValid": true,
+  "rawScreenshotsHaveNoNativeTags": true,
+  "autoApplyExplicitlyRequested": true,
+  "noPredictionsInserted": true,
+  "noNoteEgress": true,
+  "temporalMetricRepresentation": "V3 time_text and other record-bound literals are not predicted or scored",
+  "generatedReferenceAgreement": {
+    "interpretation": "Agreement with unverified generated references, not clinical accuracy",
+    "exactAnchors": {
+      "reference": 618,
+      "predicted": 409,
+      "matched": 331,
+      "precisionAgreement": 0.8092909535452323,
+      "recallAgreement": 0.5355987055016181,
+      "f1Agreement": 0.6445959104186952
+    },
+    "byFamily": {
+      "care_context_occurrence": {
+        "reference": 37,
+        "predicted": 26,
+        "matched": 19,
+        "precisionAgreement": 0.7307692307692307,
+        "recallAgreement": 0.5135135135135135,
+        "f1Agreement": 0.6031746031746031
+      },
+      "condition_occurrence": {
+        "reference": 260,
+        "predicted": 157,
+        "matched": 134,
+        "precisionAgreement": 0.8535031847133758,
+        "recallAgreement": 0.5153846153846153,
+        "f1Agreement": 0.6426858513189448
+      },
+      "event_occurrence": {
+        "reference": 135,
+        "predicted": 80,
+        "matched": 47,
+        "precisionAgreement": 0.5875,
+        "recallAgreement": 0.34814814814814815,
+        "f1Agreement": 0.43720930232558136
+      },
+      "function_occurrence": {
+        "reference": 62,
+        "predicted": 54,
+        "matched": 47,
+        "precisionAgreement": 0.8703703703703703,
+        "recallAgreement": 0.7580645161290323,
+        "f1Agreement": 0.8103448275862069
+      },
+      "measurement_occurrence": {
+        "reference": 3,
+        "predicted": 2,
+        "matched": 2,
+        "precisionAgreement": 1.0,
+        "recallAgreement": 0.6666666666666666,
+        "f1Agreement": 0.8
+      },
+      "treatment_occurrence": {
+        "reference": 121,
+        "predicted": 90,
+        "matched": 82,
+        "precisionAgreement": 0.9111111111111111,
+        "recallAgreement": 0.6776859504132231,
+        "f1Agreement": 0.7772511848341233
+      }
+    },
+    "enumAgreementOnExactMatchedAnchors": {
+      "assertion": {
+        "matchedAnchorsWithReference": 330,
+        "agree": 284,
+        "fractionAgree": 0.8606060606060606
+      },
+      "experiencer": {
+        "matchedAnchorsWithReference": 124,
+        "agree": 121,
+        "fractionAgree": 0.9758064516129032
+      },
+      "time_frame": {
+        "matchedAnchorsWithReference": 114,
+        "agree": 89,
+        "fractionAgree": 0.7807017543859649
+      }
+    },
+    "conditionTimeLiteralAgreementOnMatchedAnchors": {},
+    "notes": [
+      {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 15,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00005",
+        "reference": 23,
+        "predicted": 13,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00000",
+        "reference": 33,
+        "predicted": 21,
+        "matched": 18,
+        "status": "complete",
+        "windows": 2
+      },
+      {
+        "id": "syn7_00002",
+        "reference": 26,
+        "predicted": 14,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00001",
+        "reference": 23,
+        "predicted": 16,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00003",
+        "reference": 24,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00004",
+        "reference": 17,
+        "predicted": 16,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00008",
+        "reference": 18,
+        "predicted": 16,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00009",
+        "reference": 18,
+        "predicted": 13,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00013",
+        "reference": 21,
+        "predicted": 17,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00011",
+        "reference": 27,
+        "predicted": 14,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00006",
+        "reference": 20,
+        "predicted": 12,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00014",
+        "reference": 26,
+        "predicted": 22,
+        "matched": 16,
+        "status": "complete",
+        "windows": 2
+      },
+      {
+        "id": "syn7_00010",
+        "reference": 20,
+        "predicted": 18,
+        "matched": 16,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00015",
+        "reference": 22,
+        "predicted": 13,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00016",
+        "reference": 21,
+        "predicted": 16,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00017",
+        "reference": 26,
+        "predicted": 19,
+        "matched": 15,
+        "status": "complete",
+        "windows": 2
+      },
+      {
+        "id": "syn7_00018",
+        "reference": 26,
+        "predicted": 12,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00012",
+        "reference": 16,
+        "predicted": 12,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00019",
+        "reference": 24,
+        "predicted": 18,
+        "matched": 16,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00022",
+        "reference": 17,
+        "predicted": 13,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00020",
+        "reference": 28,
+        "predicted": 15,
+        "matched": 13,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00023",
+        "reference": 25,
+        "predicted": 13,
+        "matched": 12,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00021",
+        "reference": 29,
+        "predicted": 13,
+        "matched": 11,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00024",
+        "reference": 21,
+        "predicted": 15,
+        "matched": 15,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00026",
+        "reference": 26,
+        "predicted": 14,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      {
+        "id": "syn7_00027",
+        "reference": 16,
+        "predicted": 14,
+        "matched": 8,
+        "status": "complete",
+        "windows": 1
+      }
+    ]
+  },
+  "negatedPainChecks": [
+    {
+      "id": "syn7_00007",
+      "anchor": {
+        "start": 305,
+        "end": 309,
+        "text": "pain"
+      },
+      "context": "nit over the last few days. Vitals stable. Denies pain. She exhibits verbal aggression. Reside",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00005",
+      "anchor": {
+        "start": 920,
+        "end": 924,
+        "text": "pain"
+      },
+      "context": "her comfort. She denied experiencing severe acute pain.\n\nMOBILITY / ADLs:\nResident requires a ",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00009",
+      "anchor": {
+        "start": 320,
+        "end": 324,
+        "text": "pain"
+      },
+      "context": "1:15 after a fall without apparent injury. Denies pain. She was up several times tonight, paci",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00017",
+      "anchor": {
+        "start": 395,
+        "end": 399,
+        "text": "pain"
+      },
+      "context": "mmediately; no distress was noted, and she denied pain initially. However, she later pointed t",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00018",
+      "anchor": {
+        "start": 488,
+        "end": 492,
+        "text": "pain"
+      },
+      "context": "ns stable and no signs of infection noted. Denies pain. Staff monitored for symptoms of sleep ",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00023",
+      "anchor": {
+        "start": 615,
+        "end": 619,
+        "text": "pain"
+      },
+      "context": " causes of behavioral change. The resident denies pain. Per daughter, PAINAD score is 0. No si",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    },
+    {
+      "id": "syn7_00026",
+      "anchor": {
+        "start": 1061,
+        "end": 1065,
+        "text": "pain"
+      },
+      "context": " triggers of behavioral changes. Denies untreated pain. Constipation ruled out following a lar",
+      "anchorDetected": false,
+      "predictedAssertion": null
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "syn7_00007",
+      "selectionReason": "Reported missing Denies pain",
+      "screenshot": "gliner25-clinical-evidence-v3-act-sol-17089-syn7_00007-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00007",
+        "reference": 25,
+        "predicted": 15,
+        "matched": 14,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.7,
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "gliner25-clinical-evidence-v3-act-sol-17089-syn7_00007-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2200
+        },
+        "nativeTags": 15,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
+    },
+    {
+      "id": "syn7_00011",
+      "selectionReason": "Lowest exact-anchor agreement",
+      "screenshot": "gliner25-clinical-evidence-v3-act-sol-17089-syn7_00011-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00011",
+        "reference": 27,
+        "predicted": 14,
+        "matched": 9,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.43902439024390244,
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "gliner25-clinical-evidence-v3-act-sol-17089-syn7_00011-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2200
+        },
+        "nativeTags": 14,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
+    },
+    {
+      "id": "syn7_00005",
+      "selectionReason": "Negated pain omitted by model",
+      "screenshot": "gliner25-clinical-evidence-v3-act-sol-17089-syn7_00005-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00005",
+        "reference": 23,
+        "predicted": 13,
+        "matched": 10,
+        "status": "complete",
+        "windows": 1
+      },
+      "f1Agreement": 0.5555555555555556,
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Apply all suggestions from existing run",
+        "screenshot": "gliner25-clinical-evidence-v3-act-sol-17089-syn7_00005-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2200
+        },
+        "nativeTags": 13,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
+    },
+    {
+      "id": "syn7_00014",
+      "selectionReason": "Most machine suggestions",
+      "screenshot": "gliner25-clinical-evidence-v3-act-sol-17089-syn7_00014-suggestions.png",
+      "viewport": {
+        "width": 1600,
+        "height": 1800
+      },
+      "allMachineRowsVisible": true,
+      "humanTags": 0,
+      "counts": {
+        "id": "syn7_00014",
+        "reference": 26,
+        "predicted": 22,
+        "matched": 16,
+        "status": "complete",
+        "windows": 2
+      },
+      "f1Agreement": 0.6666666666666666,
+      "machinePredictionsExported": true,
+      "autoApply": {
+        "action": "Analyze note in Auto apply mode",
+        "screenshot": "gliner25-clinical-evidence-v3-act-sol-17089-syn7_00014-auto-applied.png",
+        "mode": "auto",
+        "viewport": {
+          "width": 1600,
+          "height": 2800
+        },
+        "nativeTags": 22,
+        "allNativeRowsVisible": true,
+        "individuallyReviewed": false,
+        "reviewStatus": "unreviewed",
+        "repeatAddsNoDuplicates": true,
+        "machineProvenanceExported": true,
+        "originalPredictionsUnchanged": true
+      }
+    }
+  ]
+}

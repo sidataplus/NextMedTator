@@ -105,7 +105,7 @@ test('real GLiNER tokenizer matches Hugging Face token ids when the file is pres
     const path = process.env.GLINER_TOKENIZER;
     if (!path)
         return;
-    const samples = ['(', ')', '[E]', '[SEP_TEXT]', 'entities', 'diabetes', 'condition occurrence', 'Her', 'patient\'s', '10mg', 'nonexistentxyzabc', 'ไทย'];
+    const samples = ['(', ')', '[E]', '[SEP_TEXT]', 'entities', 'diabetes', 'condition occurrence', 'Her', 'patient\'s', '10mg', 'nonexistentxyzabc', 'ไทย', '', ' ', 'entities [DESCRIPTION] clinical_condition: A diagnosis, disorder, symptom, or clinical state; preserve context without deciding a phenotype.', '[E]pain[SEP_TEXT]', 'x [DESCRIPTION] Café 👩‍⚕️. [DESCRIPTION] ไทย', '[DESCRIPTION][E]', ' x\n[DESCRIPTION] y '];
     const model = GlinerTokenizer.fromJson(readFileSync(path, 'utf8'));
     const probe = spawnSync('python3', ['-c', `from tokenizers import Tokenizer\nimport json,sys\ntok=Tokenizer.from_file(sys.argv[1])\nsamples=json.loads(sys.argv[2])\nprint(json.dumps([tok.encode(s, add_special_tokens=False).ids for s in samples]))`, path, JSON.stringify(samples)], { encoding: 'utf8' });
     assert.equal(probe.status, 0, probe.stderr);

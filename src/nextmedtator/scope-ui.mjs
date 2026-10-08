@@ -1,3 +1,4 @@
+import {thresholdControl,suggestionThreshold} from './threshold.mjs';
 import {CLINICAL_CONTRACT, SCOPE_PRESETS, FAMILY_TITLES, presetScope, fieldSupport, nativeScopeDTD} from './scope.mjs';
 import {localDownload} from './bundle.mjs';
 import {jsonParse} from './integrity.mjs';
@@ -14,16 +15,16 @@ export function renderScopeEditor(assist){
     row.append(node('strong','Suggestion scope'),button(assist.scopeEditing?'Close editor':'Build / edit scope',()=>{assist.scopeEditing=!assist.scopeEditing;assist.render();},'scope-edit',assist.busy));
     section.append(row,node('p',assist.scope?`${assist.scope.semanticSchema.name} · ${assist.scope.semanticSchema.families.length} families · ${assist.scope.semanticSchema.concepts.length} custom concepts`:'Using the loaded annotation schema. Build a clinical scope to customize targets within the training grammar.',{class:'muted','data-testid':'scope-active'}));
     if(!assist.scopeEditing)return section;
-    const draft=assist.scopeDraft,s=draft.semanticSchema;
+    const draft=assist.scopeDraft,s=draft.semanticSchema,codec=assist.model?.manifest.variants[0]?.codec;
     section.append(node('p','Start broadly, then choose families and add your own concepts. Families, field names and choice vocabularies come from clinical-evidence/0.1.',{class:'muted'}));
     section.append(node('p','Load or generate a compatible annotation schema, define your scope, then Apply scope and analyze. Custom targets can reduce recall; compare a broad run when checking for omissions.',{class:'muted'}));
     const presets=node('select',null,{'aria-label':'Broad starting preset','data-testid':'scope-preset',disabled:assist.busy});
     presets.append(node('option','Choose a broad starting preset',{value:''}));for(const p of SCOPE_PRESETS)presets.append(node('option',p.name,{value:p.id}));
-    presets.onchange=()=>{if(!presets.value)return;assist.scopeDraft=presetScope(presets.value);assist.render();};section.append(label('Broad starting preset',presets));
+    presets.onchange=()=>{if(!presets.value)return;assist.scopeDraft=presetScope(presets.value,codec);assist.render();};section.append(label('Broad starting preset',presets));
     section.append(input('Scope name',s.name,v=>s.name=v,{id:'scope-name',maxlength:100}),input('Scope version',s.version,v=>s.version=v,{id:'scope-version',maxlength:40}));
     for(const [index,task]of s.tasks.entries())section.append(input(index?'Additional scope definition':'Scope definition',task.definition,v=>task.definition=v,{id:index?'scope-additional-definition':'scope-definition',area:true,rows:3,maxlength:1000}));
     section.append(node('p','Descriptions can state included concepts and exclusions. They guide the model; relevance still needs review.',{class:'muted'}));
-    section.append(input('Suggestion threshold',draft.threshold,v=>draft.threshold=Number(v),{id:'scope-threshold',type:'number',min:0,max:1,step:.05}));
+    section.append(thresholdControl({override:draft.threshold,variant:assist.model?.manifest.variants[0],disabled:assist.busy,id:'scope-threshold',onChange:(value,render)=>{draft.threshold=value==null?suggestionThreshold(null,null,assist.model?.manifest.variants[0]).threshold:Number(value);if(render)assist.render();}}));
     const families=node('fieldset');families.append(node('legend','Training record families'));
     for(const [family,title]of Object.entries(FAMILY_TITLES)){
         const check=node('input',null,{type:'checkbox','aria-label':title,'data-testid':'scope-family-'+family});check.checked=s.families.includes(family);
@@ -48,8 +49,8 @@ export function renderScopeEditor(assist){
         const box=node('fieldset');box.append(node('legend',FAMILY_TITLES[family]),node('p',`Anchor: ${CLINICAL_CONTRACT.families[family].anchor} (always retained as the exact native span).`,{class:'muted'}));
         for(const [name,definition]of Object.entries(CLINICAL_CONTRACT.families[family].fields)){
             if(name===CLINICAL_CONTRACT.families[family].anchor)continue;
-            const error=fieldSupport(family,name),check=node('input',null,{type:'checkbox','aria-label':`${family}.${name}`,'data-testid':`scope-field-${family}-${name}`,disabled:!!error});check.checked=draft.fields[family].includes(name);
-            check.onchange=()=>{const names=draft.fields[family];draft.fields[family]=check.checked?[...names,name]:names.filter(n=>n!==name);};
+            const error=fieldSupport(family,name,codec),check=node('input',null,{type:'checkbox','aria-label':`${family}.${name}`,'data-testid':`scope-field-${family}-${name}`,disabled:!!error&&!draft.fields[family].includes(name)});check.checked=draft.fields[family].includes(name);
+            check.onchange=()=>{const names=draft.fields[family];draft.fields[family]=check.checked?[...names,name]:names.filter(n=>n!==name);if(error)assist.render();};
             const row=node('label',null,{class:'check'});row.append(check,node('span',name));box.append(row);
             if(error)box.append(node('p',error,{class:'muted'}));
             else if(definition.kind==='choice')box.append(node('p',definition.exportValues.join(' · '),{class:'muted'}));

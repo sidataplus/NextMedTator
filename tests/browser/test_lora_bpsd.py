@@ -1,6 +1,7 @@
-"""Qualify actual P7b Auto apply in a user-configured BPSD scope.
+"""Qualify actual configured adapter Auto apply in a user-configured BPSD scope.
 
-The four supplied synthetic notes and threshold match the archived P4 captures.
+The four supplied synthetic notes match the archived P4/P7b captures.
+The threshold and attribute protocol follow the imported model contract.
 No predictions are injected, and BPSD is not a built-in preset.
 """
 
@@ -10,15 +11,13 @@ from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = Path(
-    os.environ.get("NMT_LORA_PACKAGE", "/workspace/work/clinical-p7b.nmt-model.zip")
+    os.environ.get("NMT_LORA_PACKAGE", "/workspace/work/clinical-v3-17089.nmt-model.zip")
 )
 assert PACKAGE.is_file(), "An actual exported model package is required"
 with zipfile.ZipFile(PACKAGE) as archive:
     manifest = json.loads(archive.read("manifest.json"))
-assert manifest["id"] == "gliner25-clinical-evidence-p7b", (
-    "The P7b captures must use P7b, not P4"
-)
-OUT = ROOT / "test-results/p7b-bpsd"
+MODEL_TAG = manifest['id'].removeprefix('gliner25-clinical-evidence-')
+OUT = ROOT / ('test-results/'+MODEL_TAG+'-bpsd')
 OUT.mkdir(parents=True, exist_ok=True)
 URL = "http://127.0.0.1:4197/"
 DEFINITION = "Extract behavioral and psychological symptoms of dementia: agitation, aggression, pacing, wandering, care resistance, yelling, repetitive questioning, hallucinations, delusions, depression, anxiety, apathy, disinhibition and disturbed sleep. Exclude falls, diagnoses, pain, medications, measurements, ADLs and care services."
@@ -71,6 +70,13 @@ try:
    app_hotpot.vpp.$data.mn4anns=1;app_hotpot.vpp.set_ann_idx(0);return names;}""",
             notes,
         )
+        page.get_by_label(
+            "Import model package into the annotation assistance panel"
+        ).set_input_files(str(PACKAGE))
+        expect(page.get_by_test_id("assist-message")).to_contain_text("package loaded")
+        expect(page.get_by_test_id("assist-model-identity")).to_have_text(
+            "Active model: " + manifest["id"]
+        )
         page.get_by_test_id("scope-edit").click()
         page.get_by_test_id("scope-preset").select_option("events-function")
         page.get_by_test_id("scope-family-function_occurrence").uncheck()
@@ -80,23 +86,16 @@ try:
         expect(page.get_by_test_id("assist-message")).to_contain_text(
             "Clinical annotation schema loaded"
         )
-        page.get_by_label(
-            "Import model package into the annotation assistance panel"
-        ).set_input_files(str(PACKAGE))
-        expect(page.get_by_test_id("assist-message")).to_contain_text("package loaded")
-        expect(page.get_by_test_id("assist-model-identity")).to_have_text(
-            "Active model: " + manifest["id"]
-        )
         page.get_by_test_id("scope-apply").click()
         expect(page.get_by_test_id("assist-message")).to_contain_text(
             "Scope applied: BPSD"
         )
-        page.get_by_test_id("assist-mode").select_option("auto")
+        expect(page.get_by_test_id("assist-mode")).to_have_value("auto")
         for name in names:
             page.get_by_role("checkbox", name=name, exact=True).check()
         page.get_by_test_id("assist-analyze-selected").click()
         print(
-            "Running actual P7b: same BPSD event scope, four supplied notes, Auto apply",
+            "Running actual configured adapter: same BPSD event scope, four supplied notes, Auto apply",
             flush=True,
         )
         page.wait_for_function(
@@ -141,11 +140,11 @@ try:
                 ).click()
             # Resize and scroll real browser panes until every native and suggestion row fits.
             fit = False
-            for height in [2000, 2200, 2400, 2600, 2800, 3000, 3200]:
+            for height in [2200, 2400, 2600, 2800, 3000, 3200]:
                 page.set_viewport_size({"width": 1600, "height": height})
                 if count:
                     page.get_by_role("table", name="Machine suggestions").evaluate(
-                        'el=>el.scrollIntoView({block:"end"})'
+                        "el=>el.closest('.body').scrollTop=0"
                     )
                     page.locator("#mui_annlist").evaluate("el=>el.scrollTop=0")
                     fit = page.get_by_role(
@@ -162,14 +161,18 @@ try:
                 if fit:
                     break
             assert fit, "Screenshot must show every actual tag"
-            screenshot = f"p7b-bpsd-{note['id']}-auto.png"
+            screenshot = f"{MODEL_TAG}-bpsd-{note['id']}-auto.png"
             expect(page.get_by_test_id("assist-model-identity")).to_be_in_viewport()
-            page.screenshot(path=str(OUT / screenshot), full_page=True)
+            expect(page.get_by_test_id("assist-threshold")).to_have_attribute("type", "range")
+            expect(page.get_by_test_id("assist-threshold")).to_be_in_viewport()
+            # Capture the rendered UI through the last row; omit unused blank space below.
+            bottom = page.evaluate("""()=>Math.ceil(Math.max(document.querySelector('.tag-table tbody tr:last-child').getBoundingClientRect().bottom,document.querySelector('nextmedtator-assist').shadowRoot.querySelector('[data-testid=assist-compact-suggestion]:last-child').getBoundingClientRect().bottom))+16""") if count else height
+            page.screenshot(path=str(OUT / screenshot), clip={"x":0,"y":0,"width":1600,"height":bottom})
             with page.expect_download() as d:
                 page.get_by_role(
                     "button", name="Export evidence project", exact=True
                 ).click()
-            bundle = OUT / f"p7b-bpsd-{note['id']}.nmt.zip"
+            bundle = OUT / f"{MODEL_TAG}-bpsd-{note['id']}.nmt.zip"
             d.value.save_as(str(bundle))
             with zipfile.ZipFile(bundle) as archive:
                 portable = json.loads(archive.read("project.json"))
@@ -207,16 +210,16 @@ try:
         page.set_viewport_size({"width": 1600, "height": 2600})
         page.get_by_test_id("scope-edit").click()
         page.get_by_test_id("scope-name").scroll_into_view_if_needed()
-        page.screenshot(path=str(OUT / "p7b-bpsd-scope-editor.png"), full_page=True)
+        page.screenshot(path=str(OUT / f"{MODEL_TAG}-bpsd-scope-editor.png"), full_page=True)
         with page.expect_download() as d:
             page.get_by_test_id("scope-export").click()
-        d.value.save_as(str(OUT / "p7b-bpsd-scope.json"))
+        d.value.save_as(str(OUT / f"{MODEL_TAG}-bpsd-scope.json"))
         assert not errors, errors
         assert all(
             r["url"].startswith(URL) and r["method"] == "GET" and not r["body"]
             for r in requests
         ), requests
-        (OUT / "p7b-bpsd-report.json").write_text(
+        (OUT / f"{MODEL_TAG}-bpsd-report.json").write_text(
             json.dumps(
                 {
                     "browser": browser.version,
@@ -226,7 +229,7 @@ try:
                     "source": fixture["source"],
                     "customConfigurationNotPreset": True,
                     "mode": "auto",
-                    "threshold": 0.5,
+                    "threshold": result["scope"]["threshold"],
                     "definition": DEFINITION,
                     "allRunsComplete": True,
                     "allSourceOffsetsValid": True,

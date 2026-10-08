@@ -1,0 +1,39 @@
+{
+  "model": "gliner25-clinical-evidence-v3-act-sol-17089",
+  "realWeights": true,
+  "noteEgress": false,
+  "originalUI": {
+    "baselineThreshold": 0.6,
+    "baselineSuggestions": 5,
+    "userThreshold": 0.9,
+    "stricterSuggestions": 1,
+    "batchThresholds": [
+      0.9,
+      0.9
+    ],
+    "oldRunsUnchanged": true,
+    "scopeUnchanged": true,
+    "keyboardBounds": [
+      0,
+      1
+    ],
+    "defaultMode": "auto",
+    "nativeTagsAt06": 5,
+    "freshCopyNativeTagsAt09": 1,
+    "existingNativeTagsPreserved": true,
+    "allAutoAppliedUnreviewed": true,
+    "allScreenshotRowsVisible": true,
+    "corpusTransport": true,
+    "portableExport": true,
+    "busyControlDisabled": true
+  },
+  "preview": {
+    "baselineSuggestions": 3,
+    "stricterSuggestions": 2,
+    "oldRunsUnchanged": true,
+    "busyControlDisabled": true,
+    "defaultMode": "auto",
+    "allAutoAppliedUnreviewed": true,
+    "assistedModeRemainsAvailable": true
+  }
+}

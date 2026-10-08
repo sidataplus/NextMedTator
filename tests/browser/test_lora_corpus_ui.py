@@ -22,8 +22,9 @@ from playwright.sync_api import sync_playwright, expect
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT/'scripts'))
 from prepare_validation_notes import agreement
+from lora_validation import validation_fixture
 
-PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p7b.nmt-model.zip'))
+PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-v3-17089.nmt-model.zip'))
 URL = 'http://127.0.0.1:4194/'
 
 
@@ -32,6 +33,7 @@ def run():
     fixture = json.loads((ROOT/'tests/fixtures/lora-clinical-samples.json').read_text())
     with zipfile.ZipFile(PACKAGE) as package:
         manifest = json.loads(package.read('manifest.json'))
+    fixture,manifest=validation_fixture(fixture,PACKAGE)
     lines = ['<!ENTITY name "generated_clinical_samples">']
     for family, definition in fixture['schema']['families'].items():
         lines.append(f'<!ELEMENT {family} (#PCDATA)>')
@@ -74,6 +76,7 @@ def run():
                 app_hotpot.vpp.$data.mn4anns=1;app_hotpot.vpp.set_ann_idx(0);return names;
             }''', {'notes':fixture['notes'],'dtdText':'\n'.join(lines)})
             assert len(names) == 27
+            page.get_by_test_id('assist-mode').select_option('assisted')
             page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(PACKAGE))
             expect(page.get_by_test_id('assist-message')).to_contain_text('package loaded')
             for name in names:
@@ -266,7 +269,7 @@ def run():
                       'browser':browser.version,'source':fixture['source'],'scope':fixture['scope'],
                       'notesRunInOriginalUI':27,'allRunsComplete':True,'allSourceOffsetsValid':True,
                       'rawScreenshotsHaveNoNativeTags':True,'autoApplyExplicitlyRequested':True,'noPredictionsInserted':True,'noNoteEgress':True,
-                      'temporalMetricRepresentation':'Legacy time_text CDATA assessed through its exact retained model evidence span; machine outputs unchanged',
+                      'temporalMetricRepresentation':('V3 time_text and other record-bound literals are not predicted or scored' if manifest['variants'][0]['codec']=='gliner25-clinical-v3-spans-v1' else 'Legacy time_text CDATA assessed through its exact retained model evidence span; machine outputs unchanged'),
                       'generatedReferenceAgreement':metrics,'negatedPainChecks':pain_checks,'screenshots':examples}
             (out/'lora-original-corpus-ui.json').write_text(json.dumps(report,indent=2)+'\n')
             (out/'lora-original-corpus-predictions.json').write_text(json.dumps({'source':fixture['source'],'results':batch},indent=2)+'\n')

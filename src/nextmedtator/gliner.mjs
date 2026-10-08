@@ -1,3 +1,4 @@
+import {clinicalV3Prompt} from './clinical-v3.mjs';
 import { invariant, jsonParse, OffsetMap, uuid } from './integrity.mjs';
 /** Application-owned GLiNER2.5 boundary span codec. Packages supply graphs and a tokenizer, never executable code. */
 export const GLINER_CODEC = 'gliner25-boundary-span-v1';
@@ -149,8 +150,10 @@ export class GlinerTokenizer {
         invariant(model?.type === 'Unigram' && model.byte_fallback !== true && Array.isArray(model.vocab), 'Tokenizer must be an Unigram model without byte fallback');
         const added = new Map();
         for (const token of parsed.added_tokens ?? [])
-            if (token.special && typeof token.content === 'string' && Number.isInteger(token.id))
+            if (token.special && typeof token.content === 'string' && Number.isInteger(token.id)){
+                invariant(token.content.length>0&&!token.single_word&&!token.lstrip&&!token.rstrip&&!token.normalized,'Unsupported special-token matching rules');
                 added.set(token.content, token.id);
+            }
         return new GlinerTokenizer(model.vocab, model.unk_id, added);
     }
     idFor(token) { return this.added.get(token) ?? this.tokenToId.get(token) ?? this.unkId; }
@@ -158,13 +161,16 @@ export class GlinerTokenizer {
     unigramPieces(sentence) { return this.#encodeUnigram(sentence); }
     encodeIds(text) {
         invariant(typeof text === 'string', 'Token text required');
-        if (this.added.has(text))
-            return [this.added.get(text)];
-        const ids = [];
-        for (const piece of metaspace(normalizeToken(text)))
-            for (const token of this.#encodeUnigram(piece))
-                ids.push(this.tokenToId.get(token) ?? this.unkId);
-        return ids;
+        const ids = [],specials=[...this.added.keys()].sort((a,b)=>b.length-a.length);
+        const plain=value=>{const normalized=normalizeToken(value);if(!normalized)return;for(const piece of metaspace(normalized))for(const token of this.#encodeUnigram(piece))ids.push(this.tokenToId.get(token)??this.unkId);};
+        // Added special tokens are extracted before normalization, including
+        // markers embedded in a parent/description string by the source schema.
+        let start=0,at=0;
+        while(at<text.length){const special=specials.find(token=>text.startsWith(token,at));
+            if(!special){at++;continue;}
+            plain(text.slice(start,at));ids.push(this.added.get(special));at+=special.length;start=at;
+        }
+        plain(text.slice(start));return ids;
     }
     #prefixes(bytes, start) {
         const found = [];
@@ -256,6 +262,7 @@ export function schemaEntityLabels(schema) {
 /** Family labels, then attribute labels in the alphabetical order GLiNER2 inserts into the entity prompt. */
 export function schemaPrompt(schema) {
     const { labels, byLabel } = schemaEntityLabels(schema);
+    if(schema.clinicalV3)return clinicalV3Prompt(schema,{labels,byLabel});
     if(schema.clinicalScope){
         const rows=new Map(),groups=new Map();
         for(const [family,def]of Object.entries(schema.families))for(const [field,spec]of Object.entries(def.fields)){

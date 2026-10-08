@@ -1,0 +1,1123 @@
+{
+  "packageId": "gliner25-clinical-evidence-v3-act-sol-17089",
+  "packageBytes": 790603065,
+  "packageSha256": "d5917c7a5e74ab5858d99d1eb3300067f31e8f7eb9f4e8bf5c1c2d2c63a5115a",
+  "base": {
+    "model": "fastino/gliner2.5-base-v1",
+    "revision": "ca906247640776a07753514055be9726f9080ead",
+    "files": {
+      "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+      "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+      "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+      "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+      "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+    }
+  },
+  "adapter": {
+    "sha256": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+    "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+    "weightsSha256": "dccb3903ae909ed517076f262aa7399ad723b4c4b3828f9d112811862f49a0bf",
+    "configSha256": "fd286577f298db446a9946da32599302422ff0b91e5a6216c94620fd194c253a",
+    "repository": "na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089",
+    "revision": "058945fb562f3c6250450ff67b842255f872ddf4"
+  },
+  "merge": {
+    "activeToMergedMaxAbsoluteError": 6.4373016357421875e-06,
+    "baseToAdapterEncoderMaxAbsoluteChange": 2.6619296073913574,
+    "adapterTensorCount": 230,
+    "trainedHeads": "8ad0e38ac7880a850bf3bc7b5d5d595a5ea049ffe331892b67a62a11f637e457"
+  },
+  "export": {
+    "mainExportErrors": {
+      "start_logits": 5.245208740234375e-06,
+      "end_logits": 4.5299530029296875e-06,
+      "pair_indices": 0.0,
+      "pair_logits": 1.049041748046875e-05,
+      "pair_valid": 0.0,
+      "cls_logits": 0.0,
+      "text_states": 4.058703780174255e-06,
+      "query_states": 3.6284327507019043e-06,
+      "rel_role_states": 0.0,
+      "candidate_states": 1.4901161193847656e-06,
+      "null_logits": 4.649162292480469e-06
+    },
+    "sourceCases": [
+      {
+        "case": 0,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 4.76837158203125e-06,
+          "end_logits": 4.5299530029296875e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.049041748046875e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 4.058703780174255e-06,
+          "query_states": 3.6284327507019043e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.6093254089355469e-06,
+          "null_logits": 4.649162292480469e-06
+        }
+      },
+      {
+        "case": 1,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 3.5762786865234375e-06,
+          "end_logits": 4.291534423828125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.1920928955078125e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 3.9637088775634766e-06,
+          "query_states": 3.0994415283203125e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.5497207641601562e-06,
+          "null_logits": 3.814697265625e-06
+        }
+      },
+      {
+        "case": 2,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 3.546476364135742e-06,
+          "end_logits": 3.0994415283203125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 5.4836273193359375e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 5.125999450683594e-06,
+          "query_states": 1.9073486328125e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.6987323760986328e-06,
+          "null_logits": 1.9073486328125e-06
+        }
+      },
+      {
+        "case": 3,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 1.9073486328125e-06,
+          "end_logits": 1.9073486328125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.049041748046875e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 3.3676624298095703e-06,
+          "query_states": 2.473592758178711e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.341104507446289e-06,
+          "null_logits": 8.106231689453125e-06
+        }
+      },
+      {
+        "case": 4,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 4.76837158203125e-06,
+          "end_logits": 3.814697265625e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 4.291534423828125e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 3.337860107421875e-06,
+          "query_states": 3.2186508178710938e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.1175870895385742e-06,
+          "null_logits": 2.86102294921875e-06
+        }
+      },
+      {
+        "case": 5,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 7.152557373046875e-06,
+          "end_logits": 4.76837158203125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 3.814697265625e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 6.67572021484375e-06,
+          "query_states": 6.4373016357421875e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.385807991027832e-06,
+          "null_logits": 7.867813110351562e-06
+        }
+      },
+      {
+        "case": 6,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 7.867813110351562e-06,
+          "end_logits": 7.62939453125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 3.4332275390625e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 5.245208740234375e-06,
+          "query_states": 9.5367431640625e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.430511474609375e-06,
+          "null_logits": 9.5367431640625e-06
+        }
+      },
+      {
+        "case": 7,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 8.58306884765625e-06,
+          "end_logits": 1.8358230590820312e-05,
+          "pair_indices": 0.0,
+          "pair_logits": 3.814697265625e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 1.3828277587890625e-05,
+          "query_states": 1.0013580322265625e-05,
+          "rel_role_states": 0.0,
+          "candidate_states": 3.6954879760742188e-06,
+          "null_logits": 1.239776611328125e-05
+        }
+      }
+    ],
+    "heads": {
+      "attributes": {
+        "attr_logits": 4.76837158203125e-07
+      },
+      "records": {
+        "exportErrors": {
+          "assign_logits": 2.384185791015625e-07,
+          "object_logits": 1.1175870895385742e-08,
+          "latent_logits": 3.725290298461914e-09
+        },
+        "variedShapeErrors": {
+          "assign_logits": 4.172325134277344e-07,
+          "object_logits": 3.725290298461914e-08,
+          "latent_logits": 2.60770320892334e-08
+        }
+      },
+      "relations": {
+        "exportErrors": {
+          "rel_logits": 2.682209014892578e-07
+        },
+        "variedShapeErrors": {
+          "rel_logits": 1.4901161193847656e-07
+        }
+      }
+    }
+  },
+  "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+  "exporterVersion": "0.1.0",
+  "scope": "Technical source/ONNX conformance on synthetic English cases; no clinical accuracy claim",
+  "browser": {
+    "realMergedAdapterWeights": true,
+    "packageId": "gliner25-clinical-evidence-v3-act-sol-17089",
+    "packageBytes": 790603065,
+    "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+    "adapterHash": "53bdd3c702275d59f24552b942cee00b0eef60617ddf686b87c479baa9d8f0c2",
+    "browserConformance": {
+      "kind": "gliner25-clinical-v3-spans-v1",
+      "manifestHash": "7f7c47b9f61abb2f54d829e6801285fedb582f1eac9c0fd4e354572d2d332850",
+      "variantId": "wasm-fp32",
+      "backend": "wasm",
+      "precision": "fp32",
+      "results": [
+        {
+          "fixture": "source-case-0.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "dd36bda1-110a-4e69-88d1-f8e4fbd28f3c",
+              "documentId": "pending",
+              "family": "diagnosis",
+              "anchor": [
+                {
+                  "start": 16,
+                  "end": 24,
+                  "text": "diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "diabetes"
+              },
+              "evidence": [],
+              "score": 0.9719032857041562,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "cd1ede95-9dec-48dd-b58d-a397e6dc9ccd",
+              "documentId": "pending",
+              "family": "medication",
+              "anchor": [
+                {
+                  "start": 35,
+                  "end": 44,
+                  "text": "metformin"
+                }
+              ],
+              "fields": {
+                "concept": "metformin"
+              },
+              "evidence": [],
+              "score": 0.9991997490207192,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "146d2804-06b4-463f-bc9b-142f71d17fd6",
+              "documentId": "pending",
+              "family": "symptom",
+              "anchor": [
+                {
+                  "start": 16,
+                  "end": 24,
+                  "text": "diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "diabetes"
+              },
+              "evidence": [],
+              "score": 0.9399563694986446,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-0.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1152,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 1.049041748046875e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 2.384185791015625e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-1.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "b16ceaf2-65ae-4cf9-80d4-0b7423141bcc",
+              "documentId": "pending",
+              "family": "person",
+              "anchor": [
+                {
+                  "start": 0,
+                  "end": 4,
+                  "text": "John"
+                }
+              ],
+              "fields": {
+                "concept": "John"
+              },
+              "evidence": [],
+              "score": 0.9971765308127741,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "51f025be-c3c2-4b67-b551-fce7682af4b6",
+              "documentId": "pending",
+              "family": "organization",
+              "anchor": [
+                {
+                  "start": 14,
+                  "end": 20,
+                  "text": "Google"
+                }
+              ],
+              "fields": {
+                "concept": "Google"
+              },
+              "evidence": [],
+              "score": 0.9986121516254003,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "ba929920-c66c-4956-a322-72754a19f00f",
+              "documentId": "pending",
+              "family": "location",
+              "anchor": [
+                {
+                  "start": 24,
+                  "end": 31,
+                  "text": "Seattle"
+                }
+              ],
+              "fields": {
+                "concept": "Seattle"
+              },
+              "evidence": [],
+              "score": 0.9976432594304888,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-1.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1152,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 1.0967254638671875e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 5.7220458984375e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-2.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "df5f1f7f-8ae2-4347-ac0f-ef5ee067047c",
+              "documentId": "pending",
+              "family": "condition",
+              "anchor": [
+                {
+                  "start": 37,
+                  "end": 52,
+                  "text": "denies diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "denies diabetes"
+              },
+              "evidence": [],
+              "score": 0.5148464297624424,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-2.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 5.9604644775390625e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1,
+              "maxAbsoluteError": 1.9073486328125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-3.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "971dcc34-d12b-4a78-81f3-9350c811ee80",
+              "documentId": "pending",
+              "family": "disease",
+              "anchor": [
+                {
+                  "start": 16,
+                  "end": 29,
+                  "text": "breast cancer"
+                }
+              ],
+              "fields": {
+                "concept": "breast cancer"
+              },
+              "evidence": [],
+              "score": 0.992209827859271,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "3d123aad-6c6f-4c6d-be53-62f556254ae7",
+              "documentId": "pending",
+              "family": "drug",
+              "anchor": [
+                {
+                  "start": 40,
+                  "end": 47,
+                  "text": "aspirin"
+                }
+              ],
+              "fields": {
+                "concept": "aspirin"
+              },
+              "evidence": [],
+              "score": 0.9992024948858473,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-3.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 768,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 9.5367431640625e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 8.106231689453125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-4.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "fc85d03d-dacb-4986-89ae-e37c8c4c69eb",
+              "documentId": "pending",
+              "family": "diagnosis",
+              "anchor": [
+                {
+                  "start": 0,
+                  "end": 8,
+                  "text": "Diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "Diabetes"
+              },
+              "evidence": [],
+              "score": 0.9906304701335141,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-4.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 4.291534423828125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1,
+              "maxAbsoluteError": 2.86102294921875e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-5.json",
+          "pass": true,
+          "status": "complete",
+          "records": []
+        },
+        {
+          "fixture": "model-reference-5.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 768,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 2.09808349609375e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 5.0067901611328125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-6.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "f204d7e0-fdfa-4a4a-adec-fbfc600b3ee1",
+              "documentId": "pending",
+              "family": "clinical_condition",
+              "anchor": [
+                {
+                  "start": 19,
+                  "end": 23,
+                  "text": "pain"
+                }
+              ],
+              "fields": {
+                "concept": "pain",
+                "assertion": "negated",
+                "experiencer": "patient",
+                "time_frame": "current"
+              },
+              "evidence": [],
+              "score": 0.7416981751450393,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "34af314e-b4b7-4f2d-b52e-2a11151d8e12",
+              "documentId": "pending",
+              "family": "clinical_condition",
+              "anchor": [
+                {
+                  "start": 40,
+                  "end": 48,
+                  "text": "dementia"
+                }
+              ],
+              "fields": {
+                "concept": "dementia",
+                "assertion": "affirmed",
+                "experiencer": "family",
+                "time_frame": "current"
+              },
+              "evidence": [],
+              "score": 0.9971368683448681,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "2cee0204-56bb-4ccb-bf28-2df578e55182",
+              "documentId": "pending",
+              "family": "clinical_event",
+              "anchor": [
+                {
+                  "start": 76,
+                  "end": 84,
+                  "text": "agitated"
+                }
+              ],
+              "fields": {
+                "concept": "agitated",
+                "assertion": "affirmed",
+                "experiencer": "patient",
+                "time_frame": "historical"
+              },
+              "evidence": [],
+              "score": 0.9869435397019853,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-6.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 6912,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3456,
+              "maxAbsoluteError": 3.0517578125e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3456,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 18,
+              "maxAbsoluteError": 1.239776611328125e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-7.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "a75c3bda-582a-4ce9-a2dd-26148af939f9",
+              "documentId": "pending",
+              "family": "clinical_event",
+              "anchor": [
+                {
+                  "start": 7,
+                  "end": 13,
+                  "text": "pacing"
+                }
+              ],
+              "fields": {
+                "concept": "pacing",
+                "assertion": "affirmed",
+                "experiencer": "patient",
+                "time_frame": "current"
+              },
+              "evidence": [],
+              "score": 0.9942408894693047,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "e5ae2739-bd82-46c2-8367-cd77df9ff134",
+              "documentId": "pending",
+              "family": "clinical_event",
+              "anchor": [
+                {
+                  "start": 15,
+                  "end": 23,
+                  "text": "shouting"
+                }
+              ],
+              "fields": {
+                "concept": "shouting",
+                "assertion": "affirmed",
+                "experiencer": "patient",
+                "time_frame": "current"
+              },
+              "evidence": [],
+              "score": 0.9907828645886865,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            },
+            {
+              "id": "d9bedec3-eb02-4a71-bb85-69f9b6825d8e",
+              "documentId": "pending",
+              "family": "clinical_event",
+              "anchor": [
+                {
+                  "start": 28,
+                  "end": 50,
+                  "text": "resisting morning care"
+                }
+              ],
+              "fields": {
+                "concept": "resisting morning care",
+                "assertion": "affirmed",
+                "experiencer": "patient",
+                "time_frame": "current"
+              },
+              "evidence": [],
+              "score": 0.7771562036681854,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-clinical-v3-spans-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-7.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 4992,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2496,
+              "maxAbsoluteError": 4.00543212890625e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2496,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 13,
+              "maxAbsoluteError": 1.049041748046875e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "attributes-reference.json",
+          "checks": {
+            "attr_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 128,
+              "maxAbsoluteError": 3.5762786865234375e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "records-reference.json",
+          "checks": {
+            "assign_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 20,
+              "maxAbsoluteError": 4.76837158203125e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "object_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.1175870895385742e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "latent_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 3.725290298461914e-09,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "records-varied-reference.json",
+          "checks": {
+            "assign_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 90,
+              "maxAbsoluteError": 4.76837158203125e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "object_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 4.0978193283081055e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "latent_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 2.60770320892334e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "relations-reference.json",
+          "checks": {
+            "rel_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 2.5331974029541016e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "relations-varied-reference.json",
+          "checks": {
+            "rel_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 2.086162567138672e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    "installedModelOfflineRestart": true,
+    "offlineInferenceReviewCompareExportReopen": true,
+    "adapterLineagePreserved": true,
+    "originalVueCodeMirrorAcceptRejectExport": true,
+    "privateCanaryNoEgress": true,
+    "enumAndAnchoredSpanSchemaInference": false,
+    "v3SourceAttributeFixturesPassed": true,
+    "browser": "151.0.7922.173"
+  },
+  "modelCard": {
+    "repository": "na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089",
+    "revision": "058945fb562f3c6250450ff67b842255f872ddf4",
+    "provenance": {
+      "training_job": 17089,
+      "selected_epoch": 4,
+      "seed": 42,
+      "learning_rate": 0.0003,
+      "training_adapter_fingerprint": "54ba392d0ef124b291e8d5e1eeb9e77a80ba207a0de1b12b55a76f8830dd8de6",
+      "weight_and_adapter_config_bytes_unchanged": true,
+      "private": true,
+      "raw_data_included": false,
+      "full_campaign_selection": false,
+      "benchmark_results_status": "pending",
+      "evaluation_jobs": [
+        17110,
+        17113
+      ]
+    },
+    "thresholds": {
+      "clinical_core": 0.6,
+      "family_choice": 0.6,
+      "literal": 0.6,
+      "schema_views": 0.6,
+      "shared_axes": "one_value_softmax_no_attribute_threshold",
+      "public_diagnostic": 0.5,
+      "selection_sha256": "704c27e990f38f06dc16e16756f32f5fc9db06fad62b51ff341ab5283f03ffe7"
+    },
+    "metadataSha256": {
+      "README.md": "d1e876df3f72daecfd7b94625d335d5731a27b5fc2fe7043a8ce3921b4738938",
+      "schema_v3.json": "f4d6127a93171f412e81b4f06936f55bd6f54b98b58564ac3903052cd1ef345c",
+      "thresholds.json": "e21639de8cd53cc1c62c9e8da6526cbb390520a13ef1da203c92ea5f9d2db961",
+      "provenance.json": "adbbadb4904da2b861c5c012f63f6a5418ae4eb05c3fd37424c912d51bfd9bd4",
+      "provenance/runtime_fingerprint.json": "84b5640035fba20b3077c1f5503d9469e9472d2f0aa9121198e621814f6b3acf",
+      "provenance/training_source_snapshot.json": "cd52f83d70cc9933217b863b1c19a37246d2313d508bbf08b0b0616cb0b25038",
+      "provenance/evaluation_source_snapshot.json": "ba36d80fe9703e817ba74d82efb82b3af53e43bd59f62f9d5c25a98943ba6be3"
+    },
+    "frozenCoreAssetsExact": true,
+    "coreAssetSha256": {
+      "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+      "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+      "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+      "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+      "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+    },
+    "baseReferenceQualification": "Verified public reference bytes match frozen campaign assets; does not establish historical training resolver revision",
+    "researchOnly": true,
+    "redistributionOfWeights": false,
+    "clinicalHeldOutQualification": false,
+    "notes": "Epoch 4 individual candidate, not final campaign winner; supplied notes are generated diagnostic references, not independent clinical gold; training runtime numerics are not claimed equivalent to export runtime."
+  }
+}

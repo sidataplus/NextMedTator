@@ -98,7 +98,7 @@ def agreement(notes, results):
                         attrs[field]['agree'] += record['fields'][field] == reference['choices'][field]
                 if reference['family'] == 'condition_occurrence':
                     expected_time = {(x['start'], x['end']) for x in reference['literals'] if x['field']=='time_text'}
-                    if expected_time:
+                    if expected_time and 'time_text' in record['fields']:
                         actual_time = {(x['start'], x['end']) for x in record['fields']['time_text'] or []}
                         literal_agreement['matchedAnchorsWithTimeReference'] += 1
                         literal_agreement['exactTimeSpansAgree'] += actual_time == expected_time

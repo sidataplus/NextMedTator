@@ -1,5 +1,7 @@
+import {suggestionThreshold,thresholdControl} from './threshold.mjs';
+import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
-import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD} from './scope.mjs';
+import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD, sameScope} from './scope.mjs';
 import {renderScopeEditor} from './scope-ui.mjs';
 import {ModelStore} from './model-store.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
@@ -41,6 +43,7 @@ button:focus:not(:focus-visible){outline:none}
 .check{display:flex;gap:6px;align-items:center;flex-direction:row}
 label{display:flex;flex-direction:column;gap:3px;font-size:12px}
 input[type=file]{max-width:100%;font-size:11px}
+.threshold{margin:0 0 8px}.threshold-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.threshold output{font-weight:650;font-variant-numeric:tabular-nums}.threshold input[type=range]{width:100%;margin:6px 0;padding:0;accent-color:#076b74;cursor:pointer}.threshold p{margin:4px 0}.threshold button{margin-top:4px}
 .scope{border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:8px;margin:8px 0}
 .scope p{margin:5px 0}.scope label{margin:5px 0}.scope textarea{width:100%;font:inherit;color:inherit;border:1px solid #d7e1e7;border-radius:5px;resize:vertical}
 .scope fieldset{border:1px solid #d7e1e7;margin:8px 0;padding:6px}.scope h3{margin:10px 0 5px}
@@ -161,7 +164,8 @@ class LegacyAssist {
         this.root = host.attachShadow({ mode: 'open' });
         this.openProject = openProject ?? (() => {});
         this.open = sessionStorage.getItem('nmt-assist-open') !== 'false';
-        this.mode = 'assisted';
+        this.mode = 'auto';
+        this.thresholdOverride = null;
         this.scope = null;this.scopeDraft=presetScope();this.scopeEditing=false;
         this.suggestionView = 'cards';
         this.detail = null;
@@ -273,11 +277,16 @@ class LegacyAssist {
     structured() {
         return !!this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
     }
+    adoptModel(candidate){
+        if(this.model&&this.model.manifestHash!==candidate.manifestHash)this.thresholdOverride=null;
+        this.model=candidate;
+        if(!this.scope&&sameScope(this.scopeDraft,presetScope())&&candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC)this.scopeDraft=presetScope('all',CLINICAL_V3_CODEC);
+    }
     async importPackage(file) {
         if (file.size > MODEL_LIMITS.archive)
             throw new Error('Model archive exceeds 1 GiB');
         const candidate = await importModelPackage(new Uint8Array(await file.arrayBuffer()));
-        this.model = candidate;
+        this.adoptModel(candidate);
         const structured = candidate.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const qualified = candidate.manifest.variants.some(variant => CODECS[variant.codec].clinicalInference);
         this.message = structured
@@ -296,11 +305,11 @@ class LegacyAssist {
         planWindows(this.scopeTokenizer,prompt.labels,[{text:'clinical',start:0,end:8}],{prefixTokens});
     }
     async applyScope() {
-        const draft=clone(this.scopeDraft),schema=compileScope(draft,legacySchema(legacy().data.dtd));
+        const draft=clone(this.scopeDraft),schema=compileScope(draft,legacySchema(legacy().data.dtd),this.model?.manifest.variants[0]?.codec);
         if(this.model)this.checkScopeBudget(schema,selectInferenceVariant(this.model,qualifyForSchema(this.model,schema).level));
         const old=this.scope?.semanticSchema,s=draft.semanticSchema;
         if(old&&old.name===s.name){s.parent_schema_hash=old.schema_hash;if(s.version===old.version)s.version=/^\d+$/.test(s.version)?String(Number(s.version)+1):s.version+'.1';}
-        this.scope=await freezeScope(draft);this.scopeDraft=clone(this.scope);this.scopeEditing=false;
+        this.scope=await freezeScope(draft);this.thresholdOverride=null;this.scopeDraft=clone(this.scope);this.scopeEditing=false;
         for(const project of this.projects.values())project.setSuggestionScope(this.scope);
         this.message=`Scope applied: ${this.scope.semanticSchema.name}. Analyze to create a new scoped run; existing predictions stay unchanged.`;
     }
@@ -348,7 +357,7 @@ class LegacyAssist {
             for(const record of current)records.push({...record,id:ids.get(record.id),relations:(record.relations??[]).map(rel=>({...rel,targetId:ids.get(rel.targetId)})),origin:{kind:'imported',source:'legacy-recovery',legacyProjectId:project.current.id,legacyRecordId:record.id,reviewStatus:'preserved-in-child-project'}});
         }
         const project=await ReviewProject.create(documents,schema,{id,actor:'legacy-annotator'}),data=clone(project.current);data.draft.records=records;if(this.corpusIdentity!==id){this.corpusIdentity=id;this.corpusCreatedAt=data.createdAt;}data.createdAt=this.corpusCreatedAt;
-        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,scope:clone(this.scope),children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
+        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,thresholdOverride:this.thresholdOverride,scope:clone(this.scope),children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
         // JSON transport excludes file handles/functions; public model bytes stay in ModelStore.
         return (await ReviewProject.open(jsonParse(JSON.stringify(data)))).current;
     }
@@ -358,7 +367,7 @@ class LegacyAssist {
         const children=new Map();for(const child of saved.children??[])children.set(child.key,await ReviewProject.open(child.project));
         const view=legacy();invariant(view,'Original annotation workspace unavailable');
         view.app.set_vpp_data_json({dtd:clone(saved.dtd),anns:clone(saved.anns),ann_idx:saved.annIndex,mn4anns:1});
-        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'assisted';this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
+        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'auto';this.thresholdOverride=saved.thresholdOverride??null;this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
     }
     async freezeNote(view){
         invariant(!this.exposed.has(view.key),'This note was already exposed');
@@ -372,7 +381,8 @@ class LegacyAssist {
         if (!anns.length)
             throw new Error('Open a document first');
         const nativeSchema=legacySchema(legacy().data.dtd),scope=this.scope?clone(this.scope):null;
-        const schema=scope?compileScope(scope,nativeSchema):nativeSchema;
+        const activeCodec=this.model.manifest.variants[0].codec;
+        const schema=scope?compileScope(scope,nativeSchema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(nativeSchema):nativeSchema;
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
         const autoApply = this.mode === 'auto';
         if (autoApply) for (const ann of anns) {
@@ -384,6 +394,7 @@ class LegacyAssist {
             throw new Error('This package’s codec is not a local GLiNER2.5 decoder');
         const variant = selectInferenceVariant(this.model,qualification.level);
         const codec = variant.codec;
+        const thresholdSettings=suggestionThreshold(this.thresholdOverride,scope,variant);
         if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         if(this.qualifiedManifest!==this.model.manifestHash||this.qualifiedVariant!==variant.id){const report=await this.modelRunner.run(this.model,variant.id);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=this.model.manifestHash;this.qualifiedVariant=variant.id;}
@@ -395,9 +406,9 @@ class LegacyAssist {
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
             if (this.mode === 'blind')
                 this.blinded.add(key);
-            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: scope?.threshold??variant.threshold };
+            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: thresholdSettings.threshold };
         });
-        const runSettings={codec,threshold:scope?.threshold??variant.threshold??.5,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?['cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const runSettings={codec,...(codec===CLINICAL_V3_CODEC?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         const completed=new Set();let activeIndex=0;
         try{await this.modelRunner.analyzeBatch(this.model, variant.id, requests, { onProgress: index => {
             activeIndex=index;
@@ -573,6 +584,7 @@ class LegacyAssist {
         actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !view?.ann, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
         actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
+        body.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:this.model?.manifest.variants[0],disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=value;if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
         body.append(actions);
         body.append(renderScopeEditor(this));
         const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
@@ -584,7 +596,7 @@ class LegacyAssist {
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));for(const item of this.installedModels??[])body.append(button('Use installed '+item.manifest.id,()=>this.perform(async()=>{const installed=await this.modelStore.read(item.manifestHash);invariant(installed,'Installed package missing');this.model=installed;this.message='Installed public package loaded and hashes verified';})));if(this.model)body.append(button('Install package for offline use',()=>this.perform(async()=>{this.model=await this.modelStore.install(this.model);this.message='Public model installed and read-back verified';})));
+        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));for(const item of this.installedModels??[])body.append(button('Use installed '+item.manifest.id,()=>this.perform(async()=>{const installed=await this.modelStore.read(item.manifestHash);invariant(installed,'Installed package missing');this.adoptModel(installed);this.message='Installed package loaded and hashes verified';})));if(this.model)body.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})));
         const anns = view?.data?.anns ?? [];
         if (anns.length) {
             const docs = node('div', null, { class: 'docs', 'aria-label': 'Documents to analyze' });
@@ -631,7 +643,9 @@ class LegacyAssist {
         if (view.data.section === 'annotation' && !document.hidden && this.host.getClientRects().length)
             this.recordExposure(view, run, 'assisted-display');
         const unresolved = run.records.filter(record => !run.decisions[record.id]).length;
-        const runScope=run.project.current.runs.find(r=>r.id===run.nativeRunId)?.settings.scope;
+        const settings=run.project.current.runs.find(r=>r.id===run.nativeRunId)?.settings;
+        if(settings?.threshold!=null)body.append(node('p',`Run threshold: ${settings.threshold}`,{class:'muted','data-testid':'assist-run-threshold'}));
+        const runScope=settings?.scope;
         if(runScope)body.append(node('p',`Run scope: ${runScope.profile.semanticSchema.name} · ${runScope.profile.semanticSchema.version}`,{class:'muted','data-testid':'assist-run-scope'}));
         body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
         const applied = Object.values(run.decisions).filter(d=>d.status==='applied').length;

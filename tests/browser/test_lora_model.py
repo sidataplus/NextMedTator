@@ -14,14 +14,14 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[2]
-PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-p7b.nmt-model.zip'))
+PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-v3-17089.nmt-model.zip'))
 
 
 def check_lineage(data, manifest):
     runs = data['runs']
     assert runs and runs[-1]['producer']['lineage'] == manifest['lineage']
-    assert runs[-1]['runtime']['variant']['codec'] == 'gliner25-records-v1'
-    assert all(r['origin']['codec'] == 'gliner25-records-v1' for r in runs[-1]['records'])
+    assert runs[-1]['runtime']['variant']['codec'] == manifest['variants'][0]['codec']
+    assert all(r['origin']['codec'] == manifest['variants'][0]['codec'] for r in runs[-1]['records'])
 
 
 def read_project(path):
@@ -35,7 +35,7 @@ def run():
     assert PACKAGE.is_file(), 'Export the real adapter package first'
     with zipfile.ZipFile(PACKAGE) as archive:
         manifest = json.loads(archive.read('manifest.json'))
-        case = json.loads(archive.read('source-case-0.json'))
+        case = json.loads(archive.read('source-case-6.json' if manifest['variants'][0]['codec']=='gliner25-clinical-v3-spans-v1' else 'source-case-0.json'))
     assert manifest['lineage']['adapter'] and manifest['lineage']['merge'] == 'merged-export'
     out = ROOT/'test-results'
     out.mkdir(exist_ok=True)
@@ -70,7 +70,9 @@ def run():
             expect(page.get_by_test_id('message')).to_contain_text('loaded in memory')
             print('Actual merged LoRA package imported', flush=True)
             page.get_by_role('button', name='Run wasm-fp32 conformance', exact=True).click()
-            page.wait_for_function('() => document.querySelector("nextmedtator-workspace").workspace.modelReport!==null', timeout=180000)
+            page.wait_for_function('() => {const w=document.querySelector("nextmedtator-workspace").workspace;return w.modelReport!==null||!w.busy;}', timeout=180000)
+            state=page.evaluate('(()=>{const w=document.querySelector("nextmedtator-workspace").workspace;return {report:w.modelReport,message:w.message};})()')
+            assert state['report'] is not None,state
             report = page.evaluate('document.querySelector("nextmedtator-workspace").workspace.modelReport')
             assert report['pass'], report
             print('Real ORT Web source and numerical fixtures passed', flush=True)
@@ -90,7 +92,11 @@ def run():
             page.get_by_role('button', name='List installed models', exact=True).click()
             page.get_by_role('button', name='Use installed '+manifest['id'], exact=True).click()
             page.get_by_role('button', name='Close panel', exact=True).click()
+            page.get_by_test_id('analysis-mode').select_option('assisted')
             page.get_by_test_id('analyze').click()
+            page.wait_for_function('()=>!document.querySelector("nextmedtator-workspace").workspace.busy',timeout=300000)
+            state=page.evaluate('(()=>{const w=document.querySelector("nextmedtator-workspace").workspace;return {error:w.error,message:w.message};})()')
+            assert not state['error'],state
             expect(page.get_by_test_id('suggestion')).to_have_count(len(case['records']))
             current = page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current')
             check_lineage(current, manifest)
@@ -119,25 +125,33 @@ def run():
             expect(page.get_by_test_id('suggestion')).to_have_count(len(case['records']))
             canary = 'NMT_LORA_PRIVATE_CANARY'
             page.get_by_label('Open project/files').set_input_files({'name': canary+'.txt', 'mimeType': 'text/plain', 'buffer': (case['text']+' '+canary).encode()})
+            page.get_by_role('button', name='Export & assignments', exact=True).click()
+            page.get_by_label('Start new project with schema JSON').set_input_files({'name':'canary-schema.json','mimeType':'application/json','buffer':json.dumps(case['schema']).encode()})
+            page.get_by_role('button', name='Close panel', exact=True).click()
             page.get_by_test_id('analyze').click()
+            page.wait_for_function('()=>!document.querySelector("nextmedtator-workspace").workspace.busy',timeout=300000)
+            assert not page.evaluate('document.querySelector("nextmedtator-workspace").workspace.error'),page.get_by_test_id('message').inner_text()
             expect(page.get_by_test_id('message')).to_contain_text('local span suggestion')
             structured = json.loads(json.dumps(case['schema']))
             structured['id'] = 'lora-structured-browser-case'
-            structured['families']['diagnosis']['fields'].update({
-                'certainty': {'type': 'enum', 'values': ['present', 'negated', 'unknown']},
+            primary_family=next(iter(case['schema']['families']))
+            structured['families'][primary_family]['fields'].update({
+                **({'assertion': {'type': 'enum', 'values': ['affirmed','hypothetical','negated','ruled_out','uncertain']}} if manifest['variants'][0]['codec']=='gliner25-clinical-v3-spans-v1' else {'certainty': {'type': 'enum', 'values': ['present', 'negated', 'unknown']}}),
                 'medication': {'type': 'span'},
             })
             page.get_by_role('button', name='Export & assignments', exact=True).click()
             page.get_by_label('Start new project with schema JSON').set_input_files({'name': 'structured.json', 'mimeType': 'application/json', 'buffer': json.dumps(structured).encode()})
             page.get_by_role('button', name='Close panel', exact=True).click()
             page.get_by_test_id('analyze').click()
+            page.wait_for_function('()=>!document.querySelector("nextmedtator-workspace").workspace.busy',timeout=300000)
+            assert not page.evaluate('document.querySelector("nextmedtator-workspace").workspace.error'),page.get_by_test_id('message').inner_text()
             expect(page.get_by_test_id('message')).to_contain_text('local span suggestion')
             page.wait_for_function('() => {const w=document.querySelector("nextmedtator-workspace").workspace;return !w.busy && w.project.current.runs.length>0;}')
             structured_run = page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current.runs.at(-1)')
-            diagnoses = [row for row in structured_run['records'] if row['family']=='diagnosis']
+            diagnoses = [row for row in structured_run['records'] if row['family']==primary_family]
             assert diagnoses, structured_run
-            assert all(row['fields']['certainty'] in ['present', 'negated', 'unknown'] for row in diagnoses)
-            assert all(row['fields']['medication'] is None or isinstance(row['fields']['medication'], list) for row in diagnoses)
+            assert all(row['fields'].get('assertion') in ['affirmed','hypothetical','negated','ruled_out','uncertain'] for row in diagnoses) if manifest['variants'][0]['codec']=='gliner25-clinical-v3-spans-v1' else all(row['fields']['certainty'] in ['present','negated','unknown'] for row in diagnoses)
+            assert all(row['fields'].get('medication') is None or isinstance(row['fields']['medication'], list) for row in diagnoses)
             assert not errors, errors
             assert all(row['url'].startswith(url) and row['method']=='GET' and not row['body'] and canary not in row['url'] for row in requests), requests
             context.close()
@@ -156,15 +170,16 @@ def run():
             page.evaluate('jarvis.ssclose()')
             page.get_by_title('Load a minimal task').click()
             page.locator('.file-list-item-name', has_text='doc_01.txt.xml').wait_for()
-            name = page.evaluate('''fixture=>{const lines=['<!ENTITY name "lora_task">',...Object.keys(fixture.schema.families).map(name=>'<!ELEMENT '+name+' (#PCDATA)>')];const dtd=dtd_parser.parse(lines.join(String.fromCharCode(10)),'dtd');app_hotpot.vpp.$data.anns=[];app_hotpot.vpp.$data.ann_idx=0;app_hotpot.set_dtd(dtd);app_hotpot.vpp.$data.dtd=dtd;const ann=app_hotpot.vpp.add_sample_txt_as_ann(fixture.text);app_hotpot.vpp.$data.mn4anns=1;app_hotpot.vpp.set_ann_idx(0);return ann._filename;}''', case)
+            name = page.evaluate('''fixture=>{const lines=['<!ENTITY name "lora_task">'];for(const [name,def]of Object.entries(fixture.schema.families)){lines.push('<!ELEMENT '+name+' (#PCDATA)>');for(const [field,spec]of Object.entries(def.fields))if(spec.type==='enum')lines.push('<!ATTLIST '+name+' '+field+' ( '+spec.values.join(' | ')+' ) #IMPLIED "">');}const dtd=dtd_parser.parse(lines.join(String.fromCharCode(10)),'dtd');app_hotpot.vpp.$data.anns=[];app_hotpot.vpp.$data.ann_idx=0;app_hotpot.set_dtd(dtd);app_hotpot.vpp.$data.dtd=dtd;const ann=app_hotpot.vpp.add_sample_txt_as_ann(fixture.text);app_hotpot.vpp.$data.mn4anns=1;app_hotpot.vpp.set_ann_idx(0);return ann._filename;}''', case)
             page.locator('.file-list-item-name', has_text=name).click()
+            page.get_by_test_id('assist-mode').select_option('assisted')
             page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(PACKAGE))
             expect(page.get_by_test_id('assist-message')).to_contain_text('package loaded')
             page.get_by_test_id('assist-analyze').click()
             expect(page.get_by_test_id('assist-suggestion')).to_have_count(len(case['records']))
             assert page.evaluate('!!window.app_hotpot.vpp && !!window.app_hotpot.codemirror')
             page.get_by_test_id('assist-suggestion').first.get_by_test_id('assist-locate').click()
-            assert page.evaluate('app_hotpot.codemirror.getSelection()') in ['diabetes', 'metformin']
+            assert page.evaluate('app_hotpot.codemirror.getSelection()') in [r['anchor'][0]['text'] for r in case['records']]
             page.get_by_test_id('assist-suggestion').first.get_by_test_id('assist-accept').click()
             page.get_by_test_id('assist-suggestion').nth(1).get_by_test_id('assist-reject').click()
             page.get_by_test_id('assist-add').click()
@@ -187,7 +202,8 @@ def run():
                       'browserConformance': report, 'installedModelOfflineRestart': True,
                       'offlineInferenceReviewCompareExportReopen': True, 'adapterLineagePreserved': True,
                       'originalVueCodeMirrorAcceptRejectExport': True, 'privateCanaryNoEgress': True,
-                      'enumAndAnchoredSpanSchemaInference': True,
+                      'enumAndAnchoredSpanSchemaInference': manifest['variants'][0]['codec']=='gliner25-records-v1',
+                      'v3SourceAttributeFixturesPassed': manifest['variants'][0]['codec']=='gliner25-clinical-v3-spans-v1' and all(row['pass'] for row in report['results'] if row['fixture'] in ['source-case-6.json','source-case-7.json']),
                       'browser': browser.version}
             (out/'lora-browser.json').write_text(json.dumps(result, indent=2)+'\n')
             print(json.dumps({k:v for k,v in result.items() if k!='browserConformance'}, indent=2))
