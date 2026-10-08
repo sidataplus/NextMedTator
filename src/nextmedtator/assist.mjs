@@ -4,6 +4,7 @@ import {LegacyRecoverySession} from './backend/legacy-session.mjs';
 import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD, sameScope} from './scope.mjs';
 import {renderScopeEditor} from './scope-ui.mjs';
 import {ModelStore} from './model-store.mjs';
+import {createModelSelectionState,saveModelSelectionState,setModelSelection,selectionThresholdOverride,setSelectionThresholdOverride,restoreSelectionThresholdOverride,modelSelectionKey,modelSelectionControlValue,modelSelectionLabel,modelSelectionMatchesManifest,matchingInstalledModels,selectionFromManifest,localAdapterSelection,renderModelSelectionControls} from './model-selection.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
@@ -44,6 +45,7 @@ button:focus:not(:focus-visible){outline:none}
 label{display:flex;flex-direction:column;gap:3px;font-size:12px}
 input[type=file]{max-width:100%;font-size:11px}
 .threshold{margin:0 0 8px}.threshold-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.threshold output{font-weight:650;font-variant-numeric:tabular-nums}.threshold input[type=range]{width:100%;margin:6px 0;padding:0;accent-color:#076b74;cursor:pointer}.threshold p{margin:4px 0}.threshold button{margin-top:4px}
+.model-selection{min-width:0;max-width:100%;overflow-wrap:anywhere}.model-selection label,.model-selection details{min-width:0;max-width:100%}.model-selection input[type=text],.model-selection select{width:100%;min-width:0}.model-selection select{text-overflow:ellipsis}.model-selection pre{max-width:100%;overflow:auto;white-space:pre;font-size:11px}
 .scope{border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:8px;margin:8px 0}
 .scope p{margin:5px 0}.scope label{margin:5px 0}.scope textarea{width:100%;font:inherit;color:inherit;border:1px solid #d7e1e7;border-radius:5px;resize:vertical}
 .scope fieldset{border:1px solid #d7e1e7;margin:8px 0;padding:6px}.scope h3{margin:10px 0 5px}
@@ -165,7 +167,8 @@ class LegacyAssist {
         this.openProject = openProject ?? (() => {});
         this.open = sessionStorage.getItem('nmt-assist-open') !== 'false';
         this.mode = 'auto';
-        this.thresholdOverride = null;
+        this.modelSelectionState=createModelSelectionState();this.modelSelection=this.modelSelectionState.selection;this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);
+        this.modelSelectionEpoch=0;
         this.scope = null;this.scopeDraft=presetScope();this.scopeEditing=false;
         this.suggestionView = 'cards';
         this.detail = null;
@@ -190,6 +193,7 @@ class LegacyAssist {
         host.setAttribute('role', 'complementary');
         host.setAttribute('aria-label', 'Local assistance');
         this.render();
+        void this.restoreSelectedModel();
         this.timer = setInterval(() => this.sync(), 500);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) this.sync(); });
         window.addEventListener('beforeunload',event=>{const session=this.recoverySession;if(session.enabled&&(session.pending||session.revision!==session.savedRevision)){event.preventDefault();event.returnValue='';}});
@@ -227,6 +231,7 @@ class LegacyAssist {
             section: view?.data?.section,
             visible: !document.hidden && this.host.getClientRects().length > 0,
             mode: this.mode,
+            modelSelection:modelSelectionKey(this.modelSelection),
             model: this.model?.manifest?.id ?? '',
             codec: this.model?.manifest?.variants?.map(v => v.codec).join(',') ?? '',
             message: this.message,
@@ -277,16 +282,57 @@ class LegacyAssist {
     structured() {
         return !!this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
     }
-    adoptModel(candidate){
-        if(this.model&&this.model.manifestHash!==candidate.manifestHash)this.thresholdOverride=null;
+    beginModelSelectionAction() {
+        this.modelSelectionEpoch++;
+        return this.modelSelectionEpoch;
+    }
+    setSelectedModel(selection,{render=true,restoreInstalled=true,intent=true}={}) {
+        if(intent)this.beginModelSelectionAction();
+        const epoch=this.modelSelectionEpoch;
+        const next=setModelSelection(this.modelSelectionState,selection),changed=modelSelectionKey(next)!==modelSelectionKey(this.modelSelection);
+        if(changed){this.modelRunner.cancel();this.model=null;this.qualifiedManifest=null;this.qualifiedVariant=null;this.message='';}
+        this.modelSelection=next;this.selectionDraftMode=modelSelectionControlValue(next);this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);saveModelSelectionState(this.modelSelectionState);
+        if(restoreInstalled)void this.restoreSelectedModel({epoch});
+        if(render)this.render();
+    }
+    adoptModel(candidate,{selectSource=false}={}){
+        if(candidate&&!modelSelectionMatchesManifest(this.modelSelection,candidate.manifest)){
+            if(!selectSource)throw new Error('Installed model does not match the selected source. Choose the package lineage explicitly before loading it.');
+            this.setSelectedModel(selectionFromManifest(candidate.manifest),{render:false,restoreInstalled:false,intent:false});
+        }
+        if(selectSource)saveModelSelectionState(this.modelSelectionState);
+        if(this.model&&candidate&&this.model.manifestHash!==candidate.manifestHash)this.modelRunner.cancel();
         this.model=candidate;
         if(!this.scope&&sameScope(this.scopeDraft,presetScope())&&candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC)this.scopeDraft=presetScope('all',CLINICAL_V3_CODEC);
     }
+    async restoreSelectedModel({epoch=this.modelSelectionEpoch}={}) {
+        const requested=modelSelectionKey(this.modelSelection);
+        const current=()=>epoch===this.modelSelectionEpoch&&requested===modelSelectionKey(this.modelSelection);
+        try {
+            const installed=await this.modelStore.listExisting();
+            if(!current()||this.model)return;
+            this.installedModels=installed;
+            const matches=matchingInstalledModels(this.modelSelection,installed);
+            if(matches.length===1){const candidate=await this.modelStore.read(matches[0].manifestHash);if(current()&&!this.model&&candidate&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest)){this.adoptModel(candidate);this.message=`Matching installed model loaded: ${candidate.manifest.id}.`;}}
+            else if(matches.length>1)this.message='Multiple installed packages match this source. Choose the package to load.';
+        } catch(error) {if(current()){this.error=true;this.message=`Selected model could not be verified from local storage: ${error.message}`;}}
+        if(current())this.render();
+    }
+    async useInstalledModel(manifestHash) {
+        const epoch=this.beginModelSelectionAction();
+        const candidate=await this.modelStore.read(manifestHash);
+        if(epoch!==this.modelSelectionEpoch)return false;
+        invariant(candidate,'Installed package missing');
+        this.adoptModel(candidate,{selectSource:true});
+        return true;
+    }
     async importPackage(file) {
+        const epoch=this.beginModelSelectionAction();
         if (file.size > MODEL_LIMITS.archive)
             throw new Error('Model archive exceeds 1 GiB');
         const candidate = await importModelPackage(new Uint8Array(await file.arrayBuffer()));
-        this.adoptModel(candidate);
+        if(epoch!==this.modelSelectionEpoch)return;
+        this.adoptModel(candidate,{selectSource:true});
         const structured = candidate.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const qualified = candidate.manifest.variants.some(variant => CODECS[variant.codec].clinicalInference);
         this.message = structured
@@ -309,7 +355,7 @@ class LegacyAssist {
         if(this.model)this.checkScopeBudget(schema,selectInferenceVariant(this.model,qualifyForSchema(this.model,schema).level));
         const old=this.scope?.semanticSchema,s=draft.semanticSchema;
         if(old&&old.name===s.name){s.parent_schema_hash=old.schema_hash;if(s.version===old.version)s.version=/^\d+$/.test(s.version)?String(Number(s.version)+1):s.version+'.1';}
-        this.scope=await freezeScope(draft);this.thresholdOverride=null;this.scopeDraft=clone(this.scope);this.scopeEditing=false;
+        this.scope=await freezeScope(draft);this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,null);saveModelSelectionState(this.modelSelectionState);this.scopeDraft=clone(this.scope);this.scopeEditing=false;
         for(const project of this.projects.values())project.setSuggestionScope(this.scope);
         this.message=`Scope applied: ${this.scope.semanticSchema.name}. Analyze to create a new scoped run; existing predictions stay unchanged.`;
     }
@@ -357,7 +403,7 @@ class LegacyAssist {
             for(const record of current)records.push({...record,id:ids.get(record.id),relations:(record.relations??[]).map(rel=>({...rel,targetId:ids.get(rel.targetId)})),origin:{kind:'imported',source:'legacy-recovery',legacyProjectId:project.current.id,legacyRecordId:record.id,reviewStatus:'preserved-in-child-project'}});
         }
         const project=await ReviewProject.create(documents,schema,{id,actor:'legacy-annotator'}),data=clone(project.current);data.draft.records=records;if(this.corpusIdentity!==id){this.corpusIdentity=id;this.corpusCreatedAt=data.createdAt;}data.createdAt=this.corpusCreatedAt;
-        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,thresholdOverride:this.thresholdOverride,scope:clone(this.scope),children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
+        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,thresholdOverride:this.thresholdOverride,thresholdSelectionKey:modelSelectionKey(this.modelSelection),scope:clone(this.scope),children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
         // JSON transport excludes file handles/functions; public model bytes stay in ModelStore.
         return (await ReviewProject.open(jsonParse(JSON.stringify(data)))).current;
     }
@@ -367,7 +413,7 @@ class LegacyAssist {
         const children=new Map();for(const child of saved.children??[])children.set(child.key,await ReviewProject.open(child.project));
         const view=legacy();invariant(view,'Original annotation workspace unavailable');
         view.app.set_vpp_data_json({dtd:clone(saved.dtd),anns:clone(saved.anns),ann_idx:saved.annIndex,mn4anns:1});
-        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'auto';this.thresholdOverride=saved.thresholdOverride??null;this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
+        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'auto';this.thresholdOverride=restoreSelectionThresholdOverride(this.modelSelectionState,saved.thresholdSelectionKey,saved.thresholdOverride);if(saved.thresholdSelectionKey===modelSelectionKey(this.modelSelection))saveModelSelectionState(this.modelSelectionState);this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
     }
     async freezeNote(view){
         invariant(!this.exposed.has(view.key),'This note was already exposed');
@@ -376,8 +422,10 @@ class LegacyAssist {
         this.message='Independent annotation frozen in the portable evidence project. Analyze and reveal when ready.';
     }
     async analyzeDocuments(anns) {
+        invariant(this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
         if (!this.model)
             throw new Error('Import a GLiNER2.5 boundary model package in this panel');
+        invariant(modelSelectionMatchesManifest(this.modelSelection,this.model.manifest),'The active package does not match the selected model source. Load a matching package before analysis.');
         if (!anns.length)
             throw new Error('Open a document first');
         const nativeSchema=legacySchema(legacy().data.dtd),scope=this.scope?clone(this.scope):null;
@@ -567,7 +615,7 @@ class LegacyAssist {
         const view = this.current();
         const schema = view?.data?.dtd?.name;
         const status = node('div', null, { class: 'row' });
-        status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'No local model', { class: 'badge', 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
+        status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'No matching package', { class: 'badge', 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
         head.append(title, labeled('Mode', mode), status, node('p', `${schema ? `Schema: ${schema}` : 'Schema: none loaded'}. Documents stay in the annotation workspace.`, { class: 'muted' }));
         if(this.model)head.append(node('p', 'Active model: '+this.model.manifest.id, { class: 'muted', 'data-testid': 'assist-model-identity' }));
         if (this.mode === 'auto') head.append(node('p', 'Analyze writes all predictions as unreviewed native tags. Apply all suggestions also uses an existing run.', {class:'muted'}));
@@ -580,11 +628,13 @@ class LegacyAssist {
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
         const body = node('div', null, { class: 'body' });
         dock.append(body);
+        body.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.selectionDraftMode=mode;this.render();},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));
         const actions = node('div', null, { class: 'row' });
-        actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !view?.ann, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
-        actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
+        const sourcePending=this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection);
+        actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
+        actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
-        body.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:this.model?.manifest.variants[0],disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=value;if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
+        body.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:this.model?.manifest.variants[0],disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
         body.append(actions);
         body.append(renderScopeEditor(this));
         const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
@@ -596,7 +646,12 @@ class LegacyAssist {
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));for(const item of this.installedModels??[])body.append(button('Use installed '+item.manifest.id,()=>this.perform(async()=>{const installed=await this.modelStore.read(item.manifestHash);invariant(installed,'Installed package missing');this.adoptModel(installed);this.message='Installed package loaded and hashes verified';})));if(this.model)body.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})));
+        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));
+        for(const item of this.installedModels??[]){
+            const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
+            body.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
+        }
+        if(this.model)body.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})));
         const anns = view?.data?.anns ?? [];
         if (anns.length) {
             const docs = node('div', null, { class: 'docs', 'aria-label': 'Documents to analyze' });

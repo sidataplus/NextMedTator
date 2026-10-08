@@ -1,24 +1,83 @@
-# GLiNER2.5 LoRA → ONNX
+# GLiNER2.5 to ONNX
 
-A standalone Python command for any compatible GLiNER2.5 **PEFT LoRA** adapter.
-It has its own `pyproject.toml` and `uv.lock`; it imports no web-app code and
-needs no Node, browser, Flask, server or training environment.
+A standalone exporter for the ClinicalEvidence v3 adapters, original Fastino
+small/base checkpoints, compatible Hugging Face PEFT adapters, and local
+adapter files. It has its own `pyproject.toml` and `uv.lock`; it imports no
+web-app code and needs no Node, browser, Flask, server or training environment.
 
 ```sh
 uv run --locked --project tools/gliner-onnx gliner-onnx \
-  --adapter /path/to/adapter.zip \
-  --out work/my-adapter.nmt-model.zip \
-  --report work/my-adapter-export.json
+  --selection clinical-v3-small \
+  --out work/clinical-v3-small.nmt-model.zip \
+  --report work/clinical-v3-small-export.json
 ```
 
-`--adapter` accepts a directory or ZIP containing `adapter_config.json` and
+With no adapter arguments, `--selection auto` chooses `clinical-v3-small`.
+Other built-in choices are `clinical-v3-base`, `original-small`, and
+`original-base`. The clinical choices fetch the adapter at a full immutable
+commit and verify the release manifest, registry, base assets, and all 91
+bundled GLiNER2 source files before importing the runtime. The original choices
+export the pinned Fastino checkpoint without PEFT.
+
+The small preset uses adapter
+`na399/clinical-evidence-gliner2.5-small-lora-v3-act-sol@82386c7a9776d3c14ed73d6310273a1c9d354d55`
+on `fastino/gliner2.5-small-v1@7132dc4561c3f94563c6147e75ffa8ef34c4964a`
+at threshold 0.7. The base preset uses
+`na399/clinical-evidence-gliner2.5-base-lora-v3-act-sol@b5db08ccd2581690f30a448428ba7659e1469eeb`
+on `fastino/gliner2.5-base-v1@ca906247640776a07753514055be9726f9080ead`
+at threshold 0.6. Both adapters are restricted research artifacts with no
+redistribution rights; they are not for patient care.
+
+With a full cached clinical release, pass its directory as `--release-dir` and
+the matching Fastino checkpoint as `--base-dir` to export offline. The adapter,
+schema, runtime sources and base asset hashes are checked against the pinned
+release before inference.
+
+Use any compatible Hub adapter at an immutable commit, or supply local adapter
+files:
+
+```sh
+uv run --locked --project tools/gliner-onnx gliner-onnx \
+  --selection huggingface-adapter \
+  --adapter-repository owner/model-adapter \
+  --adapter-revision 0123456789abcdef0123456789abcdef01234567 \
+  --base-model fastino/gliner2.5-base-v1 \
+  --base-revision ca906247640776a07753514055be9726f9080ead \
+  --out work/custom-adapter.nmt-model.zip \
+  --report work/custom-adapter-export.json
+
+uv run --locked --project tools/gliner-onnx gliner-onnx \
+  --selection local-adapter \
+  --adapter /path/to/adapter-directory-or.zip \
+  --base-model fastino/gliner2.5-base-v1 \
+  --base-revision ca906247640776a07753514055be9726f9080ead \
+  --out work/local-adapter.nmt-model.zip \
+  --report work/local-adapter-export.json
+```
+
+Hub downloads are pinned to immutable commits and filtered to adapter JSON and
+safetensors. Custom adapter repositories do not supply executable code. The
+local form accepts a directory or ZIP containing `adapter_config.json` and
 `adapter_model.safetensors`, including a ZIP with one named parent directory.
-The name, rank, alpha, target modules, rank/alpha patterns, RS-LoRA/DoRA,
-bias and saved modules come from PEFT configuration and weights. The tool
-does not depend on `mixv1` or a fixed adapter rank. Invocation-dependent
-aLoRA and layer replication are rejected because this static export does not
-support them. Other model architectures and GLiNER's older span architecture
-require different export/decoder contracts.
+PEFT configuration determines rank, target modules and supported LoRA
+variants. Invocation-dependent aLoRA and layer replication are rejected.
+Other architectures and GLiNER's older span architecture require different
+export/decoder contracts.
+
+The original checkpoint selections can be exported directly:
+
+```sh
+uv run --locked --project tools/gliner-onnx gliner-onnx \
+  --selection original-small --out work/original-small.nmt-model.zip \
+  --report work/original-small-export.json
+uv run --locked --project tools/gliner-onnx gliner-onnx \
+  --selection original-base --out work/original-base.nmt-model.zip \
+  --report work/original-base-export.json
+```
+
+`original-base` uses the pinned byte-matching reference
+`fastino/gliner2.5-base-v1@ca906247640776a07753514055be9726f9080ead`. The
+clinical base adapter uses that same base revision.
 
 An immutable base model/revision is inferred from adapter metadata, including
 Hugging Face cache snapshot paths. When metadata is insufficient, provide
@@ -50,7 +109,8 @@ abstention logits and threshold are retained. Source span sets/scores and all
 exported heads must pass PyTorch → native ONNX checks before packaging.
 
 The resulting ZIP contains only graphs, tokenizer and reference fixtures. It
-uses `nextmedtator-model-v1` with `gliner25-records-v1` and can be imported in
+uses `nextmedtator-model-v1` with `gliner25-records-v1` (original/custom
+adapters) or `gliner25-clinical-v3-spans-v1` (the curated v3 releases) and can be imported in
 the original annotation assistance panel or the evidence workspace. The
 browser verifies hashes and conformance before analysis. Base/adapter/merge
 identity follows machine runs into review, comparison and portable exports.
@@ -67,9 +127,9 @@ a supplied adapter inherits the base model's Apache-2.0 license.
 default is `LicenseRef-Hub-Base` rather than assuming all compatible bases
 share a license.
 
-## Current adapter: ClinicalEvidence v3, ACT/Sol job 17089
+## Previous adapter: ClinicalEvidence v3, ACT/Sol job 17089
 
-The default real-weight gates now use `gliner25-clinical-evidence-v3-act-sol-17089`.
+The historical real-weight gates use `gliner25-clinical-evidence-v3-act-sol-17089`.
 Read the [pinned model card](https://huggingface.co/na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089/blob/058945fb562f3c6250450ff67b842255f872ddf4/README.md)
 and [qualification report](../../docs/nextmedtator/V3-17089-VALIDATION.md).
 The adapter was trained against Phase 8/v3 ACT/Sol relabeling. Its v3 codec
