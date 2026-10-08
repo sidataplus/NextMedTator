@@ -1,0 +1,2766 @@
+{
+  "format": "nextmedtator-sample-adapter-evaluation-v1",
+  "source": {
+    "repository": "sidataplus/NextMedTator",
+    "revision": "95d87b19e9daf07d8c5de3e870ac25ac918a6227",
+    "sampleReadmeSha256": "348e48ef82a9e50a6afe3025d7113a22aedcba0e7130b3e61266efb1128c30a2",
+    "inputFileHashes": {
+      "byRole": {
+        "readme": {
+          "fileCount": 1,
+          "sha256": [
+            "348e48ef82a9e50a6afe3025d7113a22aedcba0e7130b3e61266efb1128c30a2"
+          ]
+        },
+        "schemas": {
+          "fileCount": 8,
+          "sha256": [
+            "2f51ff55263763091162ae958729b6765e383be455b2d6885024bf726e0c270c",
+            "80f51768de4c3f3215d786c79bd0ef8b3e350545ec907e84c48ea26813ce3153",
+            "8e7ead81e94d899b063b3f385dae26b73838d0fb23537ad668799b5ae7a5728e",
+            "a16d467c61aaad196e23687ba4872960b527b57a4df4e3ff52431bc4dce1fd93",
+            "aa4aaa82b997dfdf67425959f21fdae2db4bcef8d2b6bff7c9486c3504e83eaf",
+            "c9ce15353ed81752ac0b5a8d6ab20d590b003df17cada09738daa09ec823c13b",
+            "deefb3a4f696f25b41dd12f70025749c4bd4e92cc95d4d9c490934f48fa6239b",
+            "f1c0e54c4a1fe0cf5c03341edc1b92770f250850e1adff4de07b1b8d2f05cdeb"
+          ]
+        },
+        "gold_annotation_xml": {
+          "fileCount": 71,
+          "sha256": [
+            "01778c0d582609606cfc8fdba00edc595fc520268f4eafcab8f381413529e8c6",
+            "02a99642c447d9e7ed2627cb351caa895b3d4194cfaecbc96e66fe9af98adeed",
+            "04073558fede8b265fe93ad97fc85f98cf158b030456218ac8dc655286aaebaf",
+            "084f83d751e14b78173f23136b0f67b3a9bf5c7d57d7dcc9864b1170cf3f4150",
+            "0ab2f6796949187bc73a647b73b44ad927239e827b2c7cbec8b6baae159d9141",
+            "10ef1d5c348b9702b3ccf9ab70b6efe88f1d8e1dd44e4ee854e21415757dd963",
+            "151aab9fc6dd9b04ac4ae722d5acb2225d79def63464c3d92ff39ef85775f304",
+            "15686bc1861254edac819ed2e59c42c97d73be46c70a123710ae82fefc42e016",
+            "1a0aee2bb7aa21aa4856427f4b6c5e2c93eff0d3ecfcab7c7c0259954e48763c",
+            "1a71234848576358ffbda2a5e881ff5d61cd578a6c1b73d6735b509e430783a8",
+            "21c0c4f6fba28dd9cf652cef8bd5b0f7714d7097fc70118c0087a2ff7bc8f04c",
+            "2cab4c638e8066d5e82fe3d0f3e29cadb734b13dbfb7d3232dcda816a431b0d1",
+            "2f19908ad46763db909ed6252c034fd5c4fda93b561dab9eb82399e875c608b9",
+            "32153c35a49ad3b854ecf17c8c3c4714ff4625e76274d8d0a29957bc792a72b3",
+            "334ba5496654cc8c77d486200781b4bb78a475fddf660f47d3c461881117d716",
+            "3696cd8fd8edb336c6bff723e840aca32745532cbdd48696fad01f6c07b73c4d",
+            "39b50ff6428fa8fa3757c92e4982bf1582c10dbd45f0a0eb46a75df8a2f004a8",
+            "3bf2d00c7ddf7572eab399c9be696b87606fad20f884d526d313726e88ecaf5d",
+            "3c7942ce2a5cfaa9c159ae0718679919385602b5c18cb35b8ecbd5008e26aaac",
+            "40e94a7fec50c2dbbcc86677fd199bbd9f2bb9d0e569e48c25e044b0498f7d8a",
+            "442f53c8d0f91d8f673281653defd9f056c0ae28198f556fccc232ee7f39fffa",
+            "4ce27e0ec13a2d3212eff070384cd71d5d23fe7c3a7ddd005258e491cea73557",
+            "4df0a40d6ad9be863c6ed256d0118784005005890d49d1509d4f414b77376d5a",
+            "4e90c26f287fc5d0dfb61c38a394a6392659f89528bfe019c2e06d2e7cdfa3ee",
+            "503789f4d1a9dfadca1c01f202ad1e61ae79443200f33eea2203a00b6701fb21",
+            "538be7a29d3de932876f0749e8fda030f8249f7393219f61695b76de34569ff1",
+            "57301c5dc095a4a1b4f853dacc0ee4a8778d83514cd4c116ad09bc217421b2b7",
+            "6b8249d1915cc80274c622b24a1eba31255e76752d2b2c61ba4a1b9958dd06bb",
+            "77e7fe236e26737db35441caf7853b1dfad5757d6f54443471dc317a18ae70eb",
+            "7f055a37fb63ec902ecc02d82340b6101eba52285bf8d1955d1534022d1076b1",
+            "807a70b131a5865da89640584ae7c376084072b090246c1c15e8c9daf7584b01",
+            "827b5d366fb1180082691342269c32bbe82088d60ee89c387ed70df3d03c8340",
+            "83102658d5276cf4c6cdb555d558c0b384a58ef6c88218decb8d12f8c5635c6e",
+            "85eaffd2e558024d36ddeffe273848a6cf14478a4293296f82430aa3b5eb533a",
+            "86a68664152a7e68bbe480f61a83c3aa42a8360395f34604840898dd56c17b59",
+            "8cda91c2ebb3262163eb8a77ddab5f6c596722befa3cf307d725b95cda28c58e",
+            "8ce630d1755b735f64e536c707a04bc81dcb3724bad27fa8e54878edf06d36f0",
+            "8dc8fc13713b7872faa0d7ee62efbbd0b8f027e3fcd6a4f2e47b095f97476394",
+            "8e8a390377124429b1a520b21f89c34d1cfcad2323f25189bf5f08a432fa6a2f",
+            "96585da8efe0cff0729168a15853616949ab6edcda9a73041949f6591bafa6ba",
+            "9d696bf26aae14d36d3e4d7e8f0fb199a1e48dbb797da4a2b508eeb5b3601709",
+            "a4b3ba05725242a0d13dc962ea1bc2cb87001f7862cdd98f0ac325da57841715",
+            "a5274fb6d4075107ac4cfcf437da6d9010ce0d1a835b9b66d058323fb038a48e",
+            "a9d14f2d15beef7842caca3a090ddaa7c642a031dc5d4b9a46295f33c1b0e888",
+            "ac8914fba71e236102f06231d736bf3e09cdf94a648f577f7b861d3d9d8a729e",
+            "ae12c355e634bdbf5339d66f7f65eb021539326b6281d8459e17650da87b24c1",
+            "b2bb76424123ab0f1573270e809bd1ff0070638bda6f921ebf279cb8d5fa0c32",
+            "b426affbcae442f7e2ae234d3545e796f5d1362d76666172052419e29ab4e542",
+            "b7ce7a661517a00be11817c250a06b002127af41faab909d7fbff5dd7fb14b07",
+            "ba62ed261f17d9f7b00d0d628b6bdd0b8c51294d35f9eb1dccffc17d83d8a2cf",
+            "be4809dabb1a553a619297c3d10351536f2164ff130d5d29171f8ead30ce83cf",
+            "c3c88ff7619d02a062bd62c5f5e8bb882a298815ea40dc6a3311dfbb3d562055",
+            "c5bcb9218bb9ce5f4a42b4424a1c7069a4355f244ed228446ab7185093a51479",
+            "c90d2197b98fb4485d899c7eaa220405430b3d99ebe04a571946f6cc2c01f3bc",
+            "ce4d07bfa0eb16ebd59d066f822f98d78ce33e7bc0f41b9da6a1589ba52e0cbc",
+            "d3a87a076475f7c3e48dcab7b1bcec78e8d9f61004b28f84ea92122cfae3d114",
+            "dca01917bce41d923232e23420c2e386ab79617883a874f65342c820eed9d1f6",
+            "dea1f2d0cf15025ef5d790a0d1e5e25387944e15574c6dbce7894a46a39b4c0b",
+            "dfe5116a0d2a3529e6f815260335d99e734c58694f7fc562397ab99efaf7ddf2",
+            "e81dc63985590d3648f194e9f51fd49ec425b51f6a4a1693089b2c5389b0983e",
+            "e8a1ab195a9be331aeb2aa52ba61017aaa2e224b2d01277fb68170498ccb7c46",
+            "ea82f327e59f4895968187084bc58068a64552340fded62851e5cb340c3e545d",
+            "ee3e060b68e7ccefd9013d68e1da64ee135a28205bd6b9213e84f03feb6073e8",
+            "eede3a00f3070fb0add1c8ae7eadc85f2f889b9ee9719080fc5781bf6eb83764",
+            "f278268794589fdfa0d5556b4c2779167ae8edcfd2f43407520904b0d57837c9",
+            "f2f408cc6d33fd4f5050bff4fbe43588a44268e33f228f078276cbd71d823872",
+            "f315487467398ea385e39fff973407c5cbe95c12239764237b41dea9df492e98",
+            "f4c9bc979561da57ff4158f5606409e398eec8a5120331a1b45f5b855c9057b5",
+            "f5b8cabf5d20e00fc7462ece7ed5184d1de5dd5662d20a62e188a1bfd19d6214",
+            "f841c6cc1da14613ce560491dfeacee3bb8a2f31d59464dd5d25b7f6a62b3506",
+            "fac150b0da236fc9b623cbdd39abcbd8c803d1e5d5c253cff60de82ca74b689e"
+          ]
+        },
+        "raw_text_inventory": {
+          "fileCount": 36,
+          "sha256": [
+            "082d5f731c64dad3ac8fecfdbea1c0d34363cd80b3b8dc301a984b79df5b649a",
+            "138a51c05fdccaf0c387462992e59ad66049048ede0751d61b1811e0657c8cd6",
+            "138a51c05fdccaf0c387462992e59ad66049048ede0751d61b1811e0657c8cd6",
+            "14606df96672f4abf373698322eee89823e4ddb127a7fddbfacff20037c32e4a",
+            "152eecc1e1d1e7fbb5aba9bbfb8996066829499e5999880ad6496bd7415114c9",
+            "1c398cbd8d404c6fe8d6f820fe659f907099bce08c06a184a816188cf58ea7da",
+            "2216cf7e1688b91c0ea828293f726aa1b0e783bf1f14cf35b15fa9d1aeafcfa9",
+            "2216cf7e1688b91c0ea828293f726aa1b0e783bf1f14cf35b15fa9d1aeafcfa9",
+            "253da998e891848b90b747c03de976bdcd7cc76c274dc18d5b9e10fd0d843afa",
+            "30d89244a58f91d3d3dcef27a6458017d84c978558c489e41e8394390b3e431e",
+            "34404efc59a0cab8bb4cc4b92d2b695490641019e98f8e61f0c60bed7f6190a0",
+            "48818fffd6aa6cff455a635c49a35219e31016c65b599f375c523744f7305975",
+            "4e570feec835d81235cad5946c992990ca200281b866ea7c0260f04cacb98d8c",
+            "5901d41c000778a664a52d2e7497b1ba1aebc468957d91dd441f01a995ab066b",
+            "5aba1b82ea428fab229e4b1303069df24af3a5c50f8ee251e0f10bd08c084b69",
+            "5b59e013c46854c3f665d684ade4295f3a35d13ee809759cd2d782a08e67c0b1",
+            "5d27ab38217aa44417eed81097084e8424a02b48fad321c4555ae9d753200861",
+            "5da8da343423981a1893b7aaab523bf405cbf0c3d328a77def597018e08c9293",
+            "5f684c9a07360b808980ae75649df2bfa6009a3026be489dbc669d542b0e06f6",
+            "6db4e28cc33ef763dae024a491802ca83870f6680a5d183735a59cfbf448b554",
+            "7d2b00de4f4a7d4d7c810bf414395da32ed2c94f1ec3924803216aff91667034",
+            "852fe5cb7ce6aba6b8162a64214af5255e318df3e4380ab4a70aa7bd41b46739",
+            "8d28e5c25b5103bc7c42da00c08589b9d6b2cd8e7750f4b776fbc9ba8ee3d8c8",
+            "8ff4ad7ff92a563e6f2e771cba5fcc9c32e57a69b13e5fad01a0f6a86293cbef",
+            "8ff4ad7ff92a563e6f2e771cba5fcc9c32e57a69b13e5fad01a0f6a86293cbef",
+            "972b43ec645c485f1e2d3a7cbf037e238278e23f931cc8882c1a8b0d4342a8d5",
+            "972b43ec645c485f1e2d3a7cbf037e238278e23f931cc8882c1a8b0d4342a8d5",
+            "996a8eb7ae7c13efa1146be199be0a84d234cce4f32b13c360a858c0ff64d322",
+            "b80c43c754188590b5e86e7069543cc58f7e67aeedfeb60a941c675dad9aa317",
+            "c8ffe2e94c27d667a9f246c4f1dae5a5ca707c4684b93420bf2d4246205479bd",
+            "e1d3b10cf34465bb0c37cbd33171527cd2ced8699cf06a7543fde0add6dd6680",
+            "f1092463dfbdbbdb4f1c49fcb2d5bedb9cd87fb1e72ea0463167cf76d65e1513",
+            "f45e052d61cd5ee1e969ce2e1f6a4abf47dadf7ac59ca4a6d022c249d4e3c40e",
+            "f54b60e23ce3f0db8bb9363864c182e366b5c816403ab736ba2b5b51afd2370d",
+            "f782a1a25bde7e1c009b1d9fc5ff862d46ae6ad88394b5efc70de5609457ef3a",
+            "f782a1a25bde7e1c009b1d9fc5ff862d46ae6ad88394b5efc70de5609457ef3a"
+          ]
+        }
+      },
+      "manifestSha256": "644833fdbd348154ac9cc8b2dcc75225f6826cb15c9499a2e7d757ef642347d9"
+    },
+    "readmeCorpusClaim": "sample texts are extracted from VAERS data sets"
+  },
+  "aggregationOnly": true,
+  "rowLevelPredictionsWritten": false,
+  "model": {
+    "name": "base",
+    "threshold": 0.6,
+    "usageHelperSha256": "f63e63d649ea52f16c22a0573b11070c333374e5ac1be935e2d66fbc5f0a1986",
+    "adapterFingerprint": "a1baa9e59ef0eaf73bb11fac6c5e391035ff6ee60a4d1e639678dcc9d15964d0",
+    "baseModel": "fastino/gliner2.5-base-v1",
+    "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+    "baseTrainingFingerprint": "e911185e05fe7c4230a43b08c54ec6d59dba10c4d664dac6e3a533ca634a32b0",
+    "baseRuntimeAssetFingerprint": "898ba838a048c7fa4599654405ddef54437e642875a5706613dcceea8cf2ea81",
+    "registryHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+    "runtimeVersions": {
+      "python": "3.12.13",
+      "torch": "2.11.0+cu130",
+      "transformers": "4.57.6",
+      "peft": "0.21.2",
+      "numpy": "2.5.3",
+      "tokenizers": "0.22.2"
+    },
+    "nativeAttributeGroups": {
+      "assertion": {
+        "choiceCount": 5,
+        "threshold": 0.5,
+        "multiLabel": false
+      },
+      "experiencer": {
+        "choiceCount": 3,
+        "threshold": 0.5,
+        "multiLabel": false
+      },
+      "time frame": {
+        "choiceCount": 4,
+        "threshold": 0.5,
+        "multiLabel": false
+      }
+    }
+  },
+  "tasks": {
+    "AMIA21_WORKSHOP": {
+      "schema": {
+        "sourceKind": "dtd",
+        "sha256": "deefb3a4f696f25b41dd12f70025749c4bd4e92cc95d4d9c490934f48fa6239b",
+        "entityLabels": [
+          "Fever",
+          "Pain",
+          "Severity"
+        ],
+        "relationLabels": [
+          "AE_lk"
+        ],
+        "entityAttributes": {
+          "Fever": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            }
+          },
+          "Pain": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            }
+          },
+          "Severity": {
+            "type": {
+              "kind": "enum",
+              "choiceCount": 5
+            }
+          }
+        },
+        "relationAttributes": {
+          "AE_lk": {
+            "arg0": {
+              "kind": "IDREF",
+              "choiceCount": 0
+            },
+            "arg1": {
+              "kind": "IDREF",
+              "choiceCount": 0
+            }
+          }
+        }
+      },
+      "nativeCrosswalkStatus": {
+        "Fever": "clinical_condition",
+        "Pain": "clinical_condition",
+        "Severity": "unsupported_attribute_span"
+      },
+      "annotationSets": [
+        {
+          "annotationGroup": "all",
+          "annotationFiles": 10,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 10,
+          "spanScoringStatus": "available",
+          "documentsRead": 10,
+          "uniqueEmbeddedTexts": 10,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 22,
+          "goldSpanAnnotations": 24,
+          "goldRelationAnnotations": 3,
+          "goldDocumentLevelAnnotations": 0,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 2,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 10,
+            "successfulDocuments": 10,
+            "scoredDocuments": 8,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 2
+            },
+            "eligibleGoldSpans": 21,
+            "exactLabelAndOffset": {
+              "gold": 21,
+              "predicted": 8,
+              "matched": 1,
+              "precision": 0.125,
+              "recall": 0.047619047619047616,
+              "f1": 0.06896551724137931,
+              "byLabel": {
+                "Fever": {
+                  "gold": 7,
+                  "predicted": 3,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Pain": {
+                  "gold": 12,
+                  "predicted": 3,
+                  "matched": 1,
+                  "precision": 0.3333333333333333,
+                  "recall": 0.08333333333333333,
+                  "f1": 0.13333333333333333
+                },
+                "Severity": {
+                  "gold": 2,
+                  "predicted": 2,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 19,
+              "matched": 1,
+              "agree": 1,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 1.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 10,
+            "successfulDocuments": 10,
+            "scoredDocuments": 8,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 2
+            },
+            "eligibleGoldSpans": 19,
+            "unmappedGoldSpansByLabel": {
+              "Severity": 2
+            },
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 19,
+              "predicted": 13,
+              "matched": 5,
+              "precision": 0.38461538461538464,
+              "recall": 0.2631578947368421,
+              "f1": 0.3125,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 19,
+                  "predicted": 13,
+                  "matched": 5,
+                  "precision": 0.38461538461538464,
+                  "recall": 0.2631578947368421,
+                  "f1": 0.3125
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 19,
+              "predicted": 13,
+              "matched": 5,
+              "precision": 0.38461538461538464,
+              "recall": 0.2631578947368421,
+              "f1": 0.3125,
+              "byLabel": {
+                "anchor": {
+                  "gold": 19,
+                  "predicted": 13,
+                  "matched": 5,
+                  "precision": 0.38461538461538464,
+                  "recall": 0.2631578947368421,
+                  "f1": 0.3125
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 19,
+              "matched": 5,
+              "agree": 5,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 1.0
+            },
+            "predictionsOutsideMappedFamilies": 13,
+            "failureTypes": {}
+          }
+        }
+      ]
+    },
+    "DOCUMENT_LEVEL_TASK": {
+      "schema": {
+        "sourceKind": "dtd",
+        "sha256": "a16d467c61aaad196e23687ba4872960b527b57a4df4e3ff52431bc4dce1fd93",
+        "entityLabels": [
+          "CHILL",
+          "COUGH",
+          "DIARRHEA",
+          "DIZZINESS",
+          "FATIGUE",
+          "HEADACHE",
+          "NAUSEA",
+          "OTHER_SYMP",
+          "PAIN",
+          "PYREXIA",
+          "SORENESS"
+        ],
+        "relationLabels": [],
+        "entityAttributes": {
+          "CHILL": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "COUGH": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "DIARRHEA": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "DIZZINESS": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "FATIGUE": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "HEADACHE": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "NAUSEA": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "OTHER_SYMP": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "PAIN": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "PYREXIA": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "SORENESS": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "spans": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          }
+        },
+        "relationAttributes": {}
+      },
+      "nativeCrosswalkStatus": {
+        "CHILL": "clinical_condition",
+        "COUGH": "clinical_condition",
+        "DIARRHEA": "clinical_condition",
+        "DIZZINESS": "clinical_condition",
+        "FATIGUE": "clinical_condition",
+        "HEADACHE": "clinical_condition",
+        "NAUSEA": "clinical_condition",
+        "OTHER_SYMP": "clinical_condition",
+        "PAIN": "clinical_condition",
+        "PYREXIA": "clinical_condition",
+        "SORENESS": "clinical_condition"
+      },
+      "annotationSets": [
+        {
+          "annotationGroup": "A",
+          "annotationFiles": 5,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 5,
+          "spanScoringStatus": "unavailable_no_span_gold",
+          "documentsRead": 5,
+          "uniqueEmbeddedTexts": 5,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 0,
+          "goldSpanAnnotations": 0,
+          "goldRelationAnnotations": 0,
+          "goldDocumentLevelAnnotations": 10,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 0,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 0,
+            "excludedDocumentsByReason": {
+              "document_level_only_task": 5
+            },
+            "eligibleGoldSpans": 0,
+            "exactLabelAndOffset": {
+              "gold": 0,
+              "predicted": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "CHILL": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "COUGH": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "DIARRHEA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "DIZZINESS": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "FATIGUE": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "HEADACHE": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "NAUSEA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "OTHER_SYMP": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PAIN": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PYREXIA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "SORENESS": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "agreementOnExactMatches": 0.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 0,
+            "excludedDocumentsByReason": {
+              "document_level_only_task": 5
+            },
+            "eligibleGoldSpans": 0,
+            "unmappedGoldSpansByLabel": {},
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 0,
+              "predicted": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 0,
+              "predicted": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "anchor": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "agreementOnExactMatches": 0.0
+            },
+            "predictionsOutsideMappedFamilies": 0,
+            "failureTypes": {}
+          }
+        },
+        {
+          "annotationGroup": "B",
+          "annotationFiles": 5,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 5,
+          "spanScoringStatus": "unavailable_no_span_gold",
+          "documentsRead": 5,
+          "uniqueEmbeddedTexts": 5,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 0,
+          "goldSpanAnnotations": 0,
+          "goldRelationAnnotations": 0,
+          "goldDocumentLevelAnnotations": 14,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 0,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 0,
+            "excludedDocumentsByReason": {
+              "document_level_only_task": 5
+            },
+            "eligibleGoldSpans": 0,
+            "exactLabelAndOffset": {
+              "gold": 0,
+              "predicted": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "CHILL": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "COUGH": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "DIARRHEA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "DIZZINESS": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "FATIGUE": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "HEADACHE": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "NAUSEA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "OTHER_SYMP": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PAIN": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PYREXIA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "SORENESS": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "agreementOnExactMatches": 0.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 0,
+            "excludedDocumentsByReason": {
+              "document_level_only_task": 5
+            },
+            "eligibleGoldSpans": 0,
+            "unmappedGoldSpansByLabel": {},
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 0,
+              "predicted": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 0,
+              "predicted": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "anchor": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "agreementOnExactMatches": 0.0
+            },
+            "predictionsOutsideMappedFamilies": 0,
+            "failureTypes": {}
+          }
+        }
+      ]
+    },
+    "ENTITY_RELATION_TASK": {
+      "schema": {
+        "sourceKind": "dtd",
+        "sha256": "2f51ff55263763091162ae958729b6765e383be455b2d6885024bf726e0c270c",
+        "entityLabels": [
+          "AE",
+          "DATE",
+          "SVRT"
+        ],
+        "relationLabels": [
+          "LK_AE_SVRT"
+        ],
+        "entityAttributes": {
+          "AE": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 3
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "DATE": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "SVRT": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            },
+            "severity": {
+              "kind": "enum",
+              "choiceCount": 4
+            }
+          }
+        },
+        "relationAttributes": {
+          "LK_AE_SVRT": {
+            "arg0": {
+              "kind": "IDREF",
+              "choiceCount": 0
+            },
+            "arg1": {
+              "kind": "IDREF",
+              "choiceCount": 0
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          }
+        }
+      },
+      "nativeCrosswalkStatus": {
+        "AE": "clinical_condition",
+        "DATE": "unsupported_metadata",
+        "SVRT": "unsupported_attribute_span"
+      },
+      "annotationSets": [
+        {
+          "annotationGroup": "Annotator_A",
+          "annotationFiles": 5,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 5,
+          "spanScoringStatus": "available",
+          "documentsRead": 5,
+          "uniqueEmbeddedTexts": 5,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 75,
+          "goldSpanAnnotations": 75,
+          "goldRelationAnnotations": 11,
+          "goldDocumentLevelAnnotations": 0,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 0,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 5,
+            "excludedDocumentsByReason": {},
+            "eligibleGoldSpans": 75,
+            "exactLabelAndOffset": {
+              "gold": 75,
+              "predicted": 1,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "AE": {
+                  "gold": 41,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "DATE": {
+                  "gold": 15,
+                  "predicted": 1,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "SVRT": {
+                  "gold": 19,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 41,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 5,
+            "excludedDocumentsByReason": {},
+            "eligibleGoldSpans": 41,
+            "unmappedGoldSpansByLabel": {
+              "DATE": 15,
+              "SVRT": 19
+            },
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 41,
+              "predicted": 10,
+              "matched": 1,
+              "precision": 0.1,
+              "recall": 0.024390243902439025,
+              "f1": 0.03921568627450981,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 41,
+                  "predicted": 10,
+                  "matched": 1,
+                  "precision": 0.1,
+                  "recall": 0.024390243902439025,
+                  "f1": 0.03921568627450981
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 41,
+              "predicted": 10,
+              "matched": 1,
+              "precision": 0.1,
+              "recall": 0.024390243902439025,
+              "f1": 0.03921568627450981,
+              "byLabel": {
+                "anchor": {
+                  "gold": 41,
+                  "predicted": 10,
+                  "matched": 1,
+                  "precision": 0.1,
+                  "recall": 0.024390243902439025,
+                  "f1": 0.03921568627450981
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 41,
+              "matched": 1,
+              "agree": 1,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 1.0
+            },
+            "predictionsOutsideMappedFamilies": 8,
+            "failureTypes": {}
+          }
+        },
+        {
+          "annotationGroup": "Annotator_B",
+          "annotationFiles": 5,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 5,
+          "spanScoringStatus": "available",
+          "documentsRead": 5,
+          "uniqueEmbeddedTexts": 5,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 59,
+          "goldSpanAnnotations": 62,
+          "goldRelationAnnotations": 9,
+          "goldDocumentLevelAnnotations": 0,
+          "goldDiscontinuousAnnotations": 1,
+          "goldDiscontinuousSegmentsUnscored": 2,
+          "goldInvalidOffsets": 2,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 3,
+            "excludedDocumentsByReason": {
+              "discontinuous_spans": 1,
+              "invalid_offsets": 1
+            },
+            "eligibleGoldSpans": 23,
+            "exactLabelAndOffset": {
+              "gold": 23,
+              "predicted": 1,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "AE": {
+                  "gold": 12,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "DATE": {
+                  "gold": 3,
+                  "predicted": 1,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "SVRT": {
+                  "gold": 8,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 12,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 3,
+            "excludedDocumentsByReason": {
+              "discontinuous_spans": 1,
+              "invalid_offsets": 1
+            },
+            "eligibleGoldSpans": 12,
+            "unmappedGoldSpansByLabel": {
+              "DATE": 3,
+              "SVRT": 8
+            },
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {
+              "DATE": 11,
+              "SVRT": 4
+            },
+            "exactFamilyAndOffset": {
+              "gold": 12,
+              "predicted": 3,
+              "matched": 1,
+              "precision": 0.3333333333333333,
+              "recall": 0.08333333333333333,
+              "f1": 0.13333333333333333,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 12,
+                  "predicted": 3,
+                  "matched": 1,
+                  "precision": 0.3333333333333333,
+                  "recall": 0.08333333333333333,
+                  "f1": 0.13333333333333333
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 12,
+              "predicted": 3,
+              "matched": 1,
+              "precision": 0.3333333333333333,
+              "recall": 0.08333333333333333,
+              "f1": 0.13333333333333333,
+              "byLabel": {
+                "anchor": {
+                  "gold": 12,
+                  "predicted": 3,
+                  "matched": 1,
+                  "precision": 0.3333333333333333,
+                  "recall": 0.08333333333333333,
+                  "f1": 0.13333333333333333
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 12,
+              "matched": 1,
+              "agree": 1,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 1.0
+            },
+            "predictionsOutsideMappedFamilies": 6,
+            "failureTypes": {}
+          }
+        }
+      ]
+    },
+    "ERROR_ANALYSIS_TASK": {
+      "schema": {
+        "sourceKind": "yaml",
+        "sha256": "8e7ead81e94d899b063b3f385dae26b73838d0fb23537ad668799b5ae7a5728e",
+        "entityLabels": [
+          "DIZZINESS",
+          "FATIGUE",
+          "HEADACHE",
+          "MEDICATION",
+          "NAUSEA",
+          "OTHER_AE",
+          "PAIN",
+          "PYREXIA",
+          "VAX"
+        ],
+        "relationLabels": [
+          "TREATMENT"
+        ],
+        "entityAttributes": {
+          "DIZZINESS": {
+            "certainty": {
+              "kind": "list",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          },
+          "FATIGUE": {
+            "certainty": {
+              "kind": "list",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          },
+          "HEADACHE": {
+            "certainty": {
+              "kind": "list",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          },
+          "MEDICATION": {
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          },
+          "NAUSEA": {
+            "certainty": {
+              "kind": "list",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          },
+          "OTHER_AE": {
+            "certainty": {
+              "kind": "list",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          },
+          "PAIN": {
+            "certainty": {
+              "kind": "list",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          },
+          "PYREXIA": {
+            "certainty": {
+              "kind": "list",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          },
+          "VAX": {
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            }
+          }
+        },
+        "relationAttributes": {
+          "TREATMENT": {
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            },
+            "link_AE": {
+              "kind": "idref",
+              "choiceCount": 0
+            },
+            "link_MED": {
+              "kind": "idref",
+              "choiceCount": 0
+            }
+          }
+        }
+      },
+      "nativeCrosswalkStatus": {
+        "DIZZINESS": "clinical_condition",
+        "FATIGUE": "clinical_condition",
+        "HEADACHE": "clinical_condition",
+        "MEDICATION": "clinical_treatment",
+        "NAUSEA": "clinical_condition",
+        "OTHER_AE": "clinical_condition",
+        "PAIN": "clinical_condition",
+        "PYREXIA": "clinical_condition",
+        "VAX": "clinical_treatment"
+      },
+      "annotationSets": [
+        {
+          "annotationGroup": "gold",
+          "annotationFiles": 5,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 5,
+          "spanScoringStatus": "available",
+          "documentsRead": 5,
+          "uniqueEmbeddedTexts": 5,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 69,
+          "goldSpanAnnotations": 78,
+          "goldRelationAnnotations": 0,
+          "goldDocumentLevelAnnotations": 0,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 9,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 2,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 3
+            },
+            "eligibleGoldSpans": 21,
+            "exactLabelAndOffset": {
+              "gold": 21,
+              "predicted": 2,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "DIZZINESS": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "FATIGUE": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "HEADACHE": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "MEDICATION": {
+                  "gold": 5,
+                  "predicted": 2,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "NAUSEA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "OTHER_AE": {
+                  "gold": 7,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PAIN": {
+                  "gold": 3,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PYREXIA": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "VAX": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 16,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 2,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 3
+            },
+            "eligibleGoldSpans": 21,
+            "unmappedGoldSpansByLabel": {},
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 21,
+              "predicted": 4,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 16,
+                  "predicted": 1,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "clinical_treatment": {
+                  "gold": 5,
+                  "predicted": 3,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 21,
+              "predicted": 4,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "anchor": {
+                  "gold": 21,
+                  "predicted": 4,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 16,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "predictionsOutsideMappedFamilies": 0,
+            "failureTypes": {}
+          }
+        }
+      ]
+    },
+    "IAA_TASK": {
+      "schema": {
+        "sourceKind": "dtd",
+        "sha256": "f1c0e54c4a1fe0cf5c03341edc1b92770f250850e1adff4de07b1b8d2f05cdeb",
+        "entityLabels": [
+          "DIZZINESS",
+          "FATIGUE",
+          "HEADACHE",
+          "MEDICATION",
+          "NAUSEA",
+          "OTHER_AE",
+          "PAIN",
+          "PYREXIA",
+          "VAX"
+        ],
+        "relationLabels": [
+          "TREATMENT"
+        ],
+        "entityAttributes": {
+          "DIZZINESS": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "FATIGUE": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "HEADACHE": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "MEDICATION": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "NAUSEA": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "OTHER_AE": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "PAIN": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "PYREXIA": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          },
+          "VAX": {
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          }
+        },
+        "relationAttributes": {
+          "TREATMENT": {
+            "arg0": {
+              "kind": "IDREF",
+              "choiceCount": 0
+            },
+            "arg1": {
+              "kind": "IDREF",
+              "choiceCount": 0
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          }
+        }
+      },
+      "nativeCrosswalkStatus": {
+        "DIZZINESS": "clinical_condition",
+        "FATIGUE": "clinical_condition",
+        "HEADACHE": "clinical_condition",
+        "MEDICATION": "clinical_treatment",
+        "NAUSEA": "clinical_condition",
+        "OTHER_AE": "clinical_condition",
+        "PAIN": "clinical_condition",
+        "PYREXIA": "clinical_condition",
+        "VAX": "clinical_treatment"
+      },
+      "annotationSets": [
+        {
+          "annotationGroup": "A",
+          "annotationFiles": 5,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 5,
+          "spanScoringStatus": "available",
+          "documentsRead": 5,
+          "uniqueEmbeddedTexts": 5,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 36,
+          "goldSpanAnnotations": 37,
+          "goldRelationAnnotations": 2,
+          "goldDocumentLevelAnnotations": 0,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 1,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 4,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 1
+            },
+            "eligibleGoldSpans": 26,
+            "exactLabelAndOffset": {
+              "gold": 26,
+              "predicted": 5,
+              "matched": 2,
+              "precision": 0.4,
+              "recall": 0.07692307692307693,
+              "f1": 0.12903225806451613,
+              "byLabel": {
+                "DIZZINESS": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "FATIGUE": {
+                  "gold": 1,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "HEADACHE": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "MEDICATION": {
+                  "gold": 6,
+                  "predicted": 5,
+                  "matched": 2,
+                  "precision": 0.4,
+                  "recall": 0.3333333333333333,
+                  "f1": 0.3636363636363636
+                },
+                "NAUSEA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "OTHER_AE": {
+                  "gold": 8,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PAIN": {
+                  "gold": 3,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PYREXIA": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "VAX": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 18,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 4,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 1
+            },
+            "eligibleGoldSpans": 26,
+            "unmappedGoldSpansByLabel": {},
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 26,
+              "predicted": 12,
+              "matched": 3,
+              "precision": 0.25,
+              "recall": 0.11538461538461539,
+              "f1": 0.15789473684210525,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 18,
+                  "predicted": 5,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "clinical_treatment": {
+                  "gold": 8,
+                  "predicted": 7,
+                  "matched": 3,
+                  "precision": 0.42857142857142855,
+                  "recall": 0.375,
+                  "f1": 0.39999999999999997
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 26,
+              "predicted": 12,
+              "matched": 3,
+              "precision": 0.25,
+              "recall": 0.11538461538461539,
+              "f1": 0.15789473684210525,
+              "byLabel": {
+                "anchor": {
+                  "gold": 26,
+                  "predicted": 12,
+                  "matched": 3,
+                  "precision": 0.25,
+                  "recall": 0.11538461538461539,
+                  "f1": 0.15789473684210525
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 18,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "predictionsOutsideMappedFamilies": 1,
+            "failureTypes": {}
+          }
+        },
+        {
+          "annotationGroup": "B",
+          "annotationFiles": 5,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 5,
+          "spanScoringStatus": "available",
+          "documentsRead": 5,
+          "uniqueEmbeddedTexts": 5,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 47,
+          "goldSpanAnnotations": 56,
+          "goldRelationAnnotations": 1,
+          "goldDocumentLevelAnnotations": 0,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 9,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 2,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 3
+            },
+            "eligibleGoldSpans": 13,
+            "exactLabelAndOffset": {
+              "gold": 13,
+              "predicted": 2,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "DIZZINESS": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "FATIGUE": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "HEADACHE": {
+                  "gold": 1,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "MEDICATION": {
+                  "gold": 4,
+                  "predicted": 2,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "NAUSEA": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "OTHER_AE": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PAIN": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "PYREXIA": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "VAX": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 9,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 5,
+            "successfulDocuments": 5,
+            "scoredDocuments": 2,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 3
+            },
+            "eligibleGoldSpans": 13,
+            "unmappedGoldSpansByLabel": {},
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 13,
+              "predicted": 4,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 9,
+                  "predicted": 1,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "clinical_treatment": {
+                  "gold": 4,
+                  "predicted": 3,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 13,
+              "predicted": 4,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "anchor": {
+                  "gold": 13,
+                  "predicted": 4,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 9,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "predictionsOutsideMappedFamilies": 0,
+            "failureTypes": {}
+          }
+        }
+      ]
+    },
+    "MINIMAL_TASK": {
+      "schema": {
+        "sourceKind": "dtd",
+        "sha256": "aa4aaa82b997dfdf67425959f21fdae2db4bcef8d2b6bff7c9486c3504e83eaf",
+        "entityLabels": [
+          "SYMP"
+        ],
+        "relationLabels": [],
+        "entityAttributes": {
+          "SYMP": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 3
+            },
+            "comment": {
+              "kind": "CDATA",
+              "choiceCount": 0
+            }
+          }
+        },
+        "relationAttributes": {}
+      },
+      "nativeCrosswalkStatus": {
+        "SYMP": "clinical_condition"
+      },
+      "annotationSets": [
+        {
+          "annotationGroup": "all",
+          "annotationFiles": 3,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 3,
+          "spanScoringStatus": "available",
+          "documentsRead": 3,
+          "uniqueEmbeddedTexts": 3,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 16,
+          "goldSpanAnnotations": 17,
+          "goldRelationAnnotations": 0,
+          "goldDocumentLevelAnnotations": 0,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 1,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 3,
+            "successfulDocuments": 3,
+            "scoredDocuments": 2,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 1
+            },
+            "eligibleGoldSpans": 15,
+            "exactLabelAndOffset": {
+              "gold": 15,
+              "predicted": 12,
+              "matched": 5,
+              "precision": 0.4166666666666667,
+              "recall": 0.3333333333333333,
+              "f1": 0.3703703703703704,
+              "byLabel": {
+                "SYMP": {
+                  "gold": 15,
+                  "predicted": 12,
+                  "matched": 5,
+                  "precision": 0.4166666666666667,
+                  "recall": 0.3333333333333333,
+                  "f1": 0.3703703703703704
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 15,
+              "matched": 5,
+              "agree": 2,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.4
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 3,
+            "successfulDocuments": 3,
+            "scoredDocuments": 2,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 1
+            },
+            "eligibleGoldSpans": 15,
+            "unmappedGoldSpansByLabel": {},
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 15,
+              "predicted": 16,
+              "matched": 7,
+              "precision": 0.4375,
+              "recall": 0.4666666666666667,
+              "f1": 0.45161290322580644,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 15,
+                  "predicted": 16,
+                  "matched": 7,
+                  "precision": 0.4375,
+                  "recall": 0.4666666666666667,
+                  "f1": 0.45161290322580644
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 15,
+              "predicted": 16,
+              "matched": 7,
+              "precision": 0.4375,
+              "recall": 0.4666666666666667,
+              "f1": 0.45161290322580644,
+              "byLabel": {
+                "anchor": {
+                  "gold": 15,
+                  "predicted": 16,
+                  "matched": 7,
+                  "precision": 0.4375,
+                  "recall": 0.4666666666666667,
+                  "f1": 0.45161290322580644
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 15,
+              "matched": 7,
+              "agree": 4,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.5714285714285714
+            },
+            "predictionsOutsideMappedFamilies": 4,
+            "failureTypes": {}
+          }
+        }
+      ]
+    },
+    "OLEA_TASK": {
+      "schema": {
+        "sourceKind": "yaml",
+        "sha256": "c9ce15353ed81752ac0b5a8d6ab20d590b003df17cada09738daa09ec823c13b",
+        "entityLabels": [
+          "DataSource",
+          "Symptom"
+        ],
+        "relationLabels": [],
+        "entityAttributes": {
+          "DataSource": {
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            },
+            "ds_type": {
+              "kind": "list",
+              "choiceCount": 3
+            }
+          },
+          "Symptom": {
+            "comment": {
+              "kind": "text",
+              "choiceCount": 0
+            },
+            "data_type": {
+              "kind": "list",
+              "choiceCount": 3
+            }
+          }
+        },
+        "relationAttributes": {}
+      },
+      "nativeCrosswalkStatus": {
+        "DataSource": "nonclinical",
+        "Symptom": "clinical_condition"
+      },
+      "annotationSets": [
+        {
+          "annotationGroup": "all",
+          "annotationFiles": 3,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 3,
+          "spanScoringStatus": "available",
+          "documentsRead": 3,
+          "uniqueEmbeddedTexts": 3,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 31,
+          "goldSpanAnnotations": 31,
+          "goldRelationAnnotations": 0,
+          "goldDocumentLevelAnnotations": 3,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 0,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 3,
+            "successfulDocuments": 3,
+            "scoredDocuments": 3,
+            "excludedDocumentsByReason": {},
+            "eligibleGoldSpans": 31,
+            "exactLabelAndOffset": {
+              "gold": 31,
+              "predicted": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "DataSource": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Symptom": {
+                  "gold": 31,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 0,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 3,
+            "successfulDocuments": 3,
+            "scoredDocuments": 3,
+            "excludedDocumentsByReason": {},
+            "eligibleGoldSpans": 31,
+            "unmappedGoldSpansByLabel": {},
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 31,
+              "predicted": 1,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 31,
+                  "predicted": 1,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 31,
+              "predicted": 1,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "byLabel": {
+                "anchor": {
+                  "gold": 31,
+                  "predicted": 1,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 0,
+              "matched": 0,
+              "agree": 0,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 0.0
+            },
+            "predictionsOutsideMappedFamilies": 0,
+            "failureTypes": {}
+          }
+        }
+      ]
+    },
+    "VAERS_20_NOTES": {
+      "schema": {
+        "sourceKind": "dtd",
+        "sha256": "80f51768de4c3f3215d786c79bd0ef8b3e350545ec907e84c48ea26813ce3153",
+        "entityLabels": [
+          "Chill",
+          "Cough",
+          "Delirium",
+          "Diarrhea",
+          "Dyspnea",
+          "Fatigue",
+          "Fever",
+          "Headache",
+          "Hypersomnia",
+          "Myalgia",
+          "Nasal_obstruction",
+          "Nausea",
+          "Other",
+          "Pain",
+          "Sore_throat",
+          "Vaccine",
+          "Vomiting"
+        ],
+        "relationLabels": [],
+        "entityAttributes": {
+          "Chill": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Cough": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Delirium": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Diarrhea": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Dyspnea": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Fatigue": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Fever": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Headache": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Hypersomnia": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Myalgia": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Nasal_obstruction": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Nausea": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Other": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Pain": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Sore_throat": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Vaccine": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          },
+          "Vomiting": {
+            "certainty": {
+              "kind": "enum",
+              "choiceCount": 4
+            },
+            "comment": {
+              "kind": "#IMPLIED",
+              "choiceCount": 0
+            }
+          }
+        },
+        "relationAttributes": {}
+      },
+      "nativeCrosswalkStatus": {
+        "Chill": "clinical_condition",
+        "Cough": "clinical_condition",
+        "Delirium": "clinical_condition",
+        "Diarrhea": "clinical_condition",
+        "Dyspnea": "clinical_condition",
+        "Fatigue": "clinical_condition",
+        "Fever": "clinical_condition",
+        "Headache": "clinical_condition",
+        "Hypersomnia": "clinical_condition",
+        "Myalgia": "clinical_condition",
+        "Nasal_obstruction": "clinical_condition",
+        "Nausea": "clinical_condition",
+        "Other": "clinical_condition",
+        "Pain": "clinical_condition",
+        "Sore_throat": "clinical_condition",
+        "Vaccine": "clinical_treatment",
+        "Vomiting": "clinical_condition"
+      },
+      "annotationSets": [
+        {
+          "annotationGroup": "all",
+          "annotationFiles": 20,
+          "unreadAnnotationFiles": 0,
+          "rawTextFilesAvailable": 0,
+          "spanScoringStatus": "available",
+          "documentsRead": 20,
+          "uniqueEmbeddedTexts": 20,
+          "annotationParseFailures": {},
+          "goldEntitySpans": 241,
+          "goldSpanAnnotations": 281,
+          "goldRelationAnnotations": 0,
+          "goldDocumentLevelAnnotations": 0,
+          "goldDiscontinuousAnnotations": 0,
+          "goldDiscontinuousSegmentsUnscored": 0,
+          "goldInvalidOffsets": 40,
+          "goldUncheckedSurfaces": 0,
+          "directSchema": {
+            "attemptedDocuments": 20,
+            "successfulDocuments": 20,
+            "scoredDocuments": 3,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 17
+            },
+            "eligibleGoldSpans": 22,
+            "exactLabelAndOffset": {
+              "gold": 22,
+              "predicted": 3,
+              "matched": 3,
+              "precision": 1.0,
+              "recall": 0.13636363636363635,
+              "f1": 0.24000000000000002,
+              "byLabel": {
+                "Chill": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Cough": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Delirium": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Diarrhea": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Dyspnea": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Fatigue": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Fever": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Headache": {
+                  "gold": 1,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Hypersomnia": {
+                  "gold": 1,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Myalgia": {
+                  "gold": 4,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Nasal_obstruction": {
+                  "gold": 1,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Nausea": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Other": {
+                  "gold": 2,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Pain": {
+                  "gold": 4,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Sore_throat": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                },
+                "Vaccine": {
+                  "gold": 5,
+                  "predicted": 3,
+                  "matched": 3,
+                  "precision": 1.0,
+                  "recall": 0.6,
+                  "f1": 0.7499999999999999
+                },
+                "Vomiting": {
+                  "gold": 0,
+                  "predicted": 0,
+                  "matched": 0,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 22,
+              "matched": 3,
+              "agree": 3,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 1.0
+            },
+            "failureTypes": {}
+          },
+          "nativeV3": {
+            "attemptedDocuments": 20,
+            "successfulDocuments": 20,
+            "scoredDocuments": 3,
+            "excludedDocumentsByReason": {
+              "invalid_offsets": 17
+            },
+            "eligibleGoldSpans": 22,
+            "unmappedGoldSpansByLabel": {},
+            "unmappedGoldSpansInQuarantinedDocumentsByLabel": {},
+            "exactFamilyAndOffset": {
+              "gold": 22,
+              "predicted": 13,
+              "matched": 7,
+              "precision": 0.5384615384615384,
+              "recall": 0.3181818181818182,
+              "f1": 0.39999999999999997,
+              "byLabel": {
+                "clinical_condition": {
+                  "gold": 17,
+                  "predicted": 4,
+                  "matched": 4,
+                  "precision": 1.0,
+                  "recall": 0.23529411764705882,
+                  "f1": 0.38095238095238093
+                },
+                "clinical_treatment": {
+                  "gold": 5,
+                  "predicted": 9,
+                  "matched": 3,
+                  "precision": 0.3333333333333333,
+                  "recall": 0.6,
+                  "f1": 0.42857142857142855
+                }
+              }
+            },
+            "exactOffsetIgnoringFamily": {
+              "gold": 22,
+              "predicted": 13,
+              "matched": 7,
+              "precision": 0.5384615384615384,
+              "recall": 0.3181818181818182,
+              "f1": 0.39999999999999997,
+              "byLabel": {
+                "anchor": {
+                  "gold": 22,
+                  "predicted": 13,
+                  "matched": 7,
+                  "precision": 0.5384615384615384,
+                  "recall": 0.3181818181818182,
+                  "f1": 0.39999999999999997
+                }
+              }
+            },
+            "certaintyToAssertionOnExactMatches": {
+              "compatibleGold": 22,
+              "matched": 7,
+              "agree": 7,
+              "unsupportedGold": 0,
+              "agreementOnExactMatches": 1.0
+            },
+            "predictionsOutsideMappedFamilies": 0,
+            "failureTypes": {}
+          }
+        }
+      ]
+    }
+  }
+}

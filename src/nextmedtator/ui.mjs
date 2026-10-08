@@ -2,6 +2,7 @@ import {suggestionThreshold,thresholdControl} from './threshold.mjs';
 import {previewSchemaMigration,applySchemaMigration} from './migration.mjs';
 import {compileScope, importScope, scopeIdentity} from './scope.mjs';
 import {ModelStore,downloadCatalogPackage} from './model-store.mjs';
+import {createModelSelectionState,saveModelSelectionState,setModelSelection,selectionThresholdOverride,setSelectionThresholdOverride,modelSelectionKey,modelSelectionControlValue,modelSelectionLabel,modelSelectionMatchesManifest,matchingInstalledModels,selectionFromManifest,localAdapterSelection,renderModelSelectionControls} from './model-selection.mjs';
 import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema} from './gliner-small.mjs';
 import { ReviewProject, machineSnapshot, makeRun } from './project.mjs';
@@ -18,6 +19,7 @@ import { mountLegacyAssist } from './assist.mjs';
 import {CorpusSearch} from './corpus-search.mjs';
 const styles = `
 .threshold-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.threshold output{font-weight:650;font-variant-numeric:tabular-nums}.threshold input[type=range]{width:100%;margin:6px 0;padding:0;accent-color:#076b74;cursor:pointer}
+.model-selection{min-width:0;max-width:100%;overflow-wrap:anywhere}.model-selection label,.model-selection details{min-width:0;max-width:100%}.model-selection input[type=text],.model-selection select{width:100%;min-width:0}.model-selection select{text-overflow:ellipsis}.model-selection pre{max-width:100%;overflow:auto;white-space:pre;font-size:11px}
 
 :host { --ink:#1a3041;--muted:#536976;--paper:#fff;--line:#d7e1e7;--accent:#076b74; color:var(--ink);font:15px/1.5 system-ui,sans-serif; }
 *{box-sizing:border-box} button,input,select,textarea{font:inherit} button,.file{border:1px solid var(--line);border-radius:7px;background:white;color:var(--ink);padding:7px 11px;cursor:pointer;display:inline-block}button:hover,.file:hover{background:#eef5f7}button:disabled{opacity:.5;cursor:not-allowed}button.primary{background:var(--accent);color:white;border-color:var(--accent)}:focus-visible{outline:3px solid #137aab;outline-offset:2px}button:focus:not(:focus-visible){outline:none}input,select,textarea{border:1px solid var(--line);border-radius:5px;padding:7px;max-width:100%;color:var(--ink)}textarea{width:100%}label{display:flex;flex-direction:column;gap:4px}input[type=file]{max-width:235px;font-size:12px}.app{position:fixed;inset:18px;z-index:10020;display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 80px #162b4a44;overflow:hidden}.app.full{position:relative;inset:auto;border:0;box-shadow:none;min-height:100vh;border-radius:0}.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:12px 18px}.brand{font-size:21px;font-weight:750;letter-spacing:-.6px}.badge{border-radius:20px;padding:3px 9px;background:#e8f5ef;font-size:12px}.stage{background:#f2f5f7}.muted{color:var(--muted);font-size:13px}.grow{flex:1}.toolbar{display:flex;gap:7px;padding:10px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}.main{display:grid;grid-template-columns:205px minmax(260px,1fr) 370px;flex:1;min-height:460px;overflow:auto}.documents{background:#f7f9fa;border-right:1px solid var(--line);padding:14px;overflow:auto}.documents button{display:block;text-align:left;width:100%;margin:6px 0;word-break:break-word}.documents button[aria-current=true]{border-color:var(--accent);background:#e6f2f3}.source{padding:20px;overflow:auto;min-width:0}.source textarea{white-space:pre-wrap;min-height:300px;resize:vertical;background:#fbfcfd;line-height:1.8;font-size:var(--source-size,17px);border:1px solid var(--line);tab-size:4}.panel{padding:16px;border-left:1px solid var(--line);overflow:auto;max-height:75vh}.card{padding:12px;border:1px solid var(--line);border-radius:9px;margin:10px 0;background:white}.card p{margin:5px 0;overflow-wrap:anywhere}.anchor{font-weight:650}.actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fields label{font-size:12px}.status{min-height:37px;border-top:1px solid var(--line);padding:8px 18px;font-size:13px;background:#f7f9fa}.message{margin:10px 18px;padding:10px;border-radius:7px;background:#edf4f6;overflow-wrap:anywhere}.message.error{background:#fff0ec;border:1px solid #db927f}.welcome{max-width:850px;margin:40px auto;padding:24px}.welcome h1{font-size:34px;letter-spacing:-1px;line-height:1.2}.welcome p{font-size:16px}.welcome .choices{display:flex;gap:15px;flex-wrap:wrap;margin:25px 0}.details{padding:14px 18px;border-bottom:1px solid var(--line);max-height:55vh;overflow:auto}.details h3{margin:4px 0 12px}.details pre{max-height:220px;overflow:auto;white-space:pre-wrap;background:#f7f9fa;padding:10px}.banner{padding:7px 18px;background:#fff9e9;border-bottom:1px solid #ebdfb7;font-size:12px}.closed{position:fixed;right:18px;bottom:16px;z-index:10010;border-color:var(--accent);box-shadow:0 4px 20px #193a4522}.check{display:flex;flex-direction:row;align-items:center;gap:8px}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:16px 0 8px}.tag{font-size:11px;text-transform:uppercase;letter-spacing:.4px}.source-note{font-size:12px;color:var(--muted)}.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hidden{display:none!important}@media(max-width:1000px){.main{grid-template-columns:155px 1fr}.panel{grid-column:1/-1;border-top:1px solid var(--line);max-height:none}.app{inset:4px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
@@ -44,7 +46,8 @@ export class EvidenceWorkspace {
         this.index = 0;
         this.mode = 'assisted';
         this.applicationMode = 'auto';
-        this.thresholdOverride = null;
+        this.modelSelectionState=createModelSelectionState();this.modelSelection=this.modelSelectionState.selection;this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);
+        this.modelSelectionEpoch=0;
         this.actor = 'annotator';
         this.message = '';
         this.error = false;
@@ -77,10 +80,58 @@ export class EvidenceWorkspace {
             this.previousFocus?.focus();
         } });
         this.render();
+        void this.restoreSelectedModel();
     }
-    adoptModel(candidate) {
-        if(!candidate||(this.model&&this.model.manifestHash!==candidate.manifestHash))this.thresholdOverride=null;
+    beginModelSelectionAction() {
+        this.modelSelectionEpoch++;
+        return this.modelSelectionEpoch;
+    }
+    setSelectedModel(selection,{render=true,restoreInstalled=true,intent=true}={}) {
+        if(intent)this.beginModelSelectionAction();
+        const epoch=this.modelSelectionEpoch;
+        const next=setModelSelection(this.modelSelectionState,selection),changed=modelSelectionKey(next)!==modelSelectionKey(this.modelSelection);
+        if(changed){this.modelRunner.cancel();this.model=null;this.modelReport=null;this.message='';}
+        this.modelSelection=next;this.selectionDraftMode=modelSelectionControlValue(next);this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);saveModelSelectionState(this.modelSelectionState);
+        if(restoreInstalled)void this.restoreSelectedModel({epoch});
+        if(render)this.render();
+    }
+    adoptModel(candidate,{selectSource=false,explicit=false}={}) {
+        if(explicit)this.modelSelectionEpoch++;
+        if(candidate&&!modelSelectionMatchesManifest(this.modelSelection,candidate.manifest)){
+            if(!selectSource)throw new Error('Installed model does not match the selected source. Choose the package lineage explicitly before loading it.');
+            this.setSelectedModel(selectionFromManifest(candidate.manifest),{render:false,restoreInstalled:false,intent:false});
+        }
+        if(selectSource)saveModelSelectionState(this.modelSelectionState);
+        if(this.model&&candidate&&this.model.manifestHash!==candidate.manifestHash)this.modelRunner.cancel();
         this.model=candidate;
+    }
+    unloadModel() {
+        this.modelSelectionEpoch++;
+        this.modelRunner.cancel();
+        this.model=null;
+        this.modelReport=null;
+        this.render();
+    }
+    async restoreSelectedModel({epoch=this.modelSelectionEpoch}={}) {
+        const requested=modelSelectionKey(this.modelSelection);
+        const current=()=>epoch===this.modelSelectionEpoch&&requested===modelSelectionKey(this.modelSelection);
+        try {
+            const installed=await this.modelStore.listExisting();
+            if(!current()||this.model)return;
+            this.installedModels=installed;
+            const matches=matchingInstalledModels(this.modelSelection,installed);
+            if(matches.length===1){const candidate=await this.modelStore.read(matches[0].manifestHash);if(current()&&!this.model&&candidate&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest)){this.adoptModel(candidate);this.message=`Matching installed model loaded: ${candidate.manifest.id}.`;}}
+            else if(matches.length>1)this.message='Multiple installed packages match this source. Choose the package to load.';
+        } catch(error) {if(current()){this.error=true;this.message=`Selected model could not be verified from local storage: ${error.message}`;}}
+        if(current())this.render();
+    }
+    async useInstalledModel(manifestHash) {
+        const epoch=this.beginModelSelectionAction();
+        const candidate=await this.modelStore.read(manifestHash);
+        if(epoch!==this.modelSelectionEpoch)return false;
+        invariant(candidate,'Installed model missing');
+        this.adoptModel(candidate,{selectSource:true});
+        return true;
     }
     async perform(action) { if (this.busy)
         return; this.busy = true; this.root.querySelector('.app')?.setAttribute('aria-busy', 'true'); for(const input of this.root.querySelectorAll('.threshold input,[data-testid=analysis-mode]'))input.disabled=true; for (const b of this.root.querySelectorAll('button'))
@@ -104,7 +155,6 @@ export class EvidenceWorkspace {
             return false;
         this.recovery.disable();
         this.project = project;
-        this.thresholdOverride = null;
         this.index = 0;
         this.editor = null;
         this.dirty = false;
@@ -126,7 +176,9 @@ export class EvidenceWorkspace {
     get doc() { return this.project?.current.documents[this.index]; }
     async analyzeCurrent() {
         invariant(this.doc, 'Open a document first');
+        invariant(this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
         invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
+        invariant(modelSelectionMatchesManifest(this.modelSelection,this.model.manifest),'The active package does not match the selected model source. Load a matching package before analysis.');
         const autoApply=this.applicationMode==='auto'&&this.project.canSeeMachine;
         const scope=this.project.current.extensions.suggestionScope?await importScope(this.project.current.extensions.suggestionScope):null;
         const activeCodec=this.model.manifest.variants[0].codec;
@@ -343,7 +395,7 @@ export class EvidenceWorkspace {
         if (isDemo)
             aside.append(button(p.phase === 'frozen' ? 'Prepare authored examples for reveal' : 'Show authored suggestions', () => this.perform(async () => { await this.project.addRun(await authoredSuggestionRun(this.project, this.doc)); this.changed(); this.message = DEMO_NOTICE; }), { id: 'demo-suggest' }));
         aside.append(this.fileInput('Import prediction run', '.json', async ([f]) => { invariant(f.size <= 64 * 1024 * 1024, 'Run size limit'); await this.project.addRun(jsonParse(await f.text())); this.changed(); }));
-        const analyze = button('Analyze locally', () => this.perform(() => this.analyzeCurrent()), { disabled: !this.doc, id: 'analyze' });
+        const analyze = button('Analyze locally', () => this.perform(() => this.analyzeCurrent()), { disabled: !this.doc || this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection), id: 'analyze' });
         const structured = this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const small=this.model?.manifest.variants.some(v=>isRecordsCodec(v.codec));
         analyze.title = small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'Run the imported GLiNER2.5 package on this device. Spans plus enum attributes; value, unit, and relations stay empty.' : 'Run the imported GLiNER2.5 boundary package on this device. Span text and scores only; contextual fields stay empty.';
@@ -351,7 +403,7 @@ export class EvidenceWorkspace {
         applicationMode.dataset.testid='analysis-mode';applicationMode.disabled=this.busy||!this.project.canSeeMachine;
         applicationMode.addEventListener('change',()=>{this.applicationMode=applicationMode.value;});
         aside.append(labeled('Analysis mode',applicationMode),node('p','Auto apply adds predictions as unreviewed records. Existing annotations and machine runs are preserved.',{class:'muted'}));
-        aside.append(thresholdControl({override:this.thresholdOverride,scope:p.extensions.suggestionScope,variant:this.model?.manifest.variants[0],disabled:this.busy,id:'threshold',onChange:(value,render)=>{this.thresholdOverride=value;if(render)this.render();}}));
+        aside.append(thresholdControl({override:this.thresholdOverride,scope:p.extensions.suggestionScope,variant:this.model?.manifest.variants[0],disabled:this.busy,id:'threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render)this.render();}}));
         aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
         if (!this.project.canSeeMachine) {
             aside.append(node('p', 'The human snapshot is frozen. Use Reveal comparison when ready.'));
@@ -431,7 +483,7 @@ export class EvidenceWorkspace {
             }
             if(this.recovery.enabled)box.append(button('Inspect saved project',()=>this.perform(async()=>{this.databaseReport=await this.recovery.query();})),button('Export SQLite project backup',()=>this.perform(async()=>{await this.checkpoint();localDownload(await this.recovery.exportDatabase(),`${this.project.current.id}.nmt.sqlite3`,'application/vnd.sqlite3');})));if(this.databaseReport)box.append(node('pre',JSON.stringify(this.databaseReport,null,2)));
             box.append(button('Inspect storage usage',()=>this.perform(async()=>{const estimate=await navigator.storage?.estimate?.();const models=await this.modelStore.list();this.storageReport={browserBytes:estimate?.usage??null,quotaBytes:estimate?.quota??null,modelBytes:models.reduce((n,m)=>n+m.bytes,0),recoveryProjects:(await this.recovery.list()).length};})));if(this.storageReport)box.append(node('pre',JSON.stringify(this.storageReport,null,2)));
-            box.append(button('Clear all local application data',()=>this.perform(async()=>{if(!confirm('Delete installed models, browser recovery projects and app caches? Export current work first.'))return;this.modelRunner.cancel();await this.recovery.clear();for(const m of await this.modelStore.list())await this.modelStore.remove(m.manifestHash);for(const key of await caches.keys())if(key.startsWith('nextmedtator-app-'))await caches.delete(key);const registration=await navigator.serviceWorker.getRegistration();if(registration)await registration.unregister();this.model=null;this.installedModels=[];this.recoveryList=[];this.saveState='Browser application data deleted; current work remains in memory';})));
+            box.append(button('Clear all local application data',()=>this.perform(async()=>{if(!confirm('Delete installed models, browser recovery projects and app caches? Export current work first.'))return;this.beginModelSelectionAction();this.modelRunner.cancel();await this.recovery.clear();for(const m of await this.modelStore.list())await this.modelStore.remove(m.manifestHash);for(const key of await caches.keys())if(key.startsWith('nextmedtator-app-'))await caches.delete(key);const registration=await navigator.serviceWorker.getRegistration();if(registration)await registration.unregister();this.model=null;this.installedModels=[];this.recoveryList=[];this.saveState='Browser application data deleted; current work remains in memory';})));
             box.append(button('List saved recovery projects', () => this.perform(async () => { this.recoveryList = await this.recovery.list(); })));
             for(const warning of this.recovery.listWarnings)box.append(node('p',warning,{role:'status','data-testid':'recovery-list-warning'}));
             for (const r of this.recoveryList ?? [])
@@ -439,20 +491,35 @@ export class EvidenceWorkspace {
             box.append(button('Install app for offline use', () => this.perform(async () => { invariant('serviceWorker' in navigator, 'Service workers unavailable'); const registration = await navigator.serviceWorker.register(new URL('../../service-worker.js', import.meta.url), { scope: new URL('../../', import.meta.url).pathname }); await navigator.serviceWorker.ready; this.message = 'App cache installed. Reload once, then test offline. Model assets require separate qualification.'; })), button('Export local timing report', () => localDownload(new TextEncoder().encode(JSON.stringify({projectId:this.project?.current.id,actor:this.project?.current.actor,schemaHash:this.project?.current.schemaHash,waitingMs:Math.round(this.waitMs),documents:this.project?.current.documents.map(d=>({documentId:d.id,sourceHash:d.textSha256,groupId:d.groupId,split:d.split,...(d.id===this.doc?.id?this.timer:this.documentTimers.get(d.id))?.report()}))??[]}, null, 2)), 'timing.json', 'application/json')));
         }
         else if (this.panel === 'models') {
-            box.append(node('h3', 'Local model packages'), node('p', 'Training and export stay external. Import a .nmt-model.zip with exact hashes, runtime version, baseline/LoRA lineage and fixtures. No package-supplied JavaScript or WASM plugins are accepted.'));
-            box.append(node('p', 'Live analysis uses an imported GLiNER2.5 package. A span package predicts anchors and scores. A structured package also fills enum attributes from the span-attribute head. Value, unit, relations, and model weights are not bundled.', { class: 'banner' }));
+            box.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.selectionDraftMode=mode;this.render();},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'workspace-model',disabled:this.busy}));
+            box.append(node('p', 'Live analysis runs ONNX packages on this device. Raw PEFT adapters are not executable in the browser. Imported packages retain exact base and adapter lineage; no package-supplied JavaScript or WASM plugins are accepted.', { class: 'banner' }));
             box.append(button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));
-            for(const installed of this.installedModels??[])box.append(node('p',`${installed.manifest.id} · ${installed.bytes} bytes`),button('Use installed '+installed.manifest.id,()=>this.perform(async()=>{this.adoptModel(await this.modelStore.read(installed.manifestHash));invariant(this.model,'Installed package missing');this.message='Installed model loaded; works without network';})),button('Delete installed '+installed.manifest.id,()=>this.perform(async()=>{await this.modelStore.remove(installed.manifestHash);this.installedModels=await this.modelStore.list();})));
+            for(const installed of this.installedModels??[]){
+                const matches=modelSelectionMatchesManifest(this.modelSelection,installed.manifest);
+                box.append(
+                    node('p',`${installed.manifest.id} · ${installed.bytes} bytes · ${matches?'matches selected source':'different source'}`),
+                    button('Use installed '+installed.manifest.id,()=>this.perform(async()=>{
+                        await this.useInstalledModel(installed.manifestHash);
+                        this.modelReport=null;
+                        if(this.model)this.message=`Installed model ${this.model.manifest.id} loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;
+                    })),
+                    button('Delete installed '+installed.manifest.id,()=>this.perform(async()=>{
+                        this.beginModelSelectionAction();
+                        await this.modelStore.remove(installed.manifestHash);
+                        this.installedModels=await this.modelStore.list();
+                    }))
+                );
+            }
             box.append(button('Show approved public model',()=>this.perform(async()=>{const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();})));
-            for(const entry of this.catalog?.entries??[]){const m=entry.manifest,total=m.files.reduce((n,f)=>n+f.bytes,0);box.append(node('p',`${m.id} ${entry.revision} · ${m.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage · ${m.variants.map(v=>v.backend).join(', ')} · anchored records and enums; automatic relations withheld; no anchorless records`),button('Download and install '+m.id,()=>this.perform(async()=>{this.installController=new AbortController();try{const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{this.message=`Downloading ${received} of ${total} bytes`;const message=this.root.querySelector('[data-testid=message]');if(message)message.textContent=this.message;}});const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});this.adoptModel(installed);this.message='Public model installed and hashes verified';}finally{this.installController=null;}})),button('Force stop',()=>this.installController?.abort()));}
-            box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { invariant(f.size <= MODEL_LIMITS.archive, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer())); this.adoptModel(candidate); this.modelReport = null; const small=candidate.manifest.variants.some(v=>isRecordsCodec(v.codec));const structured = candidate.manifest.variants.some(v => v.codec === GLINER_STRUCTURED); const qualified = candidate.manifest.variants.some(v => CODECS[v.codec].clinicalInference); this.message = candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC ? 'ClinicalEvidence v3 package loaded in memory. Exact anchors and explicit shared axes; record binding is unavailable.' : small ? 'GLiNER2.5 record package loaded in memory. Anchors, enums and supported record fields; automatic relations remain unqualified.' : structured ? 'GLiNER2.5 structured package loaded in memory. Analyze locally fills spans and enum attributes on this device only.' : qualified ? 'GLiNER2.5 span package loaded in memory. Analyze locally uses it on this device only.' : 'Package hashes validated. This package can run tensor fixtures only.'; }));
+            for(const entry of this.catalog?.entries??[]){const m=entry.manifest,total=m.files.reduce((n,f)=>n+f.bytes,0);box.append(node('p',`${m.id} ${entry.revision} · ${m.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage · ${m.variants.map(v=>v.backend).join(', ')} · anchored records and enums; automatic relations withheld; no anchorless records`),button('Download and install '+m.id,()=>this.perform(async()=>{this.setSelectedModel(selectionFromManifest(m),{render:false,restoreInstalled:false});this.installController=new AbortController();try{const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{this.message=`Downloading ${received} of ${total} bytes`;const message=this.root.querySelector('[data-testid=message]');if(message)message.textContent=this.message;}});invariant(modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Catalog package does not match its declared model source');const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});this.adoptModel(installed);this.message='Public model installed and hashes verified';}finally{this.installController=null;}})),button('Force stop',()=>this.installController?.abort()));}
+            box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { const epoch=this.beginModelSelectionAction();invariant(f.size <= MODEL_LIMITS.archive, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer()));if(epoch!==this.modelSelectionEpoch)return; this.adoptModel(candidate,{selectSource:true}); this.modelReport = null; const small=candidate.manifest.variants.some(v=>isRecordsCodec(v.codec));const structured = candidate.manifest.variants.some(v => v.codec === GLINER_STRUCTURED); const qualified = candidate.manifest.variants.some(v => CODECS[v.codec].clinicalInference); this.message = candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC ? 'ClinicalEvidence v3 package loaded in memory. Exact anchors and explicit shared axes; record binding is unavailable.' : small ? 'GLiNER2.5 record package loaded in memory. Anchors, enums and supported record fields; automatic relations remain unqualified.' : structured ? 'GLiNER2.5 structured package loaded in memory. Analyze locally fills spans and enum attributes on this device only.' : qualified ? 'GLiNER2.5 span package loaded in memory. Analyze locally uses it on this device only.' : 'Package hashes validated. This package can run tensor fixtures only.'; }));
             if (this.model) {
                 box.append(button('Install imported package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})),button('Verify offline readiness',()=>this.perform(async()=>{invariant(navigator.serviceWorker.controller,'Install and reload the app first');invariant(await this.modelStore.read(this.model.manifestHash),'Install this model first');const report=await this.modelRunner.run(this.model,this.model.manifest.variants.find(v=>v.backend==='wasm').id);invariant(report.pass,'Model conformance failed');this.message='App controlled by installed cache; selected model stored and conformance passed. Restart with network blocked to verify the full workflow.';})));
                 const m = this.model.manifest;
                 box.append(node('p', `${m.id} ${m.version} · ${m.lineage.adapter ? 'LoRA-derived' : 'Baseline'} · ${m.license.id}`));
                 for (const v of m.variants)
                     box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id); this.message = this.modelReport.pass ? (isRecordsCodec(v.codec) ? 'Source spans, exact tokenizer IDs and native ONNX numerical head fixtures passed. This does not establish clinical accuracy.' : CODECS[v.codec].coverage === 'structured-span' ? 'Span fixtures matched. Enum attributes, value, unit, and relations were not part of this fixture.' : CODECS[v.codec].coverage === 'entity-span' ? 'Span fixtures matched. Attributes and relations were not tested.' : 'Graph fixtures passed. This codec does not extract clinical text.') : 'Fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
-                box.append(button('Unload package', () => { this.modelRunner.cancel(); this.adoptModel(null); this.modelReport = null; this.render(); }));
+                box.append(button('Unload package', () => this.unloadModel()));
                 if (this.modelReport)
                     box.append(node('pre', JSON.stringify(this.modelReport, null, 2)));
             }

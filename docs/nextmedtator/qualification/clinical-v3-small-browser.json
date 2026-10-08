@@ -1,0 +1,493 @@
+{
+  "realMergedAdapterWeights": true,
+  "packageId": "gliner2.5-small-v1-lora-614ee536435e",
+  "packageBytes": 311829935,
+  "baseRevision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+  "adapterHash": "614ee536435ed9585686ffa8d0a1c13f898ef3269d082db5e8a4b870e2f56fa4",
+  "browserConformance": {
+    "kind": "gliner25-clinical-v3-spans-v1",
+    "manifestHash": "b15e269f1c23e0f794c1768628c8ba0bb62a23f908b445306701ebae3a421e8e",
+    "variantId": "wasm-fp32",
+    "backend": "wasm",
+    "precision": "fp32",
+    "results": [
+      {
+        "fixture": "source-case-0.json",
+        "pass": true,
+        "status": "complete",
+        "recordCount": 2
+      },
+      {
+        "fixture": "model-reference-0.json",
+        "checks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 1152,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 576,
+            "maxAbsoluteError": 0.00001049041748046875,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 576,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3,
+            "maxAbsoluteError": 0.000009059906005859375,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-1.json",
+        "pass": true,
+        "status": "complete",
+        "recordCount": 3
+      },
+      {
+        "fixture": "model-reference-1.json",
+        "checks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 1152,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 576,
+            "maxAbsoluteError": 0.0000133514404296875,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 576,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3,
+            "maxAbsoluteError": 0.0000054836273193359375,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-2.json",
+        "pass": true,
+        "status": "complete",
+        "recordCount": 0
+      },
+      {
+        "fixture": "model-reference-2.json",
+        "checks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 384,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 192,
+            "maxAbsoluteError": 0.0000054836273193359375,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 192,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 1,
+            "maxAbsoluteError": 0.00000476837158203125,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-3.json",
+        "pass": true,
+        "status": "complete",
+        "recordCount": 2
+      },
+      {
+        "fixture": "model-reference-3.json",
+        "checks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 768,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 384,
+            "maxAbsoluteError": 0.00000667572021484375,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 384,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 2,
+            "maxAbsoluteError": 0.0000057220458984375,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-4.json",
+        "pass": true,
+        "status": "complete",
+        "recordCount": 1
+      },
+      {
+        "fixture": "model-reference-4.json",
+        "checks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 384,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 192,
+            "maxAbsoluteError": 9.5367431640625e-7,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 192,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 1,
+            "maxAbsoluteError": 0.0000050067901611328125,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-5.json",
+        "pass": true,
+        "status": "complete",
+        "recordCount": 0
+      },
+      {
+        "fixture": "model-reference-5.json",
+        "checks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 768,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 384,
+            "maxAbsoluteError": 0.0000152587890625,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 384,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 2,
+            "maxAbsoluteError": 0.00000667572021484375,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-6.json",
+        "pass": true,
+        "status": "complete",
+        "recordCount": 3
+      },
+      {
+        "fixture": "model-reference-6.json",
+        "checks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 6912,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0.0000286102294921875,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3456,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 18,
+            "maxAbsoluteError": 0.000008106231689453125,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "source-case-7.json",
+        "pass": true,
+        "status": "complete",
+        "recordCount": 2
+      },
+      {
+        "fixture": "model-reference-7.json",
+        "checks": {
+          "pair_indices": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 4992,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "pair_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 2496,
+            "maxAbsoluteError": 0.000026702880859375,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "pair_valid": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 2496,
+            "maxAbsoluteError": 0,
+            "atol": 0,
+            "rtol": 0
+          },
+          "null_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 13,
+            "maxAbsoluteError": 0.00000476837158203125,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": true,
+        "pass": true
+      },
+      {
+        "fixture": "attributes-reference.json",
+        "checks": {
+          "attr_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 128,
+            "maxAbsoluteError": 5.066394805908203e-7,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": null,
+        "pass": true
+      },
+      {
+        "fixture": "records-reference.json",
+        "checks": {
+          "assign_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 20,
+            "maxAbsoluteError": 5.960464477539062e-7,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "object_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 2,
+            "maxAbsoluteError": 7.450580596923828e-9,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "latent_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 2,
+            "maxAbsoluteError": 7.450580596923828e-9,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": null,
+        "pass": true
+      },
+      {
+        "fixture": "records-varied-reference.json",
+        "checks": {
+          "assign_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 90,
+            "maxAbsoluteError": 2.980232238769531e-7,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "object_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3,
+            "maxAbsoluteError": 3.725290298461914e-9,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          },
+          "latent_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 3,
+            "maxAbsoluteError": 7.450580596923828e-9,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": null,
+        "pass": true
+      },
+      {
+        "fixture": "relations-reference.json",
+        "checks": {
+          "rel_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 2,
+            "maxAbsoluteError": 5.960464477539063e-8,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": null,
+        "pass": true
+      },
+      {
+        "fixture": "relations-varied-reference.json",
+        "checks": {
+          "rel_logits": {
+            "pass": true,
+            "mismatches": 0,
+            "elements": 2,
+            "maxAbsoluteError": 7.450580596923828e-8,
+            "atol": 0.0001,
+            "rtol": 0.0001
+          }
+        },
+        "tokenIdsExact": null,
+        "pass": true
+      }
+    ],
+    "pass": true
+  },
+  "installedModelOfflineRestart": true,
+  "offlineInferenceReviewCompareExportReopen": true,
+  "adapterLineagePreserved": true,
+  "originalVueCodeMirrorAcceptRejectExport": true,
+  "privateCanaryNoEgress": true,
+  "enumAndAnchoredSpanSchemaInference": false,
+  "v3SourceAttributeFixturesPassed": true,
+  "browser": "141.0.7390.37",
+  "scope": "Synthetic public source fixtures only; row-level records omitted from public receipt."
+}

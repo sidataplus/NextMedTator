@@ -2,7 +2,53 @@
 
 PRD baseline validated on 2026-10-03; v3/job 17089 model replacement validated on 2026-10-06. This is a baseline engineering preview; the full public/clinical release is not yet qualified.
 
-## Current clinical adapter: ClinicalEvidence v3, ACT/Sol job 17089
+## Selectable models: clinical small v3 default
+
+The 2026-10-08 follow-up defaults both annotation views to
+`na399/clinical-evidence-gliner2.5-small-lora-v3-act-sol@82386c7a9776d3c14ed73d6310273a1c9d354d55`.
+The source selector also supports the clinical base v3 adapter, original
+GLiNER2.5 small/base checkpoints, immutable custom Hub adapters, and local
+PEFT files. Exact package lineage gates analysis; source-specific thresholds
+and existing imported packages retain their identities. No remote inference,
+automatic weight redistribution or arbitrary package code was added.
+
+Raw adapters require one local ONNX conversion and package import; the
+[locked exporter](../../tools/gliner-onnx/README.md) supplies verified presets.
+The two curated packages passed eight native source cases each and all four
+graph checks on CPU (Slurm 17606, `COMPLETED`, `0:0`). Each loads all 230
+adapter tensors; active-versus-merged encoder maximum errors are 3.58e-6
+(small) and 4.89e-6 (base). The restricted weights remain outside Git and the
+public download catalog. Aggregate export receipts are retained for
+[small](qualification/clinical-v3-small-export.json) and
+[base](qualification/clinical-v3-base-export.json).
+
+Both curated packages also pass all 21 ORT Web fixtures and the actual
+offline install/restart/inference/review/compare/export/reopen workflow in
+both annotation views, including exact lineage and canary no-egress checks
+in Chromium 141 on Linux. Browser receipts are retained for
+[small](qualification/clinical-v3-small-browser.json) and
+[base](qualification/clinical-v3-base-browser.json). Original small/base
+exports pass six native source cases each (CPU Slurm 17618/17619, `0:0`);
+the newly exported original packages were not browser-tested. Their receipts
+are [small](qualification/original-small-export.json) and
+[base](qualification/original-base-export.json).
+
+All 145 JavaScript unit tests (including the real tokenizer), 17 standalone
+exporter tests, and 20 offline validation tests pass. Both static builds,
+the 5,081-file asset inventory, seven workspace review flows, original-UI
+regression, and desktop/mobile source-selection checks pass. The selector
+gate exercises pinned Hub/local forms, installed-source switching, stale
+restore cancellation and source-bound threshold recovery. CI runs the new
+offline evaluator and selector checks. Native exports used the approved
+release environment with PyTorch 2.11; a full export under the standalone
+lock's PyTorch 2.6 environment was not executed. Target-device performance
+and clinical approval remain separate gates.
+
+See [the sample/schema assessment](SAMPLE_ADAPTER_ASSESSMENT.md) for model
+quality diagnostics and next steps. Native/export format conformance is not
+clinical accuracy, and sample agreement is not final clinical validation.
+
+## Archived clinical adapter: ClinicalEvidence v3, ACT/Sol job 17089
 
 The current local validation package is `gliner25-clinical-evidence-v3-act-sol-17089`, pinned to `na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089@058945fb562f3c6250450ff67b842255f872ddf4`. It uses the verified frozen-core base reference and a separate v3 codec with verbatim clinical descriptions, explicit qualified shared axes and threshold 0.6. It never assumes omitted-axis defaults or uses the untrained record head for literal binding. Unsupported fields remain unavailable in its scope editor. Existing codecs/runs/scopes retain their identities. The original MedTator UI remains, and private research weights remain outside Git/public distribution.
 

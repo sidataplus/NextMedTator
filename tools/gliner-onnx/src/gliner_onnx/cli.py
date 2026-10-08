@@ -7,7 +7,9 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-from .inputs import BASE_FILES, digest, read_adapter, resolve_base, verify_base
+from .inputs import (BASE_FILES, RELEASE_ASSETS, RELEASE_RUNTIME_FINGERPRINT,
+                     digest, read_adapter, resolve_base, resolve_selection,
+                     snapshot_adapter, verify_base, verify_v3_release, verify_v3_runtime)
 
 SOURCE_REVISION = '55656fbfa01d3d4a77485e1a1eeeaf682990ccdf'
 CODEC = 'gliner25-records-v1'
@@ -173,28 +175,122 @@ def export_model(model, captures, output):
     return fixture_paths(output, paths), {'mainExportErrors': export_error, 'sourceCases': reports, 'heads': heads}
 
 
+def _load_export_runtime(runtime_package):
+    import importlib
+    import sys
+
+    if runtime_package is None:
+        from gliner2 import AutoExtractor
+        return AutoExtractor, {'upstreamCommit': SOURCE_REVISION, 'sourceFingerprint': None,
+                              'sourceManifestSha256': None, 'releaseManifestSha256': None}
+    vendor = Path(runtime_package) / 'vendor'
+    existing = sys.modules.get('gliner2')
+    if existing is not None:
+        current = getattr(existing, '__file__', None)
+        try:
+            Path(current).absolute().relative_to(vendor.absolute())
+        except (TypeError, ValueError):
+            raise ValueError('A different GLiNER2 runtime is already imported in this process') from None
+    vendor_path = str(vendor.absolute())
+    if vendor_path not in sys.path:
+        sys.path.insert(0, vendor_path)
+    try:
+        gliner2 = importlib.import_module('gliner2')
+    except Exception:
+        raise ValueError('Could not import the verified bundled GLiNER2 runtime') from None
+    try:
+        Path(gliner2.__file__).absolute().relative_to(vendor.absolute())
+    except (AttributeError, TypeError, ValueError):
+        raise ValueError('GLiNER2 import escaped the verified runtime package') from None
+    if getattr(gliner2, '__version__', None) != '2.0.0':
+        raise ValueError('Bundled GLiNER2 version differs from the verified release')
+    from gliner2 import AutoExtractor
+    return AutoExtractor, {'upstreamCommit': SOURCE_REVISION,
+                          'sourceFingerprint': RELEASE_RUNTIME_FINGERPRINT,
+                          'sourceManifestSha256': RELEASE_ASSETS['runtime_source_manifest.json'],
+                          'releaseManifestSha256': RELEASE_ASSETS['release_manifest.json']}
+
+
 def build(args):
     if args.out.resolve() == args.report.resolve():
         raise ValueError('--out and --report must resolve to distinct paths')
     from huggingface_hub import snapshot_download
-    from gliner2 import AutoExtractor
     import torch
     torch.set_num_threads(args.threads)
+    selection = resolve_selection(args.selection, adapter=args.adapter,
+                                  repository=args.adapter_repository,
+                                  revision=args.adapter_revision,
+                                  base_model=args.base_model,
+                                  base_revision=args.base_revision)
+    if args.release_dir and selection['selection'] not in ('clinical-v3-small', 'clinical-v3-base'):
+        raise ValueError('--release-dir is only supported with a pinned clinical selection')
     args.work_dir.mkdir(parents=True, exist_ok=True)
     if args.out.exists():
         raise ValueError('Output already exists; choose a new --out path')
     with tempfile.TemporaryDirectory(prefix='lora-export-', dir=args.work_dir) as scratch:
         scratch = Path(scratch)
+        runtime_package = args.runtime_package_dir
+        clinical_package = None
+        adapter_source = args.adapter
+        adapter_repository = args.adapter_repository
+        adapter_revision = args.adapter_revision
+        if selection['selection'] in ('clinical-v3-small', 'clinical-v3-base'):
+            if args.runtime_package_dir or args.clinical_schema or args.thresholds:
+                raise ValueError('Pinned clinical selections supply their own verified runtime, schema and threshold')
+            if args.release_dir:
+                clinical_package = args.release_dir
+            else:
+                clinical_package = snapshot_adapter(selection['repo_id'], selection['revision'],
+                                                    scratch/'clinical-release', include_v3_runtime=True)
+            release, release_spec = verify_v3_release(clinical_package, selection['model_key'])
+            adapter_source = clinical_package
+            runtime_package = clinical_package
+            adapter_repository, adapter_revision = selection['repo_id'], selection['revision']
+            if release_spec.get('core_threshold') != selection['threshold']:
+                raise ValueError('Pinned clinical threshold differs from the selected release')
+        elif selection['selection'] == 'huggingface-adapter':
+            adapter_source = snapshot_adapter(selection['repo_id'], selection['revision'], scratch/'hub-adapter')
+        elif selection['kind'] == 'adapter' and args.runtime_package_dir:
+            runtime_package = args.runtime_package_dir
+            verify_v3_runtime(runtime_package)
+        elif args.runtime_package_dir:
+            raise ValueError('--runtime-package-dir is only supported with an adapter selection')
+
         adapter = scratch/'adapter'
-        config, adapter_hash = read_adapter(args.adapter, adapter)
-        base_model, revision = resolve_base(config, args.base_model, args.base_revision)
-        base = args.base_dir or Path(snapshot_download(base_model, revision=revision,
-                    allow_patterns=list(BASE_FILES), local_dir=args.work_dir/'base'))
-        hashes = verify_base(base, base_model, revision)
+        if selection['kind'] == 'adapter':
+            config, adapter_hash = read_adapter(adapter_source, adapter)
+            base_model, revision = resolve_base(config, selection.get('base_model'),
+                                                selection.get('base_revision'))
+            if selection.get('base_model') and args.base_model and args.base_model != selection['base_model']:
+                raise ValueError('Requested base model conflicts with selected model source')
+            if selection.get('base_revision') and args.base_revision and args.base_revision != selection['base_revision']:
+                raise ValueError('Requested base revision conflicts with selected model source')
+        else:
+            adapter_hash = None
+            base_model, revision = selection['base_model'], selection['base_revision']
+        if args.base_dir:
+            base = args.base_dir
+        else:
+            base = Path(snapshot_download(base_model, revision=revision,
+                         allow_patterns=list(BASE_FILES), local_dir=args.work_dir/'base'/revision))
+        hashes = verify_base(base, base_model, revision,
+                             expected_hashes=release_spec['base_model']['files'] if selection.get('clinical_v3') else None)
+        if selection.get('clinical_v3'):
+            expected_base = release_spec['base_model']['files']
+            if hashes != expected_base:
+                raise ValueError('Downloaded base assets differ from the selected private release')
+        if runtime_package is not None:
+            verify_v3_runtime(runtime_package)
+        AutoExtractor, runtime_lineage = _load_export_runtime(runtime_package)
         model = AutoExtractor.from_pretrained(str(base), map_location='cpu', local_files_only=True).eval()
         if model.record_decoder is None or model.relation_scorer is None:
             raise ValueError('This record codec requires both record and relation scoring heads')
-        model, merge_report = merge_adapter(model, adapter)
+        if selection['kind'] == 'adapter':
+            model, merge_report = merge_adapter(model, adapter)
+        else:
+            merge_report = {'activeToMergedMaxAbsoluteError': 0.0,
+                            'baseToAdapterEncoderMaxAbsoluteChange': 0.0,
+                            'adapterTensorCount': 0, 'trainedHeads': 'unchanged'}
         cases = CASES
         if args.cases:
             cases = [(row['text'], row['labels']) for row in json.loads(args.cases.read_text())]
@@ -204,9 +300,14 @@ def build(args):
         thresholds=None
         if bool(args.clinical_schema)!=bool(args.thresholds):
             raise ValueError('--clinical-schema and --thresholds must be supplied together')
-        if args.clinical_schema:
-            clinical=json.loads(args.clinical_schema.read_text())
-            thresholds=json.loads(args.thresholds.read_text())
+        if selection.get('clinical_v3'):
+            clinical=json.loads((clinical_package/'schema_v3.json').read_text(encoding='utf-8'))
+            thresholds={'clinical_core':release_spec['core_threshold'],
+                        'shared_axes':'one_value_softmax_no_attribute_threshold',
+                        'selection_sha256':release_spec['selection_sha256']}
+        elif args.clinical_schema:
+            clinical=json.loads(args.clinical_schema.read_text(encoding='utf-8'))
+            thresholds=json.loads(args.thresholds.read_text(encoding='utf-8'))
             if clinical.get('registry_sha256')!='80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547' or thresholds.get('shared_axes')!='one_value_softmax_no_attribute_threshold':
                 raise ValueError('Unsupported ClinicalEvidence v3 registry or attribute contract')
             for field,axis in clinical['shared_axes'].items():
@@ -220,8 +321,12 @@ def build(args):
         fixtures, export_report = export_model(model, captures, graphs)
         model.processor.tokenizer.save_pretrained(str(graphs))
         if clinical:
-            (graphs/'clinical-schema-v3.json').write_text(args.clinical_schema.read_text())
-        package_id = args.id or base_model.split('/')[-1]+'-lora-'+adapter_hash[:12]
+            schema_source = clinical_package/'schema_v3.json' if clinical_package else args.clinical_schema
+            (graphs/'clinical-schema-v3.json').write_bytes(schema_source.read_bytes())
+        model_hash = adapter_hash or hashlib.sha256(json.dumps(
+            {'baseModel': base_model, 'baseRevision': revision, 'baseFiles': hashes,
+             'runtime': runtime_lineage}, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        package_id = args.id or base_model.split('/')[-1]+('-lora-' if adapter_hash else '-base-')+model_hash[:12]
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}', package_id):
             raise ValueError('Invalid package ID')
         names = ['model.onnx', 'attributes.onnx', 'records.onnx', 'relations.onnx', 'tokenizer.json', *fixtures]
@@ -235,15 +340,28 @@ def build(args):
                           'role': 'graph' if name.endswith('.onnx') else 'tokenizer' if name=='tokenizer.json' else 'schema' if name=='clinical-schema-v3.json' else 'fixture'})
         if sum(f['bytes'] for f in files) > 1024*1024*1024:
             raise ValueError('Package exceeds browser total size limit')
-        manifest = {'format': 'nextmedtator-model-v1', 'id': package_id, 'version': adapter_hash,
+        base_license = selection['base_license'] or args.base_license
+        if adapter_hash:
+            adapter_license = selection['adapter_license'] or args.adapter_license
+            license_id = adapter_license
+            license_notice = ('Base '+base_model+': '+base_license+'. Adapter: '+adapter_license+
+                              '. Export conformance does not establish clinical accuracy.')
+        else:
+            license_id = base_license
+            license_notice = ('Base '+base_model+': '+base_license+
+                              '. No adapter was applied. Export conformance does not establish clinical accuracy.')
+        manifest = {'format': 'nextmedtator-model-v1', 'id': package_id, 'version': model_hash,
                     'runtime': 'onnxruntime-web', 'runtimeVersion': '1.23.2',
                     'lineage': {'base': {'model': base_model, 'revision': revision, 'files': hashes},
-                                'adapter': {'sha256': adapter_hash, 'baseRevision': revision,
+                                'adapter': ({'sha256': adapter_hash, 'baseRevision': revision,
                                             'weightsSha256': digest(adapter/'adapter_model.safetensors'),
                                             'configSha256': digest(adapter/'adapter_config.json'),
-                                            **({'repository':args.adapter_repository,'revision':args.adapter_revision} if args.adapter_repository else {})},
-                                'merge': 'merged-export', 'trainedHeads': merge_report['trainedHeads']},
-                    'license': {'id': args.adapter_license, 'notice': 'Base '+base_model+': '+args.base_license+'. Adapter: '+args.adapter_license+'. Export conformance does not establish clinical accuracy.'},
+                                            **({'repository':adapter_repository,'revision':adapter_revision} if adapter_repository else {})}
+                                            if adapter_hash else None),
+                                'merge': 'merged-export' if adapter_hash else 'unadapted-export',
+                                'trainedHeads': merge_report['trainedHeads'],
+                                'runtime': runtime_lineage},
+                    'license': {'id': license_id, 'notice': license_notice},
                     'files': files, 'capabilities': ['*'], 'variants': [{
                         'id': 'wasm-fp32', 'backend': 'wasm', 'precision': 'fp32', 'codec': V3_CODEC if clinical else CODEC,
                         'graph': 'model.onnx', 'graphs': {k: k+'.onnx' for k in ['model', 'attributes', 'records', 'relations']},
@@ -274,7 +392,7 @@ def build(args):
         report = {'packageId': package_id, 'packageBytes': args.out.stat().st_size,
                   'packageSha256': digest(args.out), 'base': manifest['lineage']['base'],
                   'adapter': manifest['lineage']['adapter'], 'merge': merge_report, 'export': export_report,
-                  'sourceCodeRevision': SOURCE_REVISION, 'exporterVersion': '0.1.0',
+                  'sourceCodeRevision': SOURCE_REVISION, 'runtime': runtime_lineage, 'exporterVersion': '0.1.0',
                   'scope': 'Technical source/ONNX conformance on synthetic English cases; no clinical accuracy claim'}
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(report, indent=2)+'\n')
@@ -283,13 +401,22 @@ def build(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--adapter', type=Path, required=True)
+    parser.add_argument('--selection', choices=['auto', 'clinical-v3-small', 'clinical-v3-base',
+                                                'original-small', 'original-base',
+                                                'huggingface-adapter', 'local-adapter'],
+                        default='auto',
+                        help='Model source; auto selects clinical-v3-small when no adapter input is supplied')
+    parser.add_argument('--adapter', type=Path, help='Local adapter directory or ZIP')
     parser.add_argument('--base-model')
     parser.add_argument('--base-revision')
     parser.add_argument('--base-dir', type=Path, help='Optional verified local base checkpoint')
+    parser.add_argument('--release-dir', type=Path,
+                        help='Local cached full release snapshot for a pinned clinical selection')
+    parser.add_argument('--runtime-package-dir', type=Path,
+                        help='Optional downloaded v3 release bundle for a verified pinned runtime')
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--report', type=Path, required=True)
-    parser.add_argument('--work-dir', type=Path, default=Path('work/gliner-onnx'))
+    parser.add_argument('--work-dir', type=Path, default=Path('temp/gliner-onnx'))
     parser.add_argument('--clinical-schema',type=Path,help='ClinicalEvidence v3 span registry; enables the v3 shared-axis codec without record binding')
     parser.add_argument('--thresholds',type=Path,help='Frozen v3 validation-selected thresholds')
     parser.add_argument('--adapter-repository')
@@ -300,8 +427,12 @@ def main():
     parser.add_argument('--id')
     parser.add_argument('--threads', type=int, default=2)
     args = parser.parse_args()
-    if bool(args.adapter_repository)!=bool(args.adapter_revision) or (args.adapter_revision and not re.fullmatch('[a-f0-9]{40}',args.adapter_revision)):
-        parser.error('Provide both --adapter-repository and its immutable --adapter-revision')
+    try:
+        resolve_selection(args.selection, adapter=args.adapter,
+                          repository=args.adapter_repository, revision=args.adapter_revision,
+                          base_model=args.base_model, base_revision=args.base_revision)
+    except ValueError as error:
+        parser.error(str(error))
     if not 1 <= args.threads <= 32:
         parser.error('--threads must be 1–32')
     try:

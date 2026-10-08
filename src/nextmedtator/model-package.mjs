@@ -27,6 +27,9 @@ export function validateModelManifest(m) {
         invariant(m.lineage.merge === 'merged-export' || m.lineage.merge === 'equivalent-graph', 'LoRA package must specify exported adapter application');
         invariant(m.lineage.trainedHeads === 'unchanged' || /^[a-f0-9]{64}$/.test(m.lineage.trainedHeads), 'Declare separately trained heads');
     }
+    if (m.lineage.merge === 'unadapted-export') {
+        invariant(!m.lineage.adapter && m.lineage.trainedHeads === 'unchanged', 'Unadapted export cannot declare adapter weights or trained heads');
+    }
     invariant(m.license && typeof m.license.id === 'string' && typeof m.license.notice === 'string', 'Package license/notice required');
     invariant(Array.isArray(m.files) && m.files.length > 0 && m.files.length <= 128, 'Model file count limit');
     const paths = new Set();
@@ -59,7 +62,9 @@ export function validateModelManifest(m) {
             if(v.codec==='gliner25-records-v1'||v.codec===CLINICAL_V3_CODEC){
                 invariant(v.fixedWords===512&&v.maxSequenceLength===512,'Unsupported GLiNER fixed-axis/window contract');
                 invariant(Number.isFinite(v.abstentionThreshold)&&v.abstentionThreshold>=0&&v.abstentionThreshold<=1,'Source abstention threshold required');
-                invariant(m.lineage.adapter&&m.lineage.merge==='merged-export','Generic GLiNER package requires merged LoRA lineage');
+                invariant((m.lineage.adapter && m.lineage.merge === 'merged-export') ||
+                    (v.codec === 'gliner25-records-v1' && !m.lineage.adapter && m.lineage.merge === 'unadapted-export' && m.lineage.trainedHeads === 'unchanged'),
+                    'Generic GLiNER package requires explicit merged adapter or unadapted export lineage');
             }
         }
         if(v.codec===CLINICAL_V3_CODEC){

@@ -20,6 +20,17 @@ test('generic record packages require immutable merged-adapter lineage and the s
   const bad=clone(good);edit(bad);assert.throws(()=>validateModelManifest(bad));
  }
 });
+test('original GLiNER exports declare unchanged heads and cannot masquerade as adapters',()=>{
+ const original=manifest();delete original.lineage.adapter;original.lineage.merge='unadapted-export';
+ validateModelManifest(original);
+ assert.equal(qualifyForSchema({manifest:original},schema).level,'occurrence-record');
+ const trained=clone(original);trained.lineage.trainedHeads='d'.repeat(64);
+ assert.throws(()=>validateModelManifest(trained),/Unadapted export/);
+ const adapted=clone(original);adapted.lineage.adapter=manifest().lineage.adapter;
+ assert.throws(()=>validateModelManifest(adapted),/LoRA package/);
+ const clinical=clone(original);clinical.variants[0].codec='gliner25-clinical-v3-spans-v1';
+ assert.throws(()=>validateModelManifest(clinical),/explicit merged adapter/);
+});
 test('mixed record codecs choose an available variant before selecting its decoder',()=>{
  const m=manifest(), generic={...m.variants[0],id:'generic-gpu',backend:'webgpu'};
  const small={...m.variants[0],id:'small-wasm',codec:SMALL_CODEC};
