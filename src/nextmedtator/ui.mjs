@@ -150,7 +150,7 @@ export class EvidenceWorkspace {
         } catch(error) {
             const identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
             const failed=await makeRun(project,doc,[],{...identity,producer:{...identity.producer,notice},status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}],timing:{inferenceMs:performance.now()-started}});
-            await project.addRun(failed);if(project===project)this.changed();throw error;
+            await project.addRun(failed);if(this.project===project)this.changed();throw error;
         }
         invariant(result.kind === codec, 'Worker returned a different decoder output');
         const provenance = modelRunProvenance(model, variant.id, result);
