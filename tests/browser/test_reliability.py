@@ -75,7 +75,7 @@ def inference(page, mode='assisted', failure=None, conformance=False, replace_pr
         assert page.evaluate('w.project.canSeeMachine')
         expect(page.get_by_test_id('suggestion')).to_have_count(2)
 
-def legacy_inference(page):
+def legacy_inference(page, edit_source=True):
     page.evaluate(r'''async ({bytes,text})=>{
         const {importModelPackage}=await import('/app/nextmedtator/model-package.mjs');
         const dtd=dtd_parser.parse('<!ENTITY name "condition_task">\n<!ELEMENT condition (#PCDATA)>','dtd');
@@ -92,12 +92,18 @@ def legacy_inference(page):
         window.pending=a.perform(()=>a.analyzeDocuments([ann])).finally(()=>window.finished=true);
     }''',{'bytes':list(package_bytes()),'text':NOTE})
     page.wait_for_function('()=>window.ready')
-    page.evaluate("()=>{const ann=app_hotpot.vpp.$data.anns[0];ann.text+=' Edited after submission.';ann._filename='edited.txt';release();}")
+    if edit_source:
+        page.evaluate("()=>{const ann=app_hotpot.vpp.$data.anns[0];ann.text+=' Edited after submission.';ann._filename='edited.txt';release();}")
+    else:
+        page.evaluate("release()")
     page.wait_for_function('()=>window.finished')
     result=page.evaluate('''()=>({error:a.error,message:a.message,runs:[...a.runs.values()].map(r=>({filename:r.filename,text:r.project.current.documents[0].text,run:r.project.current.runs[0]})),currentRun:a.current().run})''')
     assert not result['error'] and len(result['runs'])==1,result
     assert result['runs'][0]['text']==NOTE and result['runs'][0]['filename']=='original.txt',result
-    assert result['currentRun'] is None,result
+    if edit_source:assert result['currentRun'] is None,result
+    else:
+        assert result['currentRun'] is not None,result
+        assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length')==2
 
 def imports(page):
     page.get_by_title('Load a minimal task',exact=True).click()
@@ -150,7 +156,8 @@ def run():
                 'inference-failure':lambda page:inference(page,failure='Injected runtime failure'),
                 'inference-cancel':lambda page:inference(page,failure='Cancelled'),
                 'blind-counts-hidden':lambda page:inference(page,mode='blind'),
-                'legacy-inference-source-edit':legacy_inference}
+                'legacy-inference-source-edit':legacy_inference,
+                'legacy-auto-apply-original-source':lambda page:legacy_inference(page,edit_source=False)}
             if sys.argv[1:]:cases={name:cases[name] for name in sys.argv[1:]}
             results=[]
             for name,case in cases.items():
