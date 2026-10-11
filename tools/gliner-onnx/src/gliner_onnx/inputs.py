@@ -113,7 +113,7 @@ def snapshot_adapter(repo_id, revision, destination, *, include_v3_runtime=False
         raise ValueError('Adapter repository must be an owner/name Hugging Face ID')
     if not re.fullmatch(r'[a-f0-9]{40}', revision):
         raise ValueError('Adapter revision must be a full immutable 40-character commit SHA')
-    patterns = ['adapter_config.json', 'adapter_model.safetensors']
+    patterns = ['adapter_config.json', 'adapter_model.safetensors', 'inference_settings.json']
     if include_v3_runtime:
         patterns.extend([*RELEASE_ASSETS, 'vendor/gliner2/**'])
     try:
@@ -186,6 +186,7 @@ def read_adapter(source, destination):
     """Copy only config and safetensors; never extract a caller-supplied path."""
     source, destination = Path(source), Path(destination)
     if source.is_dir():
+        verify_browser_contract(source)
         files = {}
         for name in ('adapter_config.json', 'adapter_model.safetensors'):
             path = source / name
@@ -218,6 +219,10 @@ def read_adapter(source, destination):
                 if member not in names:
                     raise ValueError(f'Missing adapter member: {name}')
                 files[name] = archive.read(member)
+            settings_member=str(parent/'inference_settings.json')
+            if settings_member in names:
+                if archive.getinfo(settings_member).file_size>1024*1024:raise ValueError('Inference settings exceed 1 MiB')
+                _verify_browser_settings(json.loads(archive.read(settings_member)))
     if len(files['adapter_config.json']) > 1024 * 1024:
         raise ValueError('Adapter config exceeds 1 MiB')
     config = json.loads(files['adapter_config.json'])
@@ -289,3 +294,18 @@ def verify_base(directory, model, revision, *, expected_hashes=None):
     if cfg.get('boundary_head', {}).get('overlap_policy', 'flat') != 'flat':
         raise ValueError('This browser codec requires the flat overlap policy')
     return hashes
+
+
+def verify_browser_contract(directory):
+    """Reject declared native contracts that this 512-token exporter cannot retain."""
+    settings_path=Path(directory)/'inference_settings.json'
+    if not settings_path.is_file():
+        return
+    if settings_path.stat().st_size>1024*1024:raise ValueError('Inference settings exceed 1 MiB')
+    _verify_browser_settings(json.loads(settings_path.read_text(encoding='utf-8')))
+
+
+def _verify_browser_settings(settings):
+    if not isinstance(settings,dict):raise ValueError('Invalid inference settings')
+    if settings.get('maxEncodedTokens',512)>512 or settings.get('overlapPolicy')=='allow':
+        raise ValueError('This adapter requires a native token/overlap contract unsupported by the browser exporter. Use the documented local native inference and review-bundle import workflow; no model substitution or truncation was applied.')

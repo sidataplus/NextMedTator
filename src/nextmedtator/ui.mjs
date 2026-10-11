@@ -270,7 +270,7 @@ export class EvidenceWorkspace {
         if (!this.standalone)
             top.append(button('Back to MedTator', () => { this.open = false; this.render(); this.previousFocus?.focus(); }));
         app.append(top);
-        const warning = node('div', 'Research annotation preview. Local model capabilities depend on the selected package. Authored sample suggestions are not model output; no fine-tuned LoRA is supplied.', { class: 'banner' });
+        const warning = node('div', this.project?.current.runs.some(run=>run.settings?.importedPredictions) ? 'Imported local native predictions. Browser inference has not run for these imported runs. Research output; clinical validity is not established.' : 'Research annotation preview. Local model capabilities depend on the selected package. Authored sample suggestions are not model output. Check each run’s producer and runtime provenance.', { class: 'banner' });
         app.append(warning);
         if (this.message)
             app.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'message' }));
@@ -374,8 +374,8 @@ export class EvidenceWorkspace {
         }
         const locate = button('Locate', () => { const n = this.root.querySelector('[data-testid=source]'); if (!r.anchor.length)
             return; const map = new TextareaOffsetMap(this.doc.text); try {
-            n.focus();
             n.setSelectionRange(map.viewOffset(r.anchor[0].start), map.viewOffset(r.anchor.at(-1).end));
+            n.focus();
         }
         catch (error) {
             this.message = error.message;
@@ -406,7 +406,7 @@ export class EvidenceWorkspace {
         applicationMode.addEventListener('change',()=>{this.applicationMode=applicationMode.value;});
         aside.append(labeled('Analysis mode',applicationMode),node('p','Auto apply adds predictions as unreviewed records. Existing annotations and machine runs are preserved.',{class:'muted'}));
         aside.append(thresholdControl({override:this.thresholdOverride,scope:p.extensions.suggestionScope,variant:activeVariantForSchema(this.model,p.schema),disabled:this.busy,id:'threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render)this.render();}}));
-        aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
+        aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'Local browser analysis requires a model package under Models. Imported runs retain their own attributes and runtime provenance.', { class: 'muted' }));
         if (!this.project.canSeeMachine) {
             aside.append(node('p', 'The human snapshot is frozen. Use Reveal comparison when ready.'));
             return;

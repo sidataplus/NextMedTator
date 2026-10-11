@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .inputs import (BASE_FILES, RELEASE_ASSETS, RELEASE_RUNTIME_FINGERPRINT,
                      digest, read_adapter, resolve_base, resolve_selection,
-                     snapshot_adapter, verify_base, verify_v3_release, verify_v3_runtime)
+                     snapshot_adapter, verify_base, verify_v3_release, verify_v3_runtime, verify_browser_contract)
 
 SOURCE_REVISION = '55656fbfa01d3d4a77485e1a1eeeaf682990ccdf'
 CODEC = 'gliner25-records-v1'
@@ -264,6 +264,7 @@ def build(args):
         elif args.runtime_package_dir:
             raise ValueError('--runtime-package-dir is only supported with an adapter selection')
 
+        if adapter_source is not None:verify_browser_contract(adapter_source)
         adapter = scratch/'adapter'
         if selection['kind'] == 'adapter':
             config, adapter_hash = read_adapter(adapter_source, adapter)

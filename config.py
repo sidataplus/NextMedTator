@@ -1,9 +1,10 @@
+import os
 # FLASK APP Configs
-DEBUG=True
-SECRET_KEY='ja6sx-3dix-98x72-87syts-019xf'
+DEBUG=False
+SECRET_KEY=os.environ.get('NEXTMEDTATOR_SECRET_KEY')
 
 # for development 
-DEV_LISTEN='0.0.0.0'
+DEV_LISTEN='127.0.0.1'
 DEV_PORT=8086
 
 # static page
@@ -13,7 +14,7 @@ STATIC_PAGE_ROOT_PATH='docs'
 MEDTATOR_VERSION='1.3.16'
 
 # library base
-LIB_BASE='cdn'
+LIB_BASE='local'
 
 # third-party libraries
 THIRD_PARTY_LIB_URL={

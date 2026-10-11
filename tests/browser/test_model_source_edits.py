@@ -43,6 +43,7 @@ for directory,port,prefix in [('preview',4202,'workspace'),('dist',4203,'assist'
    page.get_by_test_id(prefix+'-model-local-files').set_input_files(str(ROOT/'tests/browser/fixtures/local-adapter'))
    assert page.evaluate('w.selectionDraft.files.length===2')
    page.get_by_role('button',name='Use local adapter files',exact=True).click()
+   page.wait_for_function('()=>!w.busy')
    assert page.evaluate('w.selectionDraft===null && w.modelSelection.kind==="local-adapter"')
    # Selecting new files in the already-applied local mode must become pending again.
    page.get_by_test_id(prefix+'-model-local-files').set_input_files(str(ROOT/'tests/browser/fixtures/local-adapter'))
