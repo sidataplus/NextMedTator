@@ -74,7 +74,7 @@ actual Chromium ORT Web fixtures/offline inference/review/export/reopen were
 executed during this review. Historical base-model qualification files in the
 PRs remain historical evidence; they are not a new run of that base adapter.
 The exact BPSD adapter ran natively and its imported predictions were reviewed
-in the browser; browser inference for it remains unsupported. See
+in the browser; the separate declarative codec now has actual local browser parity evidence; see [its tested boundaries](ENTITY-CONTRACT-BROWSER.md). See
 [BPSD workflow and licenses](BPSD-NATIVE.md).
 
 Synthetic reference agreement, tensor parity and functioning controls do not
@@ -83,7 +83,7 @@ annotation-only fields and defaults; omitted predictions must not acquire those
 defaults. Existing unrelated annotations and run provenance must survive review
 and export. Do not infer relations or cue attribution from unqualified heads.
 
-Remaining gates include a deployed Cloudflare smoke test (headers/MIME/CORS),
+The large BPSD base-model path is qualified only on the measured desktop Chromium host, with its private model imported locally. Remaining gates include a deployed Cloudflare smoke test (headers/MIME/CORS),
 live catalog downloads, Firefox/Safari and target mobile performance, constrained
 memory behavior, adapter redistribution rights, legacy asset/security audit,
 and clinical validation. Restricted weights and private user schemas are not

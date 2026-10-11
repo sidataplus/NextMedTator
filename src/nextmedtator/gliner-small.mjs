@@ -1,3 +1,4 @@
+import {ENTITY_ATTRIBUTES_CODEC,ENTITY_ATTRIBUTES_NOTICE} from './entity-contract.mjs';
 import {CLINICAL_V3_CODEC,CLINICAL_V3_NOTICE,clinicalV3Schema,clinicalV3Prompt} from './clinical-v3.mjs';
 import {Gliner25} from './vendor/gliner25/api.mjs';
 import {decodeEntitiesV2,buildEntitiesSchemaTokens,buildRelationSchemaTokens,resolveOverlapsFlat} from './vendor/gliner25/gliner-boundary.mjs';
@@ -6,11 +7,11 @@ import {schemaPrompt, GlinerTokenizer, splitWords, planWindows, documentCoverage
 import {OffsetMap, invariant, uuid, unionSpans} from './integrity.mjs';
 export const SMALL_CODEC='gliner25-small-records-v5';
 export const RECORDS_CODEC='gliner25-records-v1';
-export const isRecordsCodec=codec=>codec===SMALL_CODEC||codec===RECORDS_CODEC||codec===CLINICAL_V3_CODEC;
+export const isRecordsCodec=codec=>codec===SMALL_CODEC||codec===RECORDS_CODEC||codec===CLINICAL_V3_CODEC||codec===ENTITY_ATTRIBUTES_CODEC;
 export const RECORDS_NOTICE='GLiNER2.5 with merged LoRA on this device: anchors, enum attributes and anchored record fields. Scores are uncalibrated. Automatic relations, cross-window relations and anchorless records are unsupported. Clinical accuracy is unqualified.';
-export const recordsNotice=codec=>codec===CLINICAL_V3_CODEC?CLINICAL_V3_NOTICE:codec===RECORDS_CODEC?RECORDS_NOTICE:SMALL_NOTICE;
+export const recordsNotice=codec=>codec===ENTITY_ATTRIBUTES_CODEC?ENTITY_ATTRIBUTES_NOTICE:codec===CLINICAL_V3_CODEC?CLINICAL_V3_NOTICE:codec===RECORDS_CODEC?RECORDS_NOTICE:SMALL_NOTICE;
 export const SMALL_NOTICE='Pinned GLiNER2.5-small ONNX v5: local anchors, enum attributes, anchored record fields. Automatic relations are withheld pending source-score qualification. Unqualified clinical accuracy; cross-window relations and anchorless records are unsupported.';
-export function smallRuntime(ort,sessions,tokenizer,variant){const api=new Gliner25({ort,session:sessions.model,headsSession:sessions.relations,attrsSession:sessions.attributes,recordsSession:sessions.records,tokenize:t=>tokenizer.encodeIds(t),pairTemperature:variant.pairTemperature??1,fixedWords:variant.codec!==SMALL_CODEC?variant.fixedWords:0});api.rt.completeClinicalPrompt=!!variant.clinicalRelease;return api;}
+export function smallRuntime(ort,sessions,tokenizer,variant){const api=new Gliner25({ort,session:sessions.model,headsSession:sessions.relations,attrsSession:sessions.attributes,recordsSession:sessions.records,tokenize:t=>tokenizer.encodeIds(t),pairTemperature:variant.pairTemperature??1,fixedWords:variant.codec!==SMALL_CODEC?variant.fixedWords:0});api.rt.completeClinicalPrompt=!!variant.clinicalRelease;api.rt.mainMaskType=variant.mainMaskType??'float32';return api;}
 export function validateSmallSchema(schema){
     schemaPrompt(schema);
     for(const family of Object.values(schema.families)){

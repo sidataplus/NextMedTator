@@ -1,3 +1,4 @@
+import {ENTITY_ATTRIBUTES_CODEC} from './entity-contract.mjs';
 import {thresholdControl,suggestionThreshold} from './threshold.mjs';
 import {CLINICAL_CONTRACT, SCOPE_PRESETS, FAMILY_TITLES, presetScope, fieldSupport, nativeScopeDTD} from './scope.mjs';
 import {localDownload} from './bundle.mjs';
@@ -12,6 +13,7 @@ function input(text,value,update,{id,area=false,type='text',...attrs}={}){
 }
 export function renderScopeEditor(assist){
     const section=node('section',null,{'aria-label':'Clinical suggestion scope',class:'scope'}),row=node('div',null,{class:'row'});
+    if(assist.model?.manifest.variants.some(v=>v.codec===ENTITY_ATTRIBUTES_CODEC)){section.append(node('p','This model retains its complete declared entity/attribute prompt. Clinical scope prompts and custom concept queries require another model.',{class:'muted'}));if(assist.scope)section.append(button('Clear clinical scope for this model',()=>assist.disableScope(),'scope-disable',assist.busy));return section;}
     row.append(node('strong','Suggestion scope'),button(assist.scopeEditing?'Close editor':'Build / edit scope',()=>{assist.scopeEditing=!assist.scopeEditing;assist.render();},'scope-edit',assist.busy));
     section.append(row,node('p',assist.scope?`${assist.scope.semanticSchema.name} · ${assist.scope.semanticSchema.families.length} families · ${assist.scope.semanticSchema.concepts.length} custom concepts`:'Using the loaded annotation schema. Build a clinical scope to customize targets within the training grammar.',{class:'muted','data-testid':'scope-active'}));
     if(!assist.scopeEditing)return section;

@@ -14,7 +14,7 @@ Missing attributes remain missing. Relations and annotation-only link fields
 are not inferred. Oversized notes are rejected rather than silently truncated
 or windowed. The current browser exporter has a different 512-token codec and
 attribute contract. It now rejects the declared incompatible native contract.
-There is no qualified ONNX/WASM browser inference path for this exact adapter.
+The separate declarative entity/attribute browser codec now has real local parity evidence; see [its requirements and tested boundaries](ENTITY-CONTRACT-BROWSER.md). The legacy exporter path remains incompatible.
 
 Use a local Python runtime to generate predictions, then import the resulting
 review bundle in the entirely static app. The receipt retains model/runtime
@@ -56,5 +56,4 @@ grant for the adapter. Do not include its weights in Git, the public model
 catalog, a static deployment or the transfer bundle. The base's Apache-2.0
 license does not grant rights to an independently trained adapter. Resolve
 adapter redistribution permissions before any release offering its weights.
-Clinical validation and a faithful browser codec/export remain separate release
-gates. The model card's synthetic development metrics are not clinical evidence.
+Clinical validation, redistribution rights and broader target-device browser qualification remain separate release gates. The model card's synthetic development metrics are not clinical evidence.

@@ -1,9 +1,9 @@
 import {invariant, sha256, clone, fingerprint} from './integrity.mjs';
-import {validateModelManifest} from './model-package.mjs';
+import {validateModelManifest,parseEntityContracts} from './model-package.mjs';
 const request = r => new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
 const MODEL_DB='nextmedtator-public-models-v1';
 async function database(){const r=indexedDB.open(MODEL_DB,2);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('packages'))db.createObjectStore('packages',{keyPath:'manifestHash'});if(!db.objectStoreNames.contains('artifacts'))db.createObjectStore('artifacts');const store=r.transaction.objectStore('packages'),cursor=store.openCursor();cursor.onsuccess=()=>{const c=cursor.result;if(!c)return;const row=c.value;if(row.files){for(const [path,bytes] of row.files)r.transaction.objectStore('artifacts').put(bytes,`${row.manifestHash}:${path}`);delete row.files;c.update(row);}c.continue();};};return request(r);}
-async function verified(row){validateModelManifest(row.manifest);invariant(await fingerprint(row.manifest)===row.manifestHash,'Installed manifest hash mismatch');const files=new Map(row.files);for(const f of row.manifest.files){const b=files.get(f.path);invariant(b?.byteLength===f.bytes&&await sha256(b)===f.sha256,'Installed model is corrupt; reimport this package');}return {...row,files};}
+async function verified(row){validateModelManifest(row.manifest);invariant(await fingerprint(row.manifest)===row.manifestHash,'Installed manifest hash mismatch');const files=new Map(row.files);for(const f of row.manifest.files){const b=files.get(f.path);invariant(b?.byteLength===f.bytes&&await sha256(b)===f.sha256,'Installed model is corrupt; reimport this package');}return {...row,files,entityContracts:parseEntityContracts(row.manifest,files)};}
 export class ModelStore {
     async install(packageData, {signal}={}) {
         invariant(!signal?.aborted,'Installation cancelled');
@@ -33,5 +33,5 @@ export async function downloadCatalogPackage(entry,{signal,onProgress}={}){
         invariant(bytes===file.bytes,'Incomplete artifact download');const data=new Uint8Array(bytes);let at=0;for(const part of parts){data.set(part,at);at+=part.length;}
         invariant(await sha256(data)===file.sha256,'Artifact hash mismatch');files.set(file.path,data);
     }
-    const {fingerprint}=await import('./integrity.mjs');return {manifest:entry.manifest,manifestHash:await fingerprint(entry.manifest),files};
+    const {fingerprint}=await import('./integrity.mjs');return {manifest:entry.manifest,manifestHash:await fingerprint(entry.manifest),files,entityContracts:parseEntityContracts(entry.manifest,files)};
 }

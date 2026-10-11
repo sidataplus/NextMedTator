@@ -182,11 +182,14 @@ def verify_v3_release(package_dir, model_key):
     return release, spec
 
 
-def read_adapter(source, destination):
+def read_adapter(source, destination, *, entity_contract=None):
     """Copy only config and safetensors; never extract a caller-supplied path."""
     source, destination = Path(source), Path(destination)
     if source.is_dir():
-        verify_browser_contract(source)
+        if entity_contract is None:verify_browser_contract(source)
+        else:
+            from .entity_contract import verify_source_declaration
+            verify_source_declaration(source,entity_contract)
         files = {}
         for name in ('adapter_config.json', 'adapter_model.safetensors'):
             path = source / name
@@ -194,6 +197,7 @@ def read_adapter(source, destination):
                 raise ValueError(f'Missing, oversized or linked adapter member: {name}')
             files[name] = path.read_bytes()
     else:
+        if entity_contract is not None:raise ValueError('Entity-contract export requires a directory so declared native schema artifacts can be verified')
         if source.stat().st_size > MAX_ADAPTER_BYTES:
             raise ValueError('Adapter archive exceeds 512 MiB')
         with zipfile.ZipFile(source) as archive:
