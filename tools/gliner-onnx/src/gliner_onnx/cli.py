@@ -332,16 +332,15 @@ def build(args):
                     raise ValueError('Unsupported shared-axis contract')
         if release:
             clinical, thresholds, release_identity = release
-        if release:
-            import json as _json
-            synthetic=_json.loads((args.clinical_release/'synthetic_cases.json').read_text())['cases']
-            if not args.cases:
+        if clinical:
+            synthetic=json.loads(((args.clinical_release if release else clinical_package)/'synthetic_cases.json').read_text())['cases'] if (release or clinical_package) else None
+            if not args.cases and synthetic:
                 cases=[(row.get('text',row.get('prefix','')*8+row.get('suffix','')),list(clinical['core_entities'])) for row in synthetic]
             else:
                 cases=[(text,list(clinical['core_entities'])) for text,_ in cases]
-        captures = source_cases(model, cases, clinical if release else None, thresholds['clinical_core'] if release else .5)
+        captures = source_cases(model, cases, clinical, thresholds['clinical_core'] if clinical else .5)
         if clinical:
-            captures+=source_cases(model,[('The patient denies pain. Her mother has dementia. Last year the patient was agitated.',list(clinical['core_entities'])),('She is pacing, shouting and resisting morning care. No hallucinations. Café 👩‍⚕️.', list(clinical['core_entities']) if release else ['clinical_event'])],clinical,thresholds['clinical_core'])
+            captures+=source_cases(model,[('The patient denies pain. Her mother has dementia. Last year the patient was agitated.',list(clinical['core_entities'])),('She is pacing, shouting and resisting morning care. No hallucinations. Café 👩‍⚕️.', list(clinical['core_entities']))],clinical,thresholds['clinical_core'])
         graphs = scratch/'graphs'
         graphs.mkdir()
         fixtures, export_report = export_model(model, captures, graphs, clinical=bool(clinical))

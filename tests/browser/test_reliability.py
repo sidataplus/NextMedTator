@@ -22,7 +22,7 @@ def workspace(page, mode='assisted'):
         const docs=await Promise.all(['A','B'].map(id=>sourceDocument(id,new TextEncoder().encode(text))));
         await w.adopt(await ReviewProject.create(docs,{id:'test',version:'1',families:{condition:{fields:{concept:{type:'text'}}}}},{mode}));
         if(mode==='blind')await w.project.snapshot();
-        w.model=await importModelPackage(new Uint8Array(bytes));
+        w.model=await importModelPackage(new Uint8Array(bytes));w.adoptModel(w.model,{selectSource:true});
         w.modelReport=await w.modelRunner.run(w.model,'wasm');
         if(!w.modelReport.pass)throw Error('Fixture conformance failed');
         window.originalProject=w.project;window.originalModel=w.model;w.render();
@@ -82,7 +82,7 @@ def legacy_inference(page, edit_source=True):
         app_hotpot.set_dtd(dtd);app_hotpot.vpp.$data.dtd=dtd;app_hotpot.vpp.$data.anns=[];
         const ann=app_hotpot.vpp.add_sample_txt_as_ann(text);ann._filename='original.txt';app_hotpot.vpp.set_ann_idx(0);
         window.a=document.querySelector('nextmedtator-assist').assist;
-        a.model=await importModelPackage(new Uint8Array(bytes));
+        a.model=await importModelPackage(new Uint8Array(bytes));a.adoptModel(a.model,{selectSource:true});
         const original=a.modelRunner.analyzeBatch.bind(a.modelRunner);
         a.modelRunner.analyzeBatch=async(model,variant,requests,options)=>original(model,variant,requests,{...options,onResult:async(result,index)=>{
             await new Promise(resolve=>{window.release=resolve;window.ready=true;});

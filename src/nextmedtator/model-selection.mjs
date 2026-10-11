@@ -304,7 +304,7 @@ export function adapterExportCommands(selection, {adapterPath = '/path/to/adapte
     return [args];
 }
 
-export function renderModelSelectionControls({selection, draftMode, activeModel, onSelect, onDraftMode, onUseHub, onUseLocal, prefix = 'model-selection', disabled = false}) {
+export function renderModelSelectionControls({selection, draftMode, draft = null, activeModel, onSelect, onDraftMode, onDraftChange, onUseHub, onUseLocal, prefix = 'model-selection', disabled = false}) {
     const root = document.createElement('section');
     root.className = 'model-selection';
     const heading = document.createElement('h3');
@@ -336,7 +336,7 @@ export function renderModelSelectionControls({selection, draftMode, activeModel,
     root.append(label);
 
     const mode = draftMode ?? modelSelectionControlValue(selection);
-    const sourcePending = mode !== modelSelectionControlValue(selection);
+    const sourcePending = !!draft || mode !== modelSelectionControlValue(selection);
     const activeMatches = !sourcePending && activeModel && modelSelectionMatchesManifest(selection, activeModel.manifest);
     const status = document.createElement('p');
     status.className = 'muted';
@@ -348,9 +348,14 @@ export function renderModelSelectionControls({selection, draftMode, activeModel,
         ? `Active package: ${activeModel.manifest.id}. Package hashes were verified; public conformance runs before analysis.`
         : `Selected: ${modelSelectionLabel(selection)}. ${activeModel ? 'The loaded package does not match this source and cannot run.' : 'No matching ONNX package is active.'} ${selection.kind === 'imported-package' ? 'Import or install a matching package.' : 'Convert or install a matching package to analyze.'}`;
     root.append(status);
+    const changed = values => {
+        draft = values;
+        status.textContent = 'Apply the edited model source before analysis. The active package remains unchanged.';
+        onDraftChange?.(values);
+    };
 
     if (mode === 'custom-huggingface') {
-        const current = selection?.kind === 'hub-adapter' && selection.id === 'custom-huggingface' ? selection : {};
+        const current = draft ?? (selection?.kind === 'hub-adapter' && selection.id === 'custom-huggingface' ? selection : {});
         const fields = {};
         for (const [name, text, value, placeholder] of [
             ['repository', 'Hugging Face adapter repository', current.repository ?? '', 'owner/model'],
@@ -371,6 +376,7 @@ export function renderModelSelectionControls({selection, draftMode, activeModel,
             fields[name] = input;
             root.append(field);
         }
+        for (const input of Object.values(fields)) input.addEventListener('input', () => changed(Object.fromEntries(Object.entries(fields).map(([key, field]) => [key, field.value]))));
         const use = document.createElement('button');
         use.type = 'button';
         use.textContent = 'Use this Hugging Face adapter';
@@ -388,8 +394,8 @@ export function renderModelSelectionControls({selection, draftMode, activeModel,
         input.setAttribute('accept', '.json,.safetensors');
         input.disabled = disabled;
         input.dataset.testid = `${prefix}-local-files`;
-        let files = [];
-        input.addEventListener('change', () => { files = [...input.files]; });
+        let files = draft?.files ?? [];
+        input.addEventListener('change', () => { files = [...input.files]; changed({files,...Object.fromEntries(Object.entries(baseFields).map(([key, field]) => [key, field.value]))}); });
         label.append(input);
         root.append(label);
         const baseFields = {};
@@ -403,12 +409,14 @@ export function renderModelSelectionControls({selection, draftMode, activeModel,
             control.type = 'text';
             control.autocomplete = 'off';
             control.placeholder = placeholder;
+            control.value = draft?.[name] ?? selection?.[name] ?? '';
             control.disabled = disabled;
             control.dataset.testid = `${prefix}-${name}`;
             field.append(control);
             baseFields[name] = control;
             root.append(field);
         }
+        for (const input of Object.values(baseFields)) input.addEventListener('input', () => changed({files,...Object.fromEntries(Object.entries(baseFields).map(([key, field]) => [key, field.value]))}));
         const use = document.createElement('button');
         use.type = 'button';
         use.textContent = 'Use local adapter files';

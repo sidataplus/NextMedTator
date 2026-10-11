@@ -46,7 +46,7 @@ export class EvidenceWorkspace {
         this.index = 0;
         this.mode = 'assisted';
         this.applicationMode = 'auto';
-        this.modelSelectionState=createModelSelectionState();this.modelSelection=this.modelSelectionState.selection;this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);
+        this.modelSelectionState=createModelSelectionState();this.modelSelection=this.modelSelectionState.selection;this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.selectionDraft=null;this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);
         this.modelSelectionEpoch=0;
         this.actor = 'annotator';
         this.message = '';
@@ -91,7 +91,7 @@ export class EvidenceWorkspace {
         const epoch=this.modelSelectionEpoch;
         const next=setModelSelection(this.modelSelectionState,selection),changed=modelSelectionKey(next)!==modelSelectionKey(this.modelSelection);
         if(changed){this.modelRunner.cancel();this.model=null;this.modelReport=null;this.message='';}
-        this.modelSelection=next;this.selectionDraftMode=modelSelectionControlValue(next);this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);saveModelSelectionState(this.modelSelectionState);
+        this.modelSelection=next;this.selectionDraftMode=modelSelectionControlValue(next);this.selectionDraft=null;this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);saveModelSelectionState(this.modelSelectionState);
         if(restoreInstalled)void this.restoreSelectedModel({epoch});
         if(render)this.render();
     }
@@ -101,7 +101,7 @@ export class EvidenceWorkspace {
             if(!selectSource)throw new Error('Installed model does not match the selected source. Choose the package lineage explicitly before loading it.');
             this.setSelectedModel(selectionFromManifest(candidate.manifest),{render:false,restoreInstalled:false,intent:false});
         }
-        if(selectSource)saveModelSelectionState(this.modelSelectionState);
+        if(selectSource){this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.selectionDraft=null;saveModelSelectionState(this.modelSelectionState);}
         if(this.model&&candidate&&this.model.manifestHash!==candidate.manifestHash)this.modelRunner.cancel();
         this.model=candidate;
     }
@@ -178,7 +178,7 @@ export class EvidenceWorkspace {
         // Retain the source and package across every asynchronous operation.
         const project=this.project,doc=this.doc,model=this.model;
         invariant(doc, 'Open a document first');
-        invariant(this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
+        invariant(!this.selectionDraft&&this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
         invariant(model, 'Import a GLiNER2.5 boundary model package in Models');
         invariant(modelSelectionMatchesManifest(this.modelSelection,model.manifest),'The active package does not match the selected model source. Load a matching package before analysis.');
         const autoApply=this.applicationMode==='auto'&&project.canSeeMachine;
@@ -397,7 +397,7 @@ export class EvidenceWorkspace {
         if (isDemo)
             aside.append(button(p.phase === 'frozen' ? 'Prepare authored examples for reveal' : 'Show authored suggestions', () => this.perform(async () => { await this.project.addRun(await authoredSuggestionRun(this.project, this.doc)); this.changed(); this.message = DEMO_NOTICE; }), { id: 'demo-suggest' }));
         aside.append(this.fileInput('Import prediction run', '.json', async ([f]) => { invariant(f.size <= 64 * 1024 * 1024, 'Run size limit'); await this.project.addRun(jsonParse(await f.text())); this.changed(); }));
-        const analyze = button('Analyze locally', () => this.perform(() => this.analyzeCurrent()), { disabled: !this.doc || this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection), id: 'analyze' });
+        const analyze = button('Analyze locally', () => this.perform(() => this.analyzeCurrent()), { disabled: !this.doc || !!this.selectionDraft||this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection), id: 'analyze' });
         const structured = this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const small=this.model?.manifest.variants.some(v=>isRecordsCodec(v.codec));
         analyze.title = small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'Run the imported GLiNER2.5 package on this device. Spans plus enum attributes; value, unit, and relations stay empty.' : 'Run the imported GLiNER2.5 boundary package on this device. Span text and scores only; contextual fields stay empty.';
@@ -493,7 +493,7 @@ export class EvidenceWorkspace {
             box.append(button('Install app for offline use', () => this.perform(async () => { invariant('serviceWorker' in navigator, 'Service workers unavailable'); const registration = await navigator.serviceWorker.register(new URL('../../service-worker.js', import.meta.url), { scope: new URL('../../', import.meta.url).pathname }); await navigator.serviceWorker.ready; this.message = 'App cache installed. Reload once, then test offline. Model assets require separate qualification.'; })), button('Export local timing report', () => localDownload(new TextEncoder().encode(JSON.stringify({projectId:this.project?.current.id,actor:this.project?.current.actor,schemaHash:this.project?.current.schemaHash,waitingMs:Math.round(this.waitMs),documents:this.project?.current.documents.map(d=>({documentId:d.id,sourceHash:d.textSha256,groupId:d.groupId,split:d.split,...(d.id===this.doc?.id?this.timer:this.documentTimers.get(d.id))?.report()}))??[]}, null, 2)), 'timing.json', 'application/json')));
         }
         else if (this.panel === 'models') {
-            box.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.selectionDraftMode=mode;this.render();},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'workspace-model',disabled:this.busy}));
+            box.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'workspace-model',disabled:this.busy}));
             box.append(node('p', 'Live analysis runs ONNX packages on this device. Raw PEFT adapters are not executable in the browser. Imported packages retain exact base and adapter lineage; no package-supplied JavaScript or WASM plugins are accepted.', { class: 'banner' }));
             box.append(button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));
             for(const installed of this.installedModels??[]){

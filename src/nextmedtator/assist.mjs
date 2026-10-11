@@ -167,7 +167,7 @@ class LegacyAssist {
         this.openProject = openProject ?? (() => {});
         this.open = sessionStorage.getItem('nmt-assist-open') !== 'false';
         this.mode = 'auto';
-        this.modelSelectionState=createModelSelectionState();this.modelSelection=this.modelSelectionState.selection;this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);
+        this.modelSelectionState=createModelSelectionState();this.modelSelection=this.modelSelectionState.selection;this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.selectionDraft=null;this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);
         this.modelSelectionEpoch=0;
         this.scope = null;this.scopeDraft=presetScope();this.scopeEditing=false;
         this.suggestionView = 'cards';
@@ -291,7 +291,7 @@ class LegacyAssist {
         const epoch=this.modelSelectionEpoch;
         const next=setModelSelection(this.modelSelectionState,selection),changed=modelSelectionKey(next)!==modelSelectionKey(this.modelSelection);
         if(changed){this.modelRunner.cancel();this.model=null;this.qualifiedManifest=null;this.qualifiedVariant=null;this.message='';}
-        this.modelSelection=next;this.selectionDraftMode=modelSelectionControlValue(next);this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);saveModelSelectionState(this.modelSelectionState);
+        this.modelSelection=next;this.selectionDraftMode=modelSelectionControlValue(next);this.selectionDraft=null;this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);saveModelSelectionState(this.modelSelectionState);
         if(restoreInstalled)void this.restoreSelectedModel({epoch});
         if(render)this.render();
     }
@@ -300,7 +300,7 @@ class LegacyAssist {
             if(!selectSource)throw new Error('Installed model does not match the selected source. Choose the package lineage explicitly before loading it.');
             this.setSelectedModel(selectionFromManifest(candidate.manifest),{render:false,restoreInstalled:false,intent:false});
         }
-        if(selectSource)saveModelSelectionState(this.modelSelectionState);
+        if(selectSource){this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.selectionDraft=null;saveModelSelectionState(this.modelSelectionState);}
         if(this.model&&candidate&&this.model.manifestHash!==candidate.manifestHash)this.modelRunner.cancel();
         this.model=candidate;
         if(!this.scope&&sameScope(this.scopeDraft,presetScope())&&candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC)this.scopeDraft=presetScope('all',CLINICAL_V3_CODEC,candidate.manifest.variants[0].threshold);
@@ -422,7 +422,7 @@ class LegacyAssist {
         this.message='Independent annotation frozen in the portable evidence project. Analyze and reveal when ready.';
     }
     async analyzeDocuments(anns) {
-        invariant(this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
+        invariant(!this.selectionDraft&&this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
         // Original-screen notes stay editable while the worker runs. Retain the
         // submitted text/filename and schema instead of rereading mutable Vue data.
         const model=this.model,sourceAnns=[...anns],sourceDtd=legacy().data.dtd;
@@ -632,9 +632,9 @@ class LegacyAssist {
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
         const body = node('div', null, { class: 'body' });
         dock.append(body);
-        body.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.selectionDraftMode=mode;this.render();},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));
+        body.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));
         const actions = node('div', null, { class: 'row' });
-        const sourcePending=this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection);
+        const sourcePending=!!this.selectionDraft||this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection);
         actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
         actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
