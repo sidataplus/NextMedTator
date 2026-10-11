@@ -137,6 +137,12 @@ export function selectInferenceVariant(packageData, level, {webgpuAvailable=!!gl
     invariant(variant, 'No browser GLiNER2.5 variant is available in the imported package');
     return variant;
 }
+/** Match the threshold display to the same backend/codec used by analysis. */
+export function activeVariantForSchema(packageData, schema) {
+    if (!packageData || !schema) return null;
+    try { return selectInferenceVariant(packageData, qualifyForSchema(packageData, schema).level); }
+    catch { return null; }
+}
 export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
     invariant(Number.isFinite(atol) && Number.isFinite(rtol) && atol >= 0 && rtol >= 0, 'Invalid numerical tolerance');
     invariant(actual.length === expected.length, 'Tensor length mismatch');
