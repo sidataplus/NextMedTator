@@ -115,3 +115,18 @@ test('candidate conformance matches coordinates without accepting missing spans 
  actual.pair_logits.data=[7,2];actual.pair_indices.data=[2n,4n,0n,1n];assert(!compareCandidateSpans(actual,expected).pass);
  actual.pair_indices.data=[0n,1n,0n,1n];assert(!compareCandidateSpans(actual,expected).pass);
 });
+
+
+test('active threshold variant resolves mixed valid manifests and both release orderings',()=>{
+ const m=manifest(),regular={...m.variants[0],id:'regular',threshold:.4};
+ m.files.push({path:'schema.json',bytes:1,sha256:'c'.repeat(64),role:'schema'});
+ const release={...regular,id:'release',codec:CLINICAL_V3_CODEC,clinicalSchema:'schema.json',clinicalRegistryHash:CLINICAL_V3.registryHash,
+ sharedAxes:'one_value_softmax_no_attribute_threshold',recordBinding:false,threshold:.7,
+ clinicalRelease:{modelSize:'small',runtimeFingerprint:'d'.repeat(64),adapterFingerprint:'e'.repeat(64),registryHash:CLINICAL_V3.registryHash,coreThreshold:.7}};
+ for(const ordered of [[{...release,backend:'webgpu'},regular],[regular,{...release,backend:'webgpu'}]]){
+  m.variants=ordered;assert.equal(activeVariantForSchema({manifest:m},schema).id,'regular');
+ }
+ m.variants=[{...regular,backend:'webgpu'},{...release,backend:'wasm'}];
+ assert.equal(activeVariantForSchema({manifest:m},schema).id,'release');
+ assert.equal(activeVariantForSchema(null,schema),null);
+});
