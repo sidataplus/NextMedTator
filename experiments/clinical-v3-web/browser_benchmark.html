@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Clinical v3 local WASM benchmark</title><p>Local clinical adapter qualification. Results are available through the runner.</p><script type="module">
+window.runBenchmark=async({size,threads,caseIds,repeats=1})=>{
+ const ort=await import('/ort/ort.wasm.bundle.min.mjs');ort.env.wasm.wasmPaths='/ort/';ort.env.wasm.numThreads=threads;ort.env.wasm.proxy=false;
+ const {smallRuntime,analyzeSmall}=await import('/app/gliner-small.mjs');const {GlinerTokenizer}=await import('/app/gliner.mjs');
+ const root='/'+size+'-graphs/',manifest=await (await fetch(root+'manifest.json')).json(),variant=manifest.variants[0];
+ const fixture=await (await fetch(root+'source-case-6.json')).json(),reference=await (await fetch('/'+size+'-comparison.json')).json();
+ const memories=[];const OriginalMemory=WebAssembly.Memory;WebAssembly.Memory=new Proxy(OriginalMemory,{construct(target,args,newTarget){const m=Reflect.construct(target,args,newTarget);memories.push(m);return m;}});
+ const memory=()=>({wasmCapacityBytes:memories.reduce((sum,m)=>sum+m.buffer.byteLength,0),jsHeapBytes:performance.memory?.usedJSHeapSize??null});
+ const started=performance.now(),sessions={};for(const [name,path]of Object.entries(variant.graphs)){const bytes=await(await fetch(root+path)).arrayBuffer();sessions[name]=await ort.InferenceSession.create(bytes,{executionProviders:['wasm'],logSeverityLevel:4});}
+ const loadMs=performance.now()-started,tokenizer=GlinerTokenizer.fromJson(await(await fetch(root+variant.tokenizer)).text());const api=smallRuntime(ort,sessions,tokenizer,variant);
+ const selected=reference.rows.filter(r=>!caseIds||caseIds.includes(r.id));let calls=0;
+ const analyze=text=>analyzeSmall(api,text,fixture.schema,{threshold:variant.threshold,codec:variant.codec,abstentionThreshold:variant.abstentionThreshold});
+ await analyze(selected[0].text);await analyze(selected[0].text);const runs=[];
+ const keys=rows=>rows.map(r=>({entity_type:r.family,start:r.anchor[0].start,end:r.anchor[0].end,fields:Object.fromEntries(['assertion','experiencer','time_frame'].map(k=>[k,r.fields[k]]))})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
+ for(const row of selected)for(let repeat=0;repeat<repeats;repeat++){
+  const start=performance.now(),result=await analyze(row.text),elapsedMs=performance.now()-start;
+  const expected=row.returnedSpans.map(r=>({entity_type:r.entity_type,start:r.start,end:r.end,fields:Object.fromEntries(Object.entries(r.attributes).map(([key,value])=>[key,value.value]))})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  if(JSON.stringify(keys(result.records))!==JSON.stringify(expected))throw Error(size+' '+row.id+' browser/reference decisions differ');
+  let maxScoreError=0;for(const r of result.records){const expectedSpan=row.returnedSpans.find(s=>s.entity_type===r.family&&s.start===r.anchor[0].start&&s.end===r.anchor[0].end);maxScoreError=Math.max(maxScoreError,Math.abs(r.score-expectedSpan.confidence));}if(maxScoreError>1e-4)throw Error(row.id+' core confidence differs');
+  const run={id:row.id,repeat,elapsedMs,records:result.records.length,sourceDecisionsExact:true,maxCoreConfidenceError:maxScoreError,memory:memory()};runs.push(run);window.lastRun=run;await window.recordRun?.(run);calls++;
+ }
+ for(const session of Object.values(sessions))await session.release();return {size,threads,actualThreads:ort.env.wasm.numThreads,crossOriginIsolated,loadMs,runs,memory:memory(),browser:navigator.userAgent,scope:'Warm complete browser inference including JS tokenization, span decode and all three axes; local model loading separate. Full 18-query prompt. Synthetic examples only.'};
+};window.benchmarkReady=true;
+</script>

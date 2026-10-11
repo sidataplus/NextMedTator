@@ -14,7 +14,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[2]
-PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-v3-17089.nmt-model.zip'))
+PACKAGE = Path(os.environ.get('NMT_LORA_PACKAGE', '/workspace/work/clinical-v3-base.nmt-model.zip'))
 
 
 def check_lineage(data, manifest):
@@ -93,6 +93,9 @@ def run():
             page.get_by_role('button', name='Use installed '+manifest['id'], exact=True).click()
             page.get_by_role('button', name='Close panel', exact=True).click()
             page.get_by_test_id('analysis-mode').select_option('assisted')
+            if manifest['variants'][0].get('clinicalRelease'):
+                expect(page.get_by_test_id('threshold')).to_be_disabled()
+                expect(page.get_by_test_id('threshold')).to_have_value(str(manifest['variants'][0]['threshold']))
             page.get_by_test_id('analyze').click()
             page.wait_for_function('()=>!document.querySelector("nextmedtator-workspace").workspace.busy',timeout=300000)
             state=page.evaluate('(()=>{const w=document.querySelector("nextmedtator-workspace").workspace;return {error:w.error,message:w.message};})()')

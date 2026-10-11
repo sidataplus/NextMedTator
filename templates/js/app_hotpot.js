@@ -490,8 +490,8 @@ var app_hotpot = {
         },
 
         add_ann: function(ann) {
-            // this.anns.push(ann);
-            this.anns[this.anns.length] = ann;
+            // Vue 2 must observe imports so search and recovery see subsequent edits.
+            this.anns.push(ann);
             // update the hint_dict by this ann
             ann_parser.add_ann_to_hint_dict(
                 ann,
@@ -509,43 +509,12 @@ var app_hotpot = {
         },
 
         add_anns: function(anns) {
-            /**
-             * 2022-07-13: performance issue when large dataset
-             * 
-             * When there are just a few files (<500),
-             * .push() can handle smoothly and the file count
-             * can be updataed instantly without intervention.
-             * But when the number of files increase,
-             * the loading will take extremely long time.
-             * 
-             * After debugging, there are mainly three reasons:
-             * 
-             * 1. `anns.push(ann)` takes very long time.
-             * it seems the .push() method runs much slower while size increases.
-             * the only way I know is to change to `anns[anns.length] = ann`
-             * 
-             * 2. `$forceUpdate()` or automatic refresh.
-             * When the data in Vue app is changed, 
-             * the binded UI will also be redrawn.
-             * But as the number of files increase, 
-             * the relevent calculation needs more time, 
-             * and most of the calcuation is redundant.
-             * 
-             * 3. `update_hint_dict_by_anns()` batch update.
-             * To get the statistics on the anns,
-             * this function is called whenever anns changes.
-             * But in fact, it's not necessary at all (I think).
-             * If the user doesn't want to use hint,
-             * or only a few things are updated,
-             * it's not necessary to update the whole dictionary from all anns.
-             * 
-             * To address these issues ...
-             * 
-             * Pagination!
-             */
+            // Observe the whole import in one reactive update, avoiding one redraw
+            // per document while keeping imported notes reactive for search/recovery.
             for (let i = 0; i < anns.length; i++) {
-                this.add_ann(anns[i]);
+                ann_parser.add_ann_to_hint_dict(anns[i], this.hint_dict);
             }
+            this.anns = this.anns.concat(anns);
 
             // ok, now update v_ann
             this.refresh_v_anns();

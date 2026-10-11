@@ -16,9 +16,9 @@ export const SCOPE_PRESETS = freeze([
     {id:'events-function',name:'Actions and function',families:['event_occurrence','function_occurrence'],definition:'Extract documented actions, experiences, states and functional activities.'}
 ]);
 
-export function presetScope(id='all',codec=null) {
+export function presetScope(id='all',codec=null,threshold=null) {
     const preset=SCOPE_PRESETS.find(p=>p.id===id);invariant(preset,'Unknown broad scope preset');
-    return {format:SCOPE_FORMAT,threshold:codec===CLINICAL_V3_CODEC?.6:.5,fields:Object.fromEntries(ALL.map(f=>[f,codec===CLINICAL_V3_CODEC?['assertion','time_frame','experiencer']:['assertion','time_frame','experiencer','time_text']])),
+    return {format:SCOPE_FORMAT,threshold:threshold??(codec===CLINICAL_V3_CODEC?.6:.5),fields:Object.fromEntries(ALL.map(f=>[f,codec===CLINICAL_V3_CODEC?['assertion','time_frame','experiencer']:['assertion','time_frame','experiencer','time_text']])),
         semanticSchema:{schema_version:CONTRACT.semanticSchemaVersion,name:preset.name,version:'1',grammar_hash:CONTRACT.registryHash,
             families:[...preset.families],tasks:[{task_id:'clinical_scope',definition:preset.definition}],concepts:[],relations:[],
             parent_schema_hash:null,discovery_plan_hash:null,deferred_proposals:[],frozen_by:null,frozen_at:null,schema_hash:null}};

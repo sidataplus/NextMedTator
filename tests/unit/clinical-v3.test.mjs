@@ -1,6 +1,7 @@
+import {wasmThreadCount} from '../../src/nextmedtator/inference-options.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CLINICAL_V3,CLINICAL_V3_CODEC,clinicalV3Schema} from '../../src/nextmedtator/clinical-v3.mjs';
+import {CLINICAL_V3,CLINICAL_V3_CODEC,clinicalV3Schema,clinicalV3Prompt} from '../../src/nextmedtator/clinical-v3.mjs';
 import {schemaPrompt} from '../../src/nextmedtator/gliner.mjs';
 import {presetScope,nativeScopeDTD,compileScope,fieldSupport} from '../../src/nextmedtator/scope.mjs';
 const schema=()=>({id:'v3-test',version:'1',families:{condition_occurrence:{label:'condition_occurrence',fields:{concept:{type:'text'},...Object.fromEntries(Object.entries(CLINICAL_V3.axes).map(([key,axis])=>[key,{type:'enum',values:[...axis.labels.map(row=>row.value),'unspecified','not_applicable']} ])),time_text:{type:'span'},severity:{type:'enum',values:['mild','severe']}}}}});
@@ -31,4 +32,19 @@ test('V3 broad presets retain the grammar and make unqualified field binding una
  assert(nativeScopeDTD(draft).includes('ruled_out'));
  draft.fields.condition_occurrence=['time_text'];draft.semanticSchema.families=['condition_occurrence'];
  assert.throws(()=>compileScope(draft,schema(),CLINICAL_V3_CODEC),/no qualified record binding/);
+});
+
+
+test('release prompts retain all 18 trained queries when the output scope selects one family and axis',()=>{
+ const projected=clinicalV3Schema(schema());projected.families.condition_occurrence.fields={concept:{type:'text'},assertion:projected.families.condition_occurrence.fields.assertion};
+ const requested=schemaPrompt(projected),full=clinicalV3Prompt(projected,{labels:requested.labels.slice(0,requested.contentCount),byLabel:requested.byLabel},{complete:true});
+ assert.equal(full.labels.length,18);assert.equal(full.contentCount,6);assert.deepEqual(full.descriptions,CLINICAL_V3.core);
+ assert.deepEqual(full.groups.map(g=>g.choices.length),[5,3,4]);assert.equal(full.byLabel.get('clinical_condition'),'condition_occurrence');
+ assert.throws(()=>clinicalV3Prompt(projected,{labels:['custom-condition'],byLabel:new Map()},{complete:true}),/canonical family labels/);
+});
+
+
+test('WASM thread policy uses one thread without isolation and caps available hardware at four',()=>{
+ assert.equal(wasmThreadCount({crossOriginIsolated:false,hardwareConcurrency:16}),1);
+ for(const [hardwareConcurrency,expected] of [[0,1],[2,2],[32,4]])assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency}),expected);
 });

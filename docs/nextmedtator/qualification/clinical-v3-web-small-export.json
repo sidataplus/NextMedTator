@@ -1,0 +1,185 @@
+{
+  "packageId": "gliner25-clinical-v3-small",
+  "packageBytes": 301708146,
+  "packageSha256": "bcb8dfe077e0dbc134af4a2b89ef52d132762343751a2276a7dc4b03fc8b1ab3",
+  "base": {
+    "model": "fastino/gliner2.5-small-v1",
+    "revision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+    "files": {
+      "config.json": "0b7d9e1401ceeb83e992ec66d2f93bff7e5646428f1b4706ec527cf88f53578a",
+      "encoder_config/config.json": "db837d0dc587f5858687ef860c1f400de10f3c3e44f88daef8cbda80d74e4c9c",
+      "model.safetensors": "4ee982787ace270d4bf15dbcb28ced38e0aa201372347114ceedd6336055de2b",
+      "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+      "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+    }
+  },
+  "adapter": {
+    "sha256": "614ee536435ed9585686ffa8d0a1c13f898ef3269d082db5e8a4b870e2f56fa4",
+    "baseRevision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+    "weightsSha256": "e7831a30a3e55960efaabe4dc8f3f9a81a512ce155ffd0c6c9f0363dec320991",
+    "configSha256": "78197555d7f44881625afe50258230f687ee1cdd2e41d6767be64358000c46e7",
+    "repository": "na399/clinical-evidence-gliner2.5-small-lora-v3-act-sol",
+    "revision": "82386c7a9776d3c14ed73d6310273a1c9d354d55"
+  },
+  "merge": {
+    "activeToMergedMaxAbsoluteError": 6.67572021484375e-06,
+    "baseToAdapterEncoderMaxAbsoluteChange": 2.454885482788086,
+    "adapterTensorCount": 230,
+    "trainedHeads": "ebc5842a374e549eae1cb13b4abee0bf2e0d4569ec9c498a8838b1ae7e1a7cf4"
+  },
+  "export": {
+    "mainExportErrors": {
+      "start_logits": 6.198883056640625e-06,
+      "end_logits": 5.245208740234375e-06,
+      "pair_indices": 0.0,
+      "pair_logits": 2.002716064453125e-05,
+      "pair_valid": 0.0,
+      "text_states": 4.76837158203125e-06,
+      "query_states": 5.7220458984375e-06,
+      "null_logits": 1.0013580322265625e-05
+    },
+    "sourceCases": [
+      {
+        "case": 0,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.7220458984375e-06,
+          "end_logits": 5.7220458984375e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.9073486328125e-05,
+          "pair_valid": 0.0,
+          "text_states": 4.76837158203125e-06,
+          "query_states": 5.7220458984375e-06,
+          "null_logits": 1.0013580322265625e-05
+        }
+      },
+      {
+        "case": 1,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.4836273193359375e-06,
+          "end_logits": 4.76837158203125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.52587890625e-05,
+          "pair_valid": 0.0,
+          "text_states": 3.814697265625e-06,
+          "query_states": 6.9141387939453125e-06,
+          "null_logits": 6.67572021484375e-06
+        }
+      },
+      {
+        "case": 2,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 6.198883056640625e-06,
+          "end_logits": 4.291534423828125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.621246337890625e-05,
+          "pair_valid": 0.0,
+          "text_states": 5.7220458984375e-06,
+          "query_states": 5.781650543212891e-06,
+          "null_logits": 6.67572021484375e-06
+        }
+      },
+      {
+        "case": 3,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.7220458984375e-06,
+          "end_logits": 6.9141387939453125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.33514404296875e-05,
+          "pair_valid": 0.0,
+          "text_states": 5.7220458984375e-06,
+          "query_states": 4.410743713378906e-06,
+          "null_logits": 7.62939453125e-06
+        }
+      },
+      {
+        "case": 4,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 4.291534423828125e-06,
+          "end_logits": 5.7220458984375e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.52587890625e-05,
+          "pair_valid": 0.0,
+          "text_states": 7.62939453125e-06,
+          "query_states": 5.245208740234375e-06,
+          "null_logits": 7.62939453125e-06
+        }
+      },
+      {
+        "case": 5,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.245208740234375e-06,
+          "end_logits": 6.4373016357421875e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 3.4332275390625e-05,
+          "pair_valid": 0.0,
+          "text_states": 7.62939453125e-06,
+          "query_states": 5.7220458984375e-06,
+          "null_logits": 1.2874603271484375e-05
+        }
+      },
+      {
+        "case": 6,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.7220458984375e-06,
+          "end_logits": 6.9141387939453125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 3.24249267578125e-05,
+          "pair_valid": 0.0,
+          "text_states": 4.76837158203125e-06,
+          "query_states": 8.58306884765625e-06,
+          "null_logits": 1.2278556823730469e-05
+        }
+      },
+      {
+        "case": 7,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.781650543212891e-06,
+          "end_logits": 5.7220458984375e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 2.288818359375e-05,
+          "pair_valid": 0.0,
+          "text_states": 6.67572021484375e-06,
+          "query_states": 6.198883056640625e-06,
+          "null_logits": 6.198883056640625e-06
+        }
+      }
+    ],
+    "heads": {
+      "attributes": {
+        "attr_logits": 1.4901161193847656e-07
+      }
+    }
+  },
+  "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+  "exporterVersion": "0.2.0",
+  "clinicalRelease": {
+    "modelSize": "small",
+    "runtimeFingerprint": "aec77e5692a8cf808fc0568a64b5ad882f4b8bbdedf6c3ba7b7f90b1a3d066d7",
+    "registryHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+    "adapterFingerprint": "74af2ef71d072d4731d1a13898c52366380f7bf9310506cd7833235e5f428695",
+    "coreThreshold": 0.7
+  },
+  "exportRuntime": {
+    "torch": "2.6.0+cpu",
+    "numpy": "2.2.6",
+    "transformers": "4.57.6"
+  },
+  "scope": "Technical source/ONNX conformance on synthetic English cases; no clinical accuracy claim",
+  "candidateConformance": "Valid candidate scores are compared by query and exact interval; raw positional checks remain diagnostic. Missing/extra/duplicate intervals and score drift fail."
+}

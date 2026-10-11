@@ -1,6 +1,6 @@
 # Implementation and qualification status
 
-PRD baseline validated on 2026-10-03; v3/job 17089 model replacement validated on 2026-10-06. This is a baseline engineering preview; the full public/clinical release is not yet qualified.
+PRD baseline validated on 2026-10-03; v3/job 17089 model replacement validated on 2026-10-06. The newer v3 small/base comparison and web changes are described below. This is an engineering preview; the full public/clinical release is not yet qualified.
 
 ## Selectable models: clinical small v3 default
 
@@ -47,6 +47,14 @@ and clinical approval remain separate gates.
 See [the sample/schema assessment](SAMPLE_ADAPTER_ASSESSMENT.md) for model
 quality diagnostics and next steps. Native/export format conformance is not
 clinical accuracy, and sample agreement is not final clinical validation.
+
+## Earlier web qualification report
+
+The earlier report preferred `na399/clinical-evidence-gliner2.5-base-lora-v3-act-sol@b5db08ccd2581690f30a448428ba7659e1469eeb` for the current desktop workflow. Keep the separate small release as a lower-memory option. Base matches 89/96 fixed synthetic axis labels; small matches 70/96. All 96 browser span/axis outputs match the independent helper for both sizes. These are synthetic diagnostics, not clinical accuracy or typed entity recall.
+
+The verified release export uses two graphs, all 18 trained queries, fixed model-specific thresholds and source abstention. The worker frees graph-file copies and uses up to four WASM threads on isolated pages. Median four-thread sentence inference is 729 ms for base and 321 ms for small on the measured four-core host. Renderer PSS peaks in the benchmark page are 3.27 GiB and 1.67 GiB. Base is a large desktop package; mobile use is not qualified. Weights stay outside Git/public distribution. Clinical cue attribution still fails completeness on five of six 64-point native paths and remains disabled. See [results, exact pins and limits](CLINICAL-V3-WEB.md) and [reproduction steps](../../experiments/clinical-v3-web/README.md).
+
+All 141 app tests, 12 packager tests, four generated-note validation tests, both builds and their 5,081/64 assets pass. Both real packages pass 17 ORT Web fixtures and offline/review/export/reopen/original-UI gates. Both adapters complete all 27 notes in the workspace; base also completes them in the original UI with identical results. Generated-reference typed anchor F1 is 61.6% for base and 59.2% for small; small has higher precision. Base still misses all seven negated-pain reference anchors. Original UI and workspace regressions pass. These results do not qualify clinical reliability or cue highlighting.
 
 ## Archived clinical adapter: ClinicalEvidence v3, ACT/Sol job 17089
 

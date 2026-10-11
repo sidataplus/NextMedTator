@@ -1,0 +1,39 @@
+{
+  "checks": [
+    {
+      "case": "affirmed_condition",
+      "decisionsExact": true,
+      "spans": 1
+    },
+    {
+      "case": "negated_condition",
+      "decisionsExact": true,
+      "spans": 1
+    },
+    {
+      "case": "historical_condition",
+      "decisionsExact": true,
+      "spans": 1
+    },
+    {
+      "case": "family_history",
+      "decisionsExact": true,
+      "spans": 1
+    },
+    {
+      "case": "unicode_mention",
+      "decisionsExact": true,
+      "spans": 0
+    }
+  ],
+  "runtime": {
+    "gliner2_source_fingerprint": "aec77e5692a8cf808fc0568a64b5ad882f4b8bbdedf6c3ba7b7f90b1a3d066d7",
+    "numpy": "2.5.3",
+    "peft": "0.21.2",
+    "python": "3.12.14",
+    "tokenizers": "0.22.2",
+    "torch": "2.11.0+cpu",
+    "transformers": "4.57.6"
+  },
+  "scope": "Five identical short full-schema cases; independent official Torch 2.11 helper vs Torch 2.6 exporter source. The long smoke uses 769 tokens and differs from the bounded single-window export fixture, so it is not counted."
+}

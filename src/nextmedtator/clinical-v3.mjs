@@ -22,7 +22,14 @@ export function clinicalV3Schema(schema){
     }
     result.relations={};return result;
 }
-export function clinicalV3Prompt(schema,{labels,byLabel}){
+export function clinicalV3Prompt(schema,{labels,byLabel},{complete=false}={}){
+    if(complete){
+        invariant(labels.every(label=>Object.hasOwn(CLINICAL_V3.core,label)),'This clinical release requires canonical family labels; custom concept queries need another package');
+        const core=Object.keys(CLINICAL_V3.core),ordered=Object.values(CLINICAL_V3.axes).flatMap(axis=>axis.labels.map(row=>row.span_label)).sort();
+        const at=new Map(ordered.map((label,index)=>[label,index]));
+        return {labels:[...core,...ordered],byLabel,contentCount:core.length,descriptions:{...CLINICAL_V3.core},
+            groups:Object.entries(CLINICAL_V3.axes).map(([field,axis])=>({field,families:Object.keys(schema.families),choices:[...axis.labels].sort((a,b)=>a.span_label.localeCompare(b.span_label)).map(row=>({value:row.value,index:at.get(row.span_label)}))}))};
+    }
     const groups=new Map(),rows=new Map(),descriptions={};
     for(const label of labels)if(CLINICAL_V3.core[label])descriptions[label]=CLINICAL_V3.core[label];
     for(const target of schema.entityTargets??[])descriptions[target.label]=target.description;
