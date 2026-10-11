@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {validateModelManifest,qualifyForSchema,selectInferenceVariant,compareCandidateSpans} from '../../src/nextmedtator/model-package.mjs';
+import {validateModelManifest,qualifyForSchema,selectInferenceVariant,activeVariantForSchema,compareCandidateSpans} from '../../src/nextmedtator/model-package.mjs';
 import {RECORDS_CODEC,SMALL_CODEC,analyzeSmall} from '../../src/nextmedtator/gliner-small.mjs';
 import {GlinerBoundaryRuntime,cropWordStates} from '../../src/nextmedtator/vendor/gliner25/gliner-boundary.mjs';
 import {CLINICAL_V3_CODEC,CLINICAL_V3} from '../../src/nextmedtator/clinical-v3.mjs';
