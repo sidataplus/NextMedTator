@@ -428,12 +428,12 @@ class LegacyAssist {
             const provenance = modelRunProvenance(model, variant.id, result);
             const records = result.records ?? spansToRecords(doc, schema, result.spans);
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
-            const project=await this.ensureProject(ann,schema),nativeDoc=project.current.documents[0];
+            const project=await this.ensureProject(ann,nativeSchema),nativeDoc=project.current.documents[0];
             const nativeRecords=records.map(r=>({...r,documentId:nativeDoc.id}));
             const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);this.runHistory.push(nativeRun);
             completed.add(index);this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
             if (autoApply && legacy().data.dtd===sourceDtd && legacy().data.anns.includes(sourceAnns[index]) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) await this.applyAllSuggestions(sourceAnns[index]);
-        } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],schema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
+        } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
