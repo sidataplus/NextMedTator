@@ -125,40 +125,42 @@ export class EvidenceWorkspace {
     changed() { this.dirty = true; this.saveState = 'Unsaved changes'; }
     get doc() { return this.project?.current.documents[this.index]; }
     async analyzeCurrent() {
-        invariant(this.doc, 'Open a document first');
-        invariant(this.model, 'Import a GLiNER2.5 boundary model package in Models');
-        const autoApply=this.applicationMode==='auto'&&this.project.canSeeMachine;
-        const scope=this.project.current.extensions.suggestionScope?await importScope(this.project.current.extensions.suggestionScope):null;
-        const activeCodec=this.model.manifest.variants[0].codec;
-        const schema=scope?compileScope(scope,this.project.current.schema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(this.project.current.schema):this.project.current.schema;
-        const qualification = qualifyForSchema(this.model, schema);
+        // Retain the source and package across every asynchronous operation.
+        const project=this.project,doc=this.doc,model=this.model;
+        invariant(doc, 'Open a document first');
+        invariant(model, 'Import a GLiNER2.5 boundary model package in Models');
+        const autoApply=this.applicationMode==='auto'&&project.canSeeMachine;
+        const scope=project.current.extensions.suggestionScope?await importScope(project.current.extensions.suggestionScope):null;
+        const activeCodec=model.manifest.variants[0].codec;
+        const schema=scope?compileScope(scope,project.current.schema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(project.current.schema):project.current.schema;
+        const qualification = qualifyForSchema(model, schema);
         invariant(qualification.level === 'entity-span' || qualification.level === 'structured-span' || qualification.level === 'occurrence-record', 'This package’s codec is not a local GLiNER2.5 decoder');
-        const variant = selectInferenceVariant(this.model,qualification.level);
+        const variant = selectInferenceVariant(model,qualification.level);
         const codec = variant.codec;
         const thresholdSettings=suggestionThreshold(this.thresholdOverride,scope,variant);
         if(scope)invariant(isRecordsCodec(codec),'Clinical scopes require a GLiNER2.5 record package');
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec)) ? schemaPrompt(schema) : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
         if(isRecordsCodec(codec))validateSmallSchema(schema);
-        if(this.modelReport?.manifestHash!==this.model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(this.model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
+        if(this.modelReport?.manifestHash!==model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
         const runSettings={codec,...(codec===CLINICAL_V3_CODEC?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),overlapPolicy:'flat',maxSequenceLength:512,wordOverlap:32,notice,limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         let result;const started=performance.now();
         try {
-            result = await this.modelRunner.analyze(this.model, variant.id, { text: this.doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: thresholdSettings.threshold });
+            result = await this.modelRunner.analyze(model, variant.id, { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: thresholdSettings.threshold });
         } catch(error) {
-            const identity=modelRunProvenance(this.model,variant.id,{manifestHash:this.model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
-            const failed=await makeRun(this.project,this.doc,[],{...identity,producer:{...identity.producer,notice},status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}],timing:{inferenceMs:performance.now()-started}});
-            await this.project.addRun(failed);this.changed();throw error;
+            const identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});
+            const failed=await makeRun(project,doc,[],{...identity,producer:{...identity.producer,notice},status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}],timing:{inferenceMs:performance.now()-started}});
+            await project.addRun(failed);if(this.project===project)this.changed();throw error;
         }
         invariant(result.kind === codec, 'Worker returned a different decoder output');
-        const provenance = modelRunProvenance(this.model, variant.id, result);
-        const records = result.records ? result.records.map(r=>({...r,documentId:this.doc.id})) : spansToRecords(this.doc, this.project.current.schema, result.spans);
-        const run = await makeRun(this.project, this.doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, windows: result.windows ?? [], timing: { inferenceMs: performance.now()-started }, settings: runSettings, runtime: provenance.runtime });
-        await this.project.addRun(run);
+        const provenance = modelRunProvenance(model, variant.id, result);
+        const records = result.records ? result.records.map(r=>({...r,documentId:doc.id})) : spansToRecords(doc, project.current.schema, result.spans);
+        const run = await makeRun(project, doc, records, { producer: { ...provenance.producer, notice }, status: result.status, coverage: result.coverage, windows: result.windows ?? [], timing: { inferenceMs: performance.now()-started }, settings: runSettings, runtime: provenance.runtime });
+        await project.addRun(run);
         const applied=autoApply&&run.status==='complete'&&records.length>0;
-        if(applied)this.project.applyMachineGroup(run.id,records);
-        this.changed();
-        this.message = applied?`${records.length} auto-applied suggestions · unreviewed. ${notice}`:`${records.length} local span suggestion${records.length === 1 ? '' : 's'}. ${notice}`;
+        if(applied)project.applyMachineGroup(run.id,records);
+        if(this.project===project)this.changed();
+        if(this.project===project)this.message = project.canSeeMachine?(applied?`${records.length} auto-applied suggestions · unreviewed. ${notice}`:`${records.length} local span suggestion${records.length === 1 ? '' : 's'} for ${doc.provenance?.filename??doc.id}. ${notice}`):'Local analysis finished. Suggestions stay hidden until you reveal them.';
     }
     async save() { const data = await exportBundle(this.project.current); localDownload(data, `${this.project.current.id}.nmt.zip`, 'application/zip'); this.saveState = 'Project export created; verify your downloaded file'; this.dirty = false; this.message = 'Export stays on your device. The application cannot verify a durable backup.'; }
     async checkpoint() { try{await this.recovery.checkpoint(this.project.current);}catch(error){this.dirty=true;this.saveState='Unsaved changes; recovery failed. Export this project.';throw error;} this.saveState = 'Recovery checkpoint saved in this browser; export still recommended'; this.message = 'Verified local database recovery copy. Export a portable backup.'; }
