@@ -33,7 +33,7 @@ try:
    page.locator('aside h3',has_text=receipt['model']['repository']).scroll_into_view_if_needed()
    if filename.startswith('02'):
     page.get_by_test_id('suggestion').first.get_by_role('button',name='Locate',exact=True).click()
-    assert page.get_by_test_id('source').evaluate('n=>n.value.slice(n.selectionStart,n.selectionEnd)')==page.get_by_test_id('suggestion').first.locator('strong').text_content()
+    assert page.get_by_test_id('source').evaluate('n=>n.value.slice(n.selectionStart,n.selectionEnd)')==source['result']['entities']['Physical'][0]['text']
    page.evaluate('''()=>{window.scrollTo(0,0);const root=document.querySelector('nextmedtator-workspace').shadowRoot,aside=root.querySelector('aside');const heading=[...aside.querySelectorAll('h3')].find(h=>h.textContent.startsWith('na399/bpsd-gliner'));aside.scrollTop+=heading.getBoundingClientRect().top-aside.getBoundingClientRect().top-12;}''')
    page.screenshot(path=str(OUT/filename))
    shots.append({'file':filename,'note':identifier,'predictionCount':count,'inferenceLocation':'local-native','torch':receipt['runtime']['torch']})
