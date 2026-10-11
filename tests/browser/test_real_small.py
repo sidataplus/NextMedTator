@@ -35,7 +35,7 @@ def run():
    page.get_by_label('Open local documents or project').set_input_files({'name':'offline-card.txt','mimeType':'text/plain','buffer':fixture['text'].encode()})
    page.get_by_role('button',name='Export & assignments',exact=True).click();page.get_by_label('Start new project with schema JSON').set_input_files({'name':'schema.json','mimeType':'application/json','buffer':json.dumps(fixture['schema']).encode()})
    page.get_by_role('button',name='Models',exact=True).click();page.get_by_role('button',name='List installed models',exact=True).click();page.get_by_role('button',name='Use installed gliner25-small-onnx-v5',exact=True).click()
-   page.get_by_role('button',name='Close panel',exact=True).click();page.get_by_test_id('analyze').click();expect(page.get_by_test_id('suggestion')).to_have_count(4)
+   page.get_by_role('button',name='Close panel',exact=True).click();page.get_by_test_id('analysis-mode').select_option('assisted');page.get_by_test_id('analyze').click();expect(page.get_by_test_id('suggestion')).to_have_count(4)
    for checkbox in page.get_by_role('checkbox',name='Select suggestion for group review',exact=True).all():checkbox.check()
    page.get_by_role('button',name='Accept selected suggestions',exact=True).click()
    expect(page.get_by_test_id('human-record')).to_have_count(4)

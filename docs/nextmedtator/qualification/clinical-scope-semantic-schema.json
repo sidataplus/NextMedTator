@@ -1,0 +1,43 @@
+{
+  "schema_version": "teacher-schema/0.2",
+  "name": "Daily care and mobility",
+  "version": "1",
+  "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+  "families": [
+    "event_occurrence",
+    "function_occurrence"
+  ],
+  "tasks": [
+    {
+      "task_id": "clinical_scope",
+      "definition": "Extract documented care interactions and mobility problems. Exclude unrelated diagnoses and medications."
+    }
+  ],
+  "concepts": [
+    {
+      "concept_id": "care_resistance",
+      "family": "event_occurrence",
+      "description": "Refusal or resistance during personal care, dressing, washing or assistance.",
+      "aliases": [
+        "refusing care",
+        "resists washing"
+      ]
+    },
+    {
+      "concept_id": "mobility_difficulty",
+      "family": "function_occurrence",
+      "description": "Documented difficulty with walking, transfers or mobility.",
+      "aliases": [
+        "needs help walking",
+        "unsteady gait"
+      ]
+    }
+  ],
+  "relations": [],
+  "parent_schema_hash": null,
+  "discovery_plan_hash": null,
+  "deferred_proposals": [],
+  "frozen_by": "legacy-annotator",
+  "frozen_at": "2026-10-05T05:19:08.566Z",
+  "schema_hash": "7de05c87f022c44c982eaa7629b5ef6c9f0ea7bca55678c26b05c83307e5eb4b"
+}

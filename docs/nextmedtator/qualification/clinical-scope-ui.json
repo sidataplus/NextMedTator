@@ -1,0 +1,3290 @@
+{
+  "browser": "151.0.7922.173",
+  "source": {
+    "filename": "generated_p40_gemini-3_1-pro-high.jsonl",
+    "sha256": "8c825be914305eb89c2adb30d9c063769d228f9478b5febfc0ab39a7c7434dea",
+    "generatorModels": [
+      "gemini-3.1-pro-high"
+    ],
+    "referenceKind": "externally-generated-labels",
+    "referenceCompleteness": "unverified",
+    "clinicalGoldStandard": false
+  },
+  "noteIds": [
+    "syn7_00007",
+    "syn7_00021"
+  ],
+  "broadCounts": [
+    20,
+    14
+  ],
+  "customCounts": [
+    0,
+    1
+  ],
+  "allRunsComplete": true,
+  "sourceOffsetsValid": true,
+  "oldRunsUnchanged": true,
+  "conceptMappingRetained": true,
+  "nativeAutoApplyUnreviewed": true,
+  "nativeExportRetainsScope": true,
+  "corpusRecoveryRetainsScopeAndRuns": true,
+  "noNoteEgress": true,
+  "clinicalAccuracy": "Not qualified; descriptions guide retrieval, they do not guarantee semantic membership",
+  "scope": {
+    "format": "nextmedtator-clinical-scope-v1",
+    "threshold": 0.5,
+    "fields": {
+      "condition_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer",
+        "time_text"
+      ],
+      "measurement_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer",
+        "time_text"
+      ],
+      "treatment_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer",
+        "time_text"
+      ],
+      "event_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer",
+        "time_text"
+      ],
+      "function_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer",
+        "time_text"
+      ],
+      "care_context_occurrence": [
+        "assertion",
+        "time_frame",
+        "experiencer",
+        "time_text"
+      ]
+    },
+    "semanticSchema": {
+      "schema_version": "teacher-schema/0.2",
+      "name": "Daily care and mobility",
+      "version": "1",
+      "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+      "families": [
+        "event_occurrence",
+        "function_occurrence"
+      ],
+      "tasks": [
+        {
+          "task_id": "clinical_scope",
+          "definition": "Extract documented care interactions and mobility problems. Exclude unrelated diagnoses and medications."
+        }
+      ],
+      "concepts": [
+        {
+          "concept_id": "care_resistance",
+          "family": "event_occurrence",
+          "description": "Refusal or resistance during personal care, dressing, washing or assistance.",
+          "aliases": [
+            "refusing care",
+            "resists washing"
+          ]
+        },
+        {
+          "concept_id": "mobility_difficulty",
+          "family": "function_occurrence",
+          "description": "Documented difficulty with walking, transfers or mobility.",
+          "aliases": [
+            "needs help walking",
+            "unsteady gait"
+          ]
+        }
+      ],
+      "relations": [],
+      "parent_schema_hash": null,
+      "discovery_plan_hash": null,
+      "deferred_proposals": [],
+      "frozen_by": "legacy-annotator",
+      "frozen_at": "2026-10-05T05:19:08.566Z",
+      "schema_hash": "7de05c87f022c44c982eaa7629b5ef6c9f0ea7bca55678c26b05c83307e5eb4b"
+    }
+  },
+  "runs": [
+    {
+      "id": "5a5c2151-2346-4111-ab66-9c990db0466d",
+      "createdAt": "2026-10-05T05:18:49.171Z",
+      "documentId": "legacy-note",
+      "sourceHash": "3e279dfd220c93437e2ed7b6effa925a363eb075335d05b45af777d7fdfa5eef",
+      "schemaHash": "7d00bcd586f6fc08f3b05707ab37be9d1351651bbd473208da3f7d31648f7879",
+      "producer": {
+        "kind": "model",
+        "name": "fastino/gliner2.5-base-v1",
+        "version": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+        "packageId": "gliner25-clinical-evidence-p4",
+        "manifestHash": "3dbc9782d8ec565c90e72f67d0b32657a72020b15f52f4953dacbfbef2f612b2",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead",
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            }
+          },
+          "adapter": {
+            "sha256": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "weightsSha256": "a2dfbcd5a549507355aa120ea1150a3373b425a763728b95132b2622325aceac",
+            "configSha256": "e9dd3ac45dc7676ea9402db44aef2c2fbf56b4b74b3f7a13f95c378547efd187"
+          },
+          "merge": "merged-export",
+          "trainedHeads": "2bbf9b1d11da9140dff4039c0f808c07217020244bd392de3f992068f6b4af52"
+        },
+        "artifacts": [
+          {
+            "path": "model.onnx",
+            "bytes": 746817689,
+            "sha256": "9b2114b12a238c9a5e016e342d3a32fdb2b42210a875a09b89235ad2dea03d9d",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 6078133,
+            "sha256": "067f126947eac95682b775cb93470d6055cf4071480d57046fd98133eac3de78",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 1193806,
+            "sha256": "26ff618f1413c80de52d47348c127a9f4f9203d985f2cf2746c0c05891413bc1",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 23658742,
+            "sha256": "d2c0956721b8e187e31f1de35115cd416c431895b570457e25373df2a6d054a4",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8333953,
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc",
+            "role": "tokenizer"
+          },
+          {
+            "path": "source-case-0.json",
+            "bytes": 769,
+            "sha256": "951ae520b4a2a85c51268af48c8f1add2e0b90d9877050545151e70ea369cec9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-0.json",
+            "bytes": 14593,
+            "sha256": "8947c68db46b1cf6c36db03f051fbd8e42ae25fef9a60883f406db0918d621f7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-1.json",
+            "bytes": 888,
+            "sha256": "103eab6b549730bbb8b7520d7ce7c59dbef94459b51624e6ed04bdb4132b427a",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-1.json",
+            "bytes": 14303,
+            "sha256": "4cacb52d37c33d58328164927ae3fc8be0205bdf3d945b2e845b9d8042979977",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-2.json",
+            "bytes": 634,
+            "sha256": "64fe42c595d85061f60b298d058e6b76d217c52f149c8e24749cb947ca39bb63",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-2.json",
+            "bytes": 8171,
+            "sha256": "2437eb6ddfccb933c1181aa09a4d1c873021de43d26b3cbd061503389afbf967",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-3.json",
+            "bytes": 687,
+            "sha256": "9f76f071919134e24256c0e40a47c854e3c3d36b2eec83d73363bfdcf28a78f9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-3.json",
+            "bytes": 11485,
+            "sha256": "ebf9beb4f84ae3a2936e152e11525be9ec3464e08d597fa8eae2177960b77df7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-4.json",
+            "bytes": 436,
+            "sha256": "7ab05f5728e73587201e62f05f53d555c09f532e01539052e91bba707cef2dfd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-4.json",
+            "bytes": 7409,
+            "sha256": "61d7eb4ad561eef489b33d991ec81794b975ef4f63b135c661a13a91f707e723",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-5.json",
+            "bytes": 399,
+            "sha256": "349d411e3639f143263e7fb35dbc945ed42d83f449668f8f484c37959d48dbdd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-5.json",
+            "bytes": 12091,
+            "sha256": "b6e54f5d27f746f447209cca4a1d7f4f268ec68c5f7986806e0bbdb091a64b36",
+            "role": "fixture"
+          },
+          {
+            "path": "attributes-reference.json",
+            "bytes": 1833107,
+            "sha256": "eed30d24e46b8a4a9f53a7f375270d89cdf9008d1dc8cc5d61b8a78c12d050bf",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 191490,
+            "sha256": "22cb08551825197ed24ccdc4d361391ec7099acfdcfd972758eb0a53af986b8d",
+            "role": "fixture"
+          },
+          {
+            "path": "records-varied-reference.json",
+            "bytes": 526110,
+            "sha256": "214fe55d35b7355cb93df8ba56e0176c0f822a4a12e7eea44ad915052556d6b5",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-reference.json",
+            "bytes": 127574,
+            "sha256": "f68ae344785f9543e17eb649a9c45f2732eb7841fc51f25645fa26d91c381e0d",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-varied-reference.json",
+            "bytes": 1554768,
+            "sha256": "3061fd020e28078da9b051b099d11b617312a561f258983f332e7de5d08a3f72",
+            "role": "fixture"
+          }
+        ]
+      },
+      "runtime": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "version": "1.23.2",
+        "variantId": "wasm-fp32",
+        "variant": {
+          "id": "wasm-fp32",
+          "backend": "wasm",
+          "precision": "fp32",
+          "codec": "gliner25-records-v1",
+          "graph": "model.onnx",
+          "graphs": {
+            "model": "model.onnx",
+            "attributes": "attributes.onnx",
+            "records": "records.onnx",
+            "relations": "relations.onnx"
+          },
+          "tokenizer": "tokenizer.json",
+          "fixtures": [
+            "source-case-0.json",
+            "model-reference-0.json",
+            "source-case-1.json",
+            "model-reference-1.json",
+            "source-case-2.json",
+            "model-reference-2.json",
+            "source-case-3.json",
+            "model-reference-3.json",
+            "source-case-4.json",
+            "model-reference-4.json",
+            "source-case-5.json",
+            "model-reference-5.json",
+            "attributes-reference.json",
+            "records-reference.json",
+            "records-varied-reference.json",
+            "relations-reference.json",
+            "relations-varied-reference.json"
+          ],
+          "threshold": 0.5,
+          "fixedWords": 512,
+          "maxSequenceLength": 512,
+          "wordOverlap": 32,
+          "pairTemperature": 1,
+          "abstentionThreshold": 0.5,
+          "automaticRelations": false,
+          "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+          "exporterVersion": "0.1.0",
+          "languageClaims": [
+            "en"
+          ]
+        }
+      },
+      "settings": {
+        "codec": "gliner25-records-v1",
+        "threshold": 0.5,
+        "scope": {
+          "profile": {
+            "format": "nextmedtator-clinical-scope-v1",
+            "threshold": 0.5,
+            "fields": {
+              "condition_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "measurement_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "treatment_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "event_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "function_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "care_context_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ]
+            },
+            "semanticSchema": {
+              "schema_version": "teacher-schema/0.2",
+              "name": "All clinical evidence",
+              "version": "1",
+              "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "families": [
+                "condition_occurrence",
+                "measurement_occurrence",
+                "treatment_occurrence",
+                "event_occurrence",
+                "function_occurrence",
+                "care_context_occurrence"
+              ],
+              "tasks": [
+                {
+                  "task_id": "clinical_scope",
+                  "definition": "Extract explicitly documented clinical evidence across the selected record families."
+                }
+              ],
+              "concepts": [],
+              "relations": [],
+              "parent_schema_hash": null,
+              "discovery_plan_hash": null,
+              "deferred_proposals": [],
+              "frozen_by": "legacy-annotator",
+              "frozen_at": "2026-10-05T05:18:14.801Z",
+              "schema_hash": "919796aca1e5c9b5c8e709e870f225fce0416e831980c8ac9f6525aab308f1c5"
+            }
+          },
+          "profileHash": "960b2e995580734de6c82ee2e778f387e4114b067a3ebe43464ba7059b843f2e",
+          "trainingRegistry": {
+            "repository": "na399/clinical-evidence",
+            "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+            "hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547"
+          },
+          "inferenceSchema": {
+            "id": "medtator-schema",
+            "version": "1",
+            "families": {
+              "condition_occurrence": {
+                "label": "clinical_condition",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "condition_occurrence",
+                "recordAnchorLabel": "condition"
+              },
+              "measurement_occurrence": {
+                "label": "clinical_measure",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "measurement_occurrence",
+                "recordAnchorLabel": "measure"
+              },
+              "treatment_occurrence": {
+                "label": "clinical_treatment",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "treatment_occurrence",
+                "recordAnchorLabel": "treatment"
+              },
+              "event_occurrence": {
+                "label": "clinical_event",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "event_occurrence",
+                "recordAnchorLabel": "event"
+              },
+              "function_occurrence": {
+                "label": "functional_activity",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "function_occurrence",
+                "recordAnchorLabel": "activity"
+              },
+              "care_context_occurrence": {
+                "label": "care_context",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "care_context_occurrence",
+                "recordAnchorLabel": "care_context"
+              }
+            },
+            "entityTargets": [
+              {
+                "label": "clinical_condition",
+                "family": "condition_occurrence",
+                "description": "Diagnoses, disorders, symptoms and clinical states. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "clinical_measure",
+                "family": "measurement_occurrence",
+                "description": "Named clinical measurements, tests and scores. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "clinical_treatment",
+                "family": "treatment_occurrence",
+                "description": "Medications, procedures and other medical interventions. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "clinical_event",
+                "family": "event_occurrence",
+                "description": "Clinical actions, episodes, behaviors, psychological experiences and persistent states. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "functional_activity",
+                "family": "function_occurrence",
+                "description": "Daily living, mobility, transfers and communication activities. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "care_context",
+                "family": "care_context_occurrence",
+                "description": "Care services, settings, goals and support. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              }
+            ],
+            "clinicalScope": {
+              "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "schemaHash": "919796aca1e5c9b5c8e709e870f225fce0416e831980c8ac9f6525aab308f1c5"
+            }
+          },
+          "inferenceSchemaHash": "86bebd6369ef8a1450c00c776889e1546a038c986be5de92c3d1096fbc7b8bfc",
+          "semantics": "prompt-guidance; exact family mapping, no deterministic concept-membership guarantee"
+        },
+        "limitations": [
+          "cross-window-relations",
+          "anchorless-records"
+        ]
+      },
+      "windows": [
+        {
+          "from": 0,
+          "to": 176,
+          "sourceRange": [
+            0,
+            955
+          ]
+        },
+        {
+          "from": 144,
+          "to": 220,
+          "sourceRange": [
+            751,
+            1223
+          ]
+        }
+      ],
+      "timing": {},
+      "failures": [],
+      "status": "complete",
+      "coverage": [
+        [
+          0,
+          1223
+        ]
+      ],
+      "records": [
+        {
+          "id": "e5414b3e-33e9-441e-bb91-ec51cf14e07f",
+          "documentId": "legacy-note",
+          "family": "condition_occurrence",
+          "anchor": [
+            {
+              "start": 124,
+              "end": 150,
+              "text": "Alzheimer disease dementia"
+            }
+          ],
+          "fields": {
+            "concept": "Alzheimer disease dementia",
+            "assertion": "affirmed",
+            "time_frame": "unspecified",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9990666697429009,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "af4ea5c1-0ece-4a30-9a7a-3c1e3202110e",
+          "documentId": "legacy-note",
+          "family": "treatment_occurrence",
+          "anchor": [
+            {
+              "start": 731,
+              "end": 744,
+              "text": "acetaminophen"
+            }
+          ],
+          "fields": {
+            "concept": "acetaminophen",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "other",
+            "time_text": "at bedtime"
+          },
+          "evidence": [
+            {
+              "start": 945,
+              "end": 955,
+              "text": "at bedtime"
+            }
+          ],
+          "score": 0.9998436060008162,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "9e48a829-48df-405e-a3c3-5451ee206717",
+          "documentId": "legacy-note",
+          "family": "treatment_occurrence",
+          "anchor": [
+            {
+              "start": 751,
+              "end": 754,
+              "text": "PRN"
+            }
+          ],
+          "fields": {
+            "concept": "PRN",
+            "assertion": "affirmed",
+            "time_frame": "unspecified",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.987895726104516,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "42aaa47f-b5f9-422f-a5f6-9cc2cbb8bc82",
+          "documentId": "legacy-note",
+          "family": "treatment_occurrence",
+          "anchor": [
+            {
+              "start": 824,
+              "end": 834,
+              "text": "Quetiapine"
+            }
+          ],
+          "fields": {
+            "concept": "Quetiapine",
+            "assertion": "hypothetical",
+            "time_frame": "future",
+            "experiencer": "other",
+            "time_text": "tomorrow morning"
+          },
+          "evidence": [
+            {
+              "start": 882,
+              "end": 898,
+              "text": "tomorrow morning"
+            }
+          ],
+          "score": 0.9999227568707515,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "1ebfca23-607a-495e-9f3c-06a4557496dc",
+          "documentId": "legacy-note",
+          "family": "treatment_occurrence",
+          "anchor": [
+            {
+              "start": 925,
+              "end": 934,
+              "text": "Melatonin"
+            }
+          ],
+          "fields": {
+            "concept": "Melatonin",
+            "assertion": "affirmed",
+            "time_frame": "unspecified",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9997868419105553,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "17aed007-4686-4e6a-ad9b-f84680a80bc9",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 179,
+              "end": 183,
+              "text": "fall"
+            }
+          ],
+          "fields": {
+            "concept": "fall",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": "yesterday evening"
+          },
+          "evidence": [
+            {
+              "start": 199,
+              "end": 216,
+              "text": "yesterday evening"
+            }
+          ],
+          "score": 0.9888274121626603,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "1a0fcb25-31c3-4ae1-a6b4-db4bc2253d70",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 240,
+              "end": 246,
+              "text": "pacing"
+            }
+          ],
+          "fields": {
+            "concept": "pacing",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": "this morning"
+          },
+          "evidence": [
+            {
+              "start": 446,
+              "end": 458,
+              "text": "this morning"
+            }
+          ],
+          "score": 0.9908031651522935,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "ad9cfe6b-e96c-433f-a042-738108e895b9",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 324,
+              "end": 341,
+              "text": "verbal aggression"
+            }
+          ],
+          "fields": {
+            "concept": "verbal aggression",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.8209352100487897,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "fa29ad34-723d-4a07-b2b2-93a12dfc9b5e",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 356,
+              "end": 363,
+              "text": "yelling"
+            }
+          ],
+          "fields": {
+            "concept": "yelling",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.8188400530983762,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "714ae240-9830-4562-bcc6-6a67b33d9e87",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 409,
+              "end": 421,
+              "text": "striking out"
+            }
+          ],
+          "fields": {
+            "concept": "striking out",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9496470953391187,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "6feeea21-4a27-46d4-b133-9e338c70a511",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 1012,
+              "end": 1018,
+              "text": "visits"
+            }
+          ],
+          "fields": {
+            "concept": "visits",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "family",
+            "time_text": "daily"
+          },
+          "evidence": [
+            {
+              "start": 1019,
+              "end": 1024,
+              "text": "daily"
+            }
+          ],
+          "score": 0.9688956906836205,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "18bf49ca-439a-4af1-b83d-10ae9f04177b",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 1047,
+              "end": 1064,
+              "text": "struggles to cope"
+            }
+          ],
+          "fields": {
+            "concept": "struggles to cope",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "family",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.7967892501305507,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "5d59f0f6-d4a2-4d59-b164-afbe0a442da1",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 1194,
+              "end": 1198,
+              "text": "fall"
+            }
+          ],
+          "fields": {
+            "concept": "fall",
+            "assertion": "unspecified",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": "recent"
+          },
+          "evidence": [
+            {
+              "start": 1187,
+              "end": 1193,
+              "text": "recent"
+            }
+          ],
+          "score": 0.9561254078246157,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "f64f67fa-20ce-42c7-b335-2d7ade9c2ebd",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 1203,
+              "end": 1222,
+              "text": "behavior escalation"
+            }
+          ],
+          "fields": {
+            "concept": "behavior escalation",
+            "assertion": "unspecified",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.6066079833067,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "578bc04b-701a-4c06-993a-d329a4481b46",
+          "documentId": "legacy-note",
+          "family": "function_occurrence",
+          "anchor": [
+            {
+              "start": 438,
+              "end": 445,
+              "text": "bathing"
+            }
+          ],
+          "fields": {
+            "concept": "bathing",
+            "assertion": "unspecified",
+            "time_frame": "current",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.8800457942148745,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "772faa2b-43a0-4bba-8cf5-6311e4659e76",
+          "documentId": "legacy-note",
+          "family": "function_occurrence",
+          "anchor": [
+            {
+              "start": 551,
+              "end": 560,
+              "text": "Ambulates"
+            }
+          ],
+          "fields": {
+            "concept": "Ambulates",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9988632816276066,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "9a322872-2ef9-4113-9d4a-e77d99601a69",
+          "documentId": "legacy-note",
+          "family": "function_occurrence",
+          "anchor": [
+            {
+              "start": 603,
+              "end": 612,
+              "text": "self-feed"
+            }
+          ],
+          "fields": {
+            "concept": "self-feed",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9993412071393285,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "3523ce05-d0e6-40f7-b681-df1d4e4b070e",
+          "documentId": "legacy-note",
+          "family": "function_occurrence",
+          "anchor": [
+            {
+              "start": 683,
+              "end": 690,
+              "text": "bathing"
+            }
+          ],
+          "fields": {
+            "concept": "bathing",
+            "assertion": "unspecified",
+            "time_frame": "current",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.6209785458732796,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "9774538d-625c-4607-be0b-40a5b530b080",
+          "documentId": "legacy-note",
+          "family": "care_context_occurrence",
+          "anchor": [
+            {
+              "start": 15,
+              "end": 29,
+              "text": "Long Term Care"
+            }
+          ],
+          "fields": {
+            "concept": "Long Term Care",
+            "assertion": "hypothetical",
+            "time_frame": "future",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9977820691024162,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "5a9218a9-a094-4d89-a16c-701e4b224bfd",
+          "documentId": "legacy-note",
+          "family": "care_context_occurrence",
+          "anchor": [
+            {
+              "start": 1094,
+              "end": 1111,
+              "text": "Caregiver support"
+            }
+          ],
+          "fields": {
+            "concept": "Caregiver support",
+            "assertion": "hypothetical",
+            "time_frame": "future",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9991765354457754,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        }
+      ],
+      "fingerprint": "7a4c7507866a579696d315b542500ef78bc230c22e68c5d31926976f60567a5c"
+    },
+    {
+      "id": "82b642cd-872c-4639-af18-ecce765a95b7",
+      "createdAt": "2026-10-05T05:19:07.941Z",
+      "documentId": "legacy-note",
+      "sourceHash": "95c33b5104e8ae56b8ca033e110e9697262ec6cb47c3820cd06b6ba39067bf89",
+      "schemaHash": "7d00bcd586f6fc08f3b05707ab37be9d1351651bbd473208da3f7d31648f7879",
+      "producer": {
+        "kind": "model",
+        "name": "fastino/gliner2.5-base-v1",
+        "version": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+        "packageId": "gliner25-clinical-evidence-p4",
+        "manifestHash": "3dbc9782d8ec565c90e72f67d0b32657a72020b15f52f4953dacbfbef2f612b2",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead",
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            }
+          },
+          "adapter": {
+            "sha256": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "weightsSha256": "a2dfbcd5a549507355aa120ea1150a3373b425a763728b95132b2622325aceac",
+            "configSha256": "e9dd3ac45dc7676ea9402db44aef2c2fbf56b4b74b3f7a13f95c378547efd187"
+          },
+          "merge": "merged-export",
+          "trainedHeads": "2bbf9b1d11da9140dff4039c0f808c07217020244bd392de3f992068f6b4af52"
+        },
+        "artifacts": [
+          {
+            "path": "model.onnx",
+            "bytes": 746817689,
+            "sha256": "9b2114b12a238c9a5e016e342d3a32fdb2b42210a875a09b89235ad2dea03d9d",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 6078133,
+            "sha256": "067f126947eac95682b775cb93470d6055cf4071480d57046fd98133eac3de78",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 1193806,
+            "sha256": "26ff618f1413c80de52d47348c127a9f4f9203d985f2cf2746c0c05891413bc1",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 23658742,
+            "sha256": "d2c0956721b8e187e31f1de35115cd416c431895b570457e25373df2a6d054a4",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8333953,
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc",
+            "role": "tokenizer"
+          },
+          {
+            "path": "source-case-0.json",
+            "bytes": 769,
+            "sha256": "951ae520b4a2a85c51268af48c8f1add2e0b90d9877050545151e70ea369cec9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-0.json",
+            "bytes": 14593,
+            "sha256": "8947c68db46b1cf6c36db03f051fbd8e42ae25fef9a60883f406db0918d621f7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-1.json",
+            "bytes": 888,
+            "sha256": "103eab6b549730bbb8b7520d7ce7c59dbef94459b51624e6ed04bdb4132b427a",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-1.json",
+            "bytes": 14303,
+            "sha256": "4cacb52d37c33d58328164927ae3fc8be0205bdf3d945b2e845b9d8042979977",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-2.json",
+            "bytes": 634,
+            "sha256": "64fe42c595d85061f60b298d058e6b76d217c52f149c8e24749cb947ca39bb63",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-2.json",
+            "bytes": 8171,
+            "sha256": "2437eb6ddfccb933c1181aa09a4d1c873021de43d26b3cbd061503389afbf967",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-3.json",
+            "bytes": 687,
+            "sha256": "9f76f071919134e24256c0e40a47c854e3c3d36b2eec83d73363bfdcf28a78f9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-3.json",
+            "bytes": 11485,
+            "sha256": "ebf9beb4f84ae3a2936e152e11525be9ec3464e08d597fa8eae2177960b77df7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-4.json",
+            "bytes": 436,
+            "sha256": "7ab05f5728e73587201e62f05f53d555c09f532e01539052e91bba707cef2dfd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-4.json",
+            "bytes": 7409,
+            "sha256": "61d7eb4ad561eef489b33d991ec81794b975ef4f63b135c661a13a91f707e723",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-5.json",
+            "bytes": 399,
+            "sha256": "349d411e3639f143263e7fb35dbc945ed42d83f449668f8f484c37959d48dbdd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-5.json",
+            "bytes": 12091,
+            "sha256": "b6e54f5d27f746f447209cca4a1d7f4f268ec68c5f7986806e0bbdb091a64b36",
+            "role": "fixture"
+          },
+          {
+            "path": "attributes-reference.json",
+            "bytes": 1833107,
+            "sha256": "eed30d24e46b8a4a9f53a7f375270d89cdf9008d1dc8cc5d61b8a78c12d050bf",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 191490,
+            "sha256": "22cb08551825197ed24ccdc4d361391ec7099acfdcfd972758eb0a53af986b8d",
+            "role": "fixture"
+          },
+          {
+            "path": "records-varied-reference.json",
+            "bytes": 526110,
+            "sha256": "214fe55d35b7355cb93df8ba56e0176c0f822a4a12e7eea44ad915052556d6b5",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-reference.json",
+            "bytes": 127574,
+            "sha256": "f68ae344785f9543e17eb649a9c45f2732eb7841fc51f25645fa26d91c381e0d",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-varied-reference.json",
+            "bytes": 1554768,
+            "sha256": "3061fd020e28078da9b051b099d11b617312a561f258983f332e7de5d08a3f72",
+            "role": "fixture"
+          }
+        ]
+      },
+      "runtime": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "version": "1.23.2",
+        "variantId": "wasm-fp32",
+        "variant": {
+          "id": "wasm-fp32",
+          "backend": "wasm",
+          "precision": "fp32",
+          "codec": "gliner25-records-v1",
+          "graph": "model.onnx",
+          "graphs": {
+            "model": "model.onnx",
+            "attributes": "attributes.onnx",
+            "records": "records.onnx",
+            "relations": "relations.onnx"
+          },
+          "tokenizer": "tokenizer.json",
+          "fixtures": [
+            "source-case-0.json",
+            "model-reference-0.json",
+            "source-case-1.json",
+            "model-reference-1.json",
+            "source-case-2.json",
+            "model-reference-2.json",
+            "source-case-3.json",
+            "model-reference-3.json",
+            "source-case-4.json",
+            "model-reference-4.json",
+            "source-case-5.json",
+            "model-reference-5.json",
+            "attributes-reference.json",
+            "records-reference.json",
+            "records-varied-reference.json",
+            "relations-reference.json",
+            "relations-varied-reference.json"
+          ],
+          "threshold": 0.5,
+          "fixedWords": 512,
+          "maxSequenceLength": 512,
+          "wordOverlap": 32,
+          "pairTemperature": 1,
+          "abstentionThreshold": 0.5,
+          "automaticRelations": false,
+          "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+          "exporterVersion": "0.1.0",
+          "languageClaims": [
+            "en"
+          ]
+        }
+      },
+      "settings": {
+        "codec": "gliner25-records-v1",
+        "threshold": 0.5,
+        "scope": {
+          "profile": {
+            "format": "nextmedtator-clinical-scope-v1",
+            "threshold": 0.5,
+            "fields": {
+              "condition_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "measurement_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "treatment_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "event_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "function_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "care_context_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ]
+            },
+            "semanticSchema": {
+              "schema_version": "teacher-schema/0.2",
+              "name": "All clinical evidence",
+              "version": "1",
+              "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "families": [
+                "condition_occurrence",
+                "measurement_occurrence",
+                "treatment_occurrence",
+                "event_occurrence",
+                "function_occurrence",
+                "care_context_occurrence"
+              ],
+              "tasks": [
+                {
+                  "task_id": "clinical_scope",
+                  "definition": "Extract explicitly documented clinical evidence across the selected record families."
+                }
+              ],
+              "concepts": [],
+              "relations": [],
+              "parent_schema_hash": null,
+              "discovery_plan_hash": null,
+              "deferred_proposals": [],
+              "frozen_by": "legacy-annotator",
+              "frozen_at": "2026-10-05T05:18:14.801Z",
+              "schema_hash": "919796aca1e5c9b5c8e709e870f225fce0416e831980c8ac9f6525aab308f1c5"
+            }
+          },
+          "profileHash": "960b2e995580734de6c82ee2e778f387e4114b067a3ebe43464ba7059b843f2e",
+          "trainingRegistry": {
+            "repository": "na399/clinical-evidence",
+            "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+            "hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547"
+          },
+          "inferenceSchema": {
+            "id": "medtator-schema",
+            "version": "1",
+            "families": {
+              "condition_occurrence": {
+                "label": "clinical_condition",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "condition_occurrence",
+                "recordAnchorLabel": "condition"
+              },
+              "measurement_occurrence": {
+                "label": "clinical_measure",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "measurement_occurrence",
+                "recordAnchorLabel": "measure"
+              },
+              "treatment_occurrence": {
+                "label": "clinical_treatment",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "treatment_occurrence",
+                "recordAnchorLabel": "treatment"
+              },
+              "event_occurrence": {
+                "label": "clinical_event",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "event_occurrence",
+                "recordAnchorLabel": "event"
+              },
+              "function_occurrence": {
+                "label": "functional_activity",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "function_occurrence",
+                "recordAnchorLabel": "activity"
+              },
+              "care_context_occurrence": {
+                "label": "care_context",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "care_context_occurrence",
+                "recordAnchorLabel": "care_context"
+              }
+            },
+            "entityTargets": [
+              {
+                "label": "clinical_condition",
+                "family": "condition_occurrence",
+                "description": "Diagnoses, disorders, symptoms and clinical states. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "clinical_measure",
+                "family": "measurement_occurrence",
+                "description": "Named clinical measurements, tests and scores. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "clinical_treatment",
+                "family": "treatment_occurrence",
+                "description": "Medications, procedures and other medical interventions. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "clinical_event",
+                "family": "event_occurrence",
+                "description": "Clinical actions, episodes, behaviors, psychological experiences and persistent states. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "functional_activity",
+                "family": "function_occurrence",
+                "description": "Daily living, mobility, transfers and communication activities. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              },
+              {
+                "label": "care_context",
+                "family": "care_context_occurrence",
+                "description": "Care services, settings, goals and support. Scope: Extract explicitly documented clinical evidence across the selected record families."
+              }
+            ],
+            "clinicalScope": {
+              "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "schemaHash": "919796aca1e5c9b5c8e709e870f225fce0416e831980c8ac9f6525aab308f1c5"
+            }
+          },
+          "inferenceSchemaHash": "86bebd6369ef8a1450c00c776889e1546a038c986be5de92c3d1096fbc7b8bfc",
+          "semantics": "prompt-guidance; exact family mapping, no deterministic concept-membership guarantee"
+        },
+        "limitations": [
+          "cross-window-relations",
+          "anchorless-records"
+        ]
+      },
+      "windows": [
+        {
+          "from": 0,
+          "to": 174,
+          "sourceRange": [
+            0,
+            937
+          ]
+        },
+        {
+          "from": 142,
+          "to": 211,
+          "sourceRange": [
+            742,
+            1149
+          ]
+        }
+      ],
+      "timing": {},
+      "failures": [],
+      "status": "complete",
+      "coverage": [
+        [
+          0,
+          1149
+        ]
+      ],
+      "records": [
+        {
+          "id": "6277fef8-3998-4a70-b305-add2622923ca",
+          "documentId": "legacy-note",
+          "family": "condition_occurrence",
+          "anchor": [
+            {
+              "start": 158,
+              "end": 175,
+              "text": "vascular dementia"
+            }
+          ],
+          "fields": {
+            "concept": "vascular dementia",
+            "assertion": "unspecified",
+            "time_frame": "historical",
+            "experiencer": "family",
+            "time_text": "hx of"
+          },
+          "evidence": [
+            {
+              "start": 152,
+              "end": 157,
+              "text": "hx of"
+            }
+          ],
+          "score": 0.9988622681921119,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "9553a487-27fa-4088-8558-7afcc3ce7ced",
+          "documentId": "legacy-note",
+          "family": "condition_occurrence",
+          "anchor": [
+            {
+              "start": 570,
+              "end": 584,
+              "text": "hallucinations"
+            }
+          ],
+          "fields": {
+            "concept": "hallucinations",
+            "assertion": "negated",
+            "time_frame": "historical",
+            "experiencer": "family",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.7690443078054585,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "cd068a37-7b61-4952-8b69-1b2396dd8118",
+          "documentId": "legacy-note",
+          "family": "condition_occurrence",
+          "anchor": [
+            {
+              "start": 962,
+              "end": 972,
+              "text": "neuropathy"
+            }
+          ],
+          "fields": {
+            "concept": "neuropathy",
+            "assertion": "affirmed",
+            "time_frame": "unspecified",
+            "experiencer": "unspecified",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9999085776053748,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "9766bb28-d9d4-494c-be74-751a624106a8",
+          "documentId": "legacy-note",
+          "family": "condition_occurrence",
+          "anchor": [
+            {
+              "start": 1014,
+              "end": 1023,
+              "text": "agitation"
+            }
+          ],
+          "fields": {
+            "concept": "agitation",
+            "assertion": "affirmed",
+            "time_frame": "unspecified",
+            "experiencer": "unspecified",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9984605392924394,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "fb549c5b-1b08-4827-9195-811912d4c58a",
+          "documentId": "legacy-note",
+          "family": "treatment_occurrence",
+          "anchor": [
+            {
+              "start": 439,
+              "end": 450,
+              "text": "Redirection"
+            }
+          ],
+          "fields": {
+            "concept": "Redirection",
+            "assertion": "unspecified",
+            "time_frame": "historical",
+            "experiencer": "other",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.988693908202643,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "0871e99d-314a-422a-a7bb-f90c5e60b925",
+          "documentId": "legacy-note",
+          "family": "treatment_occurrence",
+          "anchor": [
+            {
+              "start": 913,
+              "end": 923,
+              "text": "Gabapentin"
+            }
+          ],
+          "fields": {
+            "concept": "Gabapentin",
+            "assertion": "hypothetical",
+            "time_frame": "recent",
+            "experiencer": "other",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9999421317703294,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "ca96c2f7-ec08-4142-a304-f9073880c29b",
+          "documentId": "legacy-note",
+          "family": "treatment_occurrence",
+          "anchor": [
+            {
+              "start": 976,
+              "end": 986,
+              "text": "Quetiapine"
+            }
+          ],
+          "fields": {
+            "concept": "Quetiapine",
+            "assertion": "hypothetical",
+            "time_frame": "recent",
+            "experiencer": "other",
+            "time_text": "yesterday"
+          },
+          "evidence": [
+            {
+              "start": 948,
+              "end": 957,
+              "text": "yesterday"
+            }
+          ],
+          "score": 0.9999073447610817,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "0c4c3e51-d0a3-4d22-8f9b-fe3fcacb7697",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 223,
+              "end": 231,
+              "text": "agitated"
+            }
+          ],
+          "fields": {
+            "concept": "agitated",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.910920382223815,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "4c8634a7-608a-4274-a27b-2a2e4de0cbdf",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 333,
+              "end": 352,
+              "text": "physical aggression"
+            }
+          ],
+          "fields": {
+            "concept": "physical aggression",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": "at 1000"
+          },
+          "evidence": [
+            {
+              "start": 268,
+              "end": 275,
+              "text": "at 1000"
+            }
+          ],
+          "score": 0.9790717693600418,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "1f4544e7-3fbf-4af6-9180-c0d629ed836b",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 851,
+              "end": 869,
+              "text": "grabbing behaviors"
+            }
+          ],
+          "fields": {
+            "concept": "grabbing behaviors",
+            "assertion": "affirmed",
+            "time_frame": "unspecified",
+            "experiencer": "other",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9881819411598675,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "0d3d7bd3-609b-44c5-bc0a-320e8cae9fbd",
+          "documentId": "legacy-note",
+          "family": "event_occurrence",
+          "anchor": [
+            {
+              "start": 1041,
+              "end": 1058,
+              "text": "Monitor behaviors"
+            }
+          ],
+          "fields": {
+            "concept": "Monitor behaviors",
+            "assertion": "affirmed",
+            "time_frame": "unspecified",
+            "experiencer": "other",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.6333896137053527,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "0756427c-631c-4f5c-a3a1-3efa6e2a2363",
+          "documentId": "legacy-note",
+          "family": "function_occurrence",
+          "anchor": [
+            {
+              "start": 742,
+              "end": 751,
+              "text": "Ambulated"
+            }
+          ],
+          "fields": {
+            "concept": "Ambulated",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "unspecified",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9996875212441527,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "cfb2f0a4-73ae-4e9d-8ee2-9d8badc3b426",
+          "documentId": "legacy-note",
+          "family": "function_occurrence",
+          "anchor": [
+            {
+              "start": 824,
+              "end": 833,
+              "text": "transfers"
+            }
+          ],
+          "fields": {
+            "concept": "transfers",
+            "assertion": "affirmed",
+            "time_frame": "current",
+            "experiencer": "unspecified",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.9997818087119114,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        },
+        {
+          "id": "62189503-c499-4f47-8ce2-eee7129e96f6",
+          "documentId": "legacy-note",
+          "family": "care_context_occurrence",
+          "anchor": [
+            {
+              "start": 1068,
+              "end": 1083,
+              "text": "Care conference"
+            }
+          ],
+          "fields": {
+            "concept": "Care conference",
+            "assertion": "hypothetical",
+            "time_frame": "future",
+            "experiencer": "other",
+            "time_text": "next week"
+          },
+          "evidence": [
+            {
+              "start": 1099,
+              "end": 1108,
+              "text": "next week"
+            }
+          ],
+          "score": 0.9799302137896735,
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        }
+      ],
+      "fingerprint": "74d135cf122c79f4883af421aaf255e45cc52f2b465f631da1eab18ee9ba9381"
+    },
+    {
+      "id": "f9ce9fcf-42ed-4059-a6d1-c9d4a7c68e92",
+      "createdAt": "2026-10-05T05:19:18.312Z",
+      "documentId": "legacy-note",
+      "sourceHash": "3e279dfd220c93437e2ed7b6effa925a363eb075335d05b45af777d7fdfa5eef",
+      "schemaHash": "7d00bcd586f6fc08f3b05707ab37be9d1351651bbd473208da3f7d31648f7879",
+      "producer": {
+        "kind": "model",
+        "name": "fastino/gliner2.5-base-v1",
+        "version": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+        "packageId": "gliner25-clinical-evidence-p4",
+        "manifestHash": "3dbc9782d8ec565c90e72f67d0b32657a72020b15f52f4953dacbfbef2f612b2",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead",
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            }
+          },
+          "adapter": {
+            "sha256": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "weightsSha256": "a2dfbcd5a549507355aa120ea1150a3373b425a763728b95132b2622325aceac",
+            "configSha256": "e9dd3ac45dc7676ea9402db44aef2c2fbf56b4b74b3f7a13f95c378547efd187"
+          },
+          "merge": "merged-export",
+          "trainedHeads": "2bbf9b1d11da9140dff4039c0f808c07217020244bd392de3f992068f6b4af52"
+        },
+        "artifacts": [
+          {
+            "path": "model.onnx",
+            "bytes": 746817689,
+            "sha256": "9b2114b12a238c9a5e016e342d3a32fdb2b42210a875a09b89235ad2dea03d9d",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 6078133,
+            "sha256": "067f126947eac95682b775cb93470d6055cf4071480d57046fd98133eac3de78",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 1193806,
+            "sha256": "26ff618f1413c80de52d47348c127a9f4f9203d985f2cf2746c0c05891413bc1",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 23658742,
+            "sha256": "d2c0956721b8e187e31f1de35115cd416c431895b570457e25373df2a6d054a4",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8333953,
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc",
+            "role": "tokenizer"
+          },
+          {
+            "path": "source-case-0.json",
+            "bytes": 769,
+            "sha256": "951ae520b4a2a85c51268af48c8f1add2e0b90d9877050545151e70ea369cec9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-0.json",
+            "bytes": 14593,
+            "sha256": "8947c68db46b1cf6c36db03f051fbd8e42ae25fef9a60883f406db0918d621f7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-1.json",
+            "bytes": 888,
+            "sha256": "103eab6b549730bbb8b7520d7ce7c59dbef94459b51624e6ed04bdb4132b427a",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-1.json",
+            "bytes": 14303,
+            "sha256": "4cacb52d37c33d58328164927ae3fc8be0205bdf3d945b2e845b9d8042979977",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-2.json",
+            "bytes": 634,
+            "sha256": "64fe42c595d85061f60b298d058e6b76d217c52f149c8e24749cb947ca39bb63",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-2.json",
+            "bytes": 8171,
+            "sha256": "2437eb6ddfccb933c1181aa09a4d1c873021de43d26b3cbd061503389afbf967",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-3.json",
+            "bytes": 687,
+            "sha256": "9f76f071919134e24256c0e40a47c854e3c3d36b2eec83d73363bfdcf28a78f9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-3.json",
+            "bytes": 11485,
+            "sha256": "ebf9beb4f84ae3a2936e152e11525be9ec3464e08d597fa8eae2177960b77df7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-4.json",
+            "bytes": 436,
+            "sha256": "7ab05f5728e73587201e62f05f53d555c09f532e01539052e91bba707cef2dfd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-4.json",
+            "bytes": 7409,
+            "sha256": "61d7eb4ad561eef489b33d991ec81794b975ef4f63b135c661a13a91f707e723",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-5.json",
+            "bytes": 399,
+            "sha256": "349d411e3639f143263e7fb35dbc945ed42d83f449668f8f484c37959d48dbdd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-5.json",
+            "bytes": 12091,
+            "sha256": "b6e54f5d27f746f447209cca4a1d7f4f268ec68c5f7986806e0bbdb091a64b36",
+            "role": "fixture"
+          },
+          {
+            "path": "attributes-reference.json",
+            "bytes": 1833107,
+            "sha256": "eed30d24e46b8a4a9f53a7f375270d89cdf9008d1dc8cc5d61b8a78c12d050bf",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 191490,
+            "sha256": "22cb08551825197ed24ccdc4d361391ec7099acfdcfd972758eb0a53af986b8d",
+            "role": "fixture"
+          },
+          {
+            "path": "records-varied-reference.json",
+            "bytes": 526110,
+            "sha256": "214fe55d35b7355cb93df8ba56e0176c0f822a4a12e7eea44ad915052556d6b5",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-reference.json",
+            "bytes": 127574,
+            "sha256": "f68ae344785f9543e17eb649a9c45f2732eb7841fc51f25645fa26d91c381e0d",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-varied-reference.json",
+            "bytes": 1554768,
+            "sha256": "3061fd020e28078da9b051b099d11b617312a561f258983f332e7de5d08a3f72",
+            "role": "fixture"
+          }
+        ]
+      },
+      "runtime": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "version": "1.23.2",
+        "variantId": "wasm-fp32",
+        "variant": {
+          "id": "wasm-fp32",
+          "backend": "wasm",
+          "precision": "fp32",
+          "codec": "gliner25-records-v1",
+          "graph": "model.onnx",
+          "graphs": {
+            "model": "model.onnx",
+            "attributes": "attributes.onnx",
+            "records": "records.onnx",
+            "relations": "relations.onnx"
+          },
+          "tokenizer": "tokenizer.json",
+          "fixtures": [
+            "source-case-0.json",
+            "model-reference-0.json",
+            "source-case-1.json",
+            "model-reference-1.json",
+            "source-case-2.json",
+            "model-reference-2.json",
+            "source-case-3.json",
+            "model-reference-3.json",
+            "source-case-4.json",
+            "model-reference-4.json",
+            "source-case-5.json",
+            "model-reference-5.json",
+            "attributes-reference.json",
+            "records-reference.json",
+            "records-varied-reference.json",
+            "relations-reference.json",
+            "relations-varied-reference.json"
+          ],
+          "threshold": 0.5,
+          "fixedWords": 512,
+          "maxSequenceLength": 512,
+          "wordOverlap": 32,
+          "pairTemperature": 1,
+          "abstentionThreshold": 0.5,
+          "automaticRelations": false,
+          "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+          "exporterVersion": "0.1.0",
+          "languageClaims": [
+            "en"
+          ]
+        }
+      },
+      "settings": {
+        "codec": "gliner25-records-v1",
+        "threshold": 0.5,
+        "scope": {
+          "profile": {
+            "format": "nextmedtator-clinical-scope-v1",
+            "threshold": 0.5,
+            "fields": {
+              "condition_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "measurement_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "treatment_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "event_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "function_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "care_context_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ]
+            },
+            "semanticSchema": {
+              "schema_version": "teacher-schema/0.2",
+              "name": "Daily care and mobility",
+              "version": "1",
+              "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "families": [
+                "event_occurrence",
+                "function_occurrence"
+              ],
+              "tasks": [
+                {
+                  "task_id": "clinical_scope",
+                  "definition": "Extract documented care interactions and mobility problems. Exclude unrelated diagnoses and medications."
+                }
+              ],
+              "concepts": [
+                {
+                  "concept_id": "care_resistance",
+                  "family": "event_occurrence",
+                  "description": "Refusal or resistance during personal care, dressing, washing or assistance.",
+                  "aliases": [
+                    "refusing care",
+                    "resists washing"
+                  ]
+                },
+                {
+                  "concept_id": "mobility_difficulty",
+                  "family": "function_occurrence",
+                  "description": "Documented difficulty with walking, transfers or mobility.",
+                  "aliases": [
+                    "needs help walking",
+                    "unsteady gait"
+                  ]
+                }
+              ],
+              "relations": [],
+              "parent_schema_hash": null,
+              "discovery_plan_hash": null,
+              "deferred_proposals": [],
+              "frozen_by": "legacy-annotator",
+              "frozen_at": "2026-10-05T05:19:08.566Z",
+              "schema_hash": "7de05c87f022c44c982eaa7629b5ef6c9f0ea7bca55678c26b05c83307e5eb4b"
+            }
+          },
+          "profileHash": "c654e8642bdcced465e2ad68dd110d84865c2ec658c86368c1ec804a10ed69e9",
+          "trainingRegistry": {
+            "repository": "na399/clinical-evidence",
+            "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+            "hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547"
+          },
+          "inferenceSchema": {
+            "id": "medtator-schema",
+            "version": "1",
+            "families": {
+              "event_occurrence": {
+                "label": "clinical_event",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "event_occurrence",
+                "recordAnchorLabel": "event"
+              },
+              "function_occurrence": {
+                "label": "functional_activity",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "function_occurrence",
+                "recordAnchorLabel": "activity"
+              }
+            },
+            "entityTargets": [
+              {
+                "label": "care_resistance",
+                "family": "event_occurrence",
+                "conceptId": "care_resistance",
+                "description": "Refusal or resistance during personal care, dressing, washing or assistance. Examples: refusing care; resists washing. Scope: Extract documented care interactions and mobility problems. Exclude unrelated diagnoses and medications."
+              },
+              {
+                "label": "mobility_difficulty",
+                "family": "function_occurrence",
+                "conceptId": "mobility_difficulty",
+                "description": "Documented difficulty with walking, transfers or mobility. Examples: needs help walking; unsteady gait. Scope: Extract documented care interactions and mobility problems. Exclude unrelated diagnoses and medications."
+              }
+            ],
+            "clinicalScope": {
+              "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "schemaHash": "7de05c87f022c44c982eaa7629b5ef6c9f0ea7bca55678c26b05c83307e5eb4b"
+            }
+          },
+          "inferenceSchemaHash": "0f081ee7ee0cfde40eeeeaac0cd4b3eb331a2315082128263b1569a650e6fb97",
+          "semantics": "prompt-guidance; exact family mapping, no deterministic concept-membership guarantee"
+        },
+        "limitations": [
+          "cross-window-relations",
+          "anchorless-records"
+        ]
+      },
+      "windows": [
+        {
+          "from": 0,
+          "to": 220,
+          "sourceRange": [
+            0,
+            1223
+          ]
+        }
+      ],
+      "timing": {},
+      "failures": [],
+      "status": "complete",
+      "coverage": [
+        [
+          0,
+          1223
+        ]
+      ],
+      "records": [],
+      "fingerprint": "c9d9af7252bf32fbdd457e78e413b67edee3637f8835520119f4a8537e773a99"
+    },
+    {
+      "id": "818c4e31-a0b7-4d07-9333-84fcf282ec0f",
+      "createdAt": "2026-10-05T05:19:24.239Z",
+      "documentId": "legacy-note",
+      "sourceHash": "95c33b5104e8ae56b8ca033e110e9697262ec6cb47c3820cd06b6ba39067bf89",
+      "schemaHash": "7d00bcd586f6fc08f3b05707ab37be9d1351651bbd473208da3f7d31648f7879",
+      "producer": {
+        "kind": "model",
+        "name": "fastino/gliner2.5-base-v1",
+        "version": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+        "packageId": "gliner25-clinical-evidence-p4",
+        "manifestHash": "3dbc9782d8ec565c90e72f67d0b32657a72020b15f52f4953dacbfbef2f612b2",
+        "lineage": {
+          "base": {
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead",
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            }
+          },
+          "adapter": {
+            "sha256": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "weightsSha256": "a2dfbcd5a549507355aa120ea1150a3373b425a763728b95132b2622325aceac",
+            "configSha256": "e9dd3ac45dc7676ea9402db44aef2c2fbf56b4b74b3f7a13f95c378547efd187"
+          },
+          "merge": "merged-export",
+          "trainedHeads": "2bbf9b1d11da9140dff4039c0f808c07217020244bd392de3f992068f6b4af52"
+        },
+        "artifacts": [
+          {
+            "path": "model.onnx",
+            "bytes": 746817689,
+            "sha256": "9b2114b12a238c9a5e016e342d3a32fdb2b42210a875a09b89235ad2dea03d9d",
+            "role": "graph"
+          },
+          {
+            "path": "attributes.onnx",
+            "bytes": 6078133,
+            "sha256": "067f126947eac95682b775cb93470d6055cf4071480d57046fd98133eac3de78",
+            "role": "graph"
+          },
+          {
+            "path": "records.onnx",
+            "bytes": 1193806,
+            "sha256": "26ff618f1413c80de52d47348c127a9f4f9203d985f2cf2746c0c05891413bc1",
+            "role": "graph"
+          },
+          {
+            "path": "relations.onnx",
+            "bytes": 23658742,
+            "sha256": "d2c0956721b8e187e31f1de35115cd416c431895b570457e25373df2a6d054a4",
+            "role": "graph"
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 8333953,
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc",
+            "role": "tokenizer"
+          },
+          {
+            "path": "source-case-0.json",
+            "bytes": 769,
+            "sha256": "951ae520b4a2a85c51268af48c8f1add2e0b90d9877050545151e70ea369cec9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-0.json",
+            "bytes": 14593,
+            "sha256": "8947c68db46b1cf6c36db03f051fbd8e42ae25fef9a60883f406db0918d621f7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-1.json",
+            "bytes": 888,
+            "sha256": "103eab6b549730bbb8b7520d7ce7c59dbef94459b51624e6ed04bdb4132b427a",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-1.json",
+            "bytes": 14303,
+            "sha256": "4cacb52d37c33d58328164927ae3fc8be0205bdf3d945b2e845b9d8042979977",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-2.json",
+            "bytes": 634,
+            "sha256": "64fe42c595d85061f60b298d058e6b76d217c52f149c8e24749cb947ca39bb63",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-2.json",
+            "bytes": 8171,
+            "sha256": "2437eb6ddfccb933c1181aa09a4d1c873021de43d26b3cbd061503389afbf967",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-3.json",
+            "bytes": 687,
+            "sha256": "9f76f071919134e24256c0e40a47c854e3c3d36b2eec83d73363bfdcf28a78f9",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-3.json",
+            "bytes": 11485,
+            "sha256": "ebf9beb4f84ae3a2936e152e11525be9ec3464e08d597fa8eae2177960b77df7",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-4.json",
+            "bytes": 436,
+            "sha256": "7ab05f5728e73587201e62f05f53d555c09f532e01539052e91bba707cef2dfd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-4.json",
+            "bytes": 7409,
+            "sha256": "61d7eb4ad561eef489b33d991ec81794b975ef4f63b135c661a13a91f707e723",
+            "role": "fixture"
+          },
+          {
+            "path": "source-case-5.json",
+            "bytes": 399,
+            "sha256": "349d411e3639f143263e7fb35dbc945ed42d83f449668f8f484c37959d48dbdd",
+            "role": "fixture"
+          },
+          {
+            "path": "model-reference-5.json",
+            "bytes": 12091,
+            "sha256": "b6e54f5d27f746f447209cca4a1d7f4f268ec68c5f7986806e0bbdb091a64b36",
+            "role": "fixture"
+          },
+          {
+            "path": "attributes-reference.json",
+            "bytes": 1833107,
+            "sha256": "eed30d24e46b8a4a9f53a7f375270d89cdf9008d1dc8cc5d61b8a78c12d050bf",
+            "role": "fixture"
+          },
+          {
+            "path": "records-reference.json",
+            "bytes": 191490,
+            "sha256": "22cb08551825197ed24ccdc4d361391ec7099acfdcfd972758eb0a53af986b8d",
+            "role": "fixture"
+          },
+          {
+            "path": "records-varied-reference.json",
+            "bytes": 526110,
+            "sha256": "214fe55d35b7355cb93df8ba56e0176c0f822a4a12e7eea44ad915052556d6b5",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-reference.json",
+            "bytes": 127574,
+            "sha256": "f68ae344785f9543e17eb649a9c45f2732eb7841fc51f25645fa26d91c381e0d",
+            "role": "fixture"
+          },
+          {
+            "path": "relations-varied-reference.json",
+            "bytes": 1554768,
+            "sha256": "3061fd020e28078da9b051b099d11b617312a561f258983f332e7de5d08a3f72",
+            "role": "fixture"
+          }
+        ]
+      },
+      "runtime": {
+        "backend": "wasm",
+        "precision": "fp32",
+        "version": "1.23.2",
+        "variantId": "wasm-fp32",
+        "variant": {
+          "id": "wasm-fp32",
+          "backend": "wasm",
+          "precision": "fp32",
+          "codec": "gliner25-records-v1",
+          "graph": "model.onnx",
+          "graphs": {
+            "model": "model.onnx",
+            "attributes": "attributes.onnx",
+            "records": "records.onnx",
+            "relations": "relations.onnx"
+          },
+          "tokenizer": "tokenizer.json",
+          "fixtures": [
+            "source-case-0.json",
+            "model-reference-0.json",
+            "source-case-1.json",
+            "model-reference-1.json",
+            "source-case-2.json",
+            "model-reference-2.json",
+            "source-case-3.json",
+            "model-reference-3.json",
+            "source-case-4.json",
+            "model-reference-4.json",
+            "source-case-5.json",
+            "model-reference-5.json",
+            "attributes-reference.json",
+            "records-reference.json",
+            "records-varied-reference.json",
+            "relations-reference.json",
+            "relations-varied-reference.json"
+          ],
+          "threshold": 0.5,
+          "fixedWords": 512,
+          "maxSequenceLength": 512,
+          "wordOverlap": 32,
+          "pairTemperature": 1,
+          "abstentionThreshold": 0.5,
+          "automaticRelations": false,
+          "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+          "exporterVersion": "0.1.0",
+          "languageClaims": [
+            "en"
+          ]
+        }
+      },
+      "settings": {
+        "codec": "gliner25-records-v1",
+        "threshold": 0.5,
+        "scope": {
+          "profile": {
+            "format": "nextmedtator-clinical-scope-v1",
+            "threshold": 0.5,
+            "fields": {
+              "condition_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "measurement_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "treatment_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "event_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "function_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ],
+              "care_context_occurrence": [
+                "assertion",
+                "time_frame",
+                "experiencer",
+                "time_text"
+              ]
+            },
+            "semanticSchema": {
+              "schema_version": "teacher-schema/0.2",
+              "name": "Daily care and mobility",
+              "version": "1",
+              "grammar_hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "families": [
+                "event_occurrence",
+                "function_occurrence"
+              ],
+              "tasks": [
+                {
+                  "task_id": "clinical_scope",
+                  "definition": "Extract documented care interactions and mobility problems. Exclude unrelated diagnoses and medications."
+                }
+              ],
+              "concepts": [
+                {
+                  "concept_id": "care_resistance",
+                  "family": "event_occurrence",
+                  "description": "Refusal or resistance during personal care, dressing, washing or assistance.",
+                  "aliases": [
+                    "refusing care",
+                    "resists washing"
+                  ]
+                },
+                {
+                  "concept_id": "mobility_difficulty",
+                  "family": "function_occurrence",
+                  "description": "Documented difficulty with walking, transfers or mobility.",
+                  "aliases": [
+                    "needs help walking",
+                    "unsteady gait"
+                  ]
+                }
+              ],
+              "relations": [],
+              "parent_schema_hash": null,
+              "discovery_plan_hash": null,
+              "deferred_proposals": [],
+              "frozen_by": "legacy-annotator",
+              "frozen_at": "2026-10-05T05:19:08.566Z",
+              "schema_hash": "7de05c87f022c44c982eaa7629b5ef6c9f0ea7bca55678c26b05c83307e5eb4b"
+            }
+          },
+          "profileHash": "c654e8642bdcced465e2ad68dd110d84865c2ec658c86368c1ec804a10ed69e9",
+          "trainingRegistry": {
+            "repository": "na399/clinical-evidence",
+            "revision": "f6cadc1bb52bc8475f33d9bb0e0c072427954d92",
+            "hash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547"
+          },
+          "inferenceSchema": {
+            "id": "medtator-schema",
+            "version": "1",
+            "families": {
+              "event_occurrence": {
+                "label": "clinical_event",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "event_occurrence",
+                "recordAnchorLabel": "event"
+              },
+              "function_occurrence": {
+                "label": "functional_activity",
+                "fields": {
+                  "concept": {
+                    "type": "text"
+                  },
+                  "assertion": {
+                    "type": "enum",
+                    "values": [
+                      "affirmed",
+                      "negated",
+                      "uncertain",
+                      "hypothetical",
+                      "ruled_out",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_frame": {
+                    "type": "enum",
+                    "values": [
+                      "current",
+                      "recent",
+                      "historical",
+                      "future",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "experiencer": {
+                    "type": "enum",
+                    "values": [
+                      "patient",
+                      "family",
+                      "other",
+                      "unspecified",
+                      "not_applicable"
+                    ]
+                  },
+                  "time_text": {
+                    "type": "text"
+                  }
+                },
+                "recordParent": "function_occurrence",
+                "recordAnchorLabel": "activity"
+              }
+            },
+            "entityTargets": [
+              {
+                "label": "care_resistance",
+                "family": "event_occurrence",
+                "conceptId": "care_resistance",
+                "description": "Refusal or resistance during personal care, dressing, washing or assistance. Examples: refusing care; resists washing. Scope: Extract documented care interactions and mobility problems. Exclude unrelated diagnoses and medications."
+              },
+              {
+                "label": "mobility_difficulty",
+                "family": "function_occurrence",
+                "conceptId": "mobility_difficulty",
+                "description": "Documented difficulty with walking, transfers or mobility. Examples: needs help walking; unsteady gait. Scope: Extract documented care interactions and mobility problems. Exclude unrelated diagnoses and medications."
+              }
+            ],
+            "clinicalScope": {
+              "grammarHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+              "schemaHash": "7de05c87f022c44c982eaa7629b5ef6c9f0ea7bca55678c26b05c83307e5eb4b"
+            }
+          },
+          "inferenceSchemaHash": "0f081ee7ee0cfde40eeeeaac0cd4b3eb331a2315082128263b1569a650e6fb97",
+          "semantics": "prompt-guidance; exact family mapping, no deterministic concept-membership guarantee"
+        },
+        "limitations": [
+          "cross-window-relations",
+          "anchorless-records"
+        ]
+      },
+      "windows": [
+        {
+          "from": 0,
+          "to": 211,
+          "sourceRange": [
+            0,
+            1149
+          ]
+        }
+      ],
+      "timing": {},
+      "failures": [],
+      "status": "complete",
+      "coverage": [
+        [
+          0,
+          1149
+        ]
+      ],
+      "records": [
+        {
+          "id": "b78c5771-9cc5-4b22-ab16-1666880af5e2",
+          "documentId": "legacy-note",
+          "family": "function_occurrence",
+          "anchor": [
+            {
+              "start": 824,
+              "end": 833,
+              "text": "transfers"
+            }
+          ],
+          "fields": {
+            "concept": "transfers",
+            "assertion": "affirmed",
+            "time_frame": "recent",
+            "experiencer": "patient",
+            "time_text": null
+          },
+          "evidence": [],
+          "score": 0.7195916437007388,
+          "conceptId": "mobility_difficulty",
+          "origin": {
+            "kind": "model",
+            "codec": "gliner25-records-v1"
+          }
+        }
+      ],
+      "fingerprint": "3daa3540d52a91004b1da2c242286c3aeb6a113197cadba0cc33b17c2f3b5796"
+    }
+  ]
+}

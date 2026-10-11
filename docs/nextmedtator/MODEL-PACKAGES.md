@@ -1,6 +1,6 @@
 # External model-package handshake
 
-Model training, LoRA preparation, merging, quantization and ONNX export stay in a separate project. This repository does not fine-tune models or call inference APIs.
+Model preparation stays separate from the web app. The standalone [GLiNER2.5 LoRA packager](../../tools/gliner-onnx/README.md) has its own Python project and locked dependencies; it merges compatible PEFT adapters and exports verified ONNX packages. The web app imports the resulting package. This repository does not fine-tune models or call inference APIs.
 
 `src/nextmedtator/model-package.mjs` validates:
 
@@ -13,10 +13,11 @@ Model training, LoRA preparation, merging, quantization and ONNX export stay in 
 
 Live runs retain the manifest hash, package ID, complete base/adapter/head lineage, artifact hashes, and the selected variant declaration alongside backend, precision, and runtime version. The worker result must match that package and variant before a run is accepted. These identities enter run fingerprints and portable exports; machine comparison snapshots reject mixed package or variant configurations even when their model name/version match.
 
-Four application codecs are implemented:
+Five application codecs are implemented:
 
 - `gliner25-small-records-v5` consumes the requested small export with combined encoder/boundary/classification graph plus attributes, records and relation heads. It runs exact anchors, enum scoring and anchored text/span fields with supporting evidence. `recordParent` and `recordAnchorLabel` in a family declare explicit external record-query mappings. Source-score discrepancies withhold automatic relations in this release; packages declaring `automaticRelations: true` are rejected. See `QUALIFICATION.md` for the pinned export, source checks and limitations.
 - `tensor-conformance-v1` executes supplied tensor fixtures. It cannot read clinical text.
+- `gliner25-records-v1` consumes the standalone merged-LoRA export. It requires merged adapter lineage, a masked 512-word axis, source null logits and an explicit abstention threshold. It shares the app's anchored-record decoder while keeping the small-package contract unchanged. The exporter checks source occurrence spans/scores and all four graph outputs; structured-head numerical checks do not qualify every source record-decoding policy. Automatic relations remain disabled.
 - `gliner25-boundary-span-v1` tokenizes with the package's Unigram `tokenizer.json`, builds the GLiNER2 entity prompt, and runs a boundary ONNX pair (`encoder` then `boundary`) in the local ORT worker. Decoding is half-open word spans, sigmoid threshold 0.5, abstention when the null head exceeds 0.5, and the `flat` overlap policy. The largest member may be 768 MiB so the published fp32 base encoder fits. The archive stays within 1 GiB.
 - `gliner25-boundary-structured-v1` adds `explicit.onnx`, the `score_explicit_spans` head exported from `fastino/gliner2.5-base-v1`. Enum fields are prompt labels of the form `field: value`, scored at each retained span and reduced with softmax. The word axis of that graph is fixed at 512 and shorter windows are masked.
 

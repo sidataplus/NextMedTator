@@ -1,0 +1,812 @@
+{
+  "packageId": "gliner25-clinical-evidence-p4",
+  "packageBytes": 790395377,
+  "packageSha256": "b4a714ae3ede18298043c70ef03ac6728d5ddbf41a21ab1d67a59ceb6dc77692",
+  "base": {
+    "model": "fastino/gliner2.5-base-v1",
+    "revision": "ca906247640776a07753514055be9726f9080ead",
+    "files": {
+      "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+      "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+      "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+      "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+      "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+    }
+  },
+  "adapter": {
+    "sha256": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+    "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+    "weightsSha256": "a2dfbcd5a549507355aa120ea1150a3373b425a763728b95132b2622325aceac",
+    "configSha256": "e9dd3ac45dc7676ea9402db44aef2c2fbf56b4b74b3f7a13f95c378547efd187"
+  },
+  "merge": {
+    "activeToMergedMaxAbsoluteError": 8.106231689453125e-06,
+    "baseToAdapterEncoderMaxAbsoluteChange": 3.2889933586120605,
+    "adapterTensorCount": 246,
+    "trainedHeads": "2bbf9b1d11da9140dff4039c0f808c07217020244bd392de3f992068f6b4af52"
+  },
+  "export": {
+    "mainExportErrors": {
+      "start_logits": 6.124377250671387e-06,
+      "end_logits": 8.344650268554688e-06,
+      "pair_indices": 0.0,
+      "pair_logits": 1.239776611328125e-05,
+      "pair_valid": 0.0,
+      "cls_logits": 0.0,
+      "text_states": 4.351139068603516e-06,
+      "query_states": 5.7220458984375e-06,
+      "rel_role_states": 0.0,
+      "candidate_states": 1.4603137969970703e-06,
+      "null_logits": 1.2516975402832031e-05
+    },
+    "sourceCases": [
+      {
+        "case": 0,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 6.154179573059082e-06,
+          "end_logits": 7.867813110351562e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.239776611328125e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 4.351139068603516e-06,
+          "query_states": 5.7220458984375e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.430511474609375e-06,
+          "null_logits": 1.2516975402832031e-05
+        }
+      },
+      {
+        "case": 1,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 7.152557373046875e-06,
+          "end_logits": 8.106231689453125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 9.5367431640625e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 6.020069122314453e-06,
+          "query_states": 3.1888484954833984e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.7881393432617188e-06,
+          "null_logits": 7.62939453125e-06
+        }
+      },
+      {
+        "case": 2,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 3.337860107421875e-06,
+          "end_logits": 3.337860107421875e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 7.152557373046875e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 6.67572021484375e-06,
+          "query_states": 2.384185791015625e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.5497207641601562e-06,
+          "null_logits": 4.76837158203125e-07
+        }
+      },
+      {
+        "case": 3,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 3.814697265625e-06,
+          "end_logits": 3.337860107421875e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 4.76837158203125e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 4.190951585769653e-06,
+          "query_states": 2.682209014892578e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.430511474609375e-06,
+          "null_logits": 1.430511474609375e-06
+        }
+      },
+      {
+        "case": 4,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 1.3113021850585938e-06,
+          "end_logits": 3.337860107421875e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 2.6226043701171875e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 6.318092346191406e-06,
+          "query_states": 3.2186508178710938e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.430511474609375e-06,
+          "null_logits": 3.844499588012695e-06
+        }
+      },
+      {
+        "case": 5,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.245208740234375e-06,
+          "end_logits": 3.814697265625e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 2.288818359375e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 9.268522262573242e-06,
+          "query_states": 7.62939453125e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 2.3543834686279297e-06,
+          "null_logits": 9.5367431640625e-06
+        }
+      }
+    ],
+    "heads": {
+      "attributes": {
+        "attr_logits": 2.384185791015625e-07
+      },
+      "records": {
+        "exportErrors": {
+          "assign_logits": 3.5762786865234375e-07,
+          "object_logits": 1.1175870895385742e-08,
+          "latent_logits": 3.725290298461914e-09
+        },
+        "variedShapeErrors": {
+          "assign_logits": 3.5762786865234375e-07,
+          "object_logits": 3.725290298461914e-08,
+          "latent_logits": 2.60770320892334e-08
+        }
+      },
+      "relations": {
+        "exportErrors": {
+          "rel_logits": 2.682209014892578e-07
+        },
+        "variedShapeErrors": {
+          "rel_logits": 1.4901161193847656e-07
+        }
+      }
+    }
+  },
+  "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+  "exporterVersion": "0.1.0",
+  "scope": "Technical source/ONNX conformance on synthetic English cases; no clinical accuracy claim",
+  "adapterSource": {
+    "repository": "na399/gliner2.5-clinical-evidence-lora-p4",
+    "revision": "43e8dbd6d9b240498b891c74202d3e869d317c26",
+    "declaredBaseRevision": null,
+    "validationBaseRevision": "ca906247640776a07753514055be9726f9080ead"
+  },
+  "date": "2026-10-05",
+  "adapterUsageDeclaration": "Model card: non-commercial research only; no redistribution. Weights are not committed or published.",
+  "browserValidation": {
+    "realMergedAdapterWeights": true,
+    "packageId": "gliner25-clinical-evidence-p4",
+    "packageBytes": 790395377,
+    "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+    "adapterHash": "d4c204f03cb6e34eb396c84eb373cc01ec1f73542a53e2c253d0a8e893385f35",
+    "browserConformance": {
+      "kind": "gliner25-records-v1",
+      "manifestHash": "3dbc9782d8ec565c90e72f67d0b32657a72020b15f52f4953dacbfbef2f612b2",
+      "variantId": "wasm-fp32",
+      "backend": "wasm",
+      "precision": "fp32",
+      "results": [
+        {
+          "fixture": "source-case-0.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "12d1191d-1fbd-4a16-9024-068b2a8c1fb7",
+              "documentId": "pending",
+              "family": "diagnosis",
+              "anchor": [
+                {
+                  "start": 16,
+                  "end": 24,
+                  "text": "diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "diabetes"
+              },
+              "evidence": [],
+              "score": 0.9929158983188018,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "a9dd412f-fd59-43a4-9126-f311f1dc95f6",
+              "documentId": "pending",
+              "family": "medication",
+              "anchor": [
+                {
+                  "start": 35,
+                  "end": 44,
+                  "text": "metformin"
+                }
+              ],
+              "fields": {
+                "concept": "metformin"
+              },
+              "evidence": [],
+              "score": 0.998652439521182,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-0.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1152,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 1.3232231140136719e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 1.5020370483398438e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-1.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "308c13b8-3a47-441f-ad47-392a283341fe",
+              "documentId": "pending",
+              "family": "person",
+              "anchor": [
+                {
+                  "start": 0,
+                  "end": 4,
+                  "text": "John"
+                }
+              ],
+              "fields": {
+                "concept": "John"
+              },
+              "evidence": [],
+              "score": 0.9811131171338355,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "9d333ea4-ed17-4f24-a6ba-5d6f39ce41ac",
+              "documentId": "pending",
+              "family": "organization",
+              "anchor": [
+                {
+                  "start": 14,
+                  "end": 20,
+                  "text": "Google"
+                }
+              ],
+              "fields": {
+                "concept": "Google"
+              },
+              "evidence": [],
+              "score": 0.987188643584923,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "fe8be9d8-35f2-4f7d-98a7-ecf98dcf3b5a",
+              "documentId": "pending",
+              "family": "location",
+              "anchor": [
+                {
+                  "start": 24,
+                  "end": 31,
+                  "text": "Seattle"
+                }
+              ],
+              "fields": {
+                "concept": "Seattle"
+              },
+              "evidence": [],
+              "score": 0.9959837333297387,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-1.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1152,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 1.239776611328125e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 8.106231689453125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-2.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "7d48b5fd-072c-4fe7-ad76-a278753cebc7",
+              "documentId": "pending",
+              "family": "condition",
+              "anchor": [
+                {
+                  "start": 15,
+                  "end": 23,
+                  "text": "diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "diabetes"
+              },
+              "evidence": [],
+              "score": 0.996697643689271,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "a8df3eba-313f-49b7-913a-6967367db7d0",
+              "documentId": "pending",
+              "family": "condition",
+              "anchor": [
+                {
+                  "start": 44,
+                  "end": 52,
+                  "text": "diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "diabetes"
+              },
+              "evidence": [],
+              "score": 0.9970691589820144,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-2.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 1.0967254638671875e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1,
+              "maxAbsoluteError": 2.1457672119140625e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-3.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "e333ffc9-2df7-442c-94ff-c55ac4a2abc3",
+              "documentId": "pending",
+              "family": "disease",
+              "anchor": [
+                {
+                  "start": 16,
+                  "end": 29,
+                  "text": "breast cancer"
+                }
+              ],
+              "fields": {
+                "concept": "breast cancer"
+              },
+              "evidence": [],
+              "score": 0.9961002348506013,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "324cf0b7-3dbf-406f-b25b-b450564abc66",
+              "documentId": "pending",
+              "family": "drug",
+              "anchor": [
+                {
+                  "start": 40,
+                  "end": 47,
+                  "text": "aspirin"
+                }
+              ],
+              "fields": {
+                "concept": "aspirin"
+              },
+              "evidence": [],
+              "score": 0.9978272638248429,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-3.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 768,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 8.106231689453125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.430511474609375e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-4.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "5abb257a-fc37-4831-b2c7-98617769b1e3",
+              "documentId": "pending",
+              "family": "diagnosis",
+              "anchor": [
+                {
+                  "start": 0,
+                  "end": 8,
+                  "text": "Diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "Diabetes"
+              },
+              "evidence": [],
+              "score": 0.9427363448436678,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-4.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 2.86102294921875e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1,
+              "maxAbsoluteError": 4.470348358154297e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-5.json",
+          "pass": true,
+          "status": "complete",
+          "records": []
+        },
+        {
+          "fixture": "model-reference-5.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 768,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 1.52587890625e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 7.62939453125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "attributes-reference.json",
+          "checks": {
+            "attr_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 128,
+              "maxAbsoluteError": 3.5762786865234375e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "records-reference.json",
+          "checks": {
+            "assign_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 20,
+              "maxAbsoluteError": 2.980232238769531e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "object_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.1175870895385742e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "latent_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 3.725290298461914e-09,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "records-varied-reference.json",
+          "checks": {
+            "assign_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 90,
+              "maxAbsoluteError": 3.5762786865234375e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "object_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 4.0978193283081055e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "latent_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 2.60770320892334e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "relations-reference.json",
+          "checks": {
+            "rel_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 2.5331974029541016e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "relations-varied-reference.json",
+          "checks": {
+            "rel_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 2.086162567138672e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    "installedModelOfflineRestart": true,
+    "offlineInferenceReviewCompareExportReopen": true,
+    "adapterLineagePreserved": true,
+    "originalVueCodeMirrorAcceptRejectExport": true,
+    "privateCanaryNoEgress": true,
+    "enumAndAnchoredSpanSchemaInference": true,
+    "browser": "151.0.7922.173"
+  },
+  "reviewRevalidation": {
+    "appUnitTests": 120,
+    "packagerUnitTests": 10,
+    "generatedNoteUnitTests": 4,
+    "existingPackagesHaveUniqueZipManifestAndFixtureEntries": true,
+    "attributeMaskRegressionRejectsOriginalBug": true
+  }
+}

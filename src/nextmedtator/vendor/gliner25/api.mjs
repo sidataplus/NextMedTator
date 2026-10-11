@@ -53,8 +53,8 @@ export class Gliner25 {
   /**
    * @param {{ ort: any, session: any, tokenize: (t: string) => number[], pairTemperature?: number }} opts
    */
-  constructor({ ort, session, tokenize, pairTemperature = 1.0, graph = "v2", headsSession = null, attrsSession = null, recordsSession = null }) {
-    this.rt = new GlinerBoundaryRuntime({ ort, session, tokenize, pairTemperature, headsSession, attrsSession, recordsSession });
+  constructor({ ort, session, tokenize, pairTemperature = 1.0, graph = "v2", headsSession = null, attrsSession = null, recordsSession = null, fixedWords = 0 }) {
+    this.rt = new GlinerBoundaryRuntime({ ort, session, tokenize, pairTemperature, headsSession, attrsSession, recordsSession, fixedWords });
     this.session = session;
     this.headsSession = headsSession;
     this.attrsSession = attrsSession;

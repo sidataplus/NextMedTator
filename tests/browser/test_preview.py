@@ -106,6 +106,7 @@ def run():
                 'name': 'synthetic-worker.nmt.zip', 'mimeType': 'application/zip', 'buffer': package_bytes(structured=True)
             })
             expect(page.get_by_test_id('message')).to_contain_text('structured package loaded')
+            page.get_by_test_id('analysis-mode').select_option('assisted')
             page.get_by_test_id('analyze').click()
             expect(page.get_by_test_id('suggestion')).to_have_count(2)
             identity = page.evaluate('''() => {

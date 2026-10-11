@@ -1,0 +1,40 @@
+[project]
+name = "gliner-onnx"
+version = "0.1.0"
+description = "Standalone PEFT LoRA merge, ONNX export and NextMedTator packaging for GLiNER2.5"
+license = "Apache-2.0"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "gliner2 @ git+https://github.com/fastino-ai/GLiNER2.git@55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+  "huggingface-hub==0.36.2",
+  "numpy==2.2.6",
+  "onnx==1.20.1",
+  "onnxruntime==1.23.2",
+  "onnxscript==0.3.2",
+  "onnx-ir==0.1.10",
+  "peft==0.21.2",
+  "safetensors==0.8.0",
+  "torch==2.6.0",
+  "transformers==4.57.6",
+]
+
+[project.scripts]
+gliner-onnx = "gliner_onnx.cli:main"
+
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.uv]
+cache-dir = ".cache/uv"
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

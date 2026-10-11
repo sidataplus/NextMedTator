@@ -1,0 +1,822 @@
+{
+  "packageId": "gliner25-clinical-evidence-p7b",
+  "packageBytes": 790395419,
+  "packageSha256": "72ed18e07d13c7a4e9618626b1ec69aaa02ee5c162c62b0fbe66fd7d3fbc0bc1",
+  "base": {
+    "model": "fastino/gliner2.5-base-v1",
+    "revision": "ca906247640776a07753514055be9726f9080ead",
+    "files": {
+      "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+      "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+      "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+      "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+      "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+    }
+  },
+  "adapter": {
+    "sha256": "3c11a0faf9afa1688301c2eb741d4a74f10cc9407a8cbfff59ea898540c6ba3f",
+    "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+    "weightsSha256": "7243ce447c53a7629ba1bc5b59c670da970f30c93cfeb4c49e21708fcc5ba51d",
+    "configSha256": "8afbbd4125ce0b7572ef272aa42c6e7f5c05de2721d589cf4d4d9e80f9a3d643"
+  },
+  "merge": {
+    "activeToMergedMaxAbsoluteError": 7.4803829193115234e-06,
+    "baseToAdapterEncoderMaxAbsoluteChange": 4.084726333618164,
+    "adapterTensorCount": 246,
+    "trainedHeads": "1d7ac71ff21ccd1dca771417327ebc3661307cd01ba6c5f23450e9c3c14b31e7"
+  },
+  "export": {
+    "mainExportErrors": {
+      "start_logits": 4.291534423828125e-06,
+      "end_logits": 6.67572021484375e-06,
+      "pair_indices": 0.0,
+      "pair_logits": 1.1444091796875e-05,
+      "pair_valid": 0.0,
+      "cls_logits": 0.0,
+      "text_states": 7.152557373046875e-06,
+      "query_states": 3.337860107421875e-06,
+      "rel_role_states": 0.0,
+      "candidate_states": 1.4901161193847656e-06,
+      "null_logits": 2.384185791015625e-06
+    },
+    "sourceCases": [
+      {
+        "case": 0,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 4.291534423828125e-06,
+          "end_logits": 6.198883056640625e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.33514404296875e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 7.152557373046875e-06,
+          "query_states": 3.337860107421875e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.430511474609375e-06,
+          "null_logits": 2.384185791015625e-06
+        }
+      },
+      {
+        "case": 1,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 4.76837158203125e-06,
+          "end_logits": 3.814697265625e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.9073486328125e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 6.318092346191406e-06,
+          "query_states": 3.874301910400391e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.6391277313232422e-06,
+          "null_logits": 2.384185791015625e-06
+        }
+      },
+      {
+        "case": 2,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.7220458984375e-06,
+          "end_logits": 3.814697265625e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 9.5367431640625e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 7.808208465576172e-06,
+          "query_states": 2.9802322387695312e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.8477439880371094e-06,
+          "null_logits": 2.384185791015625e-06
+        }
+      },
+      {
+        "case": 3,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 3.337860107421875e-06,
+          "end_logits": 3.337860107421875e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 9.5367431640625e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 4.9173831939697266e-06,
+          "query_states": 3.337860107421875e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.5497207641601562e-06,
+          "null_logits": 1.9073486328125e-06
+        }
+      },
+      {
+        "case": 4,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 1.6689300537109375e-06,
+          "end_logits": 2.1457672119140625e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 5.7220458984375e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 5.453824996948242e-06,
+          "query_states": 3.6954879760742188e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.0728836059570312e-06,
+          "null_logits": 7.867813110351562e-06
+        }
+      },
+      {
+        "case": 5,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 7.152557373046875e-06,
+          "end_logits": 5.7220458984375e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 3.814697265625e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 7.212162017822266e-06,
+          "query_states": 4.291534423828125e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.952052116394043e-06,
+          "null_logits": 2.384185791015625e-06
+        }
+      }
+    ],
+    "heads": {
+      "attributes": {
+        "attr_logits": 1.7881393432617188e-07
+      },
+      "records": {
+        "exportErrors": {
+          "assign_logits": 2.60770320892334e-07,
+          "object_logits": 1.1175870895385742e-08,
+          "latent_logits": 3.725290298461914e-09
+        },
+        "variedShapeErrors": {
+          "assign_logits": 5.960464477539062e-07,
+          "object_logits": 3.725290298461914e-08,
+          "latent_logits": 2.60770320892334e-08
+        }
+      },
+      "relations": {
+        "exportErrors": {
+          "rel_logits": 2.682209014892578e-07
+        },
+        "variedShapeErrors": {
+          "rel_logits": 1.4901161193847656e-07
+        }
+      }
+    }
+  },
+  "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+  "exporterVersion": "0.1.0",
+  "scope": "Technical source/ONNX conformance on synthetic English cases; no clinical accuracy claim",
+  "date": "2026-10-05",
+  "adapterSource": {
+    "repository": "na399/clinical-evidence-gliner2.5-lora-p7b",
+    "revision": "ac4b10b7d961bfa5ce79703fb2f689c2f93be261",
+    "retrieval": "Public download temporarily enabled by owner; cached locally",
+    "files": {
+      "adapter_model.safetensors": {
+        "bytes": 24983688,
+        "sha256": "7243ce447c53a7629ba1bc5b59c670da970f30c93cfeb4c49e21708fcc5ba51d"
+      },
+      ".gitattributes": {
+        "bytes": 1519,
+        "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361"
+      },
+      "LICENSE": {
+        "bytes": 326,
+        "sha256": "790f2908c163b5ba1b59db4faf61054e4aa39c4ff483f1f308d652466e057186"
+      },
+      "adapter_config.json": {
+        "bytes": 2261,
+        "sha256": "8afbbd4125ce0b7572ef272aa42c6e7f5c05de2721d589cf4d4d9e80f9a3d643"
+      },
+      "README.md": {
+        "bytes": 14411,
+        "sha256": "487f1c6138ef0c35b5fb9ed1b1ed43845bcbff69483b55381c406806183d3082"
+      }
+    },
+    "baseRevisionPolicy": "Metadata names fastino/gliner2.5-base-v1 without an immutable revision; controlled comparison uses ca906247640776a07753514055be9726f9080ead",
+    "attributeScheme": "v2 positive-only entity labels, absent labels imply defaults in the source hybrid decoder",
+    "appDecoder": "Existing anchored-record/choice-head codec; hybrid attribute-span decoder is not implemented",
+    "modelCardReportedBpsdF1": 0.84,
+    "modelCardMetricInterpretation": "Source-reported entity F1 at best tested threshold; not our browser metric",
+    "license": "Research group only, no redistribution; adapter and exported weights remain outside Git"
+  },
+  "browserValidation": {
+    "realMergedAdapterWeights": true,
+    "packageId": "gliner25-clinical-evidence-p7b",
+    "packageBytes": 790395419,
+    "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+    "adapterHash": "3c11a0faf9afa1688301c2eb741d4a74f10cc9407a8cbfff59ea898540c6ba3f",
+    "browserConformance": {
+      "kind": "gliner25-records-v1",
+      "manifestHash": "90879abc4dbcf0864cd4645cb3d6b704e7ee17deec5ca6b30d0268ec08b2fc3d",
+      "variantId": "wasm-fp32",
+      "backend": "wasm",
+      "precision": "fp32",
+      "results": [
+        {
+          "fixture": "source-case-0.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "9f7340be-de6a-49be-9e38-7da4a7d67096",
+              "documentId": "pending",
+              "family": "diagnosis",
+              "anchor": [
+                {
+                  "start": 16,
+                  "end": 24,
+                  "text": "diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "diabetes"
+              },
+              "evidence": [],
+              "score": 0.9657394290332608,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "0c1f5edc-ec1d-479c-b1c8-b01349e25858",
+              "documentId": "pending",
+              "family": "medication",
+              "anchor": [
+                {
+                  "start": 35,
+                  "end": 44,
+                  "text": "metformin"
+                }
+              ],
+              "fields": {
+                "concept": "metformin"
+              },
+              "evidence": [],
+              "score": 0.9991732450494938,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-0.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1152,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 1.430511474609375e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 4.291534423828125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-1.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "24f41c71-0c8e-40e4-9d6b-10e2dbada23f",
+              "documentId": "pending",
+              "family": "person",
+              "anchor": [
+                {
+                  "start": 0,
+                  "end": 4,
+                  "text": "John"
+                }
+              ],
+              "fields": {
+                "concept": "John"
+              },
+              "evidence": [],
+              "score": 0.9969489003387493,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "d3ea91b6-294c-4130-b63b-5182a0f09572",
+              "documentId": "pending",
+              "family": "organization",
+              "anchor": [
+                {
+                  "start": 14,
+                  "end": 20,
+                  "text": "Google"
+                }
+              ],
+              "fields": {
+                "concept": "Google"
+              },
+              "evidence": [],
+              "score": 0.9726217526667535,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "47ae73e9-ca59-4f54-8993-2e261c94cef3",
+              "documentId": "pending",
+              "family": "location",
+              "anchor": [
+                {
+                  "start": 24,
+                  "end": 31,
+                  "text": "Seattle"
+                }
+              ],
+              "fields": {
+                "concept": "Seattle"
+              },
+              "evidence": [],
+              "score": 0.9999313299156714,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-1.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1152,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 2.288818359375e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 576,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 3.814697265625e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-2.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "ff1dadd6-04fd-464c-965c-d2ae851c1fc8",
+              "documentId": "pending",
+              "family": "condition",
+              "anchor": [
+                {
+                  "start": 15,
+                  "end": 23,
+                  "text": "diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "diabetes"
+              },
+              "evidence": [],
+              "score": 0.9994219426932419,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "ac3bc543-28fc-47cd-bc39-c4d750c45aa8",
+              "documentId": "pending",
+              "family": "condition",
+              "anchor": [
+                {
+                  "start": 44,
+                  "end": 52,
+                  "text": "diabetes"
+                }
+              ],
+              "fields": {
+                "concept": "diabetes"
+              },
+              "evidence": [],
+              "score": 0.9995057869778542,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-2.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 1.1444091796875e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1,
+              "maxAbsoluteError": 2.384185791015625e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-3.json",
+          "pass": true,
+          "status": "complete",
+          "records": [
+            {
+              "id": "c90245ba-d597-41d7-a078-d906f632c6b6",
+              "documentId": "pending",
+              "family": "disease",
+              "anchor": [
+                {
+                  "start": 16,
+                  "end": 29,
+                  "text": "breast cancer"
+                }
+              ],
+              "fields": {
+                "concept": "breast cancer"
+              },
+              "evidence": [],
+              "score": 0.9952458290226175,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            },
+            {
+              "id": "c6fa3b12-e768-4587-9240-5178f902ad29",
+              "documentId": "pending",
+              "family": "drug",
+              "anchor": [
+                {
+                  "start": 40,
+                  "end": 47,
+                  "text": "aspirin"
+                }
+              ],
+              "fields": {
+                "concept": "aspirin"
+              },
+              "evidence": [],
+              "score": 0.9995423912470632,
+              "origin": {
+                "kind": "model",
+                "codec": "gliner25-records-v1"
+              }
+            }
+          ]
+        },
+        {
+          "fixture": "model-reference-3.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 768,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 8.58306884765625e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 9.5367431640625e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-4.json",
+          "pass": true,
+          "status": "complete",
+          "records": []
+        },
+        {
+          "fixture": "model-reference-4.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 2.86102294921875e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 192,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 1,
+              "maxAbsoluteError": 7.3909759521484375e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "source-case-5.json",
+          "pass": true,
+          "status": "complete",
+          "records": []
+        },
+        {
+          "fixture": "model-reference-5.json",
+          "checks": {
+            "pair_indices": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 768,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "pair_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 3.4332275390625e-05,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "pair_valid": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 384,
+              "maxAbsoluteError": 0,
+              "atol": 0,
+              "rtol": 0
+            },
+            "null_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.9073486328125e-06,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": true,
+          "pass": true
+        },
+        {
+          "fixture": "attributes-reference.json",
+          "checks": {
+            "attr_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 128,
+              "maxAbsoluteError": 4.898756742477417e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "records-reference.json",
+          "checks": {
+            "assign_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 20,
+              "maxAbsoluteError": 4.76837158203125e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "object_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 1.1175870895385742e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "latent_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 3.725290298461914e-09,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "records-varied-reference.json",
+          "checks": {
+            "assign_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 90,
+              "maxAbsoluteError": 4.76837158203125e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "object_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 4.0978193283081055e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            },
+            "latent_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 3,
+              "maxAbsoluteError": 2.60770320892334e-08,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "relations-reference.json",
+          "checks": {
+            "rel_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 2.5331974029541016e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        },
+        {
+          "fixture": "relations-varied-reference.json",
+          "checks": {
+            "rel_logits": {
+              "pass": true,
+              "mismatches": 0,
+              "elements": 2,
+              "maxAbsoluteError": 2.086162567138672e-07,
+              "atol": 0.0001,
+              "rtol": 0.0001
+            }
+          },
+          "tokenIdsExact": null,
+          "pass": true
+        }
+      ],
+      "pass": true
+    },
+    "installedModelOfflineRestart": true,
+    "offlineInferenceReviewCompareExportReopen": true,
+    "adapterLineagePreserved": true,
+    "originalVueCodeMirrorAcceptRejectExport": true,
+    "privateCanaryNoEgress": true,
+    "enumAndAnchoredSpanSchemaInference": true,
+    "browser": "151.0.7922.173"
+  },
+  "validation": {
+    "appUnitTests": 131,
+    "packagerUnitTests": 11,
+    "bothStaticBuilds": true,
+    "staticAssetInventory": 5078,
+    "originalUiRegression": true,
+    "bpsdAutoApplyNotes": 4,
+    "bpsdPortableExportsVerified": true,
+    "bpsdAllNativeAndMachineRowsVisible": true,
+    "originalUiCorpusNotes": 27,
+    "originalUiCorpusMatchesOfflineWorkspace": true,
+    "nativeAutoApplyExportAndDuplicateChecks": true
+  }
+}

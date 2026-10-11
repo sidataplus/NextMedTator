@@ -10,6 +10,18 @@ on:
 permissions:
   contents: read
 jobs:
+  model-packager:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.12.19'
+          python-version: '3.12'
+          enable-cache: true
+      - name: Standalone LoRA merge and ONNX regression checks
+        run: uv run --locked --project tools/gliner-onnx python -m unittest discover -s tools/gliner-onnx/tests
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -35,6 +47,8 @@ jobs:
       - run: pnpm build:core
       - run: cargo +1.90.0 fmt --manifest-path wasm/core/Cargo.toml --check
       - run: pnpm test
+      - name: Generated-note source and agreement checks
+        run: uv run --locked python -m unittest discover -s tests/validation
       - run: pnpm build
       - run: pnpm audit:assets
       - run: uv run --locked python -m playwright install --with-deps chromium
