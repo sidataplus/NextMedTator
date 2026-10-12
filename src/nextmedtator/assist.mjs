@@ -4,7 +4,7 @@ import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
 import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD, sameScope} from './scope.mjs';
 import {renderScopeEditor} from './scope-ui.mjs';
-import {ModelStore} from './model-store.mjs';
+import {ModelStore,downloadCatalogPackage} from './model-store.mjs';
 import {createModelSelectionState,saveModelSelectionState,setModelSelection,selectionThresholdOverride,setSelectionThresholdOverride,restoreSelectionThresholdOverride,modelSelectionKey,modelSelectionControlValue,modelSelectionLabel,modelSelectionMatchesManifest,matchingInstalledModels,selectionFromManifest,localAdapterSelection,renderModelSelectionControls} from './model-selection.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
@@ -654,7 +654,24 @@ class LegacyAssist {
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));
+        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})),button('Show approved public model',()=>this.perform(async()=>{
+            const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});
+            invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();
+        })));
+        for(const entry of this.catalog?.entries??[]){
+            const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
+            body.append(node('p',`${entry.manifest.id} · ${entry.manifest.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage. Inference stays on this device.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
+                this.setSelectedModel(selectionFromManifest(entry.manifest),{render:false,restoreInstalled:false});
+                const epoch=this.modelSelectionEpoch;this.installController=new AbortController();
+                try{
+                    const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{this.message=`Downloading ${received} of ${total} bytes`;const message=this.root.querySelector('[data-testid=assist-message]');if(message)message.textContent=this.message;}});
+                    invariant(epoch===this.modelSelectionEpoch&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Model selection changed during download');
+                    const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});
+                    invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');
+                    this.adoptModel(installed);this.message='Public model installed and hashes verified; analysis runs locally.';
+                }finally{this.installController=null;}
+            })),button('Stop model download',()=>this.installController?.abort()));
+        }
         for(const item of this.installedModels??[]){
             const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
             body.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));

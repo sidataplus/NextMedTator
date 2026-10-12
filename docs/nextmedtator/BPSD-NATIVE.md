@@ -51,9 +51,12 @@ the bed” at code-point offsets `[17,47)`, score about 0.993. Four existing BPS
 notes produced 6, 0, 7 and 8 spans respectively. A completed run with no spans is
 still an omission-review case, not a clinical negative result.
 
-The tested repository did not provide a LICENSE or an explicit redistribution
-grant for the adapter. Do not include its weights in Git, the public model
-catalog, a static deployment or the transfer bundle. The base's Apache-2.0
-license does not grant rights to an independently trained adapter. Resolve
-adapter redistribution permissions before any release offering its weights.
-Clinical validation, redistribution rights and broader target-device browser qualification remain separate release gates. The model card's synthetic development metrics are not clinical evidence.
+The tested repository provides no LICENSE or general public reuse grant for the
+adapter. The owner subsequently authorized delivery; the base's Apache-2.0
+license does not independently license the adapter. The separate
+[R2 delivery procedure](R2-MODEL-DELIVERY.md) preserves notices and excludes
+source-note fixtures and private DTD additions. Keep weights out of public Git,
+static app assets and the private code/test transfer bundle. The destination and
+access level still require verification before uploading. Clinical validation,
+downstream reuse rights and broader target-device qualification remain separate
+release concerns. Synthetic development metrics are not clinical evidence.

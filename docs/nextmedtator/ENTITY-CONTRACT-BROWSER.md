@@ -87,7 +87,10 @@ continues to reject unreviewed weights or schemas added under `models/`.
 Cloudflare Pages' individual asset limit also precludes placing this large graph
 in the static app output. No backend, paid job or model training is required.
 
-BPSD adapter redistribution permission is unresolved; no LICENSE/grant was
-provided by the tested repository. Keep its weights out of public Git, model
-catalogs, deployment assets and transfer bundles. Tensor/offset parity, correct
+The adapter owner subsequently authorized model delivery. The repository still
+declares no general public reuse license. [R2 delivery](R2-MODEL-DELIVERY.md)
+uses the unchanged qualified graphs and public HF schema while stripping all
+source-note fixtures; it preserves base/third-party notices and keeps private
+DTD additions and screenshots out of public assets. The verified destination and
+access level remain required before uploading. Tensor/offset parity, correct
 controls and synthetic reference agreement do not establish clinical validity.

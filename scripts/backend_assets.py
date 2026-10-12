@@ -29,3 +29,14 @@ def copy_public_models(source,out):
             raise ValueError('Unreviewed file in public model metadata directory; keep private schemas, notes and weights outside static assets')
     (out/'models').mkdir(parents=True,exist_ok=True)
     for path in members:shutil.copyfile(path,out/'models'/path.name)
+    if __package__:
+        from .model_delivery import r2_catalog
+    else:
+        from model_delivery import r2_catalog
+    delivery=r2_catalog()
+    if delivery['entries']:
+        import json
+        catalog_path=out/'models'/'catalog.json'
+        catalog=json.loads(catalog_path.read_text()) if catalog_path.exists() else {'entries':[]}
+        catalog['entries'].extend(delivery['entries'])
+        catalog_path.write_text(json.dumps(catalog,indent=2))

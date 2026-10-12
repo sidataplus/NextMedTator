@@ -44,7 +44,8 @@ export function validateModelManifest(m) {
         invariant(Number.isSafeInteger(f.bytes) && f.bytes > 0 && f.bytes <= MODEL_LIMITS.file, 'Model file-size limit');
         total += f.bytes;
         invariant(total <= MODEL_LIMITS.total, 'Model package size limit');
-        invariant(['graph', 'weights', 'tokenizer', 'schema', 'fixture'].includes(f.role), 'Executable model plugins are forbidden');
+        invariant(['graph', 'weights', 'tokenizer', 'schema', 'fixture', 'notice'].includes(f.role), 'Executable model plugins are forbidden');
+        if(f.role==='notice')invariant(/\.(?:txt|json|md)$/i.test(f.path),'Model notices must be inert text or JSON');
         invariant(!/\.(?:[cm]?js|wasm|html)$/i.test(f.path), 'Executable artifact is not a model package');
     }
     invariant(Array.isArray(m.variants) && m.variants.length > 0, 'Model variants required');

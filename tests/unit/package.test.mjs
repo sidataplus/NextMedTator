@@ -17,6 +17,10 @@ test('model manifests reject executable plugins, missing graphs and unknown code
     assert.throws(() => validateModelManifest(m));
 } });
 test('model files require exact non-placeholder hashes', async () => { const m = await fixture(); m.files[0].sha256 = '...'; assert.throws(() => validateModelManifest(m)); });
+test('model licenses can be retained as inert hashed notice files',async()=>{
+    const m=await fixture();m.files.push({path:'LICENSES/Apache-2.0.txt',bytes:10,sha256:'d'.repeat(64),role:'notice'});validateModelManifest(m);
+    m.files.at(-1).path='LICENSES/run.mjs';assert.throws(()=>validateModelManifest(m),/inert/);
+});
 test('package import checks bytes and preserves baseline/adapter provenance', async () => { const m = await fixture(), entries = new Map([['manifest.json', enc.encode(canonical(m))], ['test.onnx', new Uint8Array([1, 2, 3])], ['reference.json', enc.encode('{"inputs":{},"outputs":{}}')]]); const pkg = await importModelPackage(zipStore(entries)); assert.equal(pkg.manifest.lineage.base.model, 'synthetic-test-graph-not-gliner'); entries.set('test.onnx', new Uint8Array([4, 5, 6])); await assert.rejects(() => importModelPackage(zipStore(entries)), /integrity/); });
 test('conformance-only package explicitly fails clinical qualification', async () => { const m = await fixture(); assert.throws(() => qualifyForSchema({ manifest: m }, DEMO_SCHEMA), e => e.code === 'CLINICAL_RUNTIME_UNQUALIFIED'); });
 test('tensor tolerances are explicit and nonfinite values fail', () => { assert.equal(compareTensors([1], [1.01], { atol: .02 }).pass, true); assert.equal(compareTensors([1], [1.01]).pass, false); assert.throws(() => compareTensors([NaN], [1])); assert.throws(() => compareTensors([1], [1], { atol: -1 })); });

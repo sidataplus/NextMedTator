@@ -1,5 +1,6 @@
 import {invariant, sha256, clone, fingerprint} from './integrity.mjs';
 import {validateModelManifest,parseEntityContracts} from './model-package.mjs';
+import {catalogArtifactURL,downloadArtifact} from './model-download.mjs';
 const request = r => new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
 const MODEL_DB='nextmedtator-public-models-v1';
 async function database(){const r=indexedDB.open(MODEL_DB,2);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('packages'))db.createObjectStore('packages',{keyPath:'manifestHash'});if(!db.objectStoreNames.contains('artifacts'))db.createObjectStore('artifacts');const store=r.transaction.objectStore('packages'),cursor=store.openCursor();cursor.onsuccess=()=>{const c=cursor.result;if(!c)return;const row=c.value;if(row.files){for(const [path,bytes] of row.files)r.transaction.objectStore('artifacts').put(bytes,`${row.manifestHash}:${path}`);delete row.files;c.update(row);}c.continue();};};return request(r);}
@@ -23,15 +24,12 @@ export class ModelStore {
 /** Only the application-owned catalog can supply public installation URLs. No project values enter requests. */
 export async function downloadCatalogPackage(entry,{signal,onProgress}={}){
     validateModelManifest(entry.manifest);
+    if(entry.delivery?.kind==='r2')invariant(await fingerprint(entry.manifest)===entry.revision,'R2 catalog manifest differs from its immutable revision');
     const files=new Map();let received=0;const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
     for(const file of entry.manifest.files){
-        const url=new URL(entry.urls[file.path],location.href);
-        invariant(url.origin===location.origin || (url.origin==='https://huggingface.co'&&url.pathname.startsWith(`/nicolasembleton/gliner2.5-small-v1-onnx/resolve/${entry.revision}/`)),'Unapproved artifact URL');
-        const response=await fetch(url,{credentials:'omit',signal,cache:'no-store'});invariant(response.ok,'Public artifact download failed');
-        const reader=response.body.getReader(),parts=[];let bytes=0;
-        for(;;){const {done,value}=await reader.read();if(done)break;bytes+=value.length;received+=value.length;invariant(bytes<=file.bytes,'Artifact exceeds declared bytes');parts.push(value);onProgress?.({received,total,file:file.path});}
-        invariant(bytes===file.bytes,'Incomplete artifact download');const data=new Uint8Array(bytes);let at=0;for(const part of parts){data.set(part,at);at+=part.length;}
-        invariant(await sha256(data)===file.sha256,'Artifact hash mismatch');files.set(file.path,data);
+        const url=catalogArtifactURL(entry,file.path);
+        const data=await downloadArtifact(url,file,{ranged:entry.delivery?.kind==='r2',signal,onBytes:count=>{received+=count;onProgress?.({received,total,file:file.path});}});
+        files.set(file.path,data);
     }
-    const {fingerprint}=await import('./integrity.mjs');return {manifest:entry.manifest,manifestHash:await fingerprint(entry.manifest),files,entityContracts:parseEntityContracts(entry.manifest,files)};
+    return {manifest:entry.manifest,manifestHash:await fingerprint(entry.manifest),files,entityContracts:parseEntityContracts(entry.manifest,files)};
 }

@@ -1,9 +1,12 @@
 # Static distribution procedure and remaining gates
 
-The deployment target is Cloudflare Pages, serving only the generated `dist/`
-directory. No Flask/Python backend, inference API, Pages Functions, paid compute
-or native model runtime is needed to use the site. No deployment was performed
-for this review. Keep restricted adapters, user schemas and note files local.
+Serve only the generated `dist/` directory as a static site. The local Wrangler
+configuration names a Workers static-assets deployment; a deployed account/site
+has not been verified. A selected Cloudflare Pages or Workers destination must
+preserve the generated isolation and CSP headers. No Flask/Python backend,
+inference API, paid compute or native model runtime is required in the deployed
+site. No deployment was performed for this review. Keep restricted adapters,
+private user schemas and note files local.
 
 ## Reproducible preparation
 
@@ -88,3 +91,10 @@ live catalog downloads, Firefox/Safari and target mobile performance, constraine
 memory behavior, adapter redistribution rights, legacy asset/security audit,
 and clinical validation. Restricted weights and private user schemas are not
 part of the code distribution. No release should claim those gates have passed.
+## R2 model delivery
+
+The merged BPSD adapter can be delivered as immutable ONNX objects separately
+from static application assets. See [R2-MODEL-DELIVERY.md](R2-MODEL-DELIVERY.md)
+for the audited publication allowlist, licensing, explicit catalog/CSP build
+input, download integrity and required remote verification. Keep source notes,
+private DTDs, screenshots and private qualification archives out of public R2.

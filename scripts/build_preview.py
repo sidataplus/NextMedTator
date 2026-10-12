@@ -12,6 +12,12 @@ HEADERS = """/*
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
 """
+if __package__:
+    from .model_delivery import connect_origins
+else:
+    from model_delivery import connect_origins
+if connect_origins():
+    HEADERS=HEADERS.replace("; worker-src 'self'",' '+' '.join(connect_origins())+"; worker-src 'self'")
 
 def offline_assets(out: Path) -> None:
     inventory=[]
