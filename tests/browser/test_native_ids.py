@@ -24,6 +24,8 @@ def run():
                        'result':{'entities':{'Motor agitation':[{'start':8,'end':16,'text':'behavior','confidence':.9,
                                                                'certainty':{'label':'certainty: confirmed','confidence':.8}}]}}}]}
     source=OUT/'source.json';bundle=OUT/'source.nmt.zip';source.write_text(json.dumps(receipt))
+    # Remove only this test's previous output; the importer must still refuse overwrites.
+    bundle.unlink(missing_ok=True)
     subprocess.run(['node','scripts/import_native_predictions.mjs',str(source),str(bundle)],cwd=ROOT,check=True,capture_output=True)
     server=subprocess.Popen([sys.executable,'scripts/serve_static.py','--directory','preview','--port','4244'],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
