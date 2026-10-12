@@ -62,6 +62,8 @@ jobs:
         run: |
           pnpm build:preview
           pnpm test:browser
+          uv run --locked python tests/browser/test_model_selection.py
+          uv run --locked python tests/browser/test_model_source_edits.py
       - run: uv run --locked python tests/browser/test_wasm_backend.py
       - run: uv run --locked python tests/browser/test_legacy_recovery.py
       - run: uv run --locked python tests/browser/test_review_fixes.py

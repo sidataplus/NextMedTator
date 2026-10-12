@@ -1,0 +1,6 @@
+{
+  "peft_type": "LORA",
+  "r": 8,
+  "target_modules": ["query_proj"],
+  "base_model_name_or_path": "/home/user/.cache/huggingface/hub/models--fastino--gliner2.5-small-v1/snapshots/7132dc4561c3f94563c6147e75ffa8ef34c4964a"
+}

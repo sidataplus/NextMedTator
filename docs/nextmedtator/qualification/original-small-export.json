@@ -1,0 +1,182 @@
+{
+  "packageId": "gliner2.5-small-v1-base-7a5e4673a02a",
+  "packageBytes": 311618947,
+  "packageSha256": "2b3c116757c30df5b4b7b1f8105caaaee6b7f4a8b32c5f629c736c4415a5f486",
+  "base": {
+    "model": "fastino/gliner2.5-small-v1",
+    "revision": "7132dc4561c3f94563c6147e75ffa8ef34c4964a",
+    "files": {
+      "config.json": "0b7d9e1401ceeb83e992ec66d2f93bff7e5646428f1b4706ec527cf88f53578a",
+      "encoder_config/config.json": "db837d0dc587f5858687ef860c1f400de10f3c3e44f88daef8cbda80d74e4c9c",
+      "model.safetensors": "4ee982787ace270d4bf15dbcb28ced38e0aa201372347114ceedd6336055de2b",
+      "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+      "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+    }
+  },
+  "adapter": null,
+  "merge": {
+    "activeToMergedMaxAbsoluteError": 0.0,
+    "baseToAdapterEncoderMaxAbsoluteChange": 0.0,
+    "adapterTensorCount": 0,
+    "trainedHeads": "unchanged"
+  },
+  "export": {
+    "mainExportErrors": {
+      "start_logits": 3.337860107421875e-06,
+      "end_logits": 4.76837158203125e-06,
+      "pair_indices": 0.0,
+      "pair_logits": 8.58306884765625e-06,
+      "pair_valid": 0.0,
+      "cls_logits": 0.0,
+      "text_states": 6.67572021484375e-06,
+      "query_states": 5.7220458984375e-06,
+      "rel_role_states": 0.0,
+      "candidate_states": 2.205371856689453e-06,
+      "null_logits": 9.5367431640625e-07
+    },
+    "sourceCases": [
+      {
+        "case": 0,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 3.337860107421875e-06,
+          "end_logits": 4.76837158203125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 8.58306884765625e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 6.67572021484375e-06,
+          "query_states": 5.7220458984375e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 2.1457672119140625e-06,
+          "null_logits": 9.5367431640625e-07
+        }
+      },
+      {
+        "case": 1,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 5.7220458984375e-06,
+          "end_logits": 4.0531158447265625e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.239776611328125e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 4.76837158203125e-06,
+          "query_states": 8.58306884765625e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 2.1979212760925293e-06,
+          "null_logits": 3.814697265625e-06
+        }
+      },
+      {
+        "case": 2,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 2.86102294921875e-06,
+          "end_logits": 3.0994415283203125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 9.059906005859375e-06,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 7.62939453125e-06,
+          "query_states": 3.6731362342834473e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.8477439880371094e-06,
+          "null_logits": 6.198883056640625e-06
+        }
+      },
+      {
+        "case": 3,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 4.76837158203125e-06,
+          "end_logits": 3.814697265625e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.52587890625e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 7.62939453125e-06,
+          "query_states": 5.7220458984375e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 2.2649765014648438e-06,
+          "null_logits": 1.9073486328125e-06
+        }
+      },
+      {
+        "case": 4,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 1.430511474609375e-06,
+          "end_logits": 4.76837158203125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 7.152557373046875e-07,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 3.814697265625e-06,
+          "query_states": 5.7220458984375e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.6093254089355469e-06,
+          "null_logits": 7.152557373046875e-07
+        }
+      },
+      {
+        "case": 5,
+        "sourceSpansExact": true,
+        "sourceScoresWithinTolerance": true,
+        "outputErrors": {
+          "start_logits": 4.76837158203125e-06,
+          "end_logits": 5.0067901611328125e-06,
+          "pair_indices": 0.0,
+          "pair_logits": 1.049041748046875e-05,
+          "pair_valid": 0.0,
+          "cls_logits": 0.0,
+          "text_states": 5.4836273193359375e-06,
+          "query_states": 6.67572021484375e-06,
+          "rel_role_states": 0.0,
+          "candidate_states": 1.6689300537109375e-06,
+          "null_logits": 4.5299530029296875e-06
+        }
+      }
+    ],
+    "heads": {
+      "attributes": {
+        "attr_logits": 1.7881393432617188e-07
+      },
+      "records": {
+        "exportErrors": {
+          "assign_logits": 5.960464477539062e-07,
+          "object_logits": 1.4901161193847656e-08,
+          "latent_logits": 1.862645149230957e-09
+        },
+        "variedShapeErrors": {
+          "assign_logits": 2.384185791015625e-07,
+          "object_logits": 3.725290298461914e-09,
+          "latent_logits": 7.450580596923828e-09
+        }
+      },
+      "relations": {
+        "exportErrors": {
+          "rel_logits": 8.940696716308594e-08
+        },
+        "variedShapeErrors": {
+          "rel_logits": 1.043081283569336e-07
+        }
+      }
+    }
+  },
+  "sourceCodeRevision": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+  "runtime": {
+    "upstreamCommit": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf",
+    "sourceFingerprint": null,
+    "sourceManifestSha256": null,
+    "releaseManifestSha256": null
+  },
+  "exporterVersion": "0.1.0",
+  "scope": "Technical source/ONNX conformance on synthetic English cases; no clinical accuracy claim"
+}

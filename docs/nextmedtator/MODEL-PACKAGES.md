@@ -2,6 +2,30 @@
 
 Model preparation stays separate from the web app. The standalone [GLiNER2.5 LoRA packager](../../tools/gliner-onnx/README.md) has its own Python project and locked dependencies; it merges compatible PEFT adapters and exports verified ONNX packages. The web app imports the resulting package. This repository does not fine-tune models or call inference APIs.
 
+## Auto annotation model selection
+
+Both annotation views default to
+`na399/clinical-evidence-gliner2.5-small-lora-v3-act-sol` at the immutable
+revision recorded by the exporter. The model-source selector also offers the
+clinical base adapter, original Fastino small/base checkpoints, a custom Hub
+adapter with an immutable commit, and local PEFT adapter files. Threshold
+overrides belong to the exact selected source, not the previous model.
+
+The Hub adapters contain PEFT weights, not browser-ready ONNX packages. Convert
+once with the [standalone exporter](../../tools/gliner-onnx/README.md), import
+the ZIP, and optionally install it for offline use. The selector exposes the
+matching export command. Selecting local files hashes their config and weights
+on the device; it does not upload them or execute adapter-supplied code.
+Existing package imports remain supported and retain their complete lineage.
+
+Only a package matching the selected base/adapter identity may analyze text.
+An installed matching package is hash-verified again when loaded. Multiple
+matching packages require an explicit choice. First visit and opening the
+selector do not create model storage or persist preferences; changing the
+source is an explicit preference action. The reviewed public download catalog
+is unchanged. Clinical adapter weights are not bundled or redistributed;
+their release LICENSE restricts use to the research group.
+
 `src/nextmedtator/model-package.mjs` validates:
 
 - `format: nextmedtator-model-v1`, package ID/version and exact `onnxruntime-web` version.
@@ -17,7 +41,7 @@ Five application codecs are implemented:
 
 - `gliner25-small-records-v5` consumes the requested small export with combined encoder/boundary/classification graph plus attributes, records and relation heads. It runs exact anchors, enum scoring and anchored text/span fields with supporting evidence. `recordParent` and `recordAnchorLabel` in a family declare explicit external record-query mappings. Source-score discrepancies withhold automatic relations in this release; packages declaring `automaticRelations: true` are rejected. See `QUALIFICATION.md` for the pinned export, source checks and limitations.
 - `tensor-conformance-v1` executes supplied tensor fixtures. It cannot read clinical text.
-- `gliner25-records-v1` consumes the standalone merged-LoRA export. It requires merged adapter lineage, a masked 512-word axis, source null logits and an explicit abstention threshold. It shares the app's anchored-record decoder while keeping the small-package contract unchanged. The exporter checks source occurrence spans/scores and all four graph outputs; structured-head numerical checks do not qualify every source record-decoding policy. Automatic relations remain disabled.
+- `gliner25-records-v1` consumes the standalone export. Adapted packages require merged adapter lineage; original checkpoints declare `unadapted-export` and unchanged heads. Both require a masked 512-word axis, source null logits and an explicit abstention threshold. It shares the app's anchored-record decoder while keeping the small-package contract unchanged. The exporter checks source occurrence spans/scores and all four graph outputs; structured-head numerical checks do not qualify every source record-decoding policy. Automatic relations remain disabled.
 - `gliner25-boundary-span-v1` tokenizes with the package's Unigram `tokenizer.json`, builds the GLiNER2 entity prompt, and runs a boundary ONNX pair (`encoder` then `boundary`) in the local ORT worker. Decoding is half-open word spans, sigmoid threshold 0.5, abstention when the null head exceeds 0.5, and the `flat` overlap policy. The largest member may be 768 MiB so the published fp32 base encoder fits. The archive stays within 1 GiB.
 - `gliner25-boundary-structured-v1` adds `explicit.onnx`, the `score_explicit_spans` head exported from `fastino/gliner2.5-base-v1`. Enum fields are prompt labels of the form `field: value`, scored at each retained span and reduced with softmax. The word axis of that graph is fixed at 512 and shorter windows are masked.
 
