@@ -67,9 +67,58 @@ a supplied adapter inherits the base model's Apache-2.0 license.
 default is `LicenseRef-Hub-Base` rather than assuming all compatible bases
 share a license.
 
-## Current adapter: ClinicalEvidence v3, ACT/Sol job 17089
+## Current adapters: ClinicalEvidence v3 small/base, ACT/Sol
 
-The default real-weight gates now use `gliner25-clinical-evidence-v3-act-sol-17089`.
+Keep base for the current desktop workflow. On the fixed 96-case synthetic set,
+base has 89 label matches and small has 70. Small uses less memory. These are
+engineering diagnostics, not clinical accuracy. See the
+[comparison, browser measurements and limits](../../docs/nextmedtator/CLINICAL-V3-WEB.md).
+
+```sh
+uv tool run --from huggingface_hub==2.1.1 hf download \
+  na399/clinical-evidence-gliner2.5-base-lora-v3-act-sol \
+  --revision b5db08ccd2581690f30a448428ba7659e1469eeb \
+  --local-dir work/clinical-adapter/base
+uv run --locked --project tools/gliner-onnx gliner-onnx \
+  --adapter work/clinical-adapter/base \
+  --clinical-release work/clinical-adapter/base \
+  --adapter-repository na399/clinical-evidence-gliner2.5-base-lora-v3-act-sol \
+  --adapter-revision b5db08ccd2581690f30a448428ba7659e1469eeb \
+  --base-model fastino/gliner2.5-base-v1 \
+  --base-revision ca906247640776a07753514055be9726f9080ead \
+  --base-license Apache-2.0 \
+  --adapter-license LicenseRef-Research-Group-Only-No-Redistribution \
+  --id gliner25-clinical-v3-base \
+  --out work/clinical-v3-base.nmt-model.zip \
+  --report test-results/clinical-v3-base-export.json
+```
+
+For small, use repository
+`na399/clinical-evidence-gliner2.5-small-lora-v3-act-sol`, adapter revision
+`82386c7a9776d3c14ed73d6310273a1c9d354d55`, and
+`fastino/gliner2.5-small-v1@7132dc4561c3f94563c6147e75ffa8ef34c4964a`.
+Use separate release, package, report and graph folders for each size.
+
+Download the whole release, including the helper and vendored runtime.
+`--clinical-release` checks the reviewed helper hash before it runs, checks the
+release assets, and imports the verified runtime before GLiNER. Do not replace
+this option with `--clinical-schema` and `--thresholds`; those options retain
+the older installed-runtime path. A cached base can be supplied with
+`--base-dir`; all five checkpoint files still need exact revision hashes.
+
+The new packages contain only two graphs: model and attributes. They retain
+all 18 trained queries in every scope. Scopes filter output; custom concept
+queries require another package. The browser uses the fixed release threshold
+(base 0.6, small 0.7), source abstention, and complete one-value softmax groups.
+Record binding, family-specific fields, cue attribution and automatic relations
+remain unqualified. Private research weights must stay outside public Git and
+the model catalog. Current real-weight gates default to
+`work/clinical-v3-base.nmt-model.zip`; `NMT_LORA_PACKAGE` can select a different
+local package. The archived threshold-slider gate still uses job 17089.
+
+## Archived adapter: ClinicalEvidence v3, ACT/Sol job 17089
+
+The archived real-weight package is `gliner25-clinical-evidence-v3-act-sol-17089`.
 Read the [pinned model card](https://huggingface.co/na399/clinical-evidence-gliner2.5-lora-v3-act-sol-17089/blob/058945fb562f3c6250450ff67b842255f872ddf4/README.md)
 and [qualification report](../../docs/nextmedtator/V3-17089-VALIDATION.md).
 The adapter was trained against Phase 8/v3 ACT/Sol relabeling. Its v3 codec

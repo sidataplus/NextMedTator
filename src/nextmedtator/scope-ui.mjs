@@ -20,7 +20,7 @@ export function renderScopeEditor(assist){
     section.append(node('p','Load or generate a compatible annotation schema, define your scope, then Apply scope and analyze. Custom targets can reduce recall; compare a broad run when checking for omissions.',{class:'muted'}));
     const presets=node('select',null,{'aria-label':'Broad starting preset','data-testid':'scope-preset',disabled:assist.busy});
     presets.append(node('option','Choose a broad starting preset',{value:''}));for(const p of SCOPE_PRESETS)presets.append(node('option',p.name,{value:p.id}));
-    presets.onchange=()=>{if(!presets.value)return;assist.scopeDraft=presetScope(presets.value,codec);assist.render();};section.append(label('Broad starting preset',presets));
+    presets.onchange=()=>{if(!presets.value)return;assist.scopeDraft=presetScope(presets.value,codec,assist.model?.manifest.variants[0]?.clinicalRelease?assist.model.manifest.variants[0].threshold:null);assist.render();};section.append(label('Broad starting preset',presets));
     section.append(input('Scope name',s.name,v=>s.name=v,{id:'scope-name',maxlength:100}),input('Scope version',s.version,v=>s.version=v,{id:'scope-version',maxlength:40}));
     for(const [index,task]of s.tasks.entries())section.append(input(index?'Additional scope definition':'Scope definition',task.definition,v=>task.definition=v,{id:index?'scope-additional-definition':'scope-definition',area:true,rows:3,maxlength:1000}));
     section.append(node('p','Descriptions can state included concepts and exclusions. They guide the model; relevance still needs review.',{class:'muted'}));

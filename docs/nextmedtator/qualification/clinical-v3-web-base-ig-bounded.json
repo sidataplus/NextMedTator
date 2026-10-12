@@ -1,0 +1,1624 @@
+{
+  "model": "base",
+  "scope": "Predeclared synthetic examples; predicted-label minus runner-up targets, full 18-query prompt; native PyTorch timings only; no clinical validation",
+  "runs": [
+    {
+      "id": "assertion-01",
+      "text": "Patient denies suicidal ideation today.",
+      "baseline": "PAD",
+      "points": 16,
+      "expected": "negated",
+      "predicted": "negated",
+      "contrast": "affirmed",
+      "complete": false,
+      "stability": null,
+      "delta": 19.293366034871127,
+      "marginGap": 14.101593017578125,
+      "top": [
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 19.065459687296794
+        },
+        {
+          "text": "today",
+          "start": 33,
+          "end": 38,
+          "anchor": false,
+          "score": 11.556143573786937
+        },
+        {
+          "text": "patient",
+          "start": 0,
+          "end": 7,
+          "anchor": false,
+          "score": 2.77335579136552
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "patient",
+          "start": 0,
+          "end": 7,
+          "anchor": false,
+          "score": 2.77335579136552
+        },
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 19.065459687296794
+        },
+        {
+          "text": "suicidal",
+          "start": 15,
+          "end": 23,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "ideation",
+          "start": 24,
+          "end": 32,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "today",
+          "start": 33,
+          "end": 38,
+          "anchor": false,
+          "score": 11.556143573786937
+        },
+        {
+          "text": ".",
+          "start": 38,
+          "end": 39,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 11976.382200984517
+    },
+    {
+      "id": "assertion-01",
+      "text": "Patient denies suicidal ideation today.",
+      "baseline": "PAD",
+      "points": 32,
+      "expected": "negated",
+      "predicted": "negated",
+      "contrast": "affirmed",
+      "complete": false,
+      "stability": {
+        "passes": false,
+        "signedCosine": 0.7399392169362958,
+        "top3Jaccard": 0.3333333333333333,
+        "top1Same": true
+      },
+      "delta": -9.48362121130329,
+      "marginGap": 14.101593017578125,
+      "top": [
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 6.132049555691523
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "patient",
+          "start": 0,
+          "end": 7,
+          "anchor": false,
+          "score": -0.4852907454780513
+        },
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 6.132049555691523
+        },
+        {
+          "text": "suicidal",
+          "start": 15,
+          "end": 23,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "ideation",
+          "start": 24,
+          "end": 32,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "today",
+          "start": 33,
+          "end": 38,
+          "anchor": false,
+          "score": -1.0287870039386366
+        },
+        {
+          "text": ".",
+          "start": 38,
+          "end": 39,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 46643.26797900139
+    },
+    {
+      "id": "assertion-01",
+      "text": "Patient denies suicidal ideation today.",
+      "baseline": "PAD",
+      "points": 64,
+      "expected": "negated",
+      "predicted": "negated",
+      "contrast": "affirmed",
+      "complete": false,
+      "stability": {
+        "passes": false,
+        "signedCosine": 0.9361320872949015,
+        "top3Jaccard": 0.3333333333333333,
+        "top1Same": true
+      },
+      "delta": -0.5519695402158877,
+      "marginGap": 14.101593017578125,
+      "top": [
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 11.217980557325298
+        },
+        {
+          "text": "today",
+          "start": 33,
+          "end": 38,
+          "anchor": false,
+          "score": 2.0109790476254883
+        },
+        {
+          "text": "patient",
+          "start": 0,
+          "end": 7,
+          "anchor": false,
+          "score": 0.32066387241145167
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "patient",
+          "start": 0,
+          "end": 7,
+          "anchor": false,
+          "score": 0.32066387241145167
+        },
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 11.217980557325298
+        },
+        {
+          "text": "suicidal",
+          "start": 15,
+          "end": 23,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "ideation",
+          "start": 24,
+          "end": 32,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "today",
+          "start": 33,
+          "end": 38,
+          "anchor": false,
+          "score": 2.0109790476254883
+        },
+        {
+          "text": ".",
+          "start": 38,
+          "end": 39,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 31999.01091097854
+    },
+    {
+      "id": "assertion-01",
+      "text": "Patient denies suicidal ideation today.",
+      "baseline": "MASK",
+      "points": 16,
+      "expected": "negated",
+      "predicted": "negated",
+      "contrast": "affirmed",
+      "complete": false,
+      "stability": null,
+      "delta": -4.580731071144376,
+      "marginGap": 19.630489349365234,
+      "top": [
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 23.242020056489533
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "patient",
+          "start": 0,
+          "end": 7,
+          "anchor": false,
+          "score": -6.419496671319507
+        },
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 23.242020056489533
+        },
+        {
+          "text": "suicidal",
+          "start": 15,
+          "end": 23,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "ideation",
+          "start": 24,
+          "end": 32,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "today",
+          "start": 33,
+          "end": 38,
+          "anchor": false,
+          "score": -1.7727651069491668
+        },
+        {
+          "text": ".",
+          "start": 38,
+          "end": 39,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 7462.9649900016375
+    },
+    {
+      "id": "assertion-01",
+      "text": "Patient denies suicidal ideation today.",
+      "baseline": "MASK",
+      "points": 32,
+      "expected": "negated",
+      "predicted": "negated",
+      "contrast": "affirmed",
+      "complete": false,
+      "stability": {
+        "passes": true,
+        "signedCosine": 0.9988644385459913,
+        "top3Jaccard": 1.0,
+        "top1Same": true
+      },
+      "delta": 0.3196940847883667,
+      "marginGap": 19.630489349365234,
+      "top": [
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 28.169278927246644
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "patient",
+          "start": 0,
+          "end": 7,
+          "anchor": false,
+          "score": -6.380047982017505
+        },
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 28.169278927246644
+        },
+        {
+          "text": "suicidal",
+          "start": 15,
+          "end": 23,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "ideation",
+          "start": 24,
+          "end": 32,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "today",
+          "start": 33,
+          "end": 38,
+          "anchor": false,
+          "score": -1.8390475110755364
+        },
+        {
+          "text": ".",
+          "start": 38,
+          "end": 39,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 15087.31883202563
+    },
+    {
+      "id": "assertion-01",
+      "text": "Patient denies suicidal ideation today.",
+      "baseline": "MASK",
+      "points": 64,
+      "expected": "negated",
+      "predicted": "negated",
+      "contrast": "affirmed",
+      "complete": true,
+      "stability": {
+        "passes": true,
+        "signedCosine": 0.9999962761947765,
+        "top3Jaccard": 1.0,
+        "top1Same": true
+      },
+      "delta": 0.02376974966403722,
+      "marginGap": 19.630489349365234,
+      "top": [
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 27.885062707019088
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "patient",
+          "start": 0,
+          "end": 7,
+          "anchor": false,
+          "score": -6.394461445893372
+        },
+        {
+          "text": "denies",
+          "start": 8,
+          "end": 14,
+          "anchor": false,
+          "score": 27.885062707019088
+        },
+        {
+          "text": "suicidal",
+          "start": 15,
+          "end": 23,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "ideation",
+          "start": 24,
+          "end": 32,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "today",
+          "start": 33,
+          "end": 38,
+          "anchor": false,
+          "score": -1.8363421620964457
+        },
+        {
+          "text": ".",
+          "start": 38,
+          "end": 39,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 28899.1600870213
+    },
+    {
+      "id": "temporality-01",
+      "text": "The patient had agitation last year.",
+      "baseline": "PAD",
+      "points": 16,
+      "expected": "historical",
+      "predicted": "historical",
+      "contrast": "recent",
+      "complete": false,
+      "stability": null,
+      "delta": -81.84199122394202,
+      "marginGap": 11.271700859069824,
+      "top": [],
+      "top1CueHit": false,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": -1.0541216003602845
+        },
+        {
+          "text": "patient",
+          "start": 4,
+          "end": 11,
+          "anchor": false,
+          "score": -4.322014671435006
+        },
+        {
+          "text": "had",
+          "start": 12,
+          "end": 15,
+          "anchor": false,
+          "score": -14.620662884355303
+        },
+        {
+          "text": "agitation",
+          "start": 16,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": -41.19927656943028
+        },
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": -9.37421463929132
+        },
+        {
+          "text": ".",
+          "start": 35,
+          "end": 36,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 7216.28748200601
+    },
+    {
+      "id": "temporality-01",
+      "text": "The patient had agitation last year.",
+      "baseline": "PAD",
+      "points": 32,
+      "expected": "historical",
+      "predicted": "historical",
+      "contrast": "recent",
+      "complete": false,
+      "stability": {
+        "passes": false,
+        "signedCosine": -0.16683009867789403,
+        "top3Jaccard": 0.0,
+        "top1Same": false
+      },
+      "delta": 13.068160232574332,
+      "marginGap": 11.271700859069824,
+      "top": [
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 22.701378163887078
+        },
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 2.4672456970402017
+        },
+        {
+          "text": "patient",
+          "start": 4,
+          "end": 11,
+          "anchor": false,
+          "score": 0.4572030239874345
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 2.4672456970402017
+        },
+        {
+          "text": "patient",
+          "start": 4,
+          "end": 11,
+          "anchor": false,
+          "score": 0.4572030239874345
+        },
+        {
+          "text": "had",
+          "start": 12,
+          "end": 15,
+          "anchor": false,
+          "score": -0.2627115774664704
+        },
+        {
+          "text": "agitation",
+          "start": 16,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": -1.0232542158040911
+        },
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 22.701378163887078
+        },
+        {
+          "text": ".",
+          "start": 35,
+          "end": 36,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 15223.691618011799
+    },
+    {
+      "id": "temporality-01",
+      "text": "The patient had agitation last year.",
+      "baseline": "PAD",
+      "points": 64,
+      "expected": "historical",
+      "predicted": "historical",
+      "contrast": "recent",
+      "complete": false,
+      "stability": {
+        "passes": false,
+        "signedCosine": 0.681326947877558,
+        "top3Jaccard": 0.6666666666666666,
+        "top1Same": true
+      },
+      "delta": -17.001700232273826,
+      "marginGap": 11.271700859069824,
+      "top": [
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 13.39754087959408
+        },
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 1.43653263712007
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 1.43653263712007
+        },
+        {
+          "text": "patient",
+          "start": 4,
+          "end": 11,
+          "anchor": false,
+          "score": -0.9711718818498283
+        },
+        {
+          "text": "had",
+          "start": 12,
+          "end": 15,
+          "anchor": false,
+          "score": -4.412594490212105
+        },
+        {
+          "text": "agitation",
+          "start": 16,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": -15.18030651785622
+        },
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 13.39754087959408
+        },
+        {
+          "text": ".",
+          "start": 35,
+          "end": 36,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 29931.866584985983
+    },
+    {
+      "id": "temporality-01",
+      "text": "The patient had agitation last year.",
+      "baseline": "MASK",
+      "points": 16,
+      "expected": "historical",
+      "predicted": "historical",
+      "contrast": "recent",
+      "complete": false,
+      "stability": null,
+      "delta": -21.738304078420597,
+      "marginGap": 12.337485313415527,
+      "top": [
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 17.617945066387822
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": 0.3122640840565949
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": -6.181071576809086
+        },
+        {
+          "text": "patient",
+          "start": 4,
+          "end": 11,
+          "anchor": false,
+          "score": -8.655117412193952
+        },
+        {
+          "text": "had",
+          "start": 12,
+          "end": 15,
+          "anchor": false,
+          "score": -12.494838926446446
+        },
+        {
+          "text": "agitation",
+          "start": 16,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": 0.3122640840565949
+        },
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 17.617945066387822
+        },
+        {
+          "text": ".",
+          "start": 35,
+          "end": 36,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 7487.062240019441
+    },
+    {
+      "id": "temporality-01",
+      "text": "The patient had agitation last year.",
+      "baseline": "MASK",
+      "points": 32,
+      "expected": "historical",
+      "predicted": "historical",
+      "contrast": "recent",
+      "complete": false,
+      "stability": {
+        "passes": false,
+        "signedCosine": 0.7882533541876607,
+        "top3Jaccard": 1.0,
+        "top1Same": true
+      },
+      "delta": 8.162399993657512,
+      "marginGap": 12.337485313415527,
+      "top": [
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 21.16874177001475
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": 4.468949180797408
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": -2.610292172171253
+        },
+        {
+          "text": "patient",
+          "start": 4,
+          "end": 11,
+          "anchor": false,
+          "score": -1.7815413180299664
+        },
+        {
+          "text": "had",
+          "start": 12,
+          "end": 15,
+          "anchor": false,
+          "score": -0.7459721535379014
+        },
+        {
+          "text": "agitation",
+          "start": 16,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": 4.468949180797408
+        },
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 21.16874177001475
+        },
+        {
+          "text": ".",
+          "start": 35,
+          "end": 36,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 15093.08048299863
+    },
+    {
+      "id": "temporality-01",
+      "text": "The patient had agitation last year.",
+      "baseline": "MASK",
+      "points": 64,
+      "expected": "historical",
+      "predicted": "historical",
+      "contrast": "recent",
+      "complete": false,
+      "stability": {
+        "passes": true,
+        "signedCosine": 0.9907591961982639,
+        "top3Jaccard": 1.0,
+        "top1Same": true
+      },
+      "delta": 2.2343303673130848,
+      "marginGap": 12.337485313415527,
+      "top": [
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 20.62629425173494
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": 3.6772232597642054
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": -3.528428134922381
+        },
+        {
+          "text": "patient",
+          "start": 4,
+          "end": 11,
+          "anchor": false,
+          "score": -3.241437869424994
+        },
+        {
+          "text": "had",
+          "start": 12,
+          "end": 15,
+          "anchor": false,
+          "score": -2.9618358264231537
+        },
+        {
+          "text": "agitation",
+          "start": 16,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": "last",
+          "start": 26,
+          "end": 30,
+          "anchor": false,
+          "score": 3.6772232597642054
+        },
+        {
+          "text": "year",
+          "start": 31,
+          "end": 35,
+          "anchor": false,
+          "score": 20.62629425173494
+        },
+        {
+          "text": ".",
+          "start": 35,
+          "end": 36,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 32209.974386991234
+    },
+    {
+      "id": "experiencer-01",
+      "text": "The mother has depression; the patient feels well.",
+      "baseline": "PAD",
+      "points": 16,
+      "expected": "family",
+      "predicted": "family",
+      "contrast": "patient",
+      "complete": false,
+      "stability": null,
+      "delta": -45.03525151944285,
+      "marginGap": 17.39999771118164,
+      "top": [],
+      "top1CueHit": false,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": -1.1689227967807756
+        },
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": -3.029754729821248
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": -15.48288962681679
+        },
+        {
+          "text": "depression",
+          "start": 15,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": ";",
+          "start": 25,
+          "end": 26,
+          "anchor": false,
+          "score": -0.6261214068115979
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": -0.8651186259886972
+        },
+        {
+          "text": "patient",
+          "start": 31,
+          "end": 38,
+          "anchor": false,
+          "score": -3.398936637013379
+        },
+        {
+          "text": "feels",
+          "start": 39,
+          "end": 44,
+          "anchor": false,
+          "score": -0.7146829714436951
+        },
+        {
+          "text": "well",
+          "start": 45,
+          "end": 49,
+          "anchor": false,
+          "score": -2.348827013585027
+        },
+        {
+          "text": ".",
+          "start": 49,
+          "end": 50,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 7765.692707995186
+    },
+    {
+      "id": "experiencer-01",
+      "text": "The mother has depression; the patient feels well.",
+      "baseline": "PAD",
+      "points": 32,
+      "expected": "family",
+      "predicted": "family",
+      "contrast": "patient",
+      "complete": false,
+      "stability": {
+        "passes": false,
+        "signedCosine": -0.4722297837839596,
+        "top3Jaccard": 0.0,
+        "top1Same": false
+      },
+      "delta": 5.329740049746732,
+      "marginGap": 17.39999771118164,
+      "top": [
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 15.340318493640353
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": 4.986752751010249
+        },
+        {
+          "text": "feels",
+          "start": 39,
+          "end": 44,
+          "anchor": false,
+          "score": 1.4892478139872285
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 1.0109119875868735
+        },
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 15.340318493640353
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": 4.986752751010249
+        },
+        {
+          "text": "depression",
+          "start": 15,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": ";",
+          "start": 25,
+          "end": 26,
+          "anchor": false,
+          "score": 0.3779370053339751
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": -0.5781190568913548
+        },
+        {
+          "text": "patient",
+          "start": 31,
+          "end": 38,
+          "anchor": false,
+          "score": -0.07817256609458001
+        },
+        {
+          "text": "feels",
+          "start": 39,
+          "end": 44,
+          "anchor": false,
+          "score": 1.4892478139872285
+        },
+        {
+          "text": "well",
+          "start": 45,
+          "end": 49,
+          "anchor": false,
+          "score": 0.18086133235563046
+        },
+        {
+          "text": ".",
+          "start": 49,
+          "end": 50,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 15667.822805000469
+    },
+    {
+      "id": "experiencer-01",
+      "text": "The mother has depression; the patient feels well.",
+      "baseline": "PAD",
+      "points": 64,
+      "expected": "family",
+      "predicted": "family",
+      "contrast": "patient",
+      "complete": false,
+      "stability": {
+        "passes": true,
+        "signedCosine": 0.9963046310381367,
+        "top3Jaccard": 1.0,
+        "top1Same": true
+      },
+      "delta": 15.331030596130923,
+      "marginGap": 17.39999771118164,
+      "top": [
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 19.75413073082833
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": 7.132213729175364
+        },
+        {
+          "text": "feels",
+          "start": 39,
+          "end": 44,
+          "anchor": false,
+          "score": 2.7555061783992496
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 2.4546851290857057
+        },
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 19.75413073082833
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": 7.132213729175364
+        },
+        {
+          "text": "depression",
+          "start": 15,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": ";",
+          "start": 25,
+          "end": 26,
+          "anchor": false,
+          "score": 0.816713079418756
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": -0.13651042036346395
+        },
+        {
+          "text": "patient",
+          "start": 31,
+          "end": 38,
+          "anchor": false,
+          "score": -0.6717137681097356
+        },
+        {
+          "text": "feels",
+          "start": 39,
+          "end": 44,
+          "anchor": false,
+          "score": 2.7555061783992496
+        },
+        {
+          "text": "well",
+          "start": 45,
+          "end": 49,
+          "anchor": false,
+          "score": 0.6260036488783568
+        },
+        {
+          "text": ".",
+          "start": 49,
+          "end": 50,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 31865.393907995895
+    },
+    {
+      "id": "experiencer-01",
+      "text": "The mother has depression; the patient feels well.",
+      "baseline": "MASK",
+      "points": 16,
+      "expected": "family",
+      "predicted": "family",
+      "contrast": "patient",
+      "complete": false,
+      "stability": null,
+      "delta": 11.534580810837248,
+      "marginGap": 21.866182327270508,
+      "top": [
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 17.648682069037424
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": 5.529225948233373
+        },
+        {
+          "text": "well",
+          "start": 45,
+          "end": 49,
+          "anchor": false,
+          "score": 2.5703466934565573
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 1.9115800199373603
+        },
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 17.648682069037424
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": -0.14398380610694084
+        },
+        {
+          "text": "depression",
+          "start": 15,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": ";",
+          "start": 25,
+          "end": 26,
+          "anchor": false,
+          "score": 2.317943416104725
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": 5.529225948233373
+        },
+        {
+          "text": "patient",
+          "start": 31,
+          "end": 38,
+          "anchor": false,
+          "score": 1.746870307390392
+        },
+        {
+          "text": "feels",
+          "start": 39,
+          "end": 44,
+          "anchor": false,
+          "score": 1.8200984900548658
+        },
+        {
+          "text": "well",
+          "start": 45,
+          "end": 49,
+          "anchor": false,
+          "score": 2.5703466934565573
+        },
+        {
+          "text": ".",
+          "start": 49,
+          "end": 50,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 12060.812718002126
+    },
+    {
+      "id": "experiencer-01",
+      "text": "The mother has depression; the patient feels well.",
+      "baseline": "MASK",
+      "points": 32,
+      "expected": "family",
+      "predicted": "family",
+      "contrast": "patient",
+      "complete": false,
+      "stability": {
+        "passes": false,
+        "signedCosine": 0.9159098933088797,
+        "top3Jaccard": 0.5,
+        "top1Same": true
+      },
+      "delta": -2.213783477077449,
+      "marginGap": 21.866182327270508,
+      "top": [
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 11.361768739369484
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": 3.9839029177722973
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": 1.0974760660153136
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 0.45648124194693374
+        },
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 11.361768739369484
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": 3.9839029177722973
+        },
+        {
+          "text": "depression",
+          "start": 15,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": ";",
+          "start": 25,
+          "end": 26,
+          "anchor": false,
+          "score": 1.036806132757083
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": 1.0974760660153136
+        },
+        {
+          "text": "patient",
+          "start": 31,
+          "end": 38,
+          "anchor": false,
+          "score": 0.21131067612459498
+        },
+        {
+          "text": "feels",
+          "start": 39,
+          "end": 44,
+          "anchor": false,
+          "score": 0.4221206732403862
+        },
+        {
+          "text": "well",
+          "start": 45,
+          "end": 49,
+          "anchor": false,
+          "score": 1.0825324029669638
+        },
+        {
+          "text": ".",
+          "start": 49,
+          "end": 50,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 25441.187934979098
+    },
+    {
+      "id": "experiencer-01",
+      "text": "The mother has depression; the patient feels well.",
+      "baseline": "MASK",
+      "points": 64,
+      "expected": "family",
+      "predicted": "family",
+      "contrast": "patient",
+      "complete": false,
+      "stability": {
+        "passes": true,
+        "signedCosine": 0.9971026211050601,
+        "top3Jaccard": 1.0,
+        "top1Same": true
+      },
+      "delta": 1.8793451361101212,
+      "marginGap": 21.866182327270508,
+      "top": [
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 13.296095705253066
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": 3.8519511519398035
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": 1.8476356862096581
+        }
+      ],
+      "top1CueHit": true,
+      "tokens": [
+        {
+          "text": "the",
+          "start": 0,
+          "end": 3,
+          "anchor": false,
+          "score": 0.8086048363153369
+        },
+        {
+          "text": "mother",
+          "start": 4,
+          "end": 10,
+          "anchor": false,
+          "score": 13.296095705253066
+        },
+        {
+          "text": "has",
+          "start": 11,
+          "end": 14,
+          "anchor": false,
+          "score": 3.8519511519398035
+        },
+        {
+          "text": "depression",
+          "start": 15,
+          "end": 25,
+          "anchor": true,
+          "score": 0.0
+        },
+        {
+          "text": ";",
+          "start": 25,
+          "end": 26,
+          "anchor": false,
+          "score": 1.455093041144333
+        },
+        {
+          "text": "the",
+          "start": 27,
+          "end": 30,
+          "anchor": false,
+          "score": 1.8476356862096581
+        },
+        {
+          "text": "patient",
+          "start": 31,
+          "end": 38,
+          "anchor": false,
+          "score": 0.40277323600137394
+        },
+        {
+          "text": "feels",
+          "start": 39,
+          "end": 44,
+          "anchor": false,
+          "score": 0.6881236500692746
+        },
+        {
+          "text": "well",
+          "start": 45,
+          "end": 49,
+          "anchor": false,
+          "score": 1.3952501564477804
+        },
+        {
+          "text": ".",
+          "start": 49,
+          "end": 50,
+          "anchor": false,
+          "score": 0.0
+        }
+      ],
+      "elapsedMs": 104058.02870201296
+    }
+  ]
+}

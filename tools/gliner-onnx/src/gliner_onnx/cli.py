@@ -115,27 +115,33 @@ def fixture_paths(output, source_paths):
     return list(dict.fromkeys([*source_paths, *sorted(path.name for path in output.glob('*-reference.json'))]))
 
 
-def export_model(model, captures, output):
+def export_model(model, captures, output, *, clinical=False):
     import torch
     import numpy as np
     from .export import (MAIN_INPUTS, MAIN_OUTPUTS, Main, export_graph, export_heads,
                          compare, fixture, prepare_web_attention, session, head_feeds, Attributes)
-    wrapper = Main(model).eval()
+    from .export import ClinicalMain, CLINICAL_INPUTS, CLINICAL_OUTPUTS
+    inputs = CLINICAL_INPUTS if clinical else MAIN_INPUTS
+    outputs = CLINICAL_OUTPUTS if clinical else MAIN_OUTPUTS
+    if clinical:
+        for case in captures:
+            case['feeds'] = {name: case['feeds'][name] for name in inputs}
+    wrapper = (ClinicalMain(model) if clinical else Main(model)).eval()
     # Capture the unmodified PyTorch head before replacing attention with equivalent web math.
     with torch.no_grad():
-        references = [dict(zip(MAIN_OUTPUTS, wrapper(*case['feeds'].values()))) for case in captures]
+        references = [dict(zip(outputs, wrapper(*case['feeds'].values()))) for case in captures]
         attribute_source = Attributes(model)(*head_feeds(model.hidden_size)['attributes'].values())
     prepare_web_attention(model)
-    dynamic = {name: {1: axis} for name, axis in zip(MAIN_INPUTS,
+    dynamic = {name: {1: axis} for name, axis in zip(inputs,
                ['tokens', 'tokens', None, None, 'queries', 'queries', 'choices', 'choices', 'roles', 'roles']) if axis}
-    for name in MAIN_OUTPUTS:
+    for name in outputs:
         if name not in ['text_states']:
             dynamic[name] = {1: 'choices' if name == 'cls_logits' else 'roles' if name == 'rel_role_states' else 'queries'}
-    _, export_error = export_graph(wrapper, captures[0]['feeds'], MAIN_OUTPUTS, output/'model.onnx', dynamic)
+    _, export_error = export_graph(wrapper, captures[0]['feeds'], outputs, output/'model.onnx', dynamic)
     native = session(output/'model.onnx')
     reports, paths = [], []
     for i, (case, reference) in enumerate(zip(captures, references)):
-        actual = dict(zip(MAIN_OUTPUTS, native.run(None, {k: v.numpy() for k, v in case['feeds'].items()})))
+        actual = dict(zip(outputs, native.run(None, {k: v.numpy() for k, v in case['feeds'].items()})))
         errors = compare(reference, actual)
         logits, indices, valid = actual['pair_logits'][0], actual['pair_indices'][0], actual['pair_valid'][0]
         # Verify retained native candidates against source predictions independently of the browser.
@@ -165,11 +171,13 @@ def export_model(model, captures, output):
         case_path, raw_path = f'source-case-{i}.json', f'model-reference-{i}.json'
         (output/case_path).write_text(json.dumps(public_case, ensure_ascii=False, separators=(',', ':')))
         checks = {k: reference[k] for k in ['pair_indices', 'pair_logits', 'pair_valid', 'null_logits']}
-        (output/raw_path).write_text(json.dumps(fixture('model', case['feeds'], checks, case['tokenRows']), separators=(',', ':')))
+        raw_fixture=fixture('model', case['feeds'], checks, case['tokenRows'])
+        if clinical:raw_fixture['candidateComparison']='span-keyed-v1'
+        (output/raw_path).write_text(json.dumps(raw_fixture, separators=(',', ':')))
         paths.extend([case_path, raw_path])
         reports.append({'case': i, 'sourceSpansExact': True, 'sourceScoresWithinTolerance': True, 'outputErrors': errors})
     del native
-    heads = export_heads(model, output, attribute_source)
+    heads = export_heads(model, output, attribute_source, clinical=clinical)
     return fixture_paths(output, paths), {'mainExportErrors': export_error, 'sourceCases': reports, 'heads': heads}
 
 
@@ -177,7 +185,6 @@ def build(args):
     if args.out.resolve() == args.report.resolve():
         raise ValueError('--out and --report must resolve to distinct paths')
     from huggingface_hub import snapshot_download
-    from gliner2 import AutoExtractor
     import torch
     torch.set_num_threads(args.threads)
     args.work_dir.mkdir(parents=True, exist_ok=True)
@@ -191,6 +198,13 @@ def build(args):
         base = args.base_dir or Path(snapshot_download(base_model, revision=revision,
                     allow_patterns=list(BASE_FILES), local_dir=args.work_dir/'base'))
         hashes = verify_base(base, base_model, revision)
+        release = None
+        if args.clinical_release:
+            if args.clinical_schema or args.thresholds:
+                raise ValueError('Use --clinical-release instead of separate schema/threshold files')
+            from .clinical_release import load_release
+            release = load_release(args.clinical_release, adapter, base, base_model, revision)
+        from gliner2 import AutoExtractor
         model = AutoExtractor.from_pretrained(str(base), map_location='cpu', local_files_only=True).eval()
         if model.record_decoder is None or model.relation_scorer is None:
             raise ValueError('This record codec requires both record and relation scoring heads')
@@ -212,19 +226,29 @@ def build(args):
             for field,axis in clinical['shared_axes'].items():
                 if field not in ['assertion','experiencer','time_frame'] or len(axis['labels'])>8:
                     raise ValueError('Unsupported shared-axis contract')
-        captures = source_cases(model, cases)
+        if release:
+            clinical, thresholds, release_identity = release
+        if release:
+            import json as _json
+            synthetic=_json.loads((args.clinical_release/'synthetic_cases.json').read_text())['cases']
+            if not args.cases:
+                cases=[(row.get('text',row.get('prefix','')*8+row.get('suffix','')),list(clinical['core_entities'])) for row in synthetic]
+            else:
+                cases=[(text,list(clinical['core_entities'])) for text,_ in cases]
+        captures = source_cases(model, cases, clinical if release else None, thresholds['clinical_core'] if release else .5)
         if clinical:
-            captures+=source_cases(model,[('The patient denies pain. Her mother has dementia. Last year the patient was agitated.',list(clinical['core_entities'])),('She is pacing, shouting and resisting morning care. No hallucinations. Café 👩‍⚕️.', ['clinical_event'])],clinical,thresholds['clinical_core'])
+            captures+=source_cases(model,[('The patient denies pain. Her mother has dementia. Last year the patient was agitated.',list(clinical['core_entities'])),('She is pacing, shouting and resisting morning care. No hallucinations. Café 👩‍⚕️.', list(clinical['core_entities']) if release else ['clinical_event'])],clinical,thresholds['clinical_core'])
         graphs = scratch/'graphs'
         graphs.mkdir()
-        fixtures, export_report = export_model(model, captures, graphs)
+        fixtures, export_report = export_model(model, captures, graphs, clinical=bool(clinical))
         model.processor.tokenizer.save_pretrained(str(graphs))
         if clinical:
-            (graphs/'clinical-schema-v3.json').write_text(args.clinical_schema.read_text())
+            (graphs/'clinical-schema-v3.json').write_text(json.dumps(clinical))
         package_id = args.id or base_model.split('/')[-1]+'-lora-'+adapter_hash[:12]
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:-]{0,127}', package_id):
             raise ValueError('Invalid package ID')
-        names = ['model.onnx', 'attributes.onnx', 'records.onnx', 'relations.onnx', 'tokenizer.json', *fixtures]
+        graph_names = ['model', 'attributes'] if clinical else ['model', 'attributes', 'records', 'relations']
+        names = [*(name+'.onnx' for name in graph_names), 'tokenizer.json', *fixtures]
         if clinical:names.append('clinical-schema-v3.json')
         files = []
         for name in names:
@@ -246,14 +270,14 @@ def build(args):
                     'license': {'id': args.adapter_license, 'notice': 'Base '+base_model+': '+args.base_license+'. Adapter: '+args.adapter_license+'. Export conformance does not establish clinical accuracy.'},
                     'files': files, 'capabilities': ['*'], 'variants': [{
                         'id': 'wasm-fp32', 'backend': 'wasm', 'precision': 'fp32', 'codec': V3_CODEC if clinical else CODEC,
-                        'graph': 'model.onnx', 'graphs': {k: k+'.onnx' for k in ['model', 'attributes', 'records', 'relations']},
+                        'graph': 'model.onnx', 'graphs': {k: k+'.onnx' for k in graph_names},
                         'tokenizer': 'tokenizer.json', 'fixtures': fixtures, 'threshold': thresholds['clinical_core'] if clinical else .5,
                         **({'clinicalSchema':'clinical-schema-v3.json','clinicalRegistryHash':clinical['registry_sha256'],'sharedAxes':thresholds['shared_axes'],'recordBinding':False,'thresholdSelectionSha256':thresholds['selection_sha256']} if clinical else {}),
                         'fixedWords': 512, 'maxSequenceLength': 512, 'wordOverlap': 32,
                         'pairTemperature': model.boundary_settings.pair_temperature,
                         'abstentionThreshold': model.boundary_settings.abstention_threshold,
                         'automaticRelations': False, 'sourceCodeRevision': SOURCE_REVISION,
-                        'exporterVersion': '0.1.0', 'languageClaims': ['en']} ]}
+                        'exporterVersion': '0.2.0', 'languageClaims': ['en'], **({'clinicalRelease':release_identity} if release else {})} ]}
         args.out.parent.mkdir(parents=True, exist_ok=True)
         # Write in the destination filesystem, verify before publishing atomically.
         with tempfile.NamedTemporaryFile(prefix='model-', suffix='.zip', dir=args.out.parent, delete=False) as temp:
@@ -274,7 +298,10 @@ def build(args):
         report = {'packageId': package_id, 'packageBytes': args.out.stat().st_size,
                   'packageSha256': digest(args.out), 'base': manifest['lineage']['base'],
                   'adapter': manifest['lineage']['adapter'], 'merge': merge_report, 'export': export_report,
-                  'sourceCodeRevision': SOURCE_REVISION, 'exporterVersion': '0.1.0',
+                  'sourceCodeRevision': SOURCE_REVISION, 'exporterVersion': '0.2.0',
+                  **({'clinicalRelease':release_identity} if release else {}),
+                  'exportRuntime': {'torch':torch.__version__, 'numpy':__import__('numpy').__version__, 'transformers':__import__('transformers').__version__},
+                  **({'candidateConformance': 'Valid candidate scores are compared by query and exact interval; raw positional checks remain diagnostic. Missing/extra/duplicate intervals and score drift fail.'} if clinical else {}),
                   'scope': 'Technical source/ONNX conformance on synthetic English cases; no clinical accuracy claim'}
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(report, indent=2)+'\n')
@@ -290,6 +317,7 @@ def main():
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--report', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, default=Path('work/gliner-onnx'))
+    parser.add_argument('--clinical-release',type=Path,help='Verified downloaded ClinicalEvidence release, including pinned runtime, schema and model-specific threshold')
     parser.add_argument('--clinical-schema',type=Path,help='ClinicalEvidence v3 span registry; enables the v3 shared-axis codec without record binding')
     parser.add_argument('--thresholds',type=Path,help='Frozen v3 validation-selected thresholds')
     parser.add_argument('--adapter-repository')

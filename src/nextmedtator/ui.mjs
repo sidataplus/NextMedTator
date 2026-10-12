@@ -12,7 +12,7 @@ import { exportBundle, importBundle, localDownload } from './bundle.mjs';
 import { RecoveryStore, ActiveTimer } from './recovery.mjs';
 import { compareSnapshots, comparisonCSV } from './compare.mjs';
 import { importJSONL, importMedTator, exportMedTator, evidenceJSONL, eventCSV } from './interchange.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, activeVariantForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
 import { mountLegacyAssist } from './assist.mjs';
 import {CorpusSearch} from './corpus-search.mjs';
@@ -353,7 +353,7 @@ export class EvidenceWorkspace {
         applicationMode.dataset.testid='analysis-mode';applicationMode.disabled=this.busy||!this.project.canSeeMachine;
         applicationMode.addEventListener('change',()=>{this.applicationMode=applicationMode.value;});
         aside.append(labeled('Analysis mode',applicationMode),node('p','Auto apply adds predictions as unreviewed records. Existing annotations and machine runs are preserved.',{class:'muted'}));
-        aside.append(thresholdControl({override:this.thresholdOverride,scope:p.extensions.suggestionScope,variant:this.model?.manifest.variants[0],disabled:this.busy,id:'threshold',onChange:(value,render)=>{this.thresholdOverride=value;if(render)this.render();}}));
+        aside.append(thresholdControl({override:this.thresholdOverride,scope:p.extensions.suggestionScope,variant:activeVariantForSchema(this.model,p.schema),disabled:this.busy,id:'threshold',onChange:(value,render)=>{this.thresholdOverride=value;if(render)this.render();}}));
         aside.append(analyze, button('Force stop', () => this.modelRunner.cancel()), node('p', small ? recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec) : structured ? 'No remote inference. Enum attributes come from the local span-attribute head. Value, unit, and relations are not predicted.' : 'No remote inference. Import the local model package under Models. This run does not fill assertion, temporality, experiencer, or relations.', { class: 'muted' }));
         if (!this.project.canSeeMachine) {
             aside.append(node('p', 'The human snapshot is frozen. Use Reveal comparison when ready.'));

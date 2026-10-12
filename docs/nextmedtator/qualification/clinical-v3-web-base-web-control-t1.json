@@ -1,0 +1,512 @@
+{
+  "size": "base",
+  "threads": 1,
+  "actualThreads": 1,
+  "crossOriginIsolated": true,
+  "loadMs": 3579.005000025034,
+  "runs": [
+    {
+      "id": "assertion-01",
+      "repeat": 0,
+      "elapsedMs": 2108.875,
+      "records": 2,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.6511840062193315e-06,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 71905984
+      }
+    },
+    {
+      "id": "assertion-01",
+      "repeat": 1,
+      "elapsedMs": 2044.8199999928474,
+      "records": 2,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.6511840062193315e-06,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 78846215
+      }
+    },
+    {
+      "id": "assertion-01",
+      "repeat": 2,
+      "elapsedMs": 1999.7200000286102,
+      "records": 2,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.6511840062193315e-06,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 86102455
+      }
+    },
+    {
+      "id": "assertion-02",
+      "repeat": 0,
+      "elapsedMs": 1895.7600000202656,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 5.919560586153949e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 92665607
+      }
+    },
+    {
+      "id": "assertion-02",
+      "repeat": 1,
+      "elapsedMs": 1863.0450000166893,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 5.919560586153949e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 99541391
+      }
+    },
+    {
+      "id": "assertion-02",
+      "repeat": 2,
+      "elapsedMs": 1860.469999998808,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 5.919560586153949e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 106880671
+      }
+    },
+    {
+      "id": "assertion-03",
+      "repeat": 0,
+      "elapsedMs": 1913.0699999928474,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.4519243746468078e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 113346351
+      }
+    },
+    {
+      "id": "assertion-03",
+      "repeat": 1,
+      "elapsedMs": 1927.4549999833107,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.4519243746468078e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 120227035
+      }
+    },
+    {
+      "id": "assertion-03",
+      "repeat": 2,
+      "elapsedMs": 1873.2650000154972,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.4519243746468078e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 127089603
+      }
+    },
+    {
+      "id": "assertion-04",
+      "repeat": 0,
+      "elapsedMs": 1969.9500000178814,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.139134034462309e-06,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 133963169
+      }
+    },
+    {
+      "id": "assertion-04",
+      "repeat": 1,
+      "elapsedMs": 1926.094999998808,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.139134034462309e-06,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 73848177
+      }
+    },
+    {
+      "id": "assertion-04",
+      "repeat": 2,
+      "elapsedMs": 1902.2899999916553,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 2.139134034462309e-06,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 80702865
+      }
+    },
+    {
+      "id": "assertion-05",
+      "repeat": 0,
+      "elapsedMs": 1916.9000000059605,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 4.3502942026485414e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 56976988
+      }
+    },
+    {
+      "id": "assertion-05",
+      "repeat": 1,
+      "elapsedMs": 1904.6400000154972,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 4.3502942026485414e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 63872508
+      }
+    },
+    {
+      "id": "assertion-05",
+      "repeat": 2,
+      "elapsedMs": 1910.719999998808,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 4.3502942026485414e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 57050185
+      }
+    },
+    {
+      "id": "assertion-06",
+      "repeat": 0,
+      "elapsedMs": 1877.5799999833107,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 4.717867319037339e-09,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 63929179
+      }
+    },
+    {
+      "id": "assertion-06",
+      "repeat": 1,
+      "elapsedMs": 1953.4950000047684,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 4.717867319037339e-09,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 70785743
+      }
+    },
+    {
+      "id": "assertion-06",
+      "repeat": 2,
+      "elapsedMs": 2055.869999974966,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 4.717867319037339e-09,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 77642555
+      }
+    },
+    {
+      "id": "assertion-07",
+      "repeat": 0,
+      "elapsedMs": 2023.8700000047684,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 1.545878107744869e-07,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 84520621
+      }
+    },
+    {
+      "id": "assertion-07",
+      "repeat": 1,
+      "elapsedMs": 1977.8350000083447,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 1.545878107744869e-07,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 59057857
+      }
+    },
+    {
+      "id": "assertion-07",
+      "repeat": 2,
+      "elapsedMs": 2122.2450000047684,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 1.545878107744869e-07,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 65917285
+      }
+    },
+    {
+      "id": "assertion-08",
+      "repeat": 0,
+      "elapsedMs": 2098.440000027418,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 1.5348625703737184e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 72798015
+      }
+    },
+    {
+      "id": "assertion-08",
+      "repeat": 1,
+      "elapsedMs": 2061.4899999797344,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 1.5348625703737184e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 79642387
+      }
+    },
+    {
+      "id": "assertion-08",
+      "repeat": 2,
+      "elapsedMs": 1929.344999998808,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 1.5348625703737184e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 59073563
+      }
+    },
+    {
+      "id": "assertion-09",
+      "repeat": 0,
+      "elapsedMs": 1937.3549999892712,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 6.851273115504597e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 65935317
+      }
+    },
+    {
+      "id": "assertion-09",
+      "repeat": 1,
+      "elapsedMs": 1965.5399999916553,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 6.851273115504597e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 72783101
+      }
+    },
+    {
+      "id": "assertion-09",
+      "repeat": 2,
+      "elapsedMs": 1948.2249999940395,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 6.851273115504597e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 79630157
+      }
+    },
+    {
+      "id": "assertion-10",
+      "repeat": 0,
+      "elapsedMs": 1972.5249999761581,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 9.358128583158987e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 59190787
+      }
+    },
+    {
+      "id": "assertion-10",
+      "repeat": 1,
+      "elapsedMs": 1944.3349999785423,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 9.358128583158987e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 66054383
+      }
+    },
+    {
+      "id": "assertion-10",
+      "repeat": 2,
+      "elapsedMs": 1937.9149999916553,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 9.358128583158987e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 72905523
+      }
+    },
+    {
+      "id": "assertion-11",
+      "repeat": 0,
+      "elapsedMs": 1890.0549999773502,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 5.448973827704151e-09,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 79762637
+      }
+    },
+    {
+      "id": "assertion-11",
+      "repeat": 1,
+      "elapsedMs": 1877.25,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 5.448973827704151e-09,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 59183285
+      }
+    },
+    {
+      "id": "assertion-11",
+      "repeat": 2,
+      "elapsedMs": 1889.9950000047684,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 5.448973827704151e-09,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 66022961
+      }
+    },
+    {
+      "id": "assertion-12",
+      "repeat": 0,
+      "elapsedMs": 1981.469999998808,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 7.45444357352909e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 72882027
+      }
+    },
+    {
+      "id": "assertion-12",
+      "repeat": 1,
+      "elapsedMs": 1879.8549999892712,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 7.45444357352909e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 79736419
+      }
+    },
+    {
+      "id": "assertion-12",
+      "repeat": 2,
+      "elapsedMs": 1883.4849999845028,
+      "records": 1,
+      "sourceDecisionsExact": true,
+      "maxCoreConfidenceError": 7.45444357352909e-08,
+      "memory": {
+        "wasmCapacityBytes": 2240872448,
+        "jsHeapBytes": 59240647
+      }
+    }
+  ],
+  "memory": {
+    "wasmCapacityBytes": 2240872448,
+    "jsHeapBytes": 59259843
+  },
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+  "scope": "Warm complete browser inference including JS tokenization, span decode and all three axes; local model loading separate. Full 18-query prompt. Synthetic examples only.",
+  "summary": {
+    "n": 36,
+    "medianMs": 1933.3499999940395,
+    "p90Ms": 2055.869999974966,
+    "maxCoreConfidenceError": 2.6511840062193315e-06
+  },
+  "processMemoryPeak": {
+    "rendererPssBytes": 3501998080,
+    "rendererVmHwmBytes": 3615186944,
+    "browserTreePssBytes": 3698933760
+  },
+  "processMemorySamples": 640,
+  "memoryCaveat": "Linux PSS sampled every 100ms from this new Chromium process tree, including startup; renderer VmHWM is cumulative. WASM capacity is allocation, not live memory. Metrics overlap; do not add them.",
+  "artifactIdentity": {
+    "id": "gliner25-clinical-v3-base",
+    "runtimeVersion": "1.23.2",
+    "lineage": {
+      "base": {
+        "model": "fastino/gliner2.5-base-v1",
+        "revision": "ca906247640776a07753514055be9726f9080ead",
+        "files": {
+          "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+          "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+          "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+          "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+          "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+        }
+      },
+      "adapter": {
+        "sha256": "b6afb3ec64afd2898b00b771973de67601c835b1baa6251e3b3b1cd5fb6f494d",
+        "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+        "weightsSha256": "69ae2aabb2f4a5777b2054bfcb4c4eb075c887ea2be888515363c1d17306bfe0",
+        "configSha256": "d82ae3e025d08c14f8498bbfe0505352047f42856b966868816b68585b6a3d64",
+        "repository": "na399/clinical-evidence-gliner2.5-base-lora-v3-act-sol",
+        "revision": "b5db08ccd2581690f30a448428ba7659e1469eeb"
+      },
+      "merge": "merged-export",
+      "trainedHeads": "509ed04f191b07614eb27963a8903fbe9b0d02cc1cfc4e82e7bfec990eddf148"
+    },
+    "clinicalRelease": {
+      "modelSize": "base",
+      "runtimeFingerprint": "aec77e5692a8cf808fc0568a64b5ad882f4b8bbdedf6c3ba7b7f90b1a3d066d7",
+      "registryHash": "80f255076cde0237c3f176b45545807bb237cbc57af1d983c6550a6d6816f547",
+      "adapterFingerprint": "a1baa9e59ef0eaf73bb11fac6c5e391035ff6ee60a4d1e639678dcc9d15964d0",
+      "coreThreshold": 0.6
+    },
+    "graphs": [
+      {
+        "path": "model.onnx",
+        "bytes": 741277203,
+        "sha256": "d28eb99415d39aabc44b98469a5d5802ac57a2a6d2ed1b4de8eb715c8c763d1d",
+        "role": "graph"
+      },
+      {
+        "path": "attributes.onnx",
+        "bytes": 6018069,
+        "sha256": "9657969c0eaad858ec089afccf5853fa867c494927c5e008303c8e3bb969092c",
+        "role": "graph"
+      }
+    ]
+  },
+  "hostLimits": {
+    "cpu.max": "400000 100000",
+    "memory.max": "17179869184"
+  }
+}

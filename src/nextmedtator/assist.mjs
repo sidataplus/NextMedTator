@@ -8,7 +8,7 @@ import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, activeVariantForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
@@ -280,7 +280,7 @@ class LegacyAssist {
     adoptModel(candidate){
         if(this.model&&this.model.manifestHash!==candidate.manifestHash)this.thresholdOverride=null;
         this.model=candidate;
-        if(!this.scope&&sameScope(this.scopeDraft,presetScope())&&candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC)this.scopeDraft=presetScope('all',CLINICAL_V3_CODEC);
+        if(!this.scope&&sameScope(this.scopeDraft,presetScope())&&candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC)this.scopeDraft=presetScope('all',CLINICAL_V3_CODEC,candidate.manifest.variants[0].threshold);
     }
     async importPackage(file) {
         if (file.size > MODEL_LIMITS.archive)
@@ -301,7 +301,7 @@ class LegacyAssist {
             this.scopeTokenizer=GlinerTokenizer.fromJson(new TextDecoder().decode(this.model.files.get(variant.tokenizer)));
             this.scopeTokenizerManifest=this.model.manifestHash;this.scopeTokenizerPath=variant.tokenizer;
         }
-        const prompt=schemaPrompt(schema),prefixTokens=smallPromptCost(schema,this.scopeTokenizer);
+        const prompt=schemaPrompt(schema),prefixTokens=smallPromptCost(schema,this.scopeTokenizer,{completeClinicalPrompt:!!variant.clinicalRelease});
         planWindows(this.scopeTokenizer,prompt.labels,[{text:'clinical',start:0,end:8}],{prefixTokens});
     }
     async applyScope() {
@@ -588,7 +588,7 @@ class LegacyAssist {
         actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !view?.ann, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
         actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
-        body.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:this.model?.manifest.variants[0],disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=value;if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
+        body.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:activeVariantForSchema(this.model,view?.data?.dtd?legacySchema(view.data.dtd):null),disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=value;if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
         body.append(actions);
         body.append(renderScopeEditor(this));
         const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));

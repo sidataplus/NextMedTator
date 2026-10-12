@@ -1,6 +1,7 @@
+import {wasmThreadCount} from './inference-options.mjs';
 import {CLINICAL_V3_CODEC,validateClinicalV3Registry} from './clinical-v3.mjs';
 import {RECORDS_CODEC,isRecordsCodec,smallRuntime,analyzeSmall} from './gliner-small.mjs';
-import { validateModelManifest, compareTensors, CODECS } from './model-package.mjs';
+import { validateModelManifest, compareTensors, compareCandidateSpans, CODECS } from './model-package.mjs';
 import { invariant, jsonParse, sha256 } from './integrity.mjs';
 import { GLINER_CODEC, GLINER_STRUCTURED, GLINER_LIMITS, SPAN_NOTICE, STRUCTURED_NOTICE, GlinerTokenizer, readGlinerConfig, prepareWindow, planWindows, decodeBoundary, locateSpans, documentCoverage, resolveFlat, splitWords, attributeFields, compareSpanOccurrences } from './gliner.mjs';
 // ORT and its WASM files are copied locally by the build. No fallback URL or API.
@@ -11,7 +12,7 @@ self.onmessage = async ({ data }) => {
         if (data.task === 'load') {
             invariant(!loaded, 'A model is already loaded in this worker');
             loaded = await loadModel(data);
-            result = { ready: true };
+            result = { ready: true, wasmThreads: loaded.ort.env.wasm.numThreads };
         }
         else {
             invariant(loaded, 'Load a model before requesting inference');
@@ -37,7 +38,7 @@ async function loadModel(data) {
     if(variant.codec===CLINICAL_V3_CODEC)validateClinicalV3Registry(jsonParse(new TextDecoder('utf-8',{fatal:true}).decode(files.get(variant.clinicalSchema))));
     const ort = await import('../../vendor/ort/ort.webgpu.min.mjs');
     invariant(ort.env.versions.web === manifest.runtimeVersion, 'Package/runtime version mismatch');
-    ort.env.wasm.numThreads = 1;
+    ort.env.wasm.numThreads = wasmThreadCount({crossOriginIsolated:self.crossOriginIsolated,hardwareConcurrency:navigator.hardwareConcurrency});
     ort.env.wasm.proxy = false;
     ort.env.wasm.wasmPaths = new URL('../../vendor/ort/', import.meta.url).href;
     if (variant.backend === 'webgpu') {
@@ -50,7 +51,7 @@ async function loadModel(data) {
         const tokenizer=GlinerTokenizer.fromJson(new TextDecoder().decode(files.get(variant.tokenizer)));
         const graphs={};for(const [name,path] of Object.entries(variant.graphs))graphs[name]=await openSession(ort,files,variant,path,context.sessions);
         if(variant.codec!=='gliner25-small-records-v5')invariant(graphs.model.outputNames.includes('null_logits'),'Generic GLiNER graph lacks source abstention output');
-        context.small=smallRuntime(ort,graphs,tokenizer,variant);return context;
+        context.small=smallRuntime(ort,graphs,tokenizer,variant);return releaseGraphBuffers(context);
     }
     if (codec.coverage === 'entity-span' || codec.coverage === 'structured-span') {
         context.tokenizer = GlinerTokenizer.fromJson(new TextDecoder('utf-8', { fatal: true }).decode(files.get(variant.tokenizer)));
@@ -63,8 +64,14 @@ async function loadModel(data) {
     }
     else
         context.session = await openSession(ort, files, variant, variant.graph, context.sessions);
+    return releaseGraphBuffers(context);
+}
+function releaseGraphBuffers(context){
+    // Sessions own the compiled graph. Keep tokenizer/schema/fixtures, not another weight copy.
+    for(const file of context.manifest.files)if(file.role==='graph'||file.role==='weights')context.files.delete(file.path);
     return context;
 }
+
 async function openSession(ort, files, variant, graph, sessions) {
     const session = await ort.InferenceSession.create(files.get(graph), { executionProviders: [variant.backend], externalData: (variant.externalData ?? []).map(f => ({ path: f.name, data: files.get(f.path) })), logSeverityLevel: 4 });
     sessions.push(session);
@@ -189,9 +196,15 @@ async function attachAttributes(ort, explicit, tokens, wordCount, attributeState
 }
 
 async function runSmall(context,request){
-    const analyze=async(input)=>({...await analyzeSmall(context.small,input.text,input.schema,{threshold:input.threshold??context.variant.threshold??.5,automaticRelations:context.variant.automaticRelations===true,codec:context.variant.codec,abstentionThreshold:context.variant.abstentionThreshold??.5,onProgress:progress=>self.postMessage({progress})}),kind:context.variant.codec,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision});
+    const analyze=async(input)=>({...await analyzeSmall(context.small,input.text,input.schema,{threshold:context.variant.clinicalRelease?context.variant.threshold:input.threshold??context.variant.threshold??.5,automaticRelations:context.variant.automaticRelations===true,codec:context.variant.codec,abstentionThreshold:context.variant.abstentionThreshold??.5,onProgress:progress=>self.postMessage({progress})}),kind:context.variant.codec,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision,wasmThreads:context.ort.env.wasm.numThreads});
     if(request.task==='analyze')return analyze(request);
     const results=[];
-    for(const path of context.variant.fixtures){const fixture=jsonParse(new TextDecoder().decode(context.files.get(path)));if(fixture.feeds){const checks={};for(const row of fixture.tokenRows)invariant(JSON.stringify(context.small.rt._tokenize(row.text))===JSON.stringify(row.ids),'Exact tokenizer conformance failed');const feeds={};for(const [name,t] of Object.entries(fixture.feeds))feeds[name]=new context.ort.Tensor(t.type,t.type==='int64'?BigInt64Array.from(t.data,BigInt):Float32Array.from(t.data),t.dims);const session=fixture.graph==='attributes'?context.small.rt.attrsSession:fixture.graph==='records'?context.small.rt.recordsSession:fixture.graph==='relations'?context.small.rt.headsSession:context.small.rt.session;const outputs=await session.run(feeds);for(const [name,expected] of Object.entries(fixture.outputs)){invariant(JSON.stringify(outputs[name].dims)===JSON.stringify(expected.dims),'Native output shape mismatch');checks[name]=compareTensors(outputs[name].data,expected.data,expected.tolerance);}results.push({fixture:path,checks,tokenIdsExact:fixture.tokenRows.length?true:null,pass:Object.values(checks).every(c=>c.pass)});continue;}const actual=await analyze(fixture);const {canonical}=await import('./integrity.mjs');const rows=records=>records.map(({id,origin,score,documentId,...r})=>r).sort((a,b)=>canonical(a).localeCompare(canonical(b)));const pass=canonical(rows(actual.records))===canonical(rows(fixture.records));results.push({fixture:path,pass,status:actual.status,records:actual.records});}
-    return {kind:context.variant.codec,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision,results,pass:results.every(r=>r.pass)};
+    for(const path of context.variant.fixtures){const fixture=jsonParse(new TextDecoder().decode(context.files.get(path)));if(fixture.feeds){const checks={};for(const row of fixture.tokenRows)invariant(JSON.stringify(context.small.rt._tokenize(row.text))===JSON.stringify(row.ids),'Exact tokenizer conformance failed');const feeds={};for(const [name,t] of Object.entries(fixture.feeds))feeds[name]=new context.ort.Tensor(t.type,t.type==='int64'?BigInt64Array.from(t.data,BigInt):Float32Array.from(t.data),t.dims);const session=fixture.graph==='attributes'?context.small.rt.attrsSession:fixture.graph==='records'?context.small.rt.recordsSession:fixture.graph==='relations'?context.small.rt.headsSession:context.small.rt.session;const outputs=await session.run(feeds);for(const [name,expected] of Object.entries(fixture.outputs)){invariant(JSON.stringify(outputs[name].dims)===JSON.stringify(expected.dims),'Native output shape mismatch');checks[name]=compareTensors(outputs[name].data,expected.data,expected.tolerance);}let rawCandidateChecks;
+        if(fixture.candidateComparison==='span-keyed-v1'){
+            rawCandidateChecks=Object.fromEntries(['pair_indices','pair_logits','pair_valid'].map(name=>[name,checks[name]]));
+            checks.candidates=compareCandidateSpans(outputs,fixture.outputs);
+            for(const name of ['pair_indices','pair_logits','pair_valid'])delete checks[name];
+        }
+        results.push({fixture:path,checks,...(rawCandidateChecks?{rawCandidateChecks}:{}),tokenIdsExact:fixture.tokenRows.length?true:null,pass:Object.values(checks).every(c=>c.pass)});continue;}const actual=await analyze(fixture);const {canonical}=await import('./integrity.mjs');const rows=records=>records.map(({id,origin,score,documentId,...r})=>r).sort((a,b)=>canonical(a).localeCompare(canonical(b)));const pass=canonical(rows(actual.records))===canonical(rows(fixture.records));results.push({fixture:path,pass,status:actual.status,records:actual.records});}
+    return {kind:context.variant.codec,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision,wasmThreads:context.ort.env.wasm.numThreads,results,pass:results.every(r=>r.pass)};
 }
