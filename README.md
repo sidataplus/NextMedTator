@@ -1,3 +1,19 @@
+# NextMedTator
+
+NextMedTator extends MedTator with local model packages, portable prediction
+history, assisted review, and offline browser workflows. Build `dist/` for a
+static Cloudflare Pages site; Python is a build/development tool, not a hosted
+inference server. See [distribution and release gates](docs/nextmedtator/DISTRIBUTION.md)
+and [the exact BPSD adapter workflow](docs/nextmedtator/BPSD-NATIVE.md).
+
+Research predictions require human review. Technical model/browser conformance
+and agreement with synthetic annotations do not establish clinical validity.
+Private schemas, notes, checkpoints and model weights belong outside Git and
+static output. The existing public model catalog is separate from restricted
+or unlicensed research adapters.
+
+The upstream project information follows.
+
 # <img alt="MedTator" src="https://raw.githubusercontent.com/wiki/OHNLP/MedTator/img/logo.png">
 
 MedTator is a serverless text annotation tool for corpus development. It is built on HTML5 techniques and many open-source packages, and was designed to be easy-to-use for your annotation task.

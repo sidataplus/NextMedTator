@@ -1,9 +1,10 @@
+import {ENTITY_ATTRIBUTES_CODEC,entityContractSchema} from './entity-contract.mjs';
 import {suggestionThreshold,thresholdControl} from './threshold.mjs';
 import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
 import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD, sameScope} from './scope.mjs';
 import {renderScopeEditor} from './scope-ui.mjs';
-import {ModelStore} from './model-store.mjs';
+import {ModelStore,downloadCatalogPackage} from './model-store.mjs';
 import {createModelSelectionState,saveModelSelectionState,setModelSelection,selectionThresholdOverride,setSelectionThresholdOverride,restoreSelectionThresholdOverride,modelSelectionKey,modelSelectionControlValue,modelSelectionLabel,modelSelectionMatchesManifest,matchingInstalledModels,selectionFromManifest,localAdapterSelection,renderModelSelectionControls} from './model-selection.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
@@ -335,7 +336,9 @@ class LegacyAssist {
         this.adoptModel(candidate,{selectSource:true});
         const structured = candidate.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const qualified = candidate.manifest.variants.some(variant => CODECS[variant.codec].clinicalInference);
-        this.message = structured
+        this.message = candidate.manifest.variants[0].codec===ENTITY_ATTRIBUTES_CODEC
+            ? 'Entity/attribute package loaded locally. Complete native prompt, explicit applicability, declared overlap and token budget; no bindings or relations.'
+            : structured
             ? 'GLiNER2.5 structured package loaded in memory. Analyze fills spans and enum attributes on this device.'
             : qualified
                 ? 'GLiNER2.5 span package loaded in memory. Analyze fills spans and scores on this device.'
@@ -433,8 +436,9 @@ class LegacyAssist {
         if (!anns.length)
             throw new Error('Open a document first');
         const nativeSchema=legacySchema(legacy().data.dtd),scope=this.scope?clone(this.scope):null;
-        const activeCodec=model.manifest.variants[0].codec;
-        const schema=scope?compileScope(scope,nativeSchema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(nativeSchema):nativeSchema;
+        const activeVariant=selectInferenceVariant(model,qualifyForSchema(model,nativeSchema).level),activeCodec=activeVariant.codec;
+        invariant(activeCodec!==ENTITY_ATTRIBUTES_CODEC||!scope,'Clear the clinical suggestion scope before using a fixed entity-contract model. Its complete native prompt must be retained.');
+        const schema=activeCodec===ENTITY_ATTRIBUTES_CODEC?entityContractSchema(nativeSchema,model.entityContracts.get(activeVariant.id)):scope?compileScope(scope,nativeSchema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(nativeSchema):nativeSchema;
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
         const autoApply = this.mode === 'auto';
         if (autoApply) for (const ann of anns) {
@@ -460,7 +464,7 @@ class LegacyAssist {
                 this.blinded.add(key);
             return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: thresholdSettings.threshold };
         });
-        const runSettings={codec,...(codec===CLINICAL_V3_CODEC?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const runSettings={codec,...(codec===ENTITY_ATTRIBUTES_CODEC?{overlapPolicy:model.entityContracts.get(variant.id).overlapPolicy,maxEncodedTokens:variant.maxSequenceLength,contextPolicy:'reject',wordOverlap:0}:{}),...((codec===CLINICAL_V3_CODEC||codec===ENTITY_ATTRIBUTES_CODEC)?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         const completed=new Set();let activeIndex=0;
         try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { onProgress: index => {
             activeIndex=index;
@@ -650,7 +654,24 @@ class LegacyAssist {
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})));
+        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})),button('Show approved public model',()=>this.perform(async()=>{
+            const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});
+            invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();
+        })));
+        for(const entry of this.catalog?.entries??[]){
+            const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
+            body.append(node('p',`${entry.manifest.id} · ${entry.manifest.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage. Inference stays on this device.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
+                this.setSelectedModel(selectionFromManifest(entry.manifest),{render:false,restoreInstalled:false});
+                const epoch=this.modelSelectionEpoch;this.installController=new AbortController();
+                try{
+                    const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{this.message=`Downloading ${received} of ${total} bytes`;const message=this.root.querySelector('[data-testid=assist-message]');if(message)message.textContent=this.message;}});
+                    invariant(epoch===this.modelSelectionEpoch&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Model selection changed during download');
+                    const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});
+                    invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');
+                    this.adoptModel(installed);this.message='Public model installed and hashes verified; analysis runs locally.';
+                }finally{this.installController=null;}
+            })),button('Stop model download',()=>this.installController?.abort()));
+        }
         for(const item of this.installedModels??[]){
             const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
             body.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));

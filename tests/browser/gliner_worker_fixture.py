@@ -95,6 +95,7 @@ def check_worker_regressions(page):
         page.get_by_test_id('assist-freeze').click()
         expect(page.get_by_test_id('assist-message')).to_contain_text('Independent annotation frozen')
     page.get_by_test_id('assist-analyze-selected').click()
+    page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy',timeout=30000)
     expect(page.get_by_test_id('assist-message')).to_contain_text('Local analysis finished')
     evidence = page.evaluate('window.__workerEvidence')
     assert evidence == {'starts': 2, 'stops': 2, 'messages': [
@@ -236,12 +237,15 @@ def check_worker_regressions(page):
         return p.current.draft.records.length===4&&p.current.draft.records.every(r=>r.origin.kind==='machine-applied'&&r.origin.legacyTagId)&&new Set(p.current.draft.records.map(r=>r.origin.runId)).size===2;
     }''')
     # Auto mode applies each selected note, including notes not currently open.
+    page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy',timeout=30000)
     auto_names = [page.evaluate('text=>app_hotpot.vpp.add_sample_txt_as_ann(text)._filename', NOTE) for _ in range(2)]
     for name in names:
         page.get_by_role('checkbox',name=name,exact=True).uncheck()
     for name in auto_names:
         page.get_by_role('checkbox',name=name,exact=True).check()
+    assert page.evaluate('document.querySelector("nextmedtator-assist").assist.chosenDocuments(true).length') == 2
     page.get_by_test_id('assist-analyze-selected').click()
+    page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy',timeout=30000)
     expect(page.get_by_test_id('assist-message')).to_contain_text('Auto apply finished for 2 notes')
     assert page.evaluate('''names=>{
         const a=document.querySelector('nextmedtator-assist').assist;

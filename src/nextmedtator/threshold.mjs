@@ -1,6 +1,6 @@
 // A per-analysis override never rewrites a frozen scope or a model manifest.
 export function suggestionThreshold(override, scope, variant) {
-    if(variant?.clinicalRelease)return {threshold:variant.threshold,thresholdSource:'model'};
+    if((variant?.clinicalRelease||variant?.fixedThreshold))return {threshold:variant.threshold,thresholdSource:'model'};
     const source = override == null ? (scope?.threshold == null ? 'model' : 'scope') : 'user';
     const value = override ?? scope?.threshold ?? variant?.threshold ?? .5;
     const threshold = typeof value === 'string' && value.trim() ? Number(value) : value;
@@ -21,8 +21,8 @@ export function thresholdControl({override, scope, variant, disabled, id, onChan
     // Preserve exact existing defaults; user movements select hundredths.
     input.step = 'any';
     input.dataset.testid = id; input.dataset.focusKey = id;
-    input.disabled = disabled || !!variant?.clinicalRelease;
-    input.value = variant?.clinicalRelease ? variant.threshold : override ?? suggestionThreshold(null, scope, variant).threshold;
+    input.disabled = disabled || !!(variant?.clinicalRelease||variant?.fixedThreshold);
+    input.value = (variant?.clinicalRelease||variant?.fixedThreshold) ? variant.threshold : override ?? suggestionThreshold(null, scope, variant).threshold;
     input.setAttribute('aria-describedby', id + '-help');
     const output = document.createElement('output');
     output.htmlFor = id; output.dataset.testid = id + '-value';
@@ -36,13 +36,13 @@ export function thresholdControl({override, scope, variant, disabled, id, onChan
     });
     heading.append(label, output);
     const reset = document.createElement('button');
-    reset.type = 'button'; reset.textContent = 'Use default'; reset.disabled = disabled || !!variant?.clinicalRelease;
+    reset.type = 'button'; reset.textContent = 'Use default'; reset.disabled = disabled || !!(variant?.clinicalRelease||variant?.fixedThreshold);
     reset.dataset.testid = id + '-reset';
     reset.addEventListener('click', () => onChange(null, true));
     const help = document.createElement('p');
     help.id = id + '-help'; help.className = 'muted';
     const baseline = suggestionThreshold(null, scope, variant);
-    help.textContent = variant?.clinicalRelease ? `This checkpoint uses its fixed validation-selected threshold: ${variant.threshold}.` : `0–1. Lower includes more spans; higher is stricter. Applies to the next analysis. ${baseline.thresholdSource === 'scope' ? 'Scope' : 'Model'} default: ${baseline.threshold}.`;
+    help.textContent = (variant?.clinicalRelease||variant?.fixedThreshold) ? `This checkpoint uses its fixed declared source threshold: ${variant.threshold}.` : `0–1. Lower includes more spans; higher is stricter. Applies to the next analysis. ${baseline.thresholdSource === 'scope' ? 'Scope' : 'Model'} default: ${baseline.threshold}.`;
     section.append(heading, input, reset, help);
     return section;
 }

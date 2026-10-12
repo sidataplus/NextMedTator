@@ -12,6 +12,12 @@ HEADERS = """/*
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
 """
+if __package__:
+    from .model_delivery import connect_origins
+else:
+    from model_delivery import connect_origins
+if connect_origins():
+    HEADERS=HEADERS.replace("; worker-src 'self'",' '+' '.join(connect_origins())+"; worker-src 'self'")
 
 def offline_assets(out: Path) -> None:
     inventory=[]
@@ -29,7 +35,8 @@ def offline_assets(out: Path) -> None:
 if __name__=='__main__':
     if OUT.exists():shutil.rmtree(OUT)
     shutil.copytree(ROOT/'src/nextmedtator',OUT/'app/nextmedtator')
-    if (ROOT/'models').exists(): shutil.copytree(ROOT/'models',OUT/'models')
+    from backend_assets import copy_public_models
+    copy_public_models(ROOT/'models',OUT)
     runtime=ROOT/'node_modules/onnxruntime-web/dist'
     if not runtime.is_dir():
         raise RuntimeError('Missing local ONNX Runtime Web package')

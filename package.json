@@ -20,7 +20,8 @@
     "audit:assets": "node scripts/audit_assets.mjs",
     "deps:verify": "node scripts/verify_dependency_versions.mjs",
     "samples:generate": "node scripts/generate_demo.mjs",
-    "build:core": "node scripts/build_wasm.mjs"
+    "build:core": "node scripts/build_wasm.mjs",
+    "lint": "node scripts/lint.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "5.15.4",

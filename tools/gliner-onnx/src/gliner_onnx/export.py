@@ -182,7 +182,7 @@ def tensor_json(tensor, *, expected=False):
     if expected:
         row['tolerance'] = {'atol': 1e-4, 'rtol': 1e-4} if values.dtype.kind == 'f' else {'atol': 0, 'rtol': 0}
     else:
-        row['type'] = 'int64' if values.dtype == np.int64 else 'float32'
+        row['type'] = 'bool' if values.dtype == np.bool_ else 'int64' if values.dtype == np.int64 else 'float32'
     return row
 
 

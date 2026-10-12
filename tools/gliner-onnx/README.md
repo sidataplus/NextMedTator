@@ -341,3 +341,12 @@ The original rank-16 mixv1 adapter and its results remain archived in the
 The [adapter comparison](../../docs/nextmedtator/qualification/adapter-comparison.json)
 uses the same 27-note fixture, schema, threshold and matching protocol. These
 are unverified generated labels, not a clinical gold standard.
+
+## Fixed entity/attribute contracts
+
+`--entity-contract` selects the two-graph declarative codec that retains the
+external model's complete prompts, attribute applicability, explicit overlap
+and reject-on-capacity policy. It requires a local adapter/base directory and
+1–64 synthetic parity cases, with active/merged/ONNX comparisons. The legacy
+512-token export still rejects incompatible declared native settings. See
+[contract configuration, exact BPSD pins and browser limits](../../docs/nextmedtator/ENTITY-CONTRACT-BROWSER.md).

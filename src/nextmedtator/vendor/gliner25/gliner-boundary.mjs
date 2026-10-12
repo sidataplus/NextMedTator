@@ -439,10 +439,10 @@ export class GlinerBoundaryRuntime {
    */
   async computeMarginals(text, labels, {
     maxWords = NATIVE_MAX_WORDS, parent = "entities", descriptions,
-    schemaKind = "entities", clsTask = "label", relations,
+    schemaKind = "entities", clsTask = "label", relations, preparedInput = null,
   } = {}) {
-    const normalized = normalizeText(text);
-    const words = splitWords(normalized).slice(0, maxWords);
+    const normalized = preparedInput?.normalized ?? normalizeText(text);
+    const words = preparedInput?.words ?? splitWords(normalized).slice(0, maxWords);
     if (words.length === 0) {
       return { normalized: "", words: [], labels, startLogits: null, endLogits: null };
     }
@@ -458,7 +458,7 @@ export class GlinerBoundaryRuntime {
         );
       }
     }
-    const { inputIds, textWordFirstPositions, queryMarkerPositions: entityMarkerPositions, clsMarkerPositions, relMarkerPositions } = packInput(
+    const { inputIds, textWordFirstPositions, queryMarkerPositions: entityMarkerPositions, clsMarkerPositions, relMarkerPositions } = preparedInput ?? packInput(
       (t) => this._tokenize(t),
       schemaTokens,
       words.map((w) => w.text),
@@ -488,9 +488,9 @@ export class GlinerBoundaryRuntime {
       input_ids: new this.ort.Tensor("int64", BigInt64Array.from(inputIds.map(BigInt)), [1, T]),
       attention_mask: new this.ort.Tensor("int64", BigInt64Array.from({ length: T }, () => 1n), [1, T]),
       text_word_indices: new this.ort.Tensor("int64", wordIndices, [1, paddedL]),
-      text_word_mask: new this.ort.Tensor("float32", wordMask, [1, paddedL]),
+      text_word_mask: new this.ort.Tensor(this.mainMaskType??"float32",this.mainMaskType==="bool"?Uint8Array.from(wordMask):wordMask,[1,paddedL]),
       query_marker_indices: new this.ort.Tensor("int64", BigInt64Array.from(queryIdx.map(BigInt)), [1, Q]),
-      query_marker_mask: new this.ort.Tensor("float32", Float32Array.from(queryMask), [1, Q]),
+      query_marker_mask: new this.ort.Tensor(this.mainMaskType??"float32",this.mainMaskType==="bool"?Uint8Array.from(queryMask):Float32Array.from(queryMask),[1,Q]),
     };
 
     if (this.inputNames.has("cls_marker_indices")) {

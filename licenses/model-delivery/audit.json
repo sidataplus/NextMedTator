@@ -1,0 +1,31 @@
+{
+  "checked": "2026-10-12",
+  "models": [
+    {
+      "repository": "fastino/gliner2.5-base-v1",
+      "revision": "ca906247640776a07753514055be9726f9080ead",
+      "license": "apache-2.0",
+      "licenseFiles": [],
+      "source": "https://huggingface.co/api/models/fastino/gliner2.5-base-v1/revision/ca906247640776a07753514055be9726f9080ead"
+    },
+    {
+      "repository": "na399/bpsd-gliner2.5-base-lora-20261012",
+      "revision": "5cb60383b4b8dd361841e307e54f6e17b68b6fa7",
+      "license": null,
+      "licenseFiles": [],
+      "source": "https://huggingface.co/api/models/na399/bpsd-gliner2.5-base-lora-20261012/revision/5cb60383b4b8dd361841e307e54f6e17b68b6fa7"
+    },
+    {
+      "repository": "microsoft/deberta-v3-base",
+      "revision": "8ccc9b6f36199bec6961081d44eb72fb3f7353f3",
+      "license": "mit",
+      "licenseFiles": [],
+      "source": "https://huggingface.co/api/models/microsoft/deberta-v3-base"
+    }
+  ],
+  "debertaLicenseSource": {
+    "revision": "4d7fe0bd4fb3c7d4f4005a7cafabde9800372098",
+    "url": "https://raw.githubusercontent.com/microsoft/DeBERTa/4d7fe0bd4fb3c7d4f4005a7cafabde9800372098/LICENSE"
+  },
+  "adapterOwnerAuthorization": "Owner authorized model delivery; no public general reuse license inferred. Access level is unresolved."
+}

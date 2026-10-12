@@ -31,25 +31,39 @@ def build() -> None:
       'ECHARTS':('echarts',{'JS':'dist/echarts.min.js'})
     }
     notices=[]
+    def copy_file(source, target, filename):
+        origin=source/filename
+        if not origin.is_file():raise RuntimeError(f'Missing library artifact: {origin}')
+        (target/filename).parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(origin,target/filename)
+    def copy_notices(source,target):
+        for file in source.iterdir():
+            if file.is_file() and file.name.upper().startswith(('LICENSE','LICENCE','COPYING','NOTICE')):
+                copy_file(source,target,file.name)
     for key,(package,paths) in copies.items():
         source=ROOT/'node_modules'/package
         if not source.is_dir():raise RuntimeError(f'Run pnpm install: missing {package}')
         target=out/'vendor'/package
-        shutil.copytree(source,target,ignore=shutil.ignore_patterns('node_modules','.git'))
+        for filename in paths.values():copy_file(source,target,filename)
+        copy_notices(source,target)
+        if package=='jquery-ui':shutil.copytree(source/'dist/themes/base/images',target/'dist/themes/base/images')
+        if package=='@fortawesome/fontawesome-free':shutil.copytree(source/'webfonts',target/'webfonts')
         for kind,filename in paths.items():
             if not (target/filename).is_file():raise RuntimeError(f'Missing library artifact: {package}/{filename}')
             libs[key][kind]=f'./vendor/{package}/{filename}'
         notices.append(package)
-    cm=out/'vendor/codemirror';shutil.copytree(ROOT/'node_modules/codemirror',cm)
+    cm_source=ROOT/'node_modules/codemirror';cm=out/'vendor/codemirror';copy_notices(cm_source,cm)
     for key,old in list(libs['CODE_MIRROR'].items()):
         rel=old.split('codemirror/',1)[1].replace('.min.','.')
         if rel in ('codemirror.js','codemirror.css'):rel='lib/'+rel
-        if not (cm/rel).is_file():raise RuntimeError(f'Missing CodeMirror artifact: {rel}')
+        copy_file(cm_source,cm,rel)
         libs['CODE_MIRROR'][key]='./vendor/codemirror/'+rel
-    shutil.copytree(ROOT/'node_modules/dompurify/dist',out/'vendor/dompurify')
+    purify=ROOT/'node_modules/dompurify';copy_file(purify/'dist',out/'vendor/dompurify','purify.min.js');copy_notices(purify,out/'vendor/dompurify')
+    notices.extend(['codemirror','dompurify','onnxruntime-web','@sqlite.org/sqlite-wasm'])
     if (ROOT/'src/nextmedtator').exists():
         shutil.copytree(ROOT/'src/nextmedtator',out/'app/nextmedtator')
-    if (ROOT/'models').exists(): shutil.copytree(ROOT/'models',out/'models')
+    from scripts.backend_assets import copy_public_models
+    copy_public_models(ROOT/'models',out)
     runtime=ROOT/'node_modules/onnxruntime-web/dist'
     if not runtime.is_dir():raise RuntimeError('Missing local ONNX Runtime Web package')
     target=out/'vendor/ort';target.mkdir(parents=True)
@@ -57,6 +71,7 @@ def build() -> None:
     for p in runtime.iterdir():
         if p.is_file() and (p.name=='ort.webgpu.min.mjs' or (p.name.startswith('ort-wasm-simd-threaded') and p.suffix in ('.mjs','.wasm'))):
             shutil.copyfile(p,target/p.name)
+    copy_notices(ROOT/'node_modules/onnxruntime-web',target)
     from scripts.backend_assets import copy_backend_assets
     copy_backend_assets(out)
     with web.app.test_request_context('/'):
@@ -64,8 +79,8 @@ def build() -> None:
     html=html.replace('<title>MedTator</title>','<title>NextMedTator</title>')
     html=html.replace('href="https://github.com/OHNLP/MedTator"','href="https://github.com/sidataplus/NextMedTator"')
     (out/'index.html').write_text(html,encoding='utf-8')
-    (out/'404.html').write_text('<!doctype html><title>Not found</title><h1>Not found</h1><a href="/">NextMedTator</a>')
-    (out/'DEPENDENCIES.txt').write_text('Upgraded locally served packages:\n'+'\n'.join(notices)+'\n\nOther legacy vendored assets remain pending audit. See repository dependency review.\n')
+    (out/'404.html').write_text('<!doctype html><title>Not found</title><h1>Not found</h1><a href="./">NextMedTator</a>')
+    (out/'DEPENDENCIES.txt').write_text('Upgraded locally served packages:\n'+'\n'.join(notices)+'\n\nOnly required npm runtime files, fonts, images and notices are included. Existing legacy static assets remain pending audit. See repository dependency review.\n')
     print('Rendered upstream layout. Next step: precompile Vue and externalize scripts.')
 
 if __name__=='__main__':build()

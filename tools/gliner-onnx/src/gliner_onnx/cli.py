@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .inputs import (BASE_FILES, RELEASE_ASSETS, RELEASE_RUNTIME_FINGERPRINT,
                      digest, read_adapter, resolve_base, resolve_selection,
-                     snapshot_adapter, verify_base, verify_v3_release, verify_v3_runtime)
+                     snapshot_adapter, verify_base, verify_v3_release, verify_v3_runtime, verify_browser_contract)
 
 SOURCE_REVISION = '55656fbfa01d3d4a77485e1a1eeeaf682990ccdf'
 CODEC = 'gliner25-records-v1'
@@ -220,6 +220,9 @@ def _load_export_runtime(runtime_package):
 
 
 def build(args):
+    if getattr(args,'entity_contract',None):
+        from .entity_export import build as build_entity_contract
+        return build_entity_contract(args)
     if args.out.resolve() == args.report.resolve():
         raise ValueError('--out and --report must resolve to distinct paths')
     from huggingface_hub import snapshot_download
@@ -264,6 +267,7 @@ def build(args):
         elif args.runtime_package_dir:
             raise ValueError('--runtime-package-dir is only supported with an adapter selection')
 
+        if adapter_source is not None:verify_browser_contract(adapter_source)
         adapter = scratch/'adapter'
         if selection['kind'] == 'adapter':
             config, adapter_hash = read_adapter(adapter_source, adapter)
@@ -447,6 +451,7 @@ def main():
     parser.add_argument('--report', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, default=Path('work/gliner-onnx'))
     parser.add_argument('--clinical-release',type=Path,help='Verified downloaded ClinicalEvidence release, including pinned runtime, schema and model-specific threshold')
+    parser.add_argument('--entity-contract',type=Path,help='External declarative fixed entity/attribute contract; reject oversized input and retain declared overlap/applicability')
     parser.add_argument('--clinical-schema',type=Path,help='ClinicalEvidence v3 span registry; enables the v3 shared-axis codec without record binding')
     parser.add_argument('--thresholds',type=Path,help='Frozen v3 validation-selected thresholds')
     parser.add_argument('--adapter-repository')

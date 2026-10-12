@@ -1,3 +1,4 @@
+import {ENTITY_ATTRIBUTES_CODEC,validateEntityContract,entityContractSchema} from './entity-contract.mjs';
 import {CLINICAL_V3_CODEC,CLINICAL_V3,validateClinicalV3Registry} from './clinical-v3.mjs';
 import { invariant, validId, validHash, uniqueIds, fingerprint, sha256, freeze, clone, jsonParse } from './integrity.mjs';
 import { safePath, unzipBounded } from './zip.mjs';
@@ -7,6 +8,7 @@ export const MODEL_LIMITS = Object.freeze({ files: 128, file: 768 * 1024 * 1024,
 // Every executable preprocessor/decoder is shipped with the application, not with a model.
 export const CODECS = Object.freeze({
     'gliner25-small-records-v5': { purpose:'anchored-records', clinicalInference:true, coverage:'occurrence-record' },
+    [ENTITY_ATTRIBUTES_CODEC]: {purpose:'declared-entity-attributes',clinicalInference:true,coverage:'occurrence-record'},
     [CLINICAL_V3_CODEC]: {purpose:'v3-anchors-and-shared-axes',clinicalInference:true,coverage:'occurrence-record'},
     'gliner25-records-v1': { purpose:'anchored-records', clinicalInference:true, coverage:'occurrence-record' },
     'tensor-conformance-v1': { purpose: 'graph-conformance-only', clinicalInference: false, coverage: 'tensor-fixture' },
@@ -42,7 +44,8 @@ export function validateModelManifest(m) {
         invariant(Number.isSafeInteger(f.bytes) && f.bytes > 0 && f.bytes <= MODEL_LIMITS.file, 'Model file-size limit');
         total += f.bytes;
         invariant(total <= MODEL_LIMITS.total, 'Model package size limit');
-        invariant(['graph', 'weights', 'tokenizer', 'schema', 'fixture'].includes(f.role), 'Executable model plugins are forbidden');
+        invariant(['graph', 'weights', 'tokenizer', 'schema', 'fixture', 'notice'].includes(f.role), 'Executable model plugins are forbidden');
+        if(f.role==='notice')invariant(/\.(?:txt|json|md)$/i.test(f.path),'Model notices must be inert text or JSON');
         invariant(!/\.(?:[cm]?js|wasm|html)$/i.test(f.path), 'Executable artifact is not a model package');
     }
     invariant(Array.isArray(m.variants) && m.variants.length > 0, 'Model variants required');
@@ -56,7 +59,7 @@ export function validateModelManifest(m) {
             invariant(typeof v.threshold === 'number' && v.threshold >= 0 && v.threshold <= 1, 'Invalid span threshold');
         if (CODECS[v.codec].coverage === 'occurrence-record') {
             invariant(v.automaticRelations!==true,'Automatic model relations are not source-score qualified in this app release');
-            for (const name of (v.codec===CLINICAL_V3_CODEC?['model','attributes']:['model','attributes','records','relations'])) invariant(m.files.some(f=>f.path===v.graphs?.[name]&&f.role==='graph'),'Record graph missing: '+name);
+            for (const name of ((v.codec===CLINICAL_V3_CODEC||v.codec===ENTITY_ATTRIBUTES_CODEC)?['model','attributes']:['model','attributes','records','relations'])) invariant(m.files.some(f=>f.path===v.graphs?.[name]&&f.role==='graph'),'Record graph missing: '+name);
             invariant(m.files.some(f=>f.path===v.tokenizer&&f.role==='tokenizer'),'Record tokenizer missing');
             invariant(Number.isFinite(v.pairTemperature)&&v.pairTemperature>0,'Pair temperature required');
             if(v.codec==='gliner25-records-v1'||v.codec===CLINICAL_V3_CODEC){
@@ -66,6 +69,16 @@ export function validateModelManifest(m) {
                     (v.codec === 'gliner25-records-v1' && !m.lineage.adapter && m.lineage.merge === 'unadapted-export' && m.lineage.trainedHeads === 'unchanged'),
                     'Generic GLiNER package requires explicit merged adapter or unadapted export lineage');
             }
+        }
+        if(v.codec===ENTITY_ATTRIBUTES_CODEC){
+            invariant(v.backend==='wasm','Entity contract is qualified for WASM only');
+            invariant(v.mainMaskType==='bool','Entity contract graphs require native Boolean masks');
+            invariant(v.recordBinding===false&&v.fixedThreshold===true&&v.automaticRelations===false,'Fixed entity contract does not infer bindings/relations');
+            invariant([512,1024].includes(v.fixedWords)&&v.maxSequenceLength===v.fixedWords,'Invalid entity token/word budget');
+            validHash(v.entityContractSha256);
+            invariant(m.files.some(f=>f.path===v.entityContract&&f.role==='schema'&&f.sha256===v.entityContractSha256),'Entity contract artifact identity required');
+            invariant(Number.isFinite(v.abstentionThreshold)&&v.abstentionThreshold>=0&&v.abstentionThreshold<=1,'Source abstention required');
+            invariant(m.lineage.adapter&&m.lineage.merge==='merged-export','Entity contract requires merged adapter lineage');
         }
         if(v.codec===CLINICAL_V3_CODEC){
             invariant(v.clinicalRegistryHash===CLINICAL_V3.registryHash&&v.sharedAxes==='one_value_softmax_no_attribute_threshold'&&v.recordBinding===false,'V3 inference contract required');
@@ -102,7 +115,13 @@ export async function importModelPackage(bytes) {
         invariant(content && content.length === file.bytes && await sha256(content) === file.sha256, 'Model artifact integrity mismatch');
     }
     for(const variant of manifest.variants)if(variant.codec===CLINICAL_V3_CODEC)validateClinicalV3Registry(jsonParse(new TextDecoder('utf-8',{fatal:true}).decode(entries.get(variant.clinicalSchema))));
-    return { manifest: freeze(clone(manifest)), manifestHash: await fingerprint(manifest), files: entries };
+    const entityContracts=parseEntityContracts(manifest,entries);
+    return { manifest: freeze(clone(manifest)), manifestHash: await fingerprint(manifest), files: entries, entityContracts };
+}
+export function parseEntityContracts(manifest,files){
+    const entityContracts=new Map();
+    for(const variant of manifest.variants)if(variant.codec===ENTITY_ATTRIBUTES_CODEC){const contract=validateEntityContract(jsonParse(new TextDecoder('utf-8',{fatal:true}).decode(files.get(variant.entityContract))));invariant(contract.threshold===variant.threshold&&contract.maxEncodedTokens===variant.maxSequenceLength,'Manifest/native contract differs');entityContracts.set(variant.id,freeze(clone(contract)));}
+    return entityContracts;
 }
 /** Reproducible model identity retained in run fingerprints, comparisons and exports. */
 export function modelRunProvenance(packageData, variantId, result) {
@@ -114,7 +133,7 @@ export function modelRunProvenance(packageData, variantId, result) {
     invariant(result.kind === variant.codec && result.backend === variant.backend && result.precision === variant.precision,
         'Worker runtime does not match the selected variant');
     return {
-        producer: { kind: 'model', name: manifest.lineage.base.model, version: manifest.version,
+        producer: { kind: 'model', name: variant.codec===ENTITY_ATTRIBUTES_CODEC?(manifest.lineage.adapter?.repository??manifest.lineage.base.model):manifest.lineage.base.model, version: manifest.version,
             packageId: manifest.id, manifestHash: packageData.manifestHash,
             lineage: clone(manifest.lineage), artifacts: clone(manifest.files) },
         runtime: { backend: result.backend, precision: result.precision, version: manifest.runtimeVersion,
@@ -129,6 +148,8 @@ export function qualifyForSchema(packageData, schema) {
     if (!open)
         for (const family of Object.keys(schema.families))
             invariant(packageData.manifest.capabilities.includes(family), 'Unsupported schema family');
+    const entityVariant=packageData.manifest.variants.find(v=>v.backend==='wasm'&&CODECS[v.codec]?.coverage==='occurrence-record');
+    if(entityVariant?.codec===ENTITY_ATTRIBUTES_CODEC){const contract=packageData.entityContracts?.get(entityVariant.id);invariant(contract,'Import and validate the entity contract artifact first');entityContractSchema(schema,contract);}
     if (codecs.some(c=>c.coverage==='occurrence-record')) return {level:'occurrence-record',unpredicted:['anchorless-records','cross-window-relations',...(packageData.manifest.variants.every(v=>v.codec===CLINICAL_V3_CODEC)?['family-choice-spans','literal-spans','record-binding','relations']:[])]};
     const structured = codecs.some(c => c.coverage === 'structured-span');
     if (structured)

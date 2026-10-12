@@ -116,7 +116,7 @@ class Inputs(unittest.TestCase):
         with patch('huggingface_hub.snapshot_download', return_value=str(self.root/'download')) as download:
             snapshot_adapter('owner/adapter', 'a'*40, self.root/'plain')
         plain_args = download.call_args.kwargs
-        self.assertEqual(plain_args['allow_patterns'], ['adapter_config.json', 'adapter_model.safetensors'])
+        self.assertEqual(plain_args['allow_patterns'], ['adapter_config.json', 'adapter_model.safetensors', 'inference_settings.json'])
         self.assertNotIn('tokenizer.py', plain_args['allow_patterns'])
         self.assertIsNone(plain_args['token'])
         with patch('huggingface_hub.snapshot_download', return_value=str(self.root/'release')) as download:

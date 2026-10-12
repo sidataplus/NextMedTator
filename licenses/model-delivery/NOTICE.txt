@@ -1,0 +1,33 @@
+NextMedTator merged BPSD model delivery
+
+Base: fastino/gliner2.5-base-v1
+Revision: ca906247640776a07753514055be9726f9080ead
+The pinned Fastino model card declares Apache License 2.0. It contains no
+separate LICENSE or NOTICE file. The complete Apache-2.0 license is included.
+Source: https://huggingface.co/fastino/gliner2.5-base-v1/tree/ca906247640776a07753514055be9726f9080ead
+
+Encoder lineage declared by the base card: microsoft/deberta-v3-base.
+Microsoft Corporation; MIT license. The complete upstream MIT notice is included.
+Source: https://huggingface.co/microsoft/deberta-v3-base
+License source and checked revisions: licenses/model-delivery/audit.json in the
+NextMedTator source distribution.
+
+Modification: the owner's BPSD adapter and separately trained heads have been
+merged into the base weights and exported to fp32 ONNX for local browser inference.
+Adapter: na399/bpsd-gliner2.5-base-lora-20261012
+Revision: 5cb60383b4b8dd361841e307e54f6e17b68b6fa7
+Adapter delivery was authorized by its owner. The pinned adapter repository
+declares no public license or separate LICENSE/NOTICE file. Delivery authorization
+does not assign Apache-2.0 to the adapter or establish a general third-party reuse
+grant. The owner must state any intended downstream adapter rights separately.
+
+GLiNER2 source used for export/parity:
+https://github.com/fastino-ai/GLiNER2/tree/55656fbfa01d3d4a77485e1a1eeeaf682990ccdf
+Python export dependencies are not served with model weights. The NextMedTator
+application includes its own pinned runtime and third-party notices. ONNX Runtime
+Web is MIT; the adapted GLiNER2.5 browser decoder is Apache-2.0. See the application's
+vendor/ort and app/nextmedtator/vendor/gliner25 license files.
+
+This is an inference and numerical-parity qualified export, not a clinically
+validated model. Human review is required. No patient notes, private DTD, source
+note fixtures or screenshots are included in this model delivery payload.
