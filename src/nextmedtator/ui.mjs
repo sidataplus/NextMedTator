@@ -354,7 +354,7 @@ export class EvidenceWorkspace {
     }
     recordCard(r, { human = false, run = null } = {}) {
         const card = node('article', null, { class: 'card', 'data-testid': human ? 'human-record' : 'suggestion' });
-        card.append(node('div', human ? (r.origin?.kind === 'machine-applied' ? 'Machine-applied · unreviewed' : 'Human annotation') : run?.producer?.kind === 'author-demo' ? 'Authored example' : 'Machine suggestion', { class: 'tag' }), node('p', r.anchor.map(s => s.text).join(' … ') || 'Document-level record', { class: 'anchor' }), node('p', `${r.family.replaceAll('_', ' ')}${r.score == null ? '' : ` · score ${r.score.toFixed(3)}`}`, { class: 'muted' }));
+        card.append(node('div', human ? (r.origin?.kind === 'machine-applied' ? 'Machine-applied · unreviewed' : 'Human annotation') : run?.producer?.kind === 'author-demo' ? 'Authored example' : 'Machine suggestion', { class: 'tag' }), node('p', r.anchor.map(s => s.text).join(' … ') || 'Document-level record', { class: 'anchor' }), node('p', `${this.project.current.schema.families[r.family]?.label??r.family.replaceAll('_', ' ')}${r.score == null ? '' : ` · score ${r.score.toFixed(3)}`}`, { class: 'muted' }));
         for (const [k, v] of Object.entries(r.fields))
             card.append(node('p', `${k}: ${v === null ? 'Unknown / not supplied' : typeof v === 'object' ? JSON.stringify(v) : v}`, { class: 'muted' }));
         const actions = node('div', null, { class: 'actions' });

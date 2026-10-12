@@ -60,7 +60,15 @@ export function zipStore(files, limits = ZIP_LIMITS) {
 async function inflateBounded(bytes, expected) {
     let stream;
     try {
-        stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+        // Large Blob-backed streams can fail with a browser "network error"
+        // before yielding bytes. Stream bounded views directly from the ZIP.
+        let at=0;
+        const source=new ReadableStream({pull(controller){
+            if(at===bytes.length){controller.close();return;}
+            const end=Math.min(bytes.length,at+64*1024);
+            controller.enqueue(bytes.subarray(at,end));at=end;
+        }});
+        stream = source.pipeThrough(new DecompressionStream('deflate-raw'));
     }
     catch {
         throw new ValidationError('This browser cannot read deflated ZIPs. Re-export as an uncompressed NextMedTator bundle.');

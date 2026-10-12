@@ -84,6 +84,7 @@ export function validateModelManifest(m) {
             invariant(v.clinicalRegistryHash===CLINICAL_V3.registryHash&&v.sharedAxes==='one_value_softmax_no_attribute_threshold'&&v.recordBinding===false,'V3 inference contract required');
             invariant(m.files.some(f=>f.path===v.clinicalSchema&&f.role==='schema'),'V3 registry artifact required');
             if(v.clinicalRelease){
+                invariant(Number.isFinite(v.threshold)&&v.threshold>=0&&v.threshold<=1,'Clinical release requires a finite span threshold in [0, 1]');
                 validHash(v.clinicalRelease.runtimeFingerprint);validHash(v.clinicalRelease.adapterFingerprint);
                 invariant(v.clinicalRelease.registryHash===CLINICAL_V3.registryHash&&v.clinicalRelease.coreThreshold===v.threshold,'Clinical release threshold/registry mismatch');
                 invariant(['small','base'].includes(v.clinicalRelease.modelSize),'Clinical release model size required');

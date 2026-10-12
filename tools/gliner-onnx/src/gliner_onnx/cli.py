@@ -253,7 +253,7 @@ def build(args):
             else:
                 clinical_package = snapshot_adapter(selection['repo_id'], selection['revision'],
                                                     scratch/'clinical-release', include_v3_runtime=True)
-            release, release_spec = verify_v3_release(clinical_package, selection['model_key'])
+            release_manifest, release_spec = verify_v3_release(clinical_package, selection['model_key'])
             adapter_source = clinical_package
             runtime_package = clinical_package
             adapter_repository, adapter_revision = selection['repo_id'], selection['revision']
@@ -319,6 +319,7 @@ def build(args):
             raise ValueError('Provide 1–32 source conformance cases')
         clinical=None
         thresholds=None
+        release_identity=None
         if bool(args.clinical_schema)!=bool(args.thresholds):
             raise ValueError('--clinical-schema and --thresholds must be supplied together')
         if selection.get('clinical_v3'):
@@ -326,6 +327,11 @@ def build(args):
             thresholds={'clinical_core':release_spec['core_threshold'],
                         'shared_axes':'one_value_softmax_no_attribute_threshold',
                         'selection_sha256':release_spec['selection_sha256']}
+            release_identity={'modelSize':selection['model_key'],
+                              'runtimeFingerprint':release_manifest['runtime']['source_fingerprint'],
+                              'registryHash':clinical['registry_sha256'],
+                              'adapterFingerprint':release_spec['adapter_fingerprint'],
+                              'coreThreshold':release_spec['core_threshold']}
         elif args.clinical_schema:
             clinical=json.loads(args.clinical_schema.read_text(encoding='utf-8'))
             thresholds=json.loads(args.thresholds.read_text(encoding='utf-8'))
@@ -401,7 +407,7 @@ def build(args):
                         'pairTemperature': model.boundary_settings.pair_temperature,
                         'abstentionThreshold': model.boundary_settings.abstention_threshold,
                         'automaticRelations': False, 'sourceCodeRevision': SOURCE_REVISION,
-                        'exporterVersion': '0.2.0', 'languageClaims': ['en'], **({'clinicalRelease':release_identity} if release else {})} ]}
+                        'exporterVersion': '0.2.0', 'languageClaims': ['en'], **({'clinicalRelease':release_identity} if release_identity is not None else {})} ]}
         args.out.parent.mkdir(parents=True, exist_ok=True)
         # Write in the destination filesystem, verify before publishing atomically.
         with tempfile.NamedTemporaryFile(prefix='model-', suffix='.zip', dir=args.out.parent, delete=False) as temp:
@@ -423,7 +429,7 @@ def build(args):
                   'packageSha256': digest(args.out), 'base': manifest['lineage']['base'],
                   'adapter': manifest['lineage']['adapter'], 'merge': merge_report, 'export': export_report,
                   'sourceCodeRevision': SOURCE_REVISION, 'runtime': runtime_lineage, 'exporterVersion': '0.2.0',
-                  **({'clinicalRelease':release_identity} if release else {}),
+                  **({'clinicalRelease':release_identity} if release_identity is not None else {}),
                   'exportRuntime': {'torch':torch.__version__, 'numpy':__import__('numpy').__version__, 'transformers':__import__('transformers').__version__},
                   **({'candidateConformance': 'Valid candidate scores are compared by query and exact interval; raw positional checks remain diagnostic. Missing/extra/duplicate intervals and score drift fail.'} if clinical else {}),
                   'scope': 'Technical source/ONNX conformance on synthetic English cases; no clinical accuracy claim'}
