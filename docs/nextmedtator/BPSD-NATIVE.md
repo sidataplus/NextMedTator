@@ -46,8 +46,8 @@ counts and status. The demonstration used existing synthetic notes only.
 The locked PyTorch 2.6 CPU run completed all 27 notes with 134 spans. Their
 positions and attribute labels matched the independent PyTorch 2.14 CPU run;
 this verifies reproducibility of those synthetic outputs, not clinical
-correctness. A synthetic hallucination example returned “seeing children beside
-the bed” at code-point offsets `[17,47)`, score about 0.993. Four existing BPSD
+correctness. A separate synthetic hallucination control produced one span with
+a score about 0.993. Four existing BPSD
 notes produced 6, 0, 7 and 8 spans respectively. A completed run with no spans is
 still an omission-review case, not a clinical negative result.
 
