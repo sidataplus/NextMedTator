@@ -2,12 +2,21 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import argparse
-import os
+from functools import partial
 ROOT = Path(__file__).resolve().parents[1]
 
+class StaticServer(ThreadingHTTPServer):
+    # Chromium opens many module requests together. The default five-socket
+    # backlog drops bursts on Windows before the worker threads accept them.
+    request_queue_size = 128
+
 class Handler(SimpleHTTPRequestHandler):
+    # Windows registry MIME associations can otherwise serve modules as text/plain.
+    extensions_map = {**SimpleHTTPRequestHandler.extensions_map,
+                      '.mjs':'text/javascript', '.js':'text/javascript',
+                      '.wasm':'application/wasm'}
     def end_headers(self):
-        header_file=Path.cwd()/'_headers'
+        header_file=Path(self.directory)/'_headers'
         if header_file.exists():
             section=None
             for line in header_file.read_text().splitlines():
@@ -24,6 +33,5 @@ if __name__=='__main__':
     parser.add_argument('--port',type=int,default=4173)
     args=parser.parse_args();path=ROOT/args.directory
     if not (path/'index.html').exists():parser.error('Build the static output first')
-    os.chdir(path)
     print(f'Serving {args.directory} on http://127.0.0.1:{args.port}',flush=True)
-    ThreadingHTTPServer(('127.0.0.1',args.port),Handler).serve_forever()
+    StaticServer(('127.0.0.1',args.port),partial(Handler,directory=str(path))).serve_forever()

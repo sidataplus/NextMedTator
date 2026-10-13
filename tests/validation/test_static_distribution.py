@@ -13,5 +13,7 @@ class StaticDistribution(unittest.TestCase):
    self.assertFalse((root/'blocked/models').exists())
  def test_metadata_symlinks_rejected(self):
   with tempfile.TemporaryDirectory() as temp:
-   root=Path(temp);source=root/'source';source.mkdir();(root/'private.json').write_text('{}');(source/'catalog.json').symlink_to(root/'private.json')
+   root=Path(temp);source=root/'source';source.mkdir();(root/'private.json').write_text('{}')
+   try:(source/'catalog.json').symlink_to(root/'private.json')
+   except OSError as error:self.skipTest('Host denies symlink creation: '+str(error))
    with self.assertRaisesRegex(ValueError,'Unreviewed file'):copy_public_models(source,root/'out')

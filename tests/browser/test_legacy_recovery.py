@@ -1,4 +1,5 @@
 """Original Vue/CodeMirror corpus round trip, autosave and native history retention."""
+from browser_support import chromium_path
 from pathlib import Path
 import json,os,subprocess,time,urllib.request
 from playwright.sync_api import sync_playwright,expect
@@ -12,8 +13,8 @@ def run():
             try:urllib.request.urlopen(URL,timeout=1).close();break
             except Exception:time.sleep(.1)
         with sync_playwright() as p:
-            executable=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium')
-            browser=p.chromium.launch(executable_path=executable if Path(executable).exists() else None,args=['--no-sandbox'])
+            executable=chromium_path()
+            browser=p.chromium.launch(executable_path=executable if executable and Path(executable).exists() else None,args=['--no-sandbox'])
             context=browser.new_context();page=context.new_page();errors=[]
             page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
             page.goto(URL);page.wait_for_function('() => window.app_hotpot?.vpp != null');page.evaluate('jarvis.ssclose()')

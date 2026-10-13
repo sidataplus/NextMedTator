@@ -1,4 +1,5 @@
 """Real-origin recovery locks, CAS conflicts, worker cancellation and denied storage."""
+from browser_support import chromium_path
 from pathlib import Path
 import json,os,subprocess,time,urllib.request
 from playwright.sync_api import sync_playwright
@@ -47,7 +48,7 @@ def run():
    try:urllib.request.urlopen(URL,timeout=1).close();break
    except Exception:time.sleep(.1)
   with sync_playwright() as p:
-   exe=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium');browser=p.chromium.launch(executable_path=exe if Path(exe).exists() else None,args=['--no-sandbox']);context=browser.new_context();a=context.new_page();b=context.new_page();a.goto(URL);b.goto(URL)
+   exe=chromium_path();browser=p.chromium.launch(executable_path=exe if exe and Path(exe).exists() else None,args=['--no-sandbox']);context=browser.new_context();a=context.new_page();b=context.new_page();a.goto(URL);b.goto(URL)
    setup='''async()=>{const {RecoveryStore}=await import('/app/nextmedtator/recovery.mjs');const {demoProject}=await import('/app/nextmedtator/samples.mjs');window.store=new RecoveryStore();window.project=await demoProject();await store.enable('conflict-project',{consent:true});window.projectData={...project.current,id:'conflict-project'};await store.checkpoint(projectData);return store.expected;}'''
    first=a.evaluate(setup)
    lock=b.evaluate('''async()=>{const {RecoveryStore}=await import('/app/nextmedtator/recovery.mjs');const s=new RecoveryStore();try{await s.enable('conflict-project',{consent:true});return false;}catch(e){return e.code==='TAB_CONFLICT';}}''');assert lock

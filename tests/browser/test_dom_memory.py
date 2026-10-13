@@ -4,6 +4,7 @@ Hash/UUID functions are injected test doubles because an opaque origin has no
 WebCrypto. These checks do NOT validate secure-context, CSP, offline, ORT or IDB.
 The real-origin acceptance suite is test_preview.py and remains a release gate.
 """
+from browser_support import chromium_path
 from pathlib import Path
 import hashlib
 import json
@@ -15,8 +16,8 @@ ROOT=Path(__file__).resolve().parents[2]
 def run():
  results=[]
  with sync_playwright() as p:
-  executable=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium')
-  browser=p.chromium.launch(executable_path=executable if Path(executable).exists() else None,args=['--no-sandbox'])
+  executable=chromium_path()
+  browser=p.chromium.launch(executable_path=executable if executable and Path(executable).exists() else None,args=['--no-sandbox'])
   def case(name,fn):
    context=browser.new_context(viewport={'width':1440,'height':1000},accept_downloads=True);page=context.new_page();errors=[];requests=[]
    page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append(r.url))

@@ -1,4 +1,5 @@
 """Actual storage-worker FTS5 and original document-pane retrieval, including offline."""
+from browser_support import chromium_path
 from pathlib import Path
 import json, os, sqlite3, subprocess, time, urllib.request
 from playwright.sync_api import sync_playwright, expect
@@ -23,7 +24,7 @@ def run():
    try:urllib.request.urlopen(URL,timeout=1).close();break
    except Exception:time.sleep(.1)
   with sync_playwright() as p:
-   exe=Path(os.environ.get('CHROMIUM_PATH','/usr/bin/chromium'));browser=p.chromium.launch(executable_path=str(exe) if exe.exists() else None,args=['--no-sandbox'])
+   browser=p.chromium.launch(executable_path=chromium_path(),args=['--no-sandbox'])
    context=browser.new_context(viewport={'width':1366,'height':768},accept_downloads=True);page=context.new_page();page.set_default_timeout(30000);errors=[];requests=[]
    page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'post':r.post_data}));page.on('dialog',lambda d:d.accept())
    page.goto(URL);page.wait_for_function('() => !!window.app_hotpot?.vpp');page.evaluate('() => jarvis.ssclose()');page.get_by_title('Load a minimal task',exact=True).click();page.locator('.file-list-item-name',has_text='doc_01.txt.xml').wait_for();count=page.evaluate(FIXTURE)

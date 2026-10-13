@@ -3,6 +3,7 @@
 Successful inference uses the existing tiny synthetic ONNX fixture. Only delivery
 is delayed; failure/cancellation cases explicitly inject worker errors.
 """
+from browser_support import chromium_path
 from pathlib import Path
 import json, os, subprocess, sys, time, traceback, urllib.request
 from playwright.sync_api import sync_playwright, expect
@@ -147,8 +148,8 @@ def run():
             try:urllib.request.urlopen(URL,timeout=1).close();break
             except Exception:time.sleep(.1)
         with sync_playwright() as p:
-            executable=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium')
-            browser=p.chromium.launch(executable_path=executable if Path(executable).exists() else None,args=['--no-sandbox'])
+            executable=chromium_path()
+            browser=p.chromium.launch(executable_path=executable if executable and Path(executable).exists() else None,args=['--no-sandbox'])
             cases={'imports-search-recovery':imports,'inference-document-switch':inference,
                 'inference-conformance-switch':lambda page:inference(page,conformance=True),
                 'inference-project-switch':lambda page:inference(page,replace_project=True),

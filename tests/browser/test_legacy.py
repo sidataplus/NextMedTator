@@ -1,4 +1,5 @@
 """Smoke gate on the original annotation UI with the docked assistance panel."""
+from browser_support import chromium_path
 from pathlib import Path
 import os
 import subprocess
@@ -17,8 +18,8 @@ def run():
             except Exception:time.sleep(.1)
         else:raise RuntimeError('Static legacy preview not available')
         with sync_playwright() as p:
-            executable=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium')
-            browser=p.chromium.launch(executable_path=executable if Path(executable).exists() else None,args=['--no-sandbox'])
+            executable=chromium_path()
+            browser=p.chromium.launch(executable_path=executable if executable and Path(executable).exists() else None,args=['--no-sandbox'])
             page=browser.new_page(viewport={'width':1440,'height':1000});errors=[];requests=[]
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('request',lambda r:requests.append(r.url))

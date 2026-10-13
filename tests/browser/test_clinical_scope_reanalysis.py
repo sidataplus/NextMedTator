@@ -1,4 +1,5 @@
 """Reanalyze a real exported scope in the separate evidence workspace."""
+from browser_support import chromium_path
 import json
 import subprocess
 import time
@@ -26,7 +27,7 @@ def run():
             except Exception:
                 time.sleep(.1)
         with sync_playwright() as p:
-            browser = p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+            browser = p.chromium.launch(executable_path=chromium_path(),args=['--no-sandbox'])
             page=browser.new_page(viewport={'width':1440,'height':1200})
             page.set_default_timeout(180000)
             expect.set_options(timeout=180000)

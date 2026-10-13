@@ -1,4 +1,5 @@
 """PR #5 regressions: legacy recovery without OPFS and lossless WASM validation."""
+from browser_support import chromium_path
 from pathlib import Path
 import json,os,subprocess,time,urllib.request
 from playwright.sync_api import sync_playwright,expect
@@ -22,8 +23,8 @@ def run():
             try:urllib.request.urlopen(URL,timeout=1).close();break
             except Exception:time.sleep(.1)
         with sync_playwright() as p:
-            executable=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium')
-            browser=p.chromium.launch(executable_path=executable if Path(executable).exists() else None,args=['--no-sandbox'])
+            executable=chromium_path()
+            browser=p.chromium.launch(executable_path=executable if executable and Path(executable).exists() else None,args=['--no-sandbox'])
             def no_isolation(route):
                 response=route.fetch();headers=dict(response.headers)
                 headers.pop('cross-origin-opener-policy',None);headers.pop('cross-origin-embedder-policy',None)

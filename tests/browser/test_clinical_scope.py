@@ -1,4 +1,5 @@
 """Real LoRA scope gate in the original MedTator UI; no injected predictions."""
+from browser_support import chromium_path
 import json
 import os
 import subprocess
@@ -28,7 +29,7 @@ def run():
             except Exception:
                 time.sleep(.1)
         with sync_playwright() as p:
-            browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
+            browser = p.chromium.launch(executable_path=chromium_path(), args=['--no-sandbox'])
             page = browser.new_page(viewport={'width':1600,'height':2000}, accept_downloads=True)
             page.set_default_timeout(180000)
             expect.set_options(timeout=180000)

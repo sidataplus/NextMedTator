@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {validateEntityContract,entityContractPrompt,packEntityContract,splitContractWords,decodeContractEntities,selectContractAttribute,analyzeEntityContract,compareEntityContractRecords,entityContractSchema,schemaFromEntityContract} from '../../src/nextmedtator/entity-contract.mjs';
 const contract=()=>JSON.parse(readFileSync(new URL('../fixtures/entity-contract.json',import.meta.url)));
+test('P10 word budget is independent of encoded tokens and never truncates',()=>{
+ const c=contract();c.maxWords=3;c.maxEncodedTokens=512;
+ assert.equal(validateEntityContract(c),c);
+ assert.equal(packEntityContract('one two three',c,()=>[1]).supported,true);
+ assert.equal(packEntityContract('one two three four',c,()=>[1]).supported,false);
+ for(const maxWords of [0,513,1.5,'384'])assert.throws(()=>validateEntityContract({...c,maxWords}));
+});
 test('fixed contract retains ordered native prompts and rejects unsupported semantics',()=>{
  const c=contract();assert.equal(validateEntityContract(c),c);
  assert.deepEqual(entityContractPrompt(c).labels,['action','report','owner: other','owner: subject','phase: earlier','phase: later']);

@@ -51,7 +51,11 @@ class Inputs(unittest.TestCase):
         folder = self.root/'destination'
         folder.mkdir()
         alias = self.root/'alias'
-        alias.symlink_to(folder, target_is_directory=True)
+        try:
+            alias.symlink_to(folder, target_is_directory=True)
+        except OSError:
+            # Windows may deny symlinks; still exercise normalized aliases.
+            alias = folder/'..'/'destination'
         output = folder/'new-model.zip'
         for report in [output, folder/'..'/'destination'/'new-model.zip', alias/'new-model.zip']:
             with self.subTest(report=report), self.assertRaisesRegex(ValueError, 'distinct paths'):
@@ -61,9 +65,17 @@ class Inputs(unittest.TestCase):
             self.assertFalse(output.exists())
 
     def test_reject_unsafe_and_ambiguous_archives(self):
-        for member in ['../adapter_model.safetensors', '/absolute', 'windows\\file', 'arbitrary-name/adapter_config.json', 'other/adapter_config.json']:
+        for member in ['../adapter_model.safetensors', '/absolute', 'arbitrary-name/adapter_config.json', 'other/adapter_config.json']:
             with self.subTest(member=member), self.assertRaises(ValueError):
                 read_adapter(self.adapter([(member, b'{}')]), self.root/'out')
+        # ZipFile.write normalizes backslashes on Windows. Construct a raw
+        # ZipInfo so this remains an actual unsafe archive regression there.
+        path=self.adapter([('windows/file',b'{}')])
+        # Windows ZipInfo also canonicalizes its input. Patch both raw headers
+        # after writing, retaining equal name lengths and valid data CRCs.
+        path.write_bytes(path.read_bytes().replace(b'windows/file',b'windows\\file'))
+        with self.assertRaises(ValueError):
+            read_adapter(path,self.root/'out')
         info = zipfile.ZipInfo('link')
         info.external_attr = (stat.S_IFLNK | 0o777) << 16
         with self.assertRaises(ValueError):

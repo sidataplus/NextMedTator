@@ -1,4 +1,5 @@
 """Source-edit guards in both static views; fixture lineage only, no inference claim."""
+from browser_support import chromium_path
 import json, os, subprocess, sys, time, urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
@@ -12,7 +13,7 @@ for directory,port,prefix in [('preview',4202,'workspace'),('dist',4203,'assist'
    try:urllib.request.urlopen(url).close();break
    except Exception:time.sleep(.1)
   with sync_playwright() as p:
-   browser=p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium'),args=['--no-sandbox']);page=browser.new_page();errors=[]
+   browser=p.chromium.launch(executable_path=chromium_path(),args=['--no-sandbox']);page=browser.new_page();errors=[]
    page.on('pageerror',lambda e:errors.append(str(e)));page.goto(url)
    if prefix=='workspace':page.get_by_test_id('sample').click();page.get_by_role('button',name='Models',exact=True).click()
    else:

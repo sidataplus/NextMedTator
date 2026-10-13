@@ -6,6 +6,10 @@ static Cloudflare Pages site; Python is a build/development tool, not a hosted
 inference server. See [distribution and release gates](docs/nextmedtator/DISTRIBUTION.md)
 and [the exact BPSD adapter workflow](docs/nextmedtator/BPSD-NATIVE.md).
 
+The original MedTator annotation screen remains the default UI. For the current
+P10 GLM and BPSD base adapters, static release downloads, and R2 setup, see
+[the current model and Cloudflare guide](docs/nextmedtator/CURRENT-MODELS.md).
+
 Research predictions require human review. Technical model/browser conformance
 and agreement with synthetic annotations do not establish clinical validity.
 Private schemas, notes, checkpoints and model weights belong outside Git and
@@ -451,4 +455,4 @@ Release Highlights
 
 # Acknowledgements
 
-We thank all of our team members for their insights and contributions. 
+We thank all of our team members for their insights and contributions.

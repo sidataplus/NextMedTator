@@ -1,4 +1,5 @@
 """Browser integration checks using real Chromium and no network-dependent fixtures."""
+from browser_support import chromium_path
 from pathlib import Path
 from contextlib import contextmanager
 import json
@@ -31,8 +32,8 @@ def run():
     RESULTS.mkdir(exist_ok=True)
     results=[]
     with server(),sync_playwright() as p:
-        executable=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium')
-        browser=p.chromium.launch(executable_path=executable if Path(executable).exists() else None,args=['--no-sandbox'])
+        executable=chromium_path()
+        browser=p.chromium.launch(executable_path=executable if executable and Path(executable).exists() else None,args=['--no-sandbox'])
         def case(name,fn):
             context=browser.new_context(viewport={'width':1440,'height':1000},accept_downloads=True)
             page=context.new_page();errors=[];requests=[]

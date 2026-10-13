@@ -220,6 +220,9 @@ def _load_export_runtime(runtime_package):
 
 
 def build(args):
+    if getattr(args,'selection',None) in ('clinical-p10','bpsd-base'):
+        from .release_profiles import prepare
+        args = prepare(args)
     if getattr(args,'entity_contract',None):
         from .entity_export import build as build_entity_contract
         return build_entity_contract(args)
@@ -440,7 +443,7 @@ def build(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--selection', choices=['auto', 'clinical-v3-small', 'clinical-v3-base',
+    parser.add_argument('--selection', choices=['auto', 'clinical-p10', 'bpsd-base', 'clinical-v3-small', 'clinical-v3-base',
                                                 'original-small', 'original-base',
                                                 'huggingface-adapter', 'local-adapter'],
                         default='auto',
@@ -469,7 +472,7 @@ def main():
     parser.add_argument('--threads', type=int, default=2)
     args = parser.parse_args()
     try:
-        resolve_selection(args.selection, adapter=args.adapter,
+        if args.selection not in ('clinical-p10','bpsd-base'):resolve_selection(args.selection, adapter=args.adapter,
                           repository=args.adapter_repository, revision=args.adapter_revision,
                           base_model=args.base_model, base_revision=args.base_revision)
     except ValueError as error:

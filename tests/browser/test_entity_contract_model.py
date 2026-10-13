@@ -3,6 +3,7 @@
 All model/schema/parity artifacts are supplied outside Git via environment paths.
 No native imports are used as stand-ins for browser inference.
 """
+from browser_support import chromium_path
 import json,os,subprocess,sys,time,threading,urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
@@ -25,7 +26,7 @@ try:
   try:urllib.request.urlopen(URL).close();break
   except Exception:time.sleep(.1)
  with sync_playwright() as p:
-  browser=p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium'),args=['--no-sandbox']);context=browser.new_context(viewport={'width':1800,'height':1300},accept_downloads=True);page=context.new_page();page.set_default_timeout(300000);expect.set_options(timeout=300000);errors=[];requests=[]
+  browser=p.chromium.launch(executable_path=chromium_path(),args=['--no-sandbox']);context=browser.new_context(viewport={'width':1800,'height':1300},accept_downloads=True);page=context.new_page();page.set_default_timeout(300000);expect.set_options(timeout=300000);errors=[];requests=[]
   page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append((r.method,r.url)));page.on('dialog',lambda d:d.accept());page.goto(URL)
   page.get_by_label('Open local documents or project',exact=True).set_input_files(str(PROJECT));page.get_by_test_id('source').wait_for();page.get_by_role('button',name='Models',exact=True).click()
   page.get_by_label('Import local model package').set_input_files(str(PACKAGE));expect(page.get_by_test_id('message')).to_contain_text('Entity/attribute package loaded');print('Actual entity-contract model imported',flush=True)

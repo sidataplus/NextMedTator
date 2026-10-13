@@ -6,7 +6,9 @@ export const ENTITY_ATTRIBUTES_NOTICE='Local entity/attribute inference with the
 const string=value=>typeof value==='string'&&value.length>0&&value.length<=200;
 const keys=(value,allowed)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(k=>allowed.includes(k))&&allowed.every(k=>Object.hasOwn(value,k));
 export function validateEntityContract(c){
-    invariant(keys(c,['format','entities','attributes','threshold','maxEncodedTokens','overlapPolicy','contextPolicy'])&&c.format==='nextmedtator-entity-attributes-v1','Unsupported entity contract');
+    const {maxWords,...required}=c??{};
+    invariant(keys(required,['format','entities','attributes','threshold','maxEncodedTokens','overlapPolicy','contextPolicy'])&&c.format==='nextmedtator-entity-attributes-v1','Unsupported entity contract');
+    invariant(maxWords===undefined||(Number.isInteger(maxWords)&&maxWords>0&&maxWords<=c.maxEncodedTokens),'Invalid word budget');
     invariant([512,1024].includes(c.maxEncodedTokens)&&c.contextPolicy==='reject'&&['allow','flat'].includes(c.overlapPolicy),'Unsupported token/context/overlap contract');
     invariant(Number.isFinite(c.threshold)&&c.threshold>=0&&c.threshold<=1,'Invalid entity threshold');
     invariant(Array.isArray(c.entities)&&c.entities.length>0&&c.entities.length<=64&&Array.isArray(c.attributes)&&c.attributes.length<=32,'Invalid contract inventory');
@@ -28,7 +30,8 @@ export function packEntityContract(text,contract,tokenize){
     invariant(typeof text==='string'&&text.trim().length>0,'The note must not be empty');
     const prompt=entityContractPrompt(contract),normalized=/[.!?]$/.test(text)?text:text+'.',words=splitContractWords(normalized);
     const packed=packInput(tokenize,buildEntitiesSchemaTokens(prompt.labels,{descriptions:prompt.descriptions}),words.map(w=>w.text));
-    return {...packed,prompt,normalized,words,encodedTokens:packed.inputIds.length,supported:packed.inputIds.length<=contract.maxEncodedTokens&&words.length<=contract.maxEncodedTokens};
+    const sourceWords=splitContractWords(text).length;
+    return {...packed,prompt,normalized,words,encodedTokens:packed.inputIds.length,supported:packed.inputIds.length<=contract.maxEncodedTokens&&words.length<=contract.maxEncodedTokens&&sourceWords<=(contract.maxWords??contract.maxEncodedTokens)};
 }
 export function entityContractSchema(schema,contract){
     const c=validateEntityContract(contract),result=clone(schema),families={};

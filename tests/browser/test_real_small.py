@@ -2,6 +2,7 @@
 
 NMT_SMALL_PACKAGE points to the pinned, locally generated package. Never replace weights with fixtures.
 """
+from browser_support import chromium_path
 import json,os,subprocess,time,urllib.request,zipfile
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
@@ -16,7 +17,7 @@ def run():
    try:urllib.request.urlopen(URL,timeout=1).close();break
    except Exception:time.sleep(.1)
   with sync_playwright() as pw:
-   exe=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium');browser=pw.chromium.launch(executable_path=exe if Path(exe).exists() else None,args=['--no-sandbox'])
+   exe=chromium_path();browser=pw.chromium.launch(executable_path=exe if exe and Path(exe).exists() else None,args=['--no-sandbox'])
    context=browser.new_context(accept_downloads=True);page=context.new_page();page.set_default_timeout(180000);expect.set_options(timeout=180000);errors=[];requests=[]
    page.on('dialog',lambda d:d.accept());page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'body':r.post_data}))
    page.goto(URL);fixture=json.loads((ROOT/'tests/fixtures/gliner-small-card.json').read_text())

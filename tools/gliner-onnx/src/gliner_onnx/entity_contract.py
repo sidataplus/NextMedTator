@@ -6,7 +6,8 @@ CODEC='gliner25-entity-attributes-v1'
 ID=re.compile(r'^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$')
 def validate_contract(contract):
     if not isinstance(contract,dict) or contract.get('format')!=FORMAT:raise ValueError('Unsupported entity/attribute contract')
-    if set(contract)-{'format','entities','attributes','threshold','maxEncodedTokens','overlapPolicy','contextPolicy'}:raise ValueError('Unknown entity contract key')
+    if set(contract)-{'format','entities','attributes','threshold','maxEncodedTokens','maxWords','overlapPolicy','contextPolicy'}:raise ValueError('Unknown entity contract key')
+    if 'maxWords' in contract and (type(contract['maxWords']) is not int or not 1<=contract['maxWords']<=contract['maxEncodedTokens']):raise ValueError('Invalid word budget')
     if type(contract.get('maxEncodedTokens')) is not int or contract['maxEncodedTokens'] not in (512,1024):raise ValueError('Supported encoded-token limits are 512 and 1024')
     if contract.get('contextPolicy')!='reject' or contract.get('overlapPolicy') not in ('allow','flat'):raise ValueError('Explicit reject/overlap policies required')
     if type(contract.get('threshold')) not in (float,int) or not 0<=contract['threshold']<=1:raise ValueError('Invalid entity threshold')
@@ -83,7 +84,7 @@ def verify_source_declaration(directory,contract):
     """A declared native contract cannot be overridden by an export configuration."""
     root=Path(directory);settings_path=root/'inference_settings.json'
     if not settings_path.exists():return
-    settings=json.loads(settings_path.read_text())
+    settings=json.loads(settings_path.read_text(encoding="utf-8"))
     for key in ('maxEncodedTokens','overlapPolicy','threshold'):
         if settings.get(key)!=contract[key]:raise ValueError('Export contract differs from declared native '+key)
     if settings.get('runtimeCommit')!='55656fbfa01d3d4a77485e1a1eeeaf682990ccdf':raise ValueError('Declared native runtime differs from the locked exporter')
@@ -93,7 +94,7 @@ def verify_source_declaration(directory,contract):
         file=root/name
         if not file.is_file() or hashlib.sha256(file.read_bytes()).hexdigest()!=row.get('sha256') or file.stat().st_size!=row.get('bytes'):raise ValueError('Declared native artifact integrity failure')
     if 'schema.json' not in settings.get('files',{}):raise ValueError('A native declaration requires its schema artifact for contract verification')
-    spec=json.loads((root/'schema.json').read_text())
+    spec=json.loads((root/'schema.json').read_text(encoding="utf-8"))
     expected_entities=[{k:e[k] for k in ('label','description')} for e in spec['entities']]
     if [{k:e[k] for k in ('label','description')} for e in contract['entities']]!=expected_entities:raise ValueError('Complete ordered entity prompts differ from the source schema')
     expected_groups=[{'field':g['label'],'labels':[{'label':g['label']+': '+v['label'],'value':v['label']} for v in g['values']],'qualifyLabels':False,'selection':'single','appliesTo':[e['label'] for e in spec['entities'] if e['id'] in g['appliesTo']]} for g in spec['attributes']]

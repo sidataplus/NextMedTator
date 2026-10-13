@@ -9,7 +9,8 @@ def source_case(model,schema,text,contract):
     import torch
     batch=model.processor.collate_fn_inference([(text,schema.build())],max_len=None,error_policy='raise',architecture='boundary',build_targets=False,on_capacity_exceeded='raise')
     tokens=int(batch.attention_mask[0].sum())
-    if tokens>contract['maxEncodedTokens']:return {'text':text,'encodedTokens':tokens,'status':'unsupported','records':[]}
+    from gliner2.processing.word_splitter import WhitespaceTokenSplitter
+    if tokens>contract['maxEncodedTokens'] or len(list(WhitespaceTokenSplitter()(text)))>contract.get('maxWords',contract['maxEncodedTokens']):return {'text':text,'encodedTokens':tokens,'status':'unsupported','records':[]}
     with torch.inference_mode():result=model.extract(text,schema,threshold=contract['threshold'],include_spans=True,include_confidence=True,overlap_policy=contract['overlapPolicy'])
     return {'text':text,'encodedTokens':tokens,'status':'complete','records':native_records(result,contract),'native':result}
 
@@ -60,6 +61,15 @@ def decode_onnx(outputs,attrs_session,text,contract,pair_temperature,abstention)
 
 def build(args):
     import torch
+    runtime_revision = None
+    if getattr(args,'p10_release',None):
+        from .release_profiles import verify_p10,P10_RUNTIME
+        verify_p10(args.p10_release)
+        import sys
+        vendor = (Path(args.p10_release)/'vendor').resolve()
+        if 'gliner2' in sys.modules:raise ValueError('P10 requires a fresh export process')
+        sys.path.insert(0,str(vendor))
+        runtime_revision = P10_RUNTIME
     from gliner2 import AutoExtractor
     from . import export
     from .cli import merge_adapter,SOURCE_REVISION
@@ -67,9 +77,10 @@ def build(args):
     if args.out.resolve()==args.report.resolve():raise ValueError('Output and report must be distinct')
     if args.out.exists():raise ValueError('Output already exists')
     runtime=json.loads(importlib.metadata.distribution('gliner2').read_text('direct_url.json') or '{}')
-    if runtime.get('vcs_info',{}).get('commit_id')!=SOURCE_REVISION:raise ValueError('Install the exact locked GLiNER2 Git runtime before export')
+    if not runtime_revision and runtime.get('vcs_info',{}).get('commit_id')!=SOURCE_REVISION:raise ValueError('Install the exact locked GLiNER2 Git runtime before export')
+    runtime_revision = runtime_revision or SOURCE_REVISION
     contract=read_contract(args.entity_contract);torch.set_num_threads(args.threads)
-    source=json.loads(Path(args.cases).read_text()) if args.cases else None
+    source=json.loads(Path(args.cases).read_text(encoding="utf-8")) if args.cases else None
     notes=source.get('notes') if isinstance(source,dict) else source
     if not isinstance(notes,list) or not 1<=len(notes)<=64 or any(not isinstance(r.get('text'),str) or not r['text'].strip() for r in notes):raise ValueError('Supply 1–64 synthetic parity notes with --cases')
     args.work_dir.mkdir(parents=True,exist_ok=True)
@@ -83,7 +94,7 @@ def build(args):
         for index,note in enumerate(notes):
             row=source_case(model,schema,note['text'],contract);active.append(row);print(f'Active source {index+1}/{len(notes)}: {row["status"]}',flush=True)
         args.report.parent.mkdir(parents=True,exist_ok=True)
-        args.report.with_name(args.report.stem+'-source.json').write_text(json.dumps({'phase':'actual-active-native-source','contract':contract,'adapterHash':adapter_hash,'base':{'model':base_model,'revision':revision},'torch':torch.__version__,'notes':active},ensure_ascii=False))
+        args.report.with_name(args.report.stem+'-source.json').write_text(json.dumps({'phase':'actual-active-native-source','contract':contract,'adapterHash':adapter_hash,'base':{'model':base_model,'revision':revision},'torch':torch.__version__,'notes':active},ensure_ascii=False), encoding="utf-8")
         del schema,model;gc.collect()
         model=AutoExtractor.from_pretrained(str(args.base_dir),map_location='cpu',local_files_only=True).eval()
         model,merge=merge_adapter(model,adapter);schema=build_schema(model,contract);merged=[];merge_checks=[]
@@ -91,7 +102,7 @@ def build(args):
             row=source_case(model,schema,note['text'],contract);merged.append(row)
             if row['status']!=active[index]['status'] or row['encodedTokens']!=active[index]['encodedTokens']:raise ValueError('Adapter merge changed capacity behavior')
             merge_checks.append(compare_records(active[index]['records'],row['records']));print(f'Merged source {index+1}/{len(notes)}: parity passed',flush=True)
-        graphs=scratch/'graphs';graphs.mkdir();export.WORDS=contract['maxEncodedTokens'];model.processor.tokenizer.save_pretrained(str(graphs));(graphs/'entity-contract.json').write_text(json.dumps(contract,ensure_ascii=False))
+        graphs=scratch/'graphs';graphs.mkdir();export.WORDS=contract['maxEncodedTokens'];model.processor.tokenizer.save_pretrained(str(graphs));(graphs/'entity-contract.json').write_text(json.dumps(contract,ensure_ascii=False), encoding="utf-8")
         first=next(r for r in merged if r['status']=='complete');feeds,_=feeds_for(model,schema,first['text'],export.WORDS)
         wrapper=export.ClinicalMain(model).eval()
         with torch.no_grad():reference=dict(zip(export.CLINICAL_OUTPUTS,wrapper(*feeds.values())));head_reference=export.Attributes(model)(*export.head_feeds(model.hidden_size)['attributes'].values())
@@ -108,19 +119,19 @@ def build(args):
             # A small model-package fixture set; full corpus receipts remain private.
             if fixture_budget<3 and (index==0 or decoded or not expected['records']):
                 source_case_path=f'source-case-{fixture_budget}.json';raw_path=f'model-reference-{fixture_budget}.json'
-                (graphs/source_case_path).write_text(json.dumps({'text':note['text'],'schema':app_schema(contract),'records':expected['records'],'encodedTokens':expected['encodedTokens'],'threshold':contract['threshold'],'origin':'Actual merged native synthetic reference; no clinical validation'},ensure_ascii=False,separators=(',',':')))
+                (graphs/source_case_path).write_text(json.dumps({'text':note['text'],'schema':app_schema(contract),'records':expected['records'],'encodedTokens':expected['encodedTokens'],'threshold':contract['threshold'],'origin':'Actual merged native synthetic reference; no clinical validation'},ensure_ascii=False,separators=(',',':')), encoding="utf-8")
                 with torch.no_grad():native=dict(zip(export.CLINICAL_OUTPUTS,wrapper(*feeds.values())))
                 numeric=export.compare(native,values)
                 raw=export.fixture('model',feeds,{k:native[k] for k in ['pair_indices','pair_logits','pair_valid','null_logits']});raw['candidateComparison']='span-keyed-v1'
                 raw['packedInputExact']=True;raw['sourceText']=note['text']
-                (graphs/raw_path).write_text(json.dumps(raw,separators=(',',':')));fixture_names.extend([source_case_path,raw_path]);fixture_budget+=1
+                (graphs/raw_path).write_text(json.dumps(raw,separators=(',',':')), encoding="utf-8");fixture_names.extend([source_case_path,raw_path]);fixture_budget+=1
         fixture_names.extend(sorted(p.name for p in graphs.glob('*-reference.json')));fixture_names=list(dict.fromkeys(fixture_names))
         files=[]
         names=['model.onnx','attributes.onnx','tokenizer.json','entity-contract.json',*fixture_names]
         for name in names:
             p=graphs/name;files.append({'path':name,'bytes':p.stat().st_size,'sha256':digest(p),'role':'graph' if name.endswith('.onnx') else 'tokenizer' if name=='tokenizer.json' else 'schema' if name=='entity-contract.json' else 'fixture'})
         contract_hash=digest(graphs/'entity-contract.json');package_id=args.id or 'gliner25-entities-'+adapter_hash[:12]
-        manifest={'format':'nextmedtator-model-v1','id':package_id,'version':adapter_hash,'runtime':'onnxruntime-web','runtimeVersion':'1.23.2','license':{'id':args.adapter_license,'notice':'Base '+base_model+': '+args.base_license+'. Adapter: '+args.adapter_license+'. Local export implies no redistribution permission. Clinical accuracy is unqualified.'},'lineage':{'base':{'model':base_model,'revision':revision,'files':base_hashes},'adapter':{'sha256':adapter_hash,'baseRevision':revision,'weightsSha256':digest(adapter/'adapter_model.safetensors'),'configSha256':digest(adapter/'adapter_config.json'),**({'repository':args.adapter_repository,'revision':args.adapter_revision} if args.adapter_repository else {})},'merge':'merged-export','trainedHeads':merge['trainedHeads'],'runtime':{'upstreamCommit':SOURCE_REVISION}},'files':files,'capabilities':['*'],'variants':[{'id':'wasm-fp32','backend':'wasm','precision':'fp32','codec':CODEC,'graph':'model.onnx','graphs':{'model':'model.onnx','attributes':'attributes.onnx'},'tokenizer':'tokenizer.json','fixtures':fixture_names,'entityContract':'entity-contract.json','entityContractSha256':contract_hash,'threshold':contract['threshold'],'fixedThreshold':True,'mainMaskType':'bool','fixedWords':export.WORDS,'maxSequenceLength':contract['maxEncodedTokens'],'pairTemperature':model.boundary_settings.pair_temperature,'abstentionThreshold':model.boundary_settings.abstention_threshold,'automaticRelations':False,'recordBinding':False}]}
+        manifest={'format':'nextmedtator-model-v1','id':package_id,'version':adapter_hash,'runtime':'onnxruntime-web','runtimeVersion':'1.23.2','license':{'id':args.adapter_license,'notice':'Base '+base_model+': '+args.base_license+'. Adapter: '+args.adapter_license+'. Local export implies no redistribution permission. Clinical accuracy is unqualified.'},'lineage':{'base':{'model':base_model,'revision':revision,'files':base_hashes},'adapter':{'sha256':adapter_hash,'baseRevision':revision,'weightsSha256':digest(adapter/'adapter_model.safetensors'),'configSha256':digest(adapter/'adapter_config.json'),**({'repository':args.adapter_repository,'revision':args.adapter_revision} if args.adapter_repository else {})},'merge':'merged-export','trainedHeads':merge['trainedHeads'],'runtime':{'upstreamCommit':runtime_revision}},'files':files,'capabilities':['*'],'variants':[{'id':'wasm-fp32','backend':'wasm','precision':'fp32','codec':CODEC,'graph':'model.onnx','graphs':{'model':'model.onnx','attributes':'attributes.onnx'},'tokenizer':'tokenizer.json','fixtures':fixture_names,'entityContract':'entity-contract.json','entityContractSha256':contract_hash,'threshold':contract['threshold'],'fixedThreshold':True,'mainMaskType':'bool','fixedWords':export.WORDS,'maxSequenceLength':contract['maxEncodedTokens'],'pairTemperature':model.boundary_settings.pair_temperature,'abstentionThreshold':model.boundary_settings.abstention_threshold,'automaticRelations':False,'recordBinding':False}]}
         args.out.parent.mkdir(parents=True,exist_ok=True)
         with tempfile.NamedTemporaryFile(prefix='entity-package-',suffix='.zip',dir=args.out.parent,delete=False) as temp:temporary=Path(temp.name)
         try:
@@ -132,4 +143,4 @@ def build(args):
             temporary.replace(args.out)
         finally:temporary.unlink(missing_ok=True)
         report={'packageId':package_id,'packageBytes':args.out.stat().st_size,'packageSha256':digest(args.out),'contractSha256':contract_hash,'sourceNativeToMergedNative':merge_checks,'onnx':checks,'mainExportErrors':main_errors,'headExport':head_report,'merge':merge,'native':merged,'contract':contract,'browserInferenceQualified':False,'clinicalValidation':False,'torch':torch.__version__,'base':manifest['lineage']['base'],'adapter':manifest['lineage']['adapter']}
-        args.report.parent.mkdir(parents=True,exist_ok=True);args.report.write_text(json.dumps(report,ensure_ascii=False,indent=2));return report
+        args.report.parent.mkdir(parents=True,exist_ok=True);args.report.write_text(json.dumps(report,ensure_ascii=False,indent=2), encoding="utf-8");return report

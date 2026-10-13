@@ -1,4 +1,5 @@
 """Fabricated synthetic receipt import/review regression; no inference claim."""
+from browser_support import chromium_path
 import json
 import subprocess
 import sys
@@ -34,7 +35,7 @@ def run():
             except OSError:time.sleep(.1)
         else:raise RuntimeError('Preview server did not start')
         with sync_playwright() as p:
-            browser=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+            browser=p.chromium.launch(executable_path=chromium_path(),args=['--no-sandbox'])
             page=browser.new_page(accept_downloads=True)
             page.set_default_timeout(30000);errors=[];requests=[]
             page.on('pageerror',lambda e:errors.append(str(e)))

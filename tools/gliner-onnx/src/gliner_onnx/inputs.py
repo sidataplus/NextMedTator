@@ -208,7 +208,7 @@ def read_adapter(source, destination, *, entity_contract=None):
             names = set()
             for info in infos:
                 p = PurePosixPath(info.filename)
-                if (p.is_absolute() or '..' in p.parts or '\\' in info.filename
+                if (p.is_absolute() or '..' in p.parts or '\\' in info.orig_filename
                         or info.filename in names or stat.S_ISLNK(info.external_attr >> 16)):
                     raise ValueError('Unsafe or duplicate adapter archive path')
                 names.add(info.filename)

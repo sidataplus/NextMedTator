@@ -302,7 +302,11 @@ def export_heads(model, output, attribute_source, *, clinical=False):
                 head_prob=torch.ones(2), tail_prob=torch.ones(2), pair_mask=torch.ones(2, dtype=torch.bool))
             with torch.no_grad():
                 source_reference = {'rel_logits': model.relation_scorer(f['text_states'], f['rel_states'], None, pairs).unsqueeze(0)}
-        reference, errors = export_graph(module, feeds[name], names[name], output/(name+'.onnx'), dynamic, dynamo=name=='attributes', source_reference=source_reference)
+        # The newer shared-pool scorer includes a tensor-dependent validation
+        # branch that torch.export cannot capture. Trace the fixed head shape;
+        # source/ONNX fixtures still verify the complete numerical result.
+        shared = name=='attributes' and getattr(model.boundary_settings,'candidate_pool',None)=='shared'
+        reference, errors = export_graph(module, feeds[name], names[name], output/(name+'.onnx'), dynamic, dynamo=name=='attributes' and not shared, source_reference=source_reference)
         (output/(name+'-reference.json')).write_text(json.dumps(fixture(name, feeds[name], reference), separators=(',', ':')))
         reports[name] = errors
         if name in ('records', 'relations'):

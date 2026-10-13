@@ -36,10 +36,16 @@ export const MODEL_PRESETS = Object.freeze([
         model: 'fastino/gliner2.5-base-v1',
         revision: 'ca906247640776a07753514055be9726f9080ead',
         exportSelection: 'original-base'
-    })
+    }),
+    Object.freeze({id:'clinical-p10', label:'ClinicalEvidence P10 GLM base', kind:'hub-adapter',
+        repository:'na399/clinical-evidence-gliner2.5-base-lora-p10-glm', revision:'ffd6e47bd55de93dcc3fcabbb65533ad7ba32991',
+        baseModel:'fastino/gliner2.5-base-v1', baseRevision:'54785d51df8d86a0d8f2eb212fec15871aad2c4d', exportSelection:'clinical-p10'}),
+    Object.freeze({id:'bpsd-base', label:'BPSD GLiNER2.5 base', kind:'hub-adapter',
+        repository:'na399/bpsd-gliner2.5-base-lora-20261012', revision:'5cb60383b4b8dd361841e307e54f6e17b68b6fa7',
+        baseModel:'fastino/gliner2.5-base-v1', baseRevision:'ca906247640776a07753514055be9726f9080ead', exportSelection:'bpsd-base'})
 ]);
 
-export const DEFAULT_MODEL_SELECTION = MODEL_PRESETS[0];
+export const DEFAULT_MODEL_SELECTION = MODEL_PRESETS.find(item=>item.id==='clinical-v3-small');
 export const MODEL_SELECTION_STORAGE_KEY = 'nextmedtator-model-selection-v1';
 
 const clone = value => JSON.parse(JSON.stringify(value));

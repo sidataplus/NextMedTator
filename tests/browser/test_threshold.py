@@ -3,6 +3,7 @@
 Run against the built original UI and engineering preview, sequentially to bound
 memory. Requires the real exported package; no injected predictions or skips.
 """
+from browser_support import chromium_path
 import json, os, subprocess, sys, time, urllib.request, zipfile
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
@@ -77,7 +78,7 @@ for directory, port in [('dist',4198),('preview',4199)]:
                 break
             except Exception: time.sleep(.1)
         with sync_playwright() as p:
-            browser = p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+            browser = p.chromium.launch(executable_path=chromium_path(),args=['--no-sandbox'])
             page = browser.new_page(viewport={'width':1600,'height':1500},accept_downloads=True)
             page.set_default_timeout(180000)
             expect.set_options(timeout=180000)

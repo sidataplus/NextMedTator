@@ -1,5 +1,11 @@
 # GLiNER2.5 to ONNX
 
+Current `clinical-p10` and `bpsd-base` selections preserve their distinct pinned
+runtime, base, ontology and capacity contracts. See the
+[current model/static release guide](../../docs/nextmedtator/CURRENT-MODELS.md)
+for export commands and Windows WASM/WebGPU results. Older v3 selections below
+remain available for existing projects.
+
 A standalone exporter for the ClinicalEvidence v3 adapters, original Fastino
 small/base checkpoints, compatible Hugging Face PEFT adapters, and local
 adapter files. It has its own `pyproject.toml` and `uv.lock`; it imports no

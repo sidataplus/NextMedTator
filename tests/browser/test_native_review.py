@@ -1,4 +1,5 @@
 """Capture real browser review of previously executed local native predictions."""
+from browser_support import chromium_path
 import json, os, pathlib, subprocess, sys, time, urllib.request
 from playwright.sync_api import sync_playwright, expect
 ROOT=pathlib.Path(__file__).resolve().parents[2]
@@ -12,7 +13,7 @@ try:
   try:urllib.request.urlopen(URL,timeout=1).close();break
   except Exception:time.sleep(.1)
  with sync_playwright() as p:
-  browser=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
+  browser=p.chromium.launch(executable_path=chromium_path(),args=['--no-sandbox'])
   context=browser.new_context(viewport={'width':1800,'height':1300},accept_downloads=True)
   page=context.new_page();errors=[];requests=[]
   page.on('pageerror',lambda e:errors.append(str(e)))

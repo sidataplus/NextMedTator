@@ -5,6 +5,7 @@ The threshold and attribute protocol follow the imported model contract.
 No predictions are injected, and BPSD is not a built-in preset.
 """
 
+from browser_support import chromium_path
 import json, subprocess, time, urllib.request, zipfile, sys, os
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
@@ -44,7 +45,7 @@ try:
             time.sleep(0.1)
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            executable_path="/usr/bin/chromium", args=["--no-sandbox"]
+            executable_path=chromium_path(), args=["--no-sandbox"]
         )
         page = browser.new_page(
             viewport={"width": 1600, "height": 2200}, accept_downloads=True
