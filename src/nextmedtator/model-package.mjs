@@ -1,4 +1,5 @@
 import {ENTITY_ATTRIBUTES_CODEC,validateEntityContract,entityContractSchema} from './entity-contract.mjs';
+import {EXECUTION_POLICY,supportsWebGPU,graphTransforms} from './execution-policy.mjs';
 import {CLINICAL_V3_CODEC,CLINICAL_V3,validateClinicalV3Registry} from './clinical-v3.mjs';
 import { invariant, validId, validHash, uniqueIds, fingerprint, sha256, freeze, clone, jsonParse } from './integrity.mjs';
 import { safePath, unzipBounded } from './zip.mjs';
@@ -131,14 +132,18 @@ export function modelRunProvenance(packageData, variantId, result) {
     validHash(packageData.manifestHash);
     invariant(result.manifestHash === packageData.manifestHash && result.variantId === variantId,
         'Worker returned a different model package or variant');
-    invariant(result.kind === variant.codec && result.backend === variant.backend && result.precision === variant.precision,
+    const qualifiedGPU = result.backend === 'webgpu' && result.executionPolicy === EXECUTION_POLICY && supportsWebGPU(manifest, variant);
+    if(qualifiedGPU)invariant(JSON.stringify(result.graphTransforms??[])===JSON.stringify(graphTransforms(manifest,variant,'webgpu')),'GPU graph transformation provenance mismatch');
+    invariant(result.kind === variant.codec && (result.backend === variant.backend || qualifiedGPU) && result.precision === variant.precision,
         'Worker runtime does not match the selected variant');
     return {
         producer: { kind: 'model', name: variant.codec===ENTITY_ATTRIBUTES_CODEC?(manifest.lineage.adapter?.repository??manifest.lineage.base.model):manifest.lineage.base.model, version: manifest.version,
             packageId: manifest.id, manifestHash: packageData.manifestHash,
             lineage: clone(manifest.lineage), artifacts: clone(manifest.files) },
         runtime: { backend: result.backend, precision: result.precision, version: manifest.runtimeVersion,
-            variantId, variant: clone(variant) }
+            variantId, variant: clone(variant), ...(result.executionPolicy ? {executionPolicy:result.executionPolicy} : {}),
+            ...(result.graphTransforms?.length ? {graphTransforms:clone(result.graphTransforms)} : {}),
+            ...(result.fallbackReason ? {fallbackReason:result.fallbackReason} : {}) }
     };
 }
 export function qualifyForSchema(packageData, schema) {
@@ -186,43 +191,84 @@ export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
 }
 /** Dedicated worker owns ORT sessions. Force stop disposes the worker, never human state. */
 export class ConformanceWorker {
-    constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.reject = null; this.cancelled = false; }
-    async run(packageData, variantId, { timeoutMs = 120000 } = {}) {
-        return this.#withModel(packageData, variantId, () => this.#request({ task: 'fixtures' }, timeoutMs), timeoutMs);
+    constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.reject = null; this.cancelled = false; this.gpuFailures = new Map(); }
+    async run(packageData, variantId, options = {}) {
+        return this.#withModel(packageData, variantId, context => this.#execute(context, {task:'fixtures'}), {timeoutMs:120000,...options});
     }
     async analyze(packageData, variantId, request, options) {
         const [result] = await this.analyzeBatch(packageData, variantId, [request], options);
         return result;
     }
-    async analyzeBatch(packageData, variantId, requests, { timeoutMs = 600000, onProgress, onResult } = {}) {
+    async analyzeBatch(packageData, variantId, requests, { onProgress, onResult, ...options } = {}) {
         invariant(requests.length > 0, 'Analysis batch is empty');
-        return this.#withModel(packageData, variantId, async () => {
+        return this.#withModel(packageData, variantId, async context => {
+            // Qualify the actual session/device, including after a backend switch.
+            if (context.qualified) await this.#execute(context, {task:'fixtures'});
             const results = [];
             for (const [index, request] of requests.entries()) {
                 await onProgress?.(index);
-                const result = await this.#request({ ...request, task: 'analyze' }, timeoutMs);
+                const result = await this.#execute(context, { ...request, task: 'analyze' });
                 await onResult?.(result, index);
                 results.push(result);
             }
             invariant(!this.cancelled, 'Cancelled: local model worker stopped');
             return results;
-        }, timeoutMs);
+        }, {timeoutMs:600000,...options});
     }
-    async #withModel(packageData, variantId, action, timeoutMs) {
+    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend} = {}) {
         invariant(!this.worker, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
-        this.worker = new Worker(this.url, { type: 'module' });
+        invariant(['auto','wasm','webgpu'].includes(backend), 'Unknown execution preference');
+        const qualified = supportsWebGPU(packageData.manifest, variant);
+        invariant(backend !== 'webgpu' || qualified || variant.backend === 'webgpu', 'WebGPU is not qualified for this package');
+        const failure = this.gpuFailures.get(packageData.manifestHash);
+        const actual = backend === 'auto' ? (qualified && globalThis.navigator?.gpu && !failure ? 'webgpu' : variant.backend) : backend;
+        invariant(actual === variant.backend || qualified, 'Execution preference is not supported by this package');
+        const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,
+            fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null};
         this.cancelled = false;
         try {
-            await this.#request({ task: 'load', manifest: packageData.manifest, manifestHash: packageData.manifestHash, variantId, files: [...packageData.files] }, timeoutMs);
-            return await action();
+            context.onBackend?.({backend:context.backend,fallbackReason:context.fallbackReason});
+            try { await this.#load(context); }
+            catch(error) { await this.#fallback(context,error,'webgpu-initialization-failed'); }
+            return await action(context);
         }
         finally {
-            this.worker.terminate();
+            this.worker?.terminate();
             this.worker = null;
             this.reject = null;
         }
+    }
+    async #load(context) {
+        invariant(!this.cancelled, 'Cancelled: local model worker stopped');
+        const {packageData,variantId,backend,timeoutMs}=context;
+        this.worker = new Worker(this.url, {type:'module'});
+        await this.#request({task:'load',manifest:packageData.manifest,manifestHash:packageData.manifestHash,variantId,backend,files:[...packageData.files]},backend==='webgpu'?Math.min(timeoutMs,120000):timeoutMs);
+    }
+    async #fallback(context,error,reason) {
+        if(this.cancelled || !context.automatic || context.backend!=='webgpu' || !context.qualified) throw error;
+        // Terminate the failed GPU context before creating fresh CPU sessions.
+        // Completed notes have already been published and are never replayed.
+        this.worker?.terminate();this.worker=null;
+        context.backend='wasm';context.fallbackReason=reason;
+        this.gpuFailures.set(context.packageData.manifestHash,reason);
+        context.onBackend?.({backend:'wasm',fallbackReason:reason});
+        await this.#load(context);
+        const report=await this.#request({task:'fixtures'},context.timeoutMs);
+        invariant(report.pass,'WASM fallback failed its public conformance fixtures');
+    }
+    async #execute(context,message) {
+        let result;
+        try {
+            result=await this.#request(message,context.backend==='webgpu'?Math.min(context.timeoutMs,60000):context.timeoutMs);
+            if(message.task==='fixtures')invariant(result.pass!==false,'Selected backend failed its public conformance fixtures');
+        } catch(error) {
+            await this.#fallback(context,error,message.task==='fixtures'?'webgpu-conformance-failed':'webgpu-inference-failed');
+            result=await this.#request(message,context.timeoutMs);
+            if(message.task==='fixtures')invariant(result.pass,'WASM fallback failed its public conformance fixtures');
+        }
+        return context.qualified ? {...result,executionPolicy:EXECUTION_POLICY,...(context.fallbackReason?{fallbackReason:context.fallbackReason}:{})} : result;
     }
     #request(message, timeoutMs) {
         invariant(!this.cancelled, 'Cancelled: local model worker stopped');

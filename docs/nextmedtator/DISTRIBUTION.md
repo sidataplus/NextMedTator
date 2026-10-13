@@ -3,8 +3,9 @@
 The public app is [nmt.sidata.plus](https://nmt.sidata.plus), served by Cloudflare
 Pages project `nextmedtator`. The two public ONNX packages are delivered from
 `nmt-models.sidata.plus` on R2. This deployment was exercised in desktop Chrome:
-explicit download, integrity verification, installed-package reload, WASM
-inference, export and reopen. Notes are processed locally.
+explicit download, integrity verification, installed-package reload, WebGPU
+inference with automatic WASM fallback, export and reopen. Notes are processed
+locally. See [GPU qualification and timings](WEBGPU.md).
 
 ## Build and package
 

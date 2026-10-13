@@ -16,6 +16,7 @@ import { RecoveryStore, ActiveTimer } from './recovery.mjs';
 import { compareSnapshots, comparisonCSV } from './compare.mjs';
 import { importJSONL, importMedTator, exportMedTator, evidenceJSONL, eventCSV } from './interchange.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, activeVariantForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import {supportsWebGPU} from './execution-policy.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED } from './gliner.mjs';
 import { mountLegacyAssist } from './assist.mjs';
 import {CorpusSearch} from './corpus-search.mjs';
@@ -198,7 +199,7 @@ export class EvidenceWorkspace {
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec)) ? schemaPrompt(schema) : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
         if(isRecordsCodec(codec))validateSmallSchema(schema);
-        if(this.modelReport?.manifestHash!==model.manifestHash||this.modelReport?.variantId!==variant.id){this.modelReport=await this.modelRunner.run(model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
+        if(!supportsWebGPU(model.manifest,variant)&&(this.modelReport?.manifestHash!==model.manifestHash||this.modelReport?.variantId!==variant.id)){this.modelReport=await this.modelRunner.run(model,variant.id);invariant(this.modelReport.pass,'Selected model failed its public conformance fixtures');}
         const runSettings={codec,...((codec===CLINICAL_V3_CODEC||codec===ENTITY_ATTRIBUTES_CODEC)?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),overlapPolicy:codec===ENTITY_ATTRIBUTES_CODEC?model.entityContracts.get(variant.id).overlapPolicy:'flat',maxSequenceLength:variant.maxSequenceLength??512,wordOverlap:codec===ENTITY_ATTRIBUTES_CODEC?0:32,notice,limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         let result;const started=performance.now();
         try {
@@ -526,7 +527,7 @@ export class EvidenceWorkspace {
                 const m = this.model.manifest;
                 box.append(node('p', `${m.id} ${m.version} · ${m.lineage.adapter ? 'LoRA-derived' : 'Baseline'} · ${m.license.id}`));
                 for (const v of m.variants)
-                    box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id); this.message = this.modelReport.pass ? (v.conformanceScope==='numerical-heads-only' ? 'Numerical attribute-head fixtures passed. Source-note parity was checked separately before publication; this download contains no note fixtures. This does not establish clinical accuracy.' : isRecordsCodec(v.codec) ? 'Source spans, exact tokenizer IDs and native ONNX numerical head fixtures passed. This does not establish clinical accuracy.' : CODECS[v.codec].coverage === 'structured-span' ? 'Span fixtures matched. Enum attributes, value, unit, and relations were not part of this fixture.' : CODECS[v.codec].coverage === 'entity-span' ? 'Span fixtures matched. Attributes and relations were not tested.' : 'Graph fixtures passed. This codec does not extract clinical text.') : 'Fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
+                    box.append(button(`Run ${v.id} conformance`, () => this.perform(async () => { this.modelReport = await this.modelRunner.run(this.model, v.id, {backend:v.backend}); this.message = this.modelReport.pass ? (v.conformanceScope==='numerical-heads-only' ? 'Numerical attribute-head fixtures passed. Source-note parity was checked separately before publication; this download contains no note fixtures. This does not establish clinical accuracy.' : isRecordsCodec(v.codec) ? 'Source spans, exact tokenizer IDs and native ONNX numerical head fixtures passed. This does not establish clinical accuracy.' : CODECS[v.codec].coverage === 'structured-span' ? 'Span fixtures matched. Enum attributes, value, unit, and relations were not part of this fixture.' : CODECS[v.codec].coverage === 'entity-span' ? 'Span fixtures matched. Attributes and relations were not tested.' : 'Graph fixtures passed. This codec does not extract clinical text.') : 'Fixture differences found.'; })), button('Force stop', () => this.modelRunner.cancel()));
                 box.append(button('Unload package', () => this.unloadModel()));
                 if (this.modelReport)
                     box.append(node('pre', JSON.stringify(this.modelReport, null, 2)));

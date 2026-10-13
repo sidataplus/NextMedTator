@@ -3,6 +3,12 @@
 **Goal:** generate suggestions for a fictional note using a model on your device.
 Start with [the P10 practice task](01-quickstart.md).
 
+The default device setting is **Automatic · WebGPU with WASM fallback**. Both
+models run locally. The Assistance header shows the actual backend after you
+analyze. To force CPU execution, choose **Model packages → Inference device →
+CPU · WASM**. GPU can be faster, but the measured BPSD examples with many
+attributes ran faster on CPU; see [the speed comparison](../docs/nextmedtator/WEBGPU.md).
+
 ## Step 1 — Request a model
 
 Expand **Get a model package** and click **Show approved public model**.

@@ -13,6 +13,7 @@ import {exportBundle,localDownload} from './bundle.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, activeVariantForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import {supportsWebGPU} from './execution-policy.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
@@ -327,6 +328,7 @@ class LegacyAssist {
         if(render)this.render();
     }
     adoptModel(candidate,{selectSource=false}={}){
+        this.executionStatus=null;
         if(candidate&&!modelSelectionMatchesManifest(this.modelSelection,candidate.manifest)){
             if(!selectSource)throw new Error('Installed model does not match the selected source. Choose the package lineage explicitly before loading it.');
             this.setSelectedModel(selectionFromManifest(candidate.manifest),{render:false,restoreInstalled:false,intent:false});
@@ -483,7 +485,8 @@ class LegacyAssist {
         const thresholdSettings=suggestionThreshold(this.thresholdOverride,scope,variant);
         if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        if(this.qualifiedManifest!==model.manifestHash||this.qualifiedVariant!==variant.id){const report=await this.modelRunner.run(model,variant.id);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=model.manifestHash;this.qualifiedVariant=variant.id;}
+        const executionOptions={backend:this.executionPreference??'auto',onBackend:({backend,fallbackReason})=>{this.executionStatus={backend,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} inference on this device.`;this.render();}};
+        if(!supportsWebGPU(model.manifest,variant)&&(this.qualifiedManifest!==model.manifestHash||this.qualifiedVariant!==variant.id)){const report=await this.modelRunner.run(model,variant.id,executionOptions);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=model.manifestHash;this.qualifiedVariant=variant.id;}
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
             : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
@@ -496,7 +499,7 @@ class LegacyAssist {
         });
         const runSettings={codec,...(codec===ENTITY_ATTRIBUTES_CODEC?{overlapPolicy:model.entityContracts.get(variant.id).overlapPolicy,maxEncodedTokens:variant.maxSequenceLength,contextPolicy:'reject',wordOverlap:0}:{}),...((codec===CLINICAL_V3_CODEC||codec===ENTITY_ATTRIBUTES_CODEC)?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         const completed=new Set();let activeIndex=0;
-        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { onProgress: index => {
+        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, onProgress: index => {
             activeIndex=index;
             const ann = anns[index];
             this.progress = { index: index + 1, total: anns.length, filename: ann._filename ?? 'document' };
@@ -657,6 +660,7 @@ class LegacyAssist {
         status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'Model needed', { class: `badge ${this.model?'ready':'pending'}`, 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
         head.append(title, status, labeled('Mode', mode));
         if(this.model)head.append(node('p',modelSelectionLabel(this.modelSelection),{class:'muted','data-testid':'assist-model-identity',title:this.model.manifest.id}));
+        if(this.model)head.append(node('p',this.executionStatus?`${this.executionStatus.backend==='webgpu'?'WebGPU':'WASM'}${this.executionStatus.fallbackReason?' · automatic fallback':''}`:'Automatic execution · WebGPU when qualified, WASM fallback',{class:'muted','data-testid':'assist-execution-status'}));
 
         if (view?.ann)
             head.append(node('p', view.ann._filename ?? 'document', { class: 'document-name', 'data-testid': 'assist-document',title:view.ann._filename }));
@@ -691,6 +695,9 @@ class LegacyAssist {
         else recovery.append(button('Save corpus checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete corpus recovery',()=>this.perform(async()=>{if(confirm('Delete this corpus recovery copy? Current in-memory annotations remain.'))await this.recoverySession.forget();})),button('Export SQLite corpus backup',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
         recovery.append(button('List saved corpora',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore corpus '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the current in-memory corpus with this recovery copy? Export unsaved files first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));storage.append(recovery);
         const packages=disclosure(this,'packages',this.model?'Model packages':'Get a model package',!this.model);if(!this.model)packages.append(node('p','Choose a public download or import a package. Downloads start only when you request them.',{class:'setup-hint'}));
+        const execution=node('select',null,{'aria-label':'Inference device','data-testid':'assist-execution',disabled:this.busy});
+        for(const [value,label]of [['auto','Automatic · WebGPU with WASM fallback'],['wasm','CPU · WASM']])execution.append(node('option',label,{value}));
+        execution.value=this.executionPreference??'auto';execution.addEventListener('change',()=>{this.executionPreference=execution.value;this.executionStatus=null;this.qualifiedManifest=null;this.render();});packages.append(labeled('Inference device',execution));
         packages.append(node('p', this.structured()
             ? (this.model.manifest.variants.some(v=>isRecordsCodec(v.codec))?recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec):'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));

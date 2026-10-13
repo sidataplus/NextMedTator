@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ConformanceWorker } from '../../src/nextmedtator/model-package.mjs';
+import { ConformanceWorker,modelRunProvenance } from '../../src/nextmedtator/model-package.mjs';
+import {readFileSync} from 'node:fs';
+import {supportsWebGPU,EXECUTION_POLICY,graphTransforms,prepareGraph} from '../../src/nextmedtator/execution-policy.mjs';
 
 const packageData = { manifest: { variants: [{ id: 'wasm' }] }, manifestHash: 'fixture', files: new Map([['graph', new Uint8Array([1])]]) };
 const requests = [{ text: 'first' }, { text: 'second' }];
@@ -69,4 +71,59 @@ test('load errors, inference errors, timeout, and in-flight cancellation release
             assert.equal(runner.worker, null);
         });
     }
+});
+
+const entry=JSON.parse(readFileSync(new URL('../../deployment/production-model-catalog.json',import.meta.url))).entries[0];
+const gpuPackage={manifest:entry.manifest,manifestHash:entry.revision,files:new Map()};
+const variantId=entry.manifest.variants[0].id;
+function gpuNavigator(t){const descriptor=Object.getOwnPropertyDescriptor(globalThis,'navigator');Object.defineProperty(globalThis,'navigator',{configurable:true,value:{gpu:{}}});t.after(()=>{if(descriptor)Object.defineProperty(globalThis,'navigator',descriptor);else delete globalThis.navigator;});}
+function reply(message,worker){if(message.task==='load'){worker.backend=message.backend;return {ready:true};}return message.task==='fixtures'?{pass:true,backend:worker.backend}:{text:message.text,backend:worker.backend};}
+test('qualification pins both graphs, tokenizer, contract and runtime',()=>{
+    assert.equal(supportsWebGPU(entry.manifest,entry.manifest.variants[0]),true);
+    for(const role of ['graph','tokenizer','schema']){const manifest=structuredClone(entry.manifest);manifest.files.find(f=>f.role===role).sha256='0'.repeat(64);assert.equal(supportsWebGPU(manifest,manifest.variants[0]),false);}
+    const manifest=structuredClone(entry.manifest);manifest.runtimeVersion='other';assert.equal(supportsWebGPU(manifest,manifest.variants[0]),false);
+});
+test('automatic GPU initialization failure retries WASM and remembers the failure',async t=>{
+    gpuNavigator(t);const workers=fakeWorker(t,(m,w)=>m.task==='load'&&m.backend==='webgpu'?{error:'GPU unavailable'}:reply(m,w));
+    const runner=new ConformanceWorker(),events=[];
+    const result=await runner.analyze(gpuPackage,variantId,requests[0],{onBackend:e=>events.push(e.backend)});
+    assert.equal(result.backend,'wasm');assert.equal(result.fallbackReason,'webgpu-initialization-failed');assert.equal(result.executionPolicy,EXECUTION_POLICY);
+    assert.deepEqual(events,['webgpu','wasm']);assert.equal(workers.length,2);assert.ok(workers.every(w=>w.terminations===1));
+    await runner.analyze(gpuPackage,variantId,requests[1]);assert.equal(workers[2].messages[0].backend,'wasm');
+});
+test('GPU inference failure retries only unfinished notes and records actual backends',async t=>{
+    gpuNavigator(t);const workers=fakeWorker(t,(m,w)=>m.task==='analyze'&&m.text==='second'&&w.backend==='webgpu'?{error:'Device lost'}:reply(m,w));
+    const seen=[],runner=new ConformanceWorker();const results=await runner.analyzeBatch(gpuPackage,variantId,requests,{onResult:r=>seen.push(r.text)});
+    assert.deepEqual(seen,['first','second']);assert.deepEqual(results.map(r=>r.backend),['webgpu','wasm']);
+    assert.equal(results[1].fallbackReason,'webgpu-inference-failed');
+    assert.deepEqual(workers[1].messages.filter(m=>m.task==='analyze').map(m=>m.text),['second']);
+});
+test('GPU fixture mismatch falls back; forced GPU surfaces errors without fallback',async t=>{
+    gpuNavigator(t);const workers=fakeWorker(t,(m,w)=>m.task==='fixtures'&&w.backend==='webgpu'?{pass:false}:reply(m,w));
+    const runner=new ConformanceWorker();const report=await runner.run(gpuPackage,variantId);assert.equal(report.backend,'wasm');assert.equal(report.fallbackReason,'webgpu-conformance-failed');
+    await assert.rejects(runner.run(gpuPackage,variantId,{backend:'webgpu'}),/conformance/);assert.equal(workers.length,3);
+});
+test('cancellation and consumer errors never trigger backend retries',async t=>{
+    gpuNavigator(t);const workers=fakeWorker(t,reply);const runner=new ConformanceWorker();
+    await assert.rejects(runner.analyzeBatch(gpuPackage,variantId,requests,{onResult:()=>runner.cancel()}),/Cancelled/);assert.equal(workers.length,1);
+    await assert.rejects(runner.analyzeBatch(gpuPackage,variantId,requests,{onResult:()=>{throw Error('Export failed');}}),/Export failed/);assert.equal(workers.length,2);
+});
+test('absence of the GPU API starts directly on WASM',async t=>{
+    gpuNavigator(t);delete globalThis.navigator.gpu;const workers=fakeWorker(t,reply);
+    const result=await new ConformanceWorker().analyze(gpuPackage,variantId,requests[0]);
+    assert.equal(workers.length,1);assert.equal(result.backend,'wasm');assert.equal(result.fallbackReason,'webgpu-unavailable');
+});
+test('GPU provenance requires the qualified policy and exact transformed graph identity',async()=>{
+    const bpsd=JSON.parse(readFileSync(new URL('../../deployment/production-model-catalog.json',import.meta.url))).entries[1];
+    const p={manifest:bpsd.manifest,manifestHash:bpsd.revision},v=p.manifest.variants[0];
+    const result={manifestHash:p.manifestHash,variantId:v.id,kind:v.codec,precision:v.precision,backend:'webgpu'};
+    assert.throws(()=>modelRunProvenance(p,v.id,result),/runtime/);
+    result.executionPolicy=EXECUTION_POLICY;
+    assert.throws(()=>modelRunProvenance(p,v.id,result),/transformation/);
+    result.graphTransforms=graphTransforms(p.manifest,v,'webgpu');
+    assert.equal(modelRunProvenance(p,v.id,result).runtime.backend,'webgpu');
+    assert.deepEqual(graphTransforms(p.manifest,v,'wasm'),[]);
+    result.graphTransforms[0].targetSha256='0'.repeat(64);
+    assert.throws(()=>modelRunProvenance(p,v.id,result),/transformation/);
+    await assert.rejects(prepareGraph(p.manifest,{...v,backend:'webgpu'},v.graphs.attributes,new Uint8Array([1,2,3])),/source hash mismatch/);
 });

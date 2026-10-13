@@ -78,8 +78,9 @@ of whether that capacity note produces an entity.
 Initial local import/conformance took approximately 66 seconds on the tested
 17 GiB Linux host with four WASM threads and cross-origin isolation. Peak renderer
 PSS was approximately 5.4 GiB for that gate. This is a large desktop model. Do not
-claim mobile, low-memory, Firefox, Safari, WebGPU or non-isolated execution has
-been qualified from these results. The 32-case browser batch took about 153 seconds. Model/contract restoration, actual offline Analyze, human acceptance, portable export/reopen and original-UI inference with the external private schema also passed. Detailed local receipts retain those measurements.
+claim mobile, low-memory, Firefox, Safari or non-isolated execution has been
+qualified from these results. Separate Windows WebGPU qualification for both
+public exports is documented in [WEBGPU.md](WEBGPU.md). The 32-case browser batch took about 153 seconds. Model/contract restoration, actual offline Analyze, human acceptance, portable export/reopen and original-UI inference with the external private schema also passed. Detailed local receipts retain those measurements.
 
 The application remains a static site. Model weights are imported/stored on the
 user's device, never served as app assets. The public model metadata allowlist

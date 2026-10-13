@@ -1,0 +1,795 @@
+{
+  "date": "2026-10-13",
+  "runtime": "onnxruntime-web 1.23.2",
+  "browser": "Chrome 155.0.8059.40",
+  "os": "Windows",
+  "cpu": "Intel Xeon Silver 4210R @ 2.40GHz",
+  "gpu": "NVIDIA RTX A4000 (Ampere)",
+  "hardwareConcurrency": 20,
+  "wasmThreads": 4,
+  "crossOriginIsolated": true,
+  "method": "Four synthetic notes per model, three passes per backend. Warm medians use passes 2 and 3. Timings include tokenization, entity and attribute graphs, decode and worker messaging; exclude download and session loading.",
+  "models": [
+    {
+      "profile": "p10",
+      "gpu": {
+        "vendor": "nvidia",
+        "architecture": "ampere",
+        "device": "",
+        "description": ""
+      },
+      "cases": [
+        {
+          "index": 0,
+          "text": "The patient has fever. Aspirin is planned for tomorrow.",
+          "records": 2,
+          "warmMedianMs": {
+            "webgpu": 516.4150000810623,
+            "wasm": 1146.7825000286102
+          },
+          "speedup": 2.2206607086327823
+        },
+        {
+          "index": 1,
+          "text": "Her mother has diabetes. The patient denies pain.",
+          "records": 2,
+          "warmMedianMs": {
+            "webgpu": 510.3625000715256,
+            "wasm": 1112.1999999284744
+          },
+          "speedup": 2.1792353469790657
+        },
+        {
+          "index": 2,
+          "text": "She is pacing, shouting and resisting morning care. No hallucinations.",
+          "records": 5,
+          "warmMedianMs": {
+            "webgpu": 567.5824998617172,
+            "wasm": 1128.5049998760223
+          },
+          "speedup": 1.988266023267041
+        },
+        {
+          "index": 3,
+          "text": "Caf\u00e9 \ud83d\udc69\u200d\u2695\ufe0f. The patient was agitated last year and is agitated today.",
+          "records": 3,
+          "warmMedianMs": {
+            "webgpu": 620.6074999570847,
+            "wasm": 1158.8550000190735
+          },
+          "speedup": 1.8672913235808606
+        }
+      ],
+      "maxBackendConfidenceDifference": 2.294778823852539e-06,
+      "allBackendComparisonsPass": true,
+      "runs": [
+        {
+          "backend": "webgpu",
+          "loadMs": 9502.894999980927,
+          "conformanceMs": 1897.3449997901917,
+          "attributeFixtureGpuSubmissions": 84,
+          "conformancePass": true,
+          "graphTransforms": [],
+          "cases": [
+            {
+              "repeat": 0,
+              "index": 0,
+              "durationMs": 1085.9199998378754,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 5.960464477539063e-08
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 1,
+              "durationMs": 700.3499999046326,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 2.980232238769531e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 2,
+              "durationMs": 625.5599999427795,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 3.2782554626464844e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 3,
+              "durationMs": 598.8700001239777,
+              "check": {
+                "pass": true,
+                "spans": 3,
+                "maxScoreError": 3.248453140258789e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 0,
+              "durationMs": 509.77500009536743,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 5.960464477539063e-08
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 1,
+              "durationMs": 505.44000005722046,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 2.980232238769531e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 2,
+              "durationMs": 607.5699999332428,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 3.2782554626464844e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 3,
+              "durationMs": 615.1549999713898,
+              "check": {
+                "pass": true,
+                "spans": 3,
+                "maxScoreError": 3.248453140258789e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 0,
+              "durationMs": 523.0550000667572,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 5.960464477539063e-08
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 1,
+              "durationMs": 515.2850000858307,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 2.980232238769531e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 2,
+              "durationMs": 527.5949997901917,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 3.2782554626464844e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 3,
+              "durationMs": 626.0599999427795,
+              "check": {
+                "pass": true,
+                "spans": 3,
+                "maxScoreError": 3.248453140258789e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 468,
+              "wasmThreads": 4
+            }
+          ]
+        },
+        {
+          "backend": "wasm",
+          "loadMs": 9102.259999990463,
+          "conformanceMs": 264.2349998950958,
+          "attributeFixtureGpuSubmissions": 0,
+          "conformancePass": true,
+          "graphTransforms": [],
+          "cases": [
+            {
+              "repeat": 0,
+              "index": 0,
+              "durationMs": 1196.4249999523163,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 1.1920928955078125e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 1,
+              "durationMs": 1159.1050000190735,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 1.7881393432617188e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 2,
+              "durationMs": 1144.4050002098083,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 1.4901161193847656e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 3,
+              "durationMs": 1152.869999885559,
+              "check": {
+                "pass": true,
+                "spans": 3,
+                "maxScoreError": 1.430511474609375e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 0,
+              "durationMs": 1162.8949999809265,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 1.1920928955078125e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 1,
+              "durationMs": 1110.6499998569489,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 1.7881393432617188e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 2,
+              "durationMs": 1117.744999885559,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 1.4901161193847656e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 3,
+              "durationMs": 1163.005000114441,
+              "check": {
+                "pass": true,
+                "spans": 3,
+                "maxScoreError": 1.430511474609375e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 0,
+              "durationMs": 1130.670000076294,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 1.1920928955078125e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 1,
+              "durationMs": 1113.75,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 1.7881393432617188e-07
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 2,
+              "durationMs": 1139.2649998664856,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 1.4901161193847656e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 3,
+              "durationMs": 1154.704999923706,
+              "check": {
+                "pass": true,
+                "spans": 3,
+                "maxScoreError": 1.430511474609375e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "profile": "bpsd",
+      "gpu": {
+        "vendor": "nvidia",
+        "architecture": "ampere",
+        "device": "",
+        "description": ""
+      },
+      "cases": [
+        {
+          "index": 0,
+          "text": "The patient has fever. Aspirin is planned for tomorrow.",
+          "records": 0,
+          "warmMedianMs": {
+            "webgpu": 296.8899999856949,
+            "wasm": 864.5475000143051
+          },
+          "speedup": 2.9120128669068066
+        },
+        {
+          "index": 1,
+          "text": "Her mother has diabetes. The patient denies pain.",
+          "records": 0,
+          "warmMedianMs": {
+            "webgpu": 275.3875000476837,
+            "wasm": 862.2875000238419
+          },
+          "speedup": 3.1311787930626322
+        },
+        {
+          "index": 2,
+          "text": "She is pacing, shouting and resisting morning care. No hallucinations.",
+          "records": 5,
+          "warmMedianMs": {
+            "webgpu": 2251.8625000715256,
+            "wasm": 1512.5650000572205
+          },
+          "speedup": 0.6716950968405829
+        },
+        {
+          "index": 3,
+          "text": "Caf\u00e9 \ud83d\udc69\u200d\u2695\ufe0f. The patient was agitated last year and is agitated today.",
+          "records": 2,
+          "warmMedianMs": {
+            "webgpu": 2022.4300000667572,
+            "wasm": 1451.6275000572205
+          },
+          "speedup": 0.7177640264480375
+        }
+      ],
+      "maxBackendConfidenceDifference": 1.1205673217773438e-05,
+      "allBackendComparisonsPass": true,
+      "runs": [
+        {
+          "backend": "webgpu",
+          "loadMs": 9526.03500008583,
+          "conformanceMs": 2201.6150000095367,
+          "attributeFixtureGpuSubmissions": 35,
+          "conformancePass": true,
+          "graphTransforms": [
+            {
+              "path": "attributes.onnx",
+              "id": "bpsd-cumsum-axis-int32-v1",
+              "sourceSha256": "ac37764700eabbb6ccd1fd95cdc8041836439a86dbf98ecf1c913cc67281909c",
+              "targetSha256": "1b382abf7125fe2d97cc2d3f006af1fca692222eec6dfee720e66ca5c1e19ae8"
+            }
+          ],
+          "cases": [
+            {
+              "repeat": 0,
+              "index": 0,
+              "durationMs": 1163.869999885559,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 216,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 1,
+              "durationMs": 410.82499980926514,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 216,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 2,
+              "durationMs": 2414.270000219345,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 1.0728836059570312e-05
+              },
+              "status": "complete",
+              "gpuSubmissions": 531,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 3,
+              "durationMs": 2043.7050001621246,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 2.086162567138672e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 496,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 0,
+              "durationMs": 320.3550000190735,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 216,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 1,
+              "durationMs": 274.3400001525879,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 216,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 2,
+              "durationMs": 2254.4450001716614,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 1.0728836059570312e-05
+              },
+              "status": "complete",
+              "gpuSubmissions": 531,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 3,
+              "durationMs": 2024.0350000858307,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 2.086162567138672e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 496,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 0,
+              "durationMs": 273.4249999523163,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 216,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 1,
+              "durationMs": 276.43499994277954,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 216,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 2,
+              "durationMs": 2249.2799999713898,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 1.0728836059570312e-05
+              },
+              "status": "complete",
+              "gpuSubmissions": 531,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 3,
+              "durationMs": 2020.8250000476837,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 2.086162567138672e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 496,
+              "wasmThreads": 4
+            }
+          ]
+        },
+        {
+          "backend": "wasm",
+          "loadMs": 9189.759999990463,
+          "conformanceMs": 284.335000038147,
+          "attributeFixtureGpuSubmissions": 0,
+          "conformancePass": true,
+          "graphTransforms": [],
+          "cases": [
+            {
+              "repeat": 0,
+              "index": 0,
+              "durationMs": 914.5,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 1,
+              "durationMs": 880.3499999046326,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 2,
+              "durationMs": 1550.9049999713898,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 6.198883056640625e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 0,
+              "index": 3,
+              "durationMs": 1482.755000114441,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 5.066394805908203e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 0,
+              "durationMs": 867.7799999713898,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 1,
+              "durationMs": 848.8050000667572,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 2,
+              "durationMs": 1500.0699999332428,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 6.198883056640625e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 1,
+              "index": 3,
+              "durationMs": 1453.3099999427795,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 5.066394805908203e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 0,
+              "durationMs": 861.3150000572205,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 1,
+              "durationMs": 875.7699999809265,
+              "check": {
+                "pass": true,
+                "spans": 0,
+                "maxScoreError": 0
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 2,
+              "durationMs": 1525.0600001811981,
+              "check": {
+                "pass": true,
+                "spans": 5,
+                "maxScoreError": 6.198883056640625e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            },
+            {
+              "repeat": 2,
+              "index": 3,
+              "durationMs": 1449.9450001716614,
+              "check": {
+                "pass": true,
+                "spans": 2,
+                "maxScoreError": 5.066394805908203e-06
+              },
+              "status": "complete",
+              "gpuSubmissions": 0,
+              "wasmThreads": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

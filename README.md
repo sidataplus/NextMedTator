@@ -32,12 +32,12 @@ No model is required for manual annotation. Use the ribbon's **Sample** button f
 
 | Model | Purpose | Download | Qualified browser execution |
 |---|---|---|---|
-| [ClinicalEvidence P10 GLM base](https://huggingface.co/na399/clinical-evidence-gliner2.5-base-lora-p10-glm) | Clinical evidence spans and attributes | About 721 MiB | WASM, fp32 |
-| [BPSD GLiNER2.5 base](https://huggingface.co/na399/bpsd-gliner2.5-base-lora-20261012) | Behavioral and psychological symptom spans and attributes | About 725 MiB | WASM, fp32 |
+| [ClinicalEvidence P10 GLM base](https://huggingface.co/na399/clinical-evidence-gliner2.5-base-lora-p10-glm) | Clinical evidence spans and attributes | About 721 MiB | WebGPU with WASM fallback, fp32 |
+| [BPSD GLiNER2.5 base](https://huggingface.co/na399/bpsd-gliner2.5-base-lora-20261012) | Behavioral and psychological symptom spans and attributes | About 725 MiB | WebGPU with WASM fallback, fp32 |
 
 Allow at least twice the download size in browser storage, plus runtime memory. Downloads show bytes, progress and an estimated remaining time when enough transfer data is available. Initialization and inference show their current stage; they do not invent an ETA.
 
-These packages retain their pinned training schemas and model-specific limits. Oversized notes are rejected rather than silently truncated. WebGPU has been exercised on the development machine, but complete decoder/attribute parity is not qualified for these releases; the public packages use WASM. See [model contracts and validation](docs/nextmedtator/CURRENT-MODELS.md).
+These packages retain their pinned training schemas and model-specific limits. Oversized notes are rejected rather than silently truncated. Both complete GPU pipelines match native/WASM spans and attributes on the synthetic regression cases. Automatic execution falls back to WASM after GPU failure; **Assistance → Model packages → Inference device** also lets you choose CPU explicitly. P10 was about twice as fast on this machine's GPU; BPSD's attribute-heavy cases were faster on WASM. See the [measured comparison and fallback behavior](docs/nextmedtator/WEBGPU.md) and [model contracts](docs/nextmedtator/CURRENT-MODELS.md).
 
 Model files have their own license terms, included in each package. Public availability does not change those terms. Synthetic parity checks establish technical consistency, not clinical accuracy.
 

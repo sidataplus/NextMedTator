@@ -1,5 +1,6 @@
 import {ENTITY_ATTRIBUTES_CODEC,validateEntityContract,packEntityContract,analyzeEntityContract,compareEntityContractRecords} from './entity-contract.mjs';
 import {wasmThreadCount} from './inference-options.mjs';
+import {supportsWebGPU,prepareGraph,graphTransforms,EXECUTION_POLICY} from './execution-policy.mjs';
 import {CLINICAL_V3_CODEC,validateClinicalV3Registry} from './clinical-v3.mjs';
 import {RECORDS_CODEC,isRecordsCodec,smallRuntime,analyzeSmall} from './gliner-small.mjs';
 import { validateModelManifest, compareTensors, compareCandidateSpans, CODECS } from './model-package.mjs';
@@ -23,28 +24,35 @@ self.onmessage = async ({ data }) => {
                 ? await runBoundary(loaded, request)
                 : await runFixtures(ort, files, manifest, variant, request, sessions, loaded.session);
         }
+        if(loaded&&supportsWebGPU(loaded.manifest,loaded.variant))result={...result,executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(loaded.manifest,loaded.variant,loaded.variant.backend)};
         self.postMessage({ result });
     }
     catch (error) {
-        self.postMessage({ error: error instanceof Error ? error.message : 'Local model worker failed' });
+        self.postMessage({ error: error instanceof Error ? error.message : String(error) });
     }
 };
 async function loadModel(data) {
-    const manifest = validateModelManifest(data.manifest), files = new Map(data.files), variant = manifest.variants.find(v => v.id === data.variantId);
-    invariant(variant, 'Unknown model variant');
+    const manifest = validateModelManifest(data.manifest), files = new Map(data.files), declaredVariant = manifest.variants.find(v => v.id === data.variantId);
+    invariant(declaredVariant, 'Unknown model variant');
+    const backend = data.backend ?? declaredVariant.backend;
+    invariant(backend === declaredVariant.backend || (backend === 'webgpu' && supportsWebGPU(manifest, declaredVariant)), 'Unqualified execution backend');
+    const variant = {...declaredVariant, backend};
     for (const file of manifest.files) {
         const bytes = files.get(file.path);
         invariant(bytes?.length === file.bytes && await sha256(bytes) === file.sha256, 'Worker model-integrity failure');
     }
+    for(const path of Object.values(variant.graphs??{}))files.set(path,await prepareGraph(manifest,variant,path,files.get(path)));
     if(variant.codec===CLINICAL_V3_CODEC)validateClinicalV3Registry(jsonParse(new TextDecoder('utf-8',{fatal:true}).decode(files.get(variant.clinicalSchema))));
     const ort = await import('../../vendor/ort/ort.webgpu.min.mjs');
+    if(data.diagnostics){ort.env.debug=true;ort.env.logLevel='verbose';}
     invariant(ort.env.versions.web === manifest.runtimeVersion, 'Package/runtime version mismatch');
     ort.env.wasm.numThreads = wasmThreadCount({crossOriginIsolated:self.crossOriginIsolated,hardwareConcurrency:navigator.hardwareConcurrency});
     ort.env.wasm.proxy = false;
     ort.env.wasm.wasmPaths = new URL('../../vendor/ort/', import.meta.url).href;
     if (variant.backend === 'webgpu') {
         invariant(!!navigator.gpu, 'WebGPU unavailable');
-        invariant(!!await navigator.gpu.requestAdapter(), 'No usable GPU adapter');
+        const adapter=await navigator.gpu.requestAdapter();
+        invariant(!!adapter, 'No usable GPU adapter');
     }
     let entityContract=null;
     if(variant.codec===ENTITY_ATTRIBUTES_CODEC){entityContract=validateEntityContract(jsonParse(new TextDecoder().decode(files.get(variant.entityContract))));invariant(entityContract.threshold===variant.threshold&&entityContract.maxEncodedTokens===variant.maxSequenceLength,'Native entity contract differs from manifest');}
@@ -76,7 +84,7 @@ function releaseGraphBuffers(context){
 }
 
 async function openSession(ort, files, variant, graph, sessions) {
-    const session = await ort.InferenceSession.create(files.get(graph), { executionProviders: [variant.backend], externalData: (variant.externalData ?? []).map(f => ({ path: f.name, data: files.get(f.path) })), logSeverityLevel: 4 });
+    const session = await ort.InferenceSession.create(files.get(graph), { executionProviders: [variant.backend], externalData: (variant.externalData ?? []).map(f => ({ path: f.name, data: files.get(f.path) })), logSeverityLevel: 3 });
     sessions.push(session);
     return session;
 }

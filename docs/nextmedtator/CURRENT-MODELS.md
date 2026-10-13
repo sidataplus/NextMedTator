@@ -113,15 +113,19 @@ and removal with `tests/browser/test_model_storage.py`.
 Chrome 155 on this host passed actual WASM fixtures and all four fictional
 native/merged/ONNX/browser cases for each model, including exact attribute
 values/presence. Both passed Analyze, Accept, Export, and Reopen. WASM used
-four threads under cross-origin isolation. A pure WebGPU main-model session
-and inference also succeeded on NVIDIA Ampere: approximately 4.43 seconds for
-BPSD and 2.57 seconds for P10, excluding session initialization.
+four threads under cross-origin isolation. Preview.6 qualifies complete WebGPU
+entity and attribute inference for both immutable exports. The application
+records its execution policy separately from the original WASM package variant,
+including a hash-verified BPSD axis conversion when using WebGPU. Automatic
+execution falls back to WASM on GPU failure; original installed packages work
+without another download.
 
-WebGPU is an execution experiment, not full decoder/attribute parity
-qualification. Shipped model variants therefore use WASM. These four cases
-are technical regressions, not clinical accuracy estimates, exhaustive model
-validation, or performance guarantees on other machines. Reports and screenshots
-remain in ignored `test-results/requested-*/`; model artifacts remain in `work/`.
+See [WebGPU measurements and recovery](WEBGPU.md) for per-note GPU/WASM speeds,
+exact output comparisons, conversion provenance and reproduction commands.
+These cases are technical regressions, not clinical accuracy estimates,
+exhaustive model validation, or performance guarantees on other machines.
+Reports and screenshots remain in ignored `temp/browser-validation/`; model
+artifacts remain in `work/`.
 
 The original MedTator assistance panel is separately exercised by
 `tests/browser/test_requested_legacy.py`: it loads the matching DTD, uses the
