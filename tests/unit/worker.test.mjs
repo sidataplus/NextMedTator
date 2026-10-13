@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ConformanceWorker,modelRunProvenance } from '../../src/nextmedtator/model-package.mjs';
+import { ConformanceWorker,modelRunProvenance,selectInferenceVariant,validateModelManifest } from '../../src/nextmedtator/model-package.mjs';
 import {readFileSync} from 'node:fs';
-import {supportsWebGPU,EXECUTION_POLICY,graphTransforms,prepareGraph} from '../../src/nextmedtator/execution-policy.mjs';
+import {supportsWebGPU,EXECUTION_POLICY,graphTransforms,prepareGraph,wasmFallbackIdentity} from '../../src/nextmedtator/execution-policy.mjs';
 
 const packageData = { manifest: { variants: [{ id: 'wasm' }] }, manifestHash: 'fixture', files: new Map([['graph', new Uint8Array([1])]]) };
 const requests = [{ text: 'first' }, { text: 'second' }];
@@ -126,4 +126,45 @@ test('GPU provenance requires the qualified policy and exact transformed graph i
     result.graphTransforms[0].targetSha256='0'.repeat(64);
     assert.throws(()=>modelRunProvenance(p,v.id,result),/transformation/);
     await assert.rejects(prepareGraph(p.manifest,{...v,backend:'webgpu'},v.graphs.attributes,new Uint8Array([1,2,3])),/source hash mismatch/);
+});
+
+function fp16Package(){
+    const manifest=structuredClone(entry.manifest),v=manifest.variants[0];
+    Object.assign(v,{id:'webgpu-fp16',precision:'fp16',backend:'webgpu'});
+    Object.assign(manifest.files.find(f=>f.path===v.graph),{sha256:'bdf43a9185bf5562335b8d54b54bd81256e09a4b444080312e27afc3f0c97333',bytes:371444227});
+    return {manifest,manifestHash:'f'.repeat(64),files:new Map()};
+}
+test('FP16 selects a qualified package without a GPU and pins the original WASM fallback',()=>{
+    const pkg=fp16Package(),v=pkg.manifest.variants[0];validateModelManifest(pkg.manifest);
+    assert.equal(selectInferenceVariant(pkg,'occurrence-record',{webgpuAvailable:false}).id,v.id);
+    assert.deepEqual(wasmFallbackIdentity(pkg.manifest,v),{manifestHash:entry.revision,variantId});
+    pkg.manifest.files.find(f=>f.path===v.graph).sha256='0'.repeat(64);
+    assert.equal(wasmFallbackIdentity(pkg.manifest,v),null);
+    assert.throws(()=>validateModelManifest(pkg.manifest),/not qualified/);
+});
+test('FP16 failure resolves the original FP32 package and reports its actual precision',async t=>{
+    gpuNavigator(t);const pkg=fp16Package(),events=[];let resolved=0;
+    const workers=fakeWorker(t,(m,w)=>m.task==='load'&&m.backend==='webgpu'?{error:'No shader-f16'}:reply(m,w));
+    const runner=new ConformanceWorker();
+    const result=await runner.analyze(pkg,'webgpu-fp16',requests[0],{resolveFallback:async target=>{resolved++;assert.equal(target.manifestHash,entry.revision);return gpuPackage;},onBackend:e=>events.push(e)});
+    assert.equal(resolved,1);assert.equal(workers[1].messages[0].manifestHash,entry.revision);
+    assert.equal(workers[1].messages[0].variantId,variantId);
+    assert.equal(events.at(-1).precision,'fp32');assert.equal(events.at(-1).packageData,gpuPackage);
+    assert.deepEqual(result.fallbackFrom,{manifestHash:pkg.manifestHash,variantId:'webgpu-fp16',precision:'fp16'});
+    assert.equal(result.fallbackReason,'webgpu-initialization-failed');
+});
+test('FP16 starts directly on the original FP32 for CPU choice or no GPU; forged fallback is rejected',async t=>{
+    gpuNavigator(t);delete globalThis.navigator.gpu;const workers=fakeWorker(t,reply),pkg=fp16Package();
+    for(const backend of ['auto','wasm']){
+        const result=await new ConformanceWorker().analyze(pkg,'webgpu-fp16',requests[0],{backend,resolveFallback:async()=>gpuPackage});
+        assert.equal(result.backend,'wasm');
+    }
+    assert.equal(workers.length,2);assert.ok(workers.every(w=>w.messages[0].manifestHash===entry.revision));
+    await assert.rejects(new ConformanceWorker().analyze(pkg,'webgpu-fp16',requests[0],{resolveFallback:async()=>({...gpuPackage,manifestHash:'0'.repeat(64)})}),/identity mismatch/);
+    assert.equal(workers.length,2);
+});
+test('cancelling FP16 fallback loading never starts the downloaded model',async t=>{
+    gpuNavigator(t);delete globalThis.navigator.gpu;const workers=fakeWorker(t,reply),runner=new ConformanceWorker();
+    await assert.rejects(runner.analyze(fp16Package(),'webgpu-fp16',requests[0],{resolveFallback:async()=>{runner.cancel();return gpuPackage;}}),/Cancelled/);
+    assert.equal(workers.length,0);
 });

@@ -16,13 +16,13 @@
 - **Work across a corpus:** select notes for batch analysis, search text locally, and inspect annotation statistics.
 - **Keep the evidence:** export portable projects containing source text, annotations, model runs and review history. Browser recovery is separately opt-in.
 
-The application is a static site. Inference runs on your device; notes are not sent to a model server. Model weights download **only after you request a download**. A previously installed matching package can be restored from browser storage without downloading it again.
+The application is a static site. Inference runs on your device; notes are not sent to a model server. Model weights download **only on request**, never on website load or precision selection. After selecting FP16, an explicit Analyze request may download the disclosed FP32 WASM fallback if needed. Installed packages are reused locally.
 
 ## Try it in five steps
 
 1. Open [nmt.sidata.plus](https://nmt.sidata.plus) in desktop Chrome or Edge.
 2. In **Assistance → Try a fictional note**, choose **P10 clinical evidence** or **BPSD behaviors**. This loads a synthetic note, its matching schema and the model selection. It starts no download.
-3. Expand **Get a model package**, click **Show approved public model**, and choose the corresponding **Download and install** button. Alternatively, import a local `.nmt-model.zip` package.
+3. Expand **Get a model package**, click **Show approved public model**, choose **Model precision to download**, and click the corresponding **Download and install** button. Alternatively, import a local `.nmt-model.zip` package.
 4. Keep **Mode → Assisted** and click **Analyze note**. Open **Add to annotation**, check the fields, then click **Write annotation**.
 5. Click **Export evidence project** to keep a portable `.nmt.zip` backup. Use **Open evidence project → Open project/files** to reopen it.
 
@@ -35,9 +35,11 @@ No model is required for manual annotation. Use the ribbon's **Sample** button f
 | [ClinicalEvidence P10 GLM base](https://huggingface.co/na399/clinical-evidence-gliner2.5-base-lora-p10-glm) | Clinical evidence spans and attributes | About 721 MiB | WebGPU with WASM fallback, fp32 |
 | [BPSD GLiNER2.5 base](https://huggingface.co/na399/bpsd-gliner2.5-base-lora-20261012) | Behavioral and psychological symptom spans and attributes | About 725 MiB | WebGPU with WASM fallback, fp32 |
 
+Both models also offer **FP16 WebGPU** packages (about **369 / 372 MiB**, P10 / BPSD). These preserve all spans and attribute choices on eight synthetic regression notes, with small confidence differences. FP16 saves download bytes; it did not improve warm inference speed on this machine. **INT8 weights with FP32 WASM computation** are a separate experimental option: smaller downloads, changed outputs, and individual suggestion review required. See [precision benchmarks and choices](docs/nextmedtator/PRECISION.md).
+
 Allow at least twice the download size in browser storage, plus runtime memory. Downloads show bytes, progress and an estimated remaining time when enough transfer data is available. Initialization and inference show their current stage; they do not invent an ETA.
 
-These packages retain their pinned training schemas and model-specific limits. Oversized notes are rejected rather than silently truncated. Both complete GPU pipelines match native/WASM spans and attributes on the synthetic regression cases. Automatic execution falls back to WASM after GPU failure; **Assistance → Model packages → Inference device** also lets you choose CPU explicitly. P10 was about twice as fast on this machine's GPU; BPSD's attribute-heavy cases were faster on WASM. See the [measured comparison and fallback behavior](docs/nextmedtator/WEBGPU.md) and [model contracts](docs/nextmedtator/CURRENT-MODELS.md).
+These packages retain their pinned training schemas and model-specific limits. Oversized notes are rejected rather than silently truncated. Automatic GPU execution falls back to **original FP32 WASM**, never experimental INT8; **Assistance → Model packages → Inference device** also lets you choose CPU explicitly. FP16's FP32 fallback is a separate, cached download of about 725 MiB; install the matching FP32 package beforehand for offline fallback. See the [original FP32 comparison](docs/nextmedtator/WEBGPU.md), [precision results](docs/nextmedtator/PRECISION.md), and [model contracts](docs/nextmedtator/CURRENT-MODELS.md).
 
 Model files have their own license terms, included in each package. Public availability does not change those terms. Synthetic parity checks establish technical consistency, not clinical accuracy.
 

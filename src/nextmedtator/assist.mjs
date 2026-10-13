@@ -1,3 +1,4 @@
+import {loadWasmFallback} from './model-fallback.mjs';
 import {renderLoadingProgress} from './loading-progress.mjs';
 import {PRACTICE_TASKS} from './practice-tasks.mjs';
 import {ENTITY_ATTRIBUTES_CODEC,entityContractSchema} from './entity-contract.mjs';
@@ -13,7 +14,7 @@ import {exportBundle,localDownload} from './bundle.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, activeVariantForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
-import {supportsWebGPU} from './execution-policy.mjs';
+import {supportsWebGPU,EXECUTION_POLICY,graphTransforms} from './execution-policy.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
@@ -481,11 +482,13 @@ class LegacyAssist {
         if (qualification.level !== 'entity-span' && qualification.level !== 'structured-span' && qualification.level !== 'occurrence-record')
             throw new Error('This package’s codec is not a local GLiNER2.5 decoder');
         const variant = selectInferenceVariant(model,qualification.level);
+        invariant(variant.precision!=='int8'||!autoApply,'Experimental INT8 requires suggestion review. Select Assist mode or use FP32 for auto apply.');
         const codec = variant.codec;
         const thresholdSettings=suggestionThreshold(this.thresholdOverride,scope,variant);
         if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
-        const executionOptions={backend:this.executionPreference??'auto',onBackend:({backend,fallbackReason})=>{this.executionStatus={backend,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} inference on this device.`;this.render();}};
+        let executionModel=model;
+        const executionOptions={backend:this.executionPreference??'auto',resolveFallback:target=>loadWasmFallback(this,target),onBackend:({backend,precision,packageData,fallbackReason})=>{executionModel=packageData;this.executionStatus={backend,precision,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
         if(!supportsWebGPU(model.manifest,variant)&&(this.qualifiedManifest!==model.manifestHash||this.qualifiedVariant!==variant.id)){const report=await this.modelRunner.run(model,variant.id,executionOptions);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=model.manifestHash;this.qualifiedVariant=variant.id;}
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
@@ -510,7 +513,7 @@ class LegacyAssist {
             const doc = { id: ann._filename ?? `document-${index + 1}`, text: requests[index].text };
             if (result.kind !== codec)
                 throw new Error('Worker did not return GLiNER span output');
-            const provenance = modelRunProvenance(model, variant.id, result);
+            const provenance = modelRunProvenance(executionModel, result.variantId, result);
             const records = result.records ?? spansToRecords(doc, schema, result.spans);
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
             const project=await this.ensureProject(ann,nativeSchema),nativeDoc=project.current.documents[0];
@@ -518,7 +521,7 @@ class LegacyAssist {
             const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);this.runHistory.push(nativeRun);
             completed.add(index);this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
             if (autoApply && legacy().data.dtd===sourceDtd && legacy().data.anns.includes(sourceAnns[index]) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) await this.applyAllSuggestions(sourceAnns[index]);
-        } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
+        } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
@@ -577,6 +580,7 @@ class LegacyAssist {
         const key = documentKey(ann._filename ?? 'document', ann.text), run = this.runs.get(key);
         invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this protected note explicitly before auto apply');
         invariant(run?.status === 'complete', 'Auto apply requires a complete run');
+        invariant(run.precision!=='int8','Experimental INT8 requires individual suggestion review');
         const pending = run.records.filter(record => !run.decisions[record.id]);
         if (!pending.length) { this.message = 'No remaining suggestions to apply. Existing and rejected tags were preserved.'; return; }
         const project = await this.syncProject(ann);
@@ -660,7 +664,7 @@ class LegacyAssist {
         status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'Model needed', { class: `badge ${this.model?'ready':'pending'}`, 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
         head.append(title, status, labeled('Mode', mode));
         if(this.model)head.append(node('p',modelSelectionLabel(this.modelSelection),{class:'muted','data-testid':'assist-model-identity',title:this.model.manifest.id}));
-        if(this.model)head.append(node('p',this.executionStatus?`${this.executionStatus.backend==='webgpu'?'WebGPU':'WASM'}${this.executionStatus.fallbackReason?' · automatic fallback':''}`:'Automatic execution · WebGPU when qualified, WASM fallback',{class:'muted','data-testid':'assist-execution-status'}));
+        if(this.model)head.append(node('p',this.executionStatus?`${this.executionStatus.backend==='webgpu'?'WebGPU':'WASM'} · ${this.executionStatus.precision?.toUpperCase()??'FP32'}${this.executionStatus.fallbackReason?' · automatic fallback':''}`:`${this.model.manifest.variants[0].precision.toUpperCase()} package · ${this.model.manifest.id}`,{class:'muted','data-testid':'assist-execution-status'}));
 
         if (view?.ann)
             head.append(node('p', view.ann._filename ?? 'document', { class: 'document-name', 'data-testid': 'assist-document',title:view.ann._filename }));
@@ -684,7 +688,7 @@ class LegacyAssist {
         const sourcePending=!!this.selectionDraft||this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection);
         actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !this.model || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
         actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || !this.model || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
-        actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
+        actions.append(button('Pause', () => {this.installController?.abort();this.modelRunner.cancel();}, { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis or model download' }));
         const options=disclosure(this,'options','Analysis settings',this.scopeEditing);body.append(options);
         options.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:activeVariantForSchema(this.model,view?.data?.dtd?legacySchema(view.data.dtd):null),disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
         const actionBar=node('div',null,{class:'action-bar'});actionBar.append(actions,node('p',!schema?'Load a schema, then open a note.':!view?.ann?'Open a note to begin.':!this.model?'Choose a model below and install its package.':this.mode==='auto'?'Predictions are added as unreviewed tags.':this.mode==='blind'?'Freeze your annotation before revealing predictions.':'Review suggestions before adding them to the note.'));head.after(actionBar);
@@ -698,6 +702,8 @@ class LegacyAssist {
         const execution=node('select',null,{'aria-label':'Inference device','data-testid':'assist-execution',disabled:this.busy});
         for(const [value,label]of [['auto','Automatic · WebGPU with WASM fallback'],['wasm','CPU · WASM']])execution.append(node('option',label,{value}));
         execution.value=this.executionPreference??'auto';execution.addEventListener('change',()=>{this.executionPreference=execution.value;this.executionStatus=null;this.qualifiedManifest=null;this.render();});packages.append(labeled('Inference device',execution));
+        if(this.model?.manifest.variants.some(v=>v.precision==='fp16'))packages.append(node('p','FP16 uses WebGPU. On Analyze, CPU mode or a GPU failure uses the original FP32 WASM model. If it is not installed, it downloads about 725 MiB once; install FP32 beforehand for offline fallback.',{class:'setup-hint'}));
+        if(this.model?.manifest.variants.some(v=>v.precision==='int8'))packages.append(node('p','Experimental INT8 weights / FP32 computation: smaller downloads, but slower in these browser tests and some spans differ from FP32. Inspect each suggestion.',{class:'setup-hint','data-testid':'assist-int8-notice'}));
         packages.append(node('p', this.structured()
             ? (this.model.manifest.variants.some(v=>isRecordsCodec(v.codec))?recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec):'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
@@ -707,9 +713,17 @@ class LegacyAssist {
             const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});
             invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();
         })));
-        for(const entry of this.catalog?.entries??[]){
+        if(this.catalog){
+            const precision=node('select',null,{'aria-label':'Model precision to download','data-testid':'assist-precision',disabled:this.busy});
+            for(const [value,label]of [['fp32','FP32 · original precision'],['fp16','FP16 · smaller GPU model, FP32 WASM fallback'],['int8','INT8 weights · experimental, FP32 CPU computation']])precision.append(node('option',label,{value}));
+            precision.value=this.downloadPrecision??'fp32';precision.addEventListener('change',()=>{this.downloadPrecision=precision.value;this.render();});packages.append(labeled('Model precision to download',precision));
+            packages.append(node('p','Changing precision does not download or switch the active model. Choose Download and install below, or use an installed package.',{class:'muted'}));
+            if(this.downloadPrecision==='fp16')packages.append(node('p','About half the FP32 download. GPU failure or CPU selection on Analyze can download the original FP32 fallback once (about 725 MiB). Download FP32 in advance for offline fallback.',{class:'setup-hint'}));
+            if(this.downloadPrecision==='int8')packages.append(node('p','Smallest download. Activations remain FP32; WASM inference was slower and some spans changed in synthetic tests. Individual review required. Never used for automatic fallback.',{class:'setup-hint'}));
+        }
+        for(const entry of (this.catalog?.entries??[]).filter(e=>e.manifest.variants[0].precision===(this.downloadPrecision??'fp32'))){
             const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
-            packages.append(node('p',`${entry.manifest.id} · ${(total/1048576).toFixed(0)} MB · ${entry.manifest.license.id}. Allow ${(total*2/1048576).toFixed(0)} MB free storage.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
+            packages.append(node('p',`${entry.manifest.id} · ${(total/1048576).toFixed(0)} MiB · ${entry.manifest.license.id}. Allow ${(total*2/1048576).toFixed(0)} MiB free storage.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
                 this.setSelectedModel(selectionFromManifest(entry.manifest),{render:false,restoreInstalled:false});
                 const epoch=this.modelSelectionEpoch;this.installController=new AbortController();
                 try{
@@ -782,7 +796,7 @@ class LegacyAssist {
         body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
         const applied = Object.values(run.decisions).filter(d=>d.status==='applied').length;
         if (applied) body.append(node('p', `${applied} machine-applied tags · unreviewed`, {'data-testid':'assist-auto-status'}));
-        body.append(button('Apply all suggestions', this.forCurrentNote(view.key, () => this.perform(() => this.applyAllSuggestions(view.ann))), {id:'assist-apply-all',disabled:this.busy||!unresolved||run.status!=='complete',title:'Add all remaining suggestions to this note without individual review; preserve existing and rejected tags'}));
+        body.append(button('Apply all suggestions', this.forCurrentNote(view.key, () => this.perform(() => this.applyAllSuggestions(view.ann))), {id:'assist-apply-all',disabled:this.busy||!unresolved||run.status!=='complete'||run.precision==='int8',title:'Add all remaining suggestions to this note without individual review; preserve existing and rejected tags'}));
         if (!run.records.length)
             body.append(node('p', run.status === 'complete' ? 'No suggestions in the completed run. Omission review is still required.' : 'Incomplete run. An empty result is not a negative label.', { class: 'muted' }));
         const display = node('select', null, { 'aria-label': 'Suggestion view', 'data-testid': 'assist-suggestion-view' });

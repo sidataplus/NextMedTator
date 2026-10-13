@@ -53,6 +53,7 @@ async function loadModel(data) {
         invariant(!!navigator.gpu, 'WebGPU unavailable');
         const adapter=await navigator.gpu.requestAdapter();
         invariant(!!adapter, 'No usable GPU adapter');
+        if(variant.precision==='fp16')invariant(adapter.features.has('shader-f16'),'This GPU does not support FP16 shaders');
     }
     let entityContract=null;
     if(variant.codec===ENTITY_ATTRIBUTES_CODEC){entityContract=validateEntityContract(jsonParse(new TextDecoder().decode(files.get(variant.entityContract))));invariant(entityContract.threshold===variant.threshold&&entityContract.maxEncodedTokens===variant.maxSequenceLength,'Native entity contract differs from manifest');}

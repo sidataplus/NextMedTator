@@ -16,6 +16,25 @@ Choose **Download and install clinical-evidence-p10-base-r2** for P10, or
 **Download and install bpsd-gliner25-base-r2** for BPSD. Browsing the catalog
 loads metadata only; the download button starts the weight transfer.
 
+Use **Model precision to download** to choose FP32 (original), FP16 (smaller
+WebGPU package), or experimental INT8 weights (FP32 WASM computation).
+Changing this selection starts no download and does not replace the active model.
+Click the matching **Download and install** button, then check the Assistance
+header for the active package and the actual precision after analysis.
+
+![Choose precision before requesting a download](images/14-precision-choice.png)
+
+FP16 downloads about 369 MiB for P10 or 372 MiB for BPSD. On an Analyze request,
+GPU failure or explicit CPU selection uses the original FP32 WASM model. If it
+is not installed, the app downloads and caches it once (about 725 MiB).
+Install the matching FP32 package beforehand for offline fallback.
+INT8 is experimental because its outputs differ; review suggestions individually.
+See [measured precision results](../docs/nextmedtator/PRECISION.md).
+
+![FP16 suggestions with actual backend and precision](images/15-fp16-suggestions.png)
+
+![The same note recovered through the original FP32 WASM model](images/16-fp32-fallback.png)
+
 ![Public package choices and local import](images/03-model-options.png)
 
 P10 is about 721 MiB; BPSD is about 725 MiB. Keep at least twice that amount

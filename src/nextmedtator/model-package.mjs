@@ -1,5 +1,5 @@
 import {ENTITY_ATTRIBUTES_CODEC,validateEntityContract,entityContractSchema} from './entity-contract.mjs';
-import {EXECUTION_POLICY,supportsWebGPU,graphTransforms} from './execution-policy.mjs';
+import {EXECUTION_POLICY,supportsWebGPU,graphTransforms,wasmFallbackIdentity} from './execution-policy.mjs';
 import {CLINICAL_V3_CODEC,CLINICAL_V3,validateClinicalV3Registry} from './clinical-v3.mjs';
 import { invariant, validId, validHash, uniqueIds, fingerprint, sha256, freeze, clone, jsonParse } from './integrity.mjs';
 import { safePath, unzipBounded } from './zip.mjs';
@@ -72,7 +72,7 @@ export function validateModelManifest(m) {
             }
         }
         if(v.codec===ENTITY_ATTRIBUTES_CODEC){
-            invariant(v.backend==='wasm','Entity contract is qualified for WASM only');
+            invariant(v.backend==='wasm'||supportsWebGPU(m,v),'Entity contract backend is not qualified');
             invariant(v.mainMaskType==='bool','Entity contract graphs require native Boolean masks');
             invariant(v.recordBinding===false&&v.fixedThreshold===true&&v.automaticRelations===false,'Fixed entity contract does not infer bindings/relations');
             invariant([512,1024].includes(v.fixedWords)&&v.maxSequenceLength===v.fixedWords,'Invalid entity token/word budget');
@@ -133,6 +133,7 @@ export function modelRunProvenance(packageData, variantId, result) {
     invariant(result.manifestHash === packageData.manifestHash && result.variantId === variantId,
         'Worker returned a different model package or variant');
     const qualifiedGPU = result.backend === 'webgpu' && result.executionPolicy === EXECUTION_POLICY && supportsWebGPU(manifest, variant);
+    invariant(result.backend!=='webgpu'||!supportsWebGPU(manifest,variant)||qualifiedGPU,'Worker runtime qualification is missing');
     if(qualifiedGPU)invariant(JSON.stringify(result.graphTransforms??[])===JSON.stringify(graphTransforms(manifest,variant,'webgpu')),'GPU graph transformation provenance mismatch');
     invariant(result.kind === variant.codec && (result.backend === variant.backend || qualifiedGPU) && result.precision === variant.precision,
         'Worker runtime does not match the selected variant');
@@ -143,6 +144,7 @@ export function modelRunProvenance(packageData, variantId, result) {
         runtime: { backend: result.backend, precision: result.precision, version: manifest.runtimeVersion,
             variantId, variant: clone(variant), ...(result.executionPolicy ? {executionPolicy:result.executionPolicy} : {}),
             ...(result.graphTransforms?.length ? {graphTransforms:clone(result.graphTransforms)} : {}),
+            ...(result.fallbackFrom ? {fallbackFrom:clone(result.fallbackFrom)} : {}),
             ...(result.fallbackReason ? {fallbackReason:result.fallbackReason} : {}) }
     };
 }
@@ -154,7 +156,7 @@ export function qualifyForSchema(packageData, schema) {
     if (!open)
         for (const family of Object.keys(schema.families))
             invariant(packageData.manifest.capabilities.includes(family), 'Unsupported schema family');
-    const entityVariant=packageData.manifest.variants.find(v=>v.backend==='wasm'&&CODECS[v.codec]?.coverage==='occurrence-record');
+    const entityVariant=packageData.manifest.variants.find(v=>CODECS[v.codec]?.coverage==='occurrence-record');
     if(entityVariant?.codec===ENTITY_ATTRIBUTES_CODEC){const contract=packageData.entityContracts?.get(entityVariant.id);invariant(contract,'Import and validate the entity contract artifact first');entityContractSchema(schema,contract);}
     if (codecs.some(c=>c.coverage==='occurrence-record')) return {level:'occurrence-record',unpredicted:['anchorless-records','cross-window-relations',...(packageData.manifest.variants.every(v=>v.codec===CLINICAL_V3_CODEC)?['family-choice-spans','literal-spans','record-binding','relations']:[])]};
     const structured = codecs.some(c => c.coverage === 'structured-span');
@@ -165,7 +167,7 @@ export function qualifyForSchema(packageData, schema) {
 /** Choose an available backend across every codec at the qualified task level. */
 export function selectInferenceVariant(packageData, level, {webgpuAvailable=!!globalThis.navigator?.gpu} = {}) {
     const variants = packageData.manifest.variants.filter(v => CODECS[v.codec]?.clinicalInference && CODECS[v.codec].coverage === level);
-    const variant = variants.find(v=>v.backend==='wasm') ?? variants.find(v=>v.backend==='webgpu' && webgpuAvailable);
+    const variant = variants.find(v=>v.backend==='wasm') ?? variants.find(v=>v.backend==='webgpu' && (webgpuAvailable||wasmFallbackIdentity(packageData.manifest,v)));
     invariant(variant, 'No browser GLiNER2.5 variant is available in the imported package');
     return variant;
 }
@@ -215,21 +217,22 @@ export class ConformanceWorker {
             return results;
         }, {timeoutMs:600000,...options});
     }
-    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend} = {}) {
-        invariant(!this.worker, 'One model worker at a time');
+    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback} = {}) {
+        invariant(!this.worker&&!this.active, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
         invariant(['auto','wasm','webgpu'].includes(backend), 'Unknown execution preference');
         const qualified = supportsWebGPU(packageData.manifest, variant);
         invariant(backend !== 'webgpu' || qualified || variant.backend === 'webgpu', 'WebGPU is not qualified for this package');
         const failure = this.gpuFailures.get(packageData.manifestHash);
-        const actual = backend === 'auto' ? (qualified && globalThis.navigator?.gpu && !failure ? 'webgpu' : variant.backend) : backend;
+        const actual = backend === 'auto' ? (qualified ? (globalThis.navigator?.gpu && !failure ? 'webgpu' : 'wasm') : variant.backend) : backend;
         invariant(actual === variant.backend || qualified, 'Execution preference is not supported by this package');
-        const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,
+        const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,resolveFallback,
             fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null};
-        this.cancelled = false;
+        this.cancelled = false;this.active=true;
         try {
-            context.onBackend?.({backend:context.backend,fallbackReason:context.fallbackReason});
+            if(actual==='wasm')await this.#resolveWasm(context);
+            this.#notifyBackend(context);
             try { await this.#load(context); }
             catch(error) { await this.#fallback(context,error,'webgpu-initialization-failed'); }
             return await action(context);
@@ -238,7 +241,25 @@ export class ConformanceWorker {
             this.worker?.terminate();
             this.worker = null;
             this.reject = null;
+            this.active=false;
         }
+    }
+    #notifyBackend(context){
+        const variant=context.packageData.manifest.variants.find(v=>v.id===context.variantId);
+        context.onBackend?.({backend:context.backend,precision:variant.precision,packageData:context.packageData,variantId:context.variantId,fallbackReason:context.fallbackReason});
+    }
+    async #resolveWasm(context){
+        const source=context.packageData,variant=source.manifest.variants.find(v=>v.id===context.variantId);
+        if(variant.backend!=='webgpu')return;
+        const target=wasmFallbackIdentity(source.manifest,variant);
+        invariant(target&&context.resolveFallback,'FP16 needs the original FP32 package for WASM fallback');
+        const candidate=await context.resolveFallback(target);
+        invariant(!this.cancelled,'Cancelled: local model worker stopped');
+        invariant(candidate?.manifestHash===target.manifestHash&&await fingerprint(candidate.manifest)===target.manifestHash,'WASM fallback package identity mismatch');
+        const fallback=candidate.manifest.variants.find(v=>v.id===target.variantId);
+        invariant(fallback?.backend==='wasm'&&fallback.precision==='fp32','WASM fallback variant mismatch');
+        context.fallbackFrom={manifestHash:source.manifestHash,variantId:variant.id,precision:variant.precision};
+        context.packageData=candidate;context.variantId=fallback.id;
     }
     async #load(context) {
         invariant(!this.cancelled, 'Cancelled: local model worker stopped');
@@ -253,7 +274,8 @@ export class ConformanceWorker {
         this.worker?.terminate();this.worker=null;
         context.backend='wasm';context.fallbackReason=reason;
         this.gpuFailures.set(context.packageData.manifestHash,reason);
-        context.onBackend?.({backend:'wasm',fallbackReason:reason});
+        await this.#resolveWasm(context);
+        this.#notifyBackend(context);
         await this.#load(context);
         const report=await this.#request({task:'fixtures'},context.timeoutMs);
         invariant(report.pass,'WASM fallback failed its public conformance fixtures');
@@ -268,7 +290,7 @@ export class ConformanceWorker {
             result=await this.#request(message,context.timeoutMs);
             if(message.task==='fixtures')invariant(result.pass,'WASM fallback failed its public conformance fixtures');
         }
-        return context.qualified ? {...result,executionPolicy:EXECUTION_POLICY,...(context.fallbackReason?{fallbackReason:context.fallbackReason}:{})} : result;
+        return context.qualified ? {...result,executionPolicy:EXECUTION_POLICY,...(context.fallbackFrom?{fallbackFrom:context.fallbackFrom}:{}),...(context.fallbackReason?{fallbackReason:context.fallbackReason}:{})} : result;
     }
     #request(message, timeoutMs) {
         invariant(!this.cancelled, 'Cancelled: local model worker stopped');

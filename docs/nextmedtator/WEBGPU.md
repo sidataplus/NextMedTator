@@ -1,5 +1,10 @@
 # WebGPU and automatic WASM fallback
 
+This page records the original FP32 qualification. Preview.7 adds selectable
+FP16 and experimental INT8 packages; see [precision choices and fresh benchmarks](PRECISION.md).
+FP16 falls back to the original FP32 WASM package, downloading it on an explicit
+Analyze request if it is not already installed. Install FP32 first for offline recovery.
+
 NextMedTator preview.6 runs both pinned P10 and BPSD packages through WebGPU,
 including entity extraction, attribute scoring and final decoding. **Automatic**
 is the default. Under **Assistance → Model packages → Inference device**, select
