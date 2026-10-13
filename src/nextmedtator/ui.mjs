@@ -272,7 +272,7 @@ export class EvidenceWorkspace {
             top.append(node('span', `${this.project.current.mode} · ${this.project.current.phase}`, { class: 'badge stage', 'data-testid': 'phase' }));
         top.append(button('Privacy & storage', () => { this.panel = this.panel === 'privacy' ? null : 'privacy'; this.render(); }), button('Models', () => { this.panel = this.panel === 'models' ? null : 'models'; this.render(); }));
         if (!this.standalone)
-            top.append(button('Back to MedTator', () => { this.open = false; this.render(); this.previousFocus?.focus(); }));
+            top.append(button('Back to annotation', () => { this.open = false; this.render(); this.previousFocus?.focus(); }));
         app.append(top);
         const warning = node('div', this.project?.current.runs.some(run=>run.runtime?.backend==='wasm'||run.runtime?.backend==='webgpu') ? 'This project contains browser inference runs. Imported historical runs keep their original producer and runtime. Research output; clinical validity is not established.' : this.project?.current.runs.some(run=>run.settings?.importedPredictions) ? 'Imported local native predictions. Browser inference has not run for these imported runs. Research output; clinical validity is not established.' : 'Research annotation preview. Local model capabilities depend on the selected package. Authored sample suggestions are not model output. Check each run’s producer and runtime provenance.', { class: 'banner' });
         app.append(warning);

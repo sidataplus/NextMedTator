@@ -1,0 +1,67 @@
+<!ENTITY name "bpsd_practice">
+<!ELEMENT Hallucination (#PCDATA)>
+<!ATTLIST Hallucination certainty ( confirmed | hypothetical | possible ) #IMPLIED "">
+<!ATTLIST Hallucination experiencer ( patient | other ) #IMPLIED "">
+<!ATTLIST Hallucination chronic ( yes | no ) #IMPLIED "">
+<!ATTLIST Hallucination negated ( yes | no ) #IMPLIED "">
+<!ATTLIST Hallucination status ( history | present ) #IMPLIED "">
+<!ATTLIST Hallucination exclusion ( yes | no ) #IMPLIED "">
+<!ELEMENT Delusion (#PCDATA)>
+<!ATTLIST Delusion certainty ( confirmed | hypothetical | possible ) #IMPLIED "">
+<!ATTLIST Delusion experiencer ( patient | other ) #IMPLIED "">
+<!ATTLIST Delusion chronic ( yes | no ) #IMPLIED "">
+<!ATTLIST Delusion negated ( yes | no ) #IMPLIED "">
+<!ATTLIST Delusion status ( history | present ) #IMPLIED "">
+<!ATTLIST Delusion exclusion ( yes | no ) #IMPLIED "">
+<!ELEMENT Psychosis (#PCDATA)>
+<!ATTLIST Psychosis certainty ( confirmed | hypothetical | possible ) #IMPLIED "">
+<!ATTLIST Psychosis experiencer ( patient | other ) #IMPLIED "">
+<!ATTLIST Psychosis chronic ( yes | no ) #IMPLIED "">
+<!ATTLIST Psychosis negated ( yes | no ) #IMPLIED "">
+<!ATTLIST Psychosis status ( history | present ) #IMPLIED "">
+<!ATTLIST Psychosis exclusion ( yes | no ) #IMPLIED "">
+<!ELEMENT Physical (#PCDATA)>
+<!ATTLIST Physical certainty ( confirmed | hypothetical | possible ) #IMPLIED "">
+<!ATTLIST Physical frequency ( never | days1_3 | days4_6 | daily ) #IMPLIED "">
+<!ATTLIST Physical severity ( mild | moderate | severe ) #IMPLIED "">
+<!ATTLIST Physical experiencer ( patient | other ) #IMPLIED "">
+<!ATTLIST Physical chronic ( yes | no ) #IMPLIED "">
+<!ATTLIST Physical negated ( yes | no ) #IMPLIED "">
+<!ATTLIST Physical status ( history | present ) #IMPLIED "">
+<!ATTLIST Physical exclusion ( yes | no ) #IMPLIED "">
+<!ELEMENT Verbal (#PCDATA)>
+<!ATTLIST Verbal certainty ( confirmed | hypothetical | possible ) #IMPLIED "">
+<!ATTLIST Verbal frequency ( never | days1_3 | days4_6 | daily ) #IMPLIED "">
+<!ATTLIST Verbal severity ( mild | moderate | severe ) #IMPLIED "">
+<!ATTLIST Verbal experiencer ( patient | other ) #IMPLIED "">
+<!ATTLIST Verbal chronic ( yes | no ) #IMPLIED "">
+<!ATTLIST Verbal negated ( yes | no ) #IMPLIED "">
+<!ATTLIST Verbal status ( history | present ) #IMPLIED "">
+<!ATTLIST Verbal exclusion ( yes | no ) #IMPLIED "">
+<!ELEMENT Other (#PCDATA)>
+<!ATTLIST Other certainty ( confirmed | hypothetical | possible ) #IMPLIED "">
+<!ATTLIST Other frequency ( never | days1_3 | days4_6 | daily ) #IMPLIED "">
+<!ATTLIST Other severity ( mild | moderate | severe ) #IMPLIED "">
+<!ATTLIST Other experiencer ( patient | other ) #IMPLIED "">
+<!ATTLIST Other chronic ( yes | no ) #IMPLIED "">
+<!ATTLIST Other negated ( yes | no ) #IMPLIED "">
+<!ATTLIST Other status ( history | present ) #IMPLIED "">
+<!ATTLIST Other exclusion ( yes | no ) #IMPLIED "">
+<!ELEMENT Rejection (#PCDATA)>
+<!ATTLIST Rejection certainty ( confirmed | hypothetical | possible ) #IMPLIED "">
+<!ATTLIST Rejection frequency ( never | days1_3 | days4_6 | daily ) #IMPLIED "">
+<!ATTLIST Rejection severity ( mild | moderate | severe ) #IMPLIED "">
+<!ATTLIST Rejection experience ( patient | other ) #IMPLIED "">
+<!ATTLIST Rejection chronic ( yes | no ) #IMPLIED "">
+<!ATTLIST Rejection negated ( yes | no ) #IMPLIED "">
+<!ATTLIST Rejection status ( history | present ) #IMPLIED "">
+<!ATTLIST Rejection exclusion ( yes | no ) #IMPLIED "">
+<!ELEMENT BPSD (#PCDATA)>
+<!ATTLIST BPSD certainty ( confirmed | hypothetical | possible ) #IMPLIED "">
+<!ATTLIST BPSD frequency ( never | days1_3 | days4_6 | daily ) #IMPLIED "">
+<!ATTLIST BPSD severity ( mild | moderate | severe ) #IMPLIED "">
+<!ATTLIST BPSD experience ( patient | other ) #IMPLIED "">
+<!ATTLIST BPSD chronic ( yes | no ) #IMPLIED "">
+<!ATTLIST BPSD negated ( yes | no ) #IMPLIED "">
+<!ATTLIST BPSD status ( history | present ) #IMPLIED "">
+<!ATTLIST BPSD exclusion ( yes | no ) #IMPLIED "">

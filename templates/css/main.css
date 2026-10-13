@@ -118,7 +118,12 @@ html,body {
     min-width: 160px;
     height: 100%;
 }
-#mui_editor_row nextmedtator-assist {
+#annotation_core {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+}
+#main_ui > nextmedtator-assist {
     flex: 0 0 36px;
     width: 36px;
     min-width: 36px;
@@ -127,7 +132,7 @@ html,body {
     border-left: 1px solid #d7e1e7;
     overflow: hidden;
 }
-#mui_editor_row nextmedtator-assist[data-open="true"] {
+#main_ui > nextmedtator-assist[data-open="true"] {
     flex-basis: clamp(300px, 28vw, 380px);
     width: clamp(300px, 28vw, 380px);
 }

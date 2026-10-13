@@ -59,9 +59,8 @@ def run():
             expect(page.get_by_test_id('assist-analyze')).to_be_disabled()
             page.get_by_title('Load a minimal task').click()
             page.locator('.file-list-item-name', has_text='doc_01.txt.xml').wait_for()
-            expect(page.get_by_test_id('assist-analyze')).to_be_enabled()
-            page.get_by_test_id('assist-analyze').click()
-            expect(page.get_by_test_id('assist-message')).to_contain_text('Import a GLiNER2.5 boundary model package')
+            expect(page.get_by_test_id('assist-analyze')).to_be_disabled()
+            expect(page.get_by_test_id('model-status')).to_have_text('Model needed')
             page.get_by_test_id('assist-collapse').click()
             page.get_by_test_id('assist-expand').wait_for()
             assert page.locator('nextmedtator-assist').get_attribute('data-open')=='false'
@@ -75,7 +74,7 @@ def run():
             page.locator('.file-list-item-name', has_text='doc_01.txt.xml').wait_for()
             page.get_by_test_id('open-workspace').click();page.get_by_test_id('source').wait_for()
             assert page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current.documents.length') == 1
-            page.get_by_role('button', name='Back to MedTator', exact=True).click()
+            page.get_by_role('button', name='Back to annotation', exact=True).click()
             page.locator('#tab_link_annotation').wait_for()
             page.locator('#mui_dtdlist').wait_for()
             check_worker_regressions(page)

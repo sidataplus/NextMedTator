@@ -6,6 +6,6 @@ const maintained=(await Promise.all(['src','scripts','tools/gliner-onnx/src','te
 for(const path of maintained.filter(p=>p.endsWith('.mjs')))execFileSync(process.execPath,['--check',path],{stdio:'inherit'});
 execFileSync('uv',['run','--locked','python','-c',`import ast,pathlib,json
 for name in json.loads(${JSON.stringify(JSON.stringify(maintained.filter(p=>p.endsWith('.py')).concat(['config.py','web.py'])))}):
- ast.parse(pathlib.Path(name).read_text(),filename=name)
+ ast.parse(pathlib.Path(name).read_text(encoding='utf-8'),filename=name)
 `],{stdio:'inherit'});
 console.log('Maintained JavaScript/Python syntax passed. This is not a comprehensive style or security audit.');

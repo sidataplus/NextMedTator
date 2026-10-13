@@ -1,0 +1,29 @@
+<!ENTITY name "p10_practice">
+<!ELEMENT condition_occurrence (#PCDATA)>
+<!ATTLIST condition_occurrence assertion ( affirmed | negated | uncertain | hypothetical | ruled_out | planned ) #IMPLIED "">
+<!ATTLIST condition_occurrence experiencer ( patient | family | other ) #IMPLIED "">
+<!ATTLIST condition_occurrence time_frame ( current | recent | historical | future | unspecified ) #IMPLIED "">
+<!ELEMENT finding_occurrence (#PCDATA)>
+<!ATTLIST finding_occurrence assertion ( affirmed | negated | uncertain | hypothetical | ruled_out | planned ) #IMPLIED "">
+<!ATTLIST finding_occurrence experiencer ( patient | family | other ) #IMPLIED "">
+<!ATTLIST finding_occurrence time_frame ( current | recent | historical | future | unspecified ) #IMPLIED "">
+<!ELEMENT measurement_occurrence (#PCDATA)>
+<!ATTLIST measurement_occurrence assertion ( affirmed | negated | uncertain | hypothetical | ruled_out | planned ) #IMPLIED "">
+<!ATTLIST measurement_occurrence experiencer ( patient | family | other ) #IMPLIED "">
+<!ATTLIST measurement_occurrence time_frame ( current | recent | historical | future | unspecified ) #IMPLIED "">
+<!ELEMENT treatment_occurrence (#PCDATA)>
+<!ATTLIST treatment_occurrence assertion ( affirmed | negated | uncertain | hypothetical | ruled_out | planned ) #IMPLIED "">
+<!ATTLIST treatment_occurrence experiencer ( patient | family | other ) #IMPLIED "">
+<!ATTLIST treatment_occurrence time_frame ( current | recent | historical | future | unspecified ) #IMPLIED "">
+<!ELEMENT event_occurrence (#PCDATA)>
+<!ATTLIST event_occurrence assertion ( affirmed | negated | uncertain | hypothetical | ruled_out | planned ) #IMPLIED "">
+<!ATTLIST event_occurrence experiencer ( patient | family | other ) #IMPLIED "">
+<!ATTLIST event_occurrence time_frame ( current | recent | historical | future | unspecified ) #IMPLIED "">
+<!ELEMENT function_occurrence (#PCDATA)>
+<!ATTLIST function_occurrence assertion ( affirmed | negated | uncertain | hypothetical | ruled_out | planned ) #IMPLIED "">
+<!ATTLIST function_occurrence experiencer ( patient | family | other ) #IMPLIED "">
+<!ATTLIST function_occurrence time_frame ( current | recent | historical | future | unspecified ) #IMPLIED "">
+<!ELEMENT care_context_occurrence (#PCDATA)>
+<!ATTLIST care_context_occurrence assertion ( affirmed | negated | uncertain | hypothetical | ruled_out | planned ) #IMPLIED "">
+<!ATTLIST care_context_occurrence experiencer ( patient | family | other ) #IMPLIED "">
+<!ATTLIST care_context_occurrence time_frame ( current | recent | historical | future | unspecified ) #IMPLIED "">

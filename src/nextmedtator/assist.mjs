@@ -1,4 +1,5 @@
 import {renderLoadingProgress} from './loading-progress.mjs';
+import {PRACTICE_TASKS} from './practice-tasks.mjs';
 import {ENTITY_ATTRIBUTES_CODEC,entityContractSchema} from './entity-contract.mjs';
 import {suggestionThreshold,thresholdControl} from './threshold.mjs';
 import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
@@ -290,6 +291,24 @@ class LegacyAssist {
         sessionStorage.setItem('nmt-assist-open', String(open));
         this.render();
         requestAnimationFrame(() => window.app_hotpot?.codemirror?.refresh?.());
+    }
+    async loadPracticeTask(task) {
+        const view=legacy();
+        invariant(view, 'The annotation workspace is still starting.');
+        if(view.data.anns.length&&!confirm('Replace the current notes with a fictional practice task? Export your current work first.'))return;
+        const schema=window.dtd_parser.parse(task.dtd,'dtd');
+        await this.recoverySession.disable();
+        this.runs.clear();this.projects.clear();this.runHistory=[];
+        this.corpusIdentity=null;this.corpusCreatedAt=null;
+        this.exposed.clear();this.exposure=[];this.blinded.clear();this.blindSnapshots.clear();this.selected.clear();
+        this.apply=null;this.detail=null;this.scope=null;this.scopeEditing=false;this.mode='assisted';
+        view.data.anns=[];view.data.ann_idx=0;
+        view.app.set_dtd(schema);view.data.dtd=schema;
+        const ann=view.vpp.add_sample_txt_as_ann(task.text);
+        ann._filename=task.id+'-practice.txt.xml';
+        view.data.mn4anns=1;view.vpp.set_ann_idx(0);
+        this.setSelectedModel({id:task.model},{render:false});
+        this.message='Fictional practice note and matching schema loaded. No model download was started.';
     }
     structured() {
         return !!this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
@@ -609,6 +628,7 @@ class LegacyAssist {
         editor.scrollIntoView({ from: range.anchor, to: range.head }, 80);
     }
     render() {
+        const scrollTop=this.root.querySelector('.body')?.scrollTop??0;
         // Entering blind mode protects each source even after the selector changes.
         if (this.mode === 'blind')
             for (const ann of legacy()?.data?.anns ?? [])
@@ -648,6 +668,12 @@ class LegacyAssist {
         renderLoadingProgress(this.root,this.busy?this.loadingProgress:null);
         const body = node('div', null, { class: 'body' });
         dock.append(body);
+        const practice=disclosure(this,'practice','Try a fictional note',!view?.ann);
+        practice.append(node('p','Load a note, matching schema and model selection. Your choice starts no download.',{class:'muted'}));
+        const practiceActions=node('div',null,{class:'row'});
+        for(const task of PRACTICE_TASKS)practiceActions.append(button(task.title,()=>this.perform(()=>this.loadPracticeTask(task)),{id:'assist-practice-'+task.id,disabled:this.busy||!view?.vpp}));
+        practice.append(practiceActions,node('a','Step-by-step tutorials',{href:'https://github.com/sidataplus/NextMedTator/tree/main/tutorial',target:'_blank',rel:'noopener noreferrer'}));
+        if(!view?.ann)body.append(practice);
         const modelSettings=node('section',null,{class:'section','aria-label':'Model source'});body.append(modelSettings);
         modelSettings.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));
         const actions = node('div', null, { class: 'row' });
@@ -714,7 +740,9 @@ class LegacyAssist {
             body.append(node('p', 'Load a schema and a note with the usual Annotation controls. Assistance stays optional.', { class: 'muted' }));
         this.renderRun(body, view);
         body.append(packages,storage);
+        if(view?.ann)body.append(practice);
         body.append(button('Open evidence project', () => this.perform(async()=>this.openProject(await this.syncProject(view.ann))), { id: 'open-workspace', disabled:!view?.ann||this.busy, title: 'Open the portable evidence project for snapshots and comparison' }));
+        body.scrollTop=scrollTop;
     }
     renderRun(body, view) {
         const run = view?.run;

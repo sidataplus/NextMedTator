@@ -26,6 +26,12 @@ try:
         page.get_by_test_id('assist-mode').select_option('assisted');expect(batch).to_have_attribute('open','')
         options=page.get_by_test_id('assist-options');options.locator('summary').click();options.get_by_role('button',name='Use default',exact=True).click();expect(options).to_have_attribute('open','')
         options.locator('summary').click();batch.locator('summary').click()
+        page.get_by_test_id('assist-recovery').scroll_into_view_if_needed()
+        before=page.evaluate('document.querySelector("nextmedtator-assist").shadowRoot.querySelector(".body").scrollTop')
+        assert before>0
+        page.get_by_test_id('assist-mode').select_option('auto')
+        after=page.evaluate('document.querySelector("nextmedtator-assist").shadowRoot.querySelector(".body").scrollTop')
+        assert abs(before-after)<=1,(before,after)
         sizes=[]
         for width,height in [(1440,900),(1024,768),(1440,600)]:
             page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(150)
@@ -34,6 +40,14 @@ try:
             assert geometry['overflow']<=1,geometry
             page.screenshot(path=str(out/(str(width)+'x'+str(height)+'.png')));sizes.append({'width':width,'height':height,**geometry})
         page.get_by_test_id('assist-collapse').click();expect(page.get_by_test_id('assist-expand')).to_be_visible();page.get_by_test_id('assist-expand').click()
+        practice=page.get_by_test_id('assist-practice')
+        if practice.get_attribute('open') is None:practice.locator('summary').click()
+        page.once('dialog',lambda d:d.accept());page.get_by_test_id('assist-practice-p10').click()
+        expect(page.get_by_test_id('assist-document')).to_have_text('p10-practice.txt.xml')
+        expect(page.get_by_test_id('assist-mode')).to_have_value('assisted')
+        page.once('dialog',lambda d:d.dismiss());page.get_by_test_id('assist-practice-bpsd').click()
+        expect(page.get_by_test_id('assist-document')).to_have_text('p10-practice.txt.xml')
+        assert page.evaluate('app_hotpot.vpp.$data.anns.length')==1
         assert not errors,errors
         assert not any('nmt-models.sidata.plus' in u or 'huggingface.co' in u for u in requests),requests
         (out/'report.json').write_text(json.dumps({'sizes':sizes,'disclosureStateRetained':True,'preconditionsDisableAnalyze':True,'modelDownloads':0,'errors':errors},indent=2),encoding='utf-8')

@@ -32,7 +32,7 @@ def run():
                 const snapshot=await child.snapshot();
                 assist.render();return {run:child.current.runs[0].fingerprint,snapshot:snapshot.hash,texts:data.anns.map(a=>a.text)};
             }''')
-            page.get_by_test_id('assist-recovery-enable').click()
+            page.get_by_test_id('assist-recovery').locator('summary').click();page.get_by_test_id('assist-recovery-enable').click()
             expect(page.get_by_test_id('assist-recovery-status')).to_contain_text('checkpoint verified')
             saved=page.evaluate('''async()=>{const s=assist.recoverySession;return {id:s.projectId,hash:s.store.expected,data:(await s.store.read(s.projectId)).data};}''')
             assert len(saved['data']['documents'])==2
@@ -46,7 +46,7 @@ def run():
             edited=page.evaluate('''async()=>{const s=assist.recoverySession;return {id:s.projectId,hash:s.store.expected,data:(await s.store.read(s.projectId)).data};}''')
             assert edited['data']['extensions']['legacyWorkspace']['anns'][0]['tags'][0]['certainty']=='negated'
             page.evaluate('async()=>await assist.recoverySession.disable()');page.reload();page.wait_for_function('() => window.app_hotpot?.vpp != null');page.evaluate('jarvis.ssclose()')
-            page.get_by_role('button',name='List saved corpora',exact=True).click()
+            page.get_by_test_id('assist-recovery').locator('summary').click();page.get_by_role('button',name='List saved corpora',exact=True).click()
             page.get_by_role('button',name='Restore corpus '+edited['id'],exact=True).click()
             page.wait_for_function('id => {const a=document.querySelector("nextmedtator-assist").assist;return a.recoverySession.projectId===id&&!a.busy;}',arg=edited['id'])
             restored=page.evaluate('''()=>{const a=document.querySelector('nextmedtator-assist').assist,children=[...a.projects.values()];return {texts:app_hotpot.vpp.$data.anns.map(n=>n.text),value:app_hotpot.vpp.$data.anns[0].tags[0].certainty,run:children[0].current.runs[0].fingerprint,snapshot:children[0].current.snapshots[0].hash,enabled:a.recoverySession.enabled};}''')

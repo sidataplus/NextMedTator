@@ -1,0 +1,89 @@
+{
+  "browser": "155.0.8059.40",
+  "crossOriginIsolated": true,
+  "errors": [],
+  "requests": 198,
+  "noNetworkModels": true,
+  "p10AssistedReviewExportReopen": true,
+  "bpsdExactAutoApply": true,
+  "searchAndRecovery": true,
+  "clinicalValidation": false,
+  "shots": [
+    {
+      "file": "01-start.png",
+      "caption": "1. Open NextMedTator — model downloads are opt-in"
+    },
+    {
+      "file": "02-p10-practice.png",
+      "caption": "2. Choose P10 clinical evidence — fictional note and schema included"
+    },
+    {
+      "file": "03-model-options.png",
+      "caption": "3. Request a public model download, or import a local package"
+    },
+    {
+      "file": "04-analyzing.png",
+      "caption": "4. Analyze the note locally using WASM"
+    },
+    {
+      "file": "05-suggestions.png",
+      "caption": "5. Inspect suggestions — the source annotation is unchanged"
+    },
+    {
+      "file": "06-review-fields.png",
+      "caption": "6. Check the entity and attributes before writing an annotation"
+    },
+    {
+      "file": "07-annotation.png",
+      "caption": "7. Write the reviewed annotation; retain the original machine suggestion"
+    },
+    {
+      "file": "08-reopened.png",
+      "caption": "8. Export and reopen the evidence project with its review history"
+    },
+    {
+      "file": "09-search.png",
+      "caption": "9. Search the corpus locally"
+    },
+    {
+      "file": "10-statistics.png",
+      "caption": "10. Inspect annotation statistics"
+    },
+    {
+      "file": "11-recovery.png",
+      "caption": "11. Enable browser recovery explicitly; keep an exported backup"
+    },
+    {
+      "file": "12-bpsd.png",
+      "caption": "12. Try BPSD — auto-applied predictions remain unreviewed"
+    }
+  ],
+  "release": "0.1.0-preview.4",
+  "manualAnnotationViaDesktopComputerUse": true,
+  "responsiveDesktopSizes": [
+    [
+      1920,
+      1080
+    ],
+    [
+      1440,
+      1000
+    ],
+    [
+      1366,
+      768
+    ],
+    [
+      1280,
+      768
+    ],
+    [
+      1024,
+      768
+    ],
+    [
+      1440,
+      600
+    ]
+  ]
+}

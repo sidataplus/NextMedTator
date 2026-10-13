@@ -86,6 +86,8 @@ def check_worker_regressions(page):
         'name': 'synthetic-worker.nmt.zip', 'mimeType': 'application/zip', 'buffer': package_bytes(structured=True)
     })
     expect(page.get_by_test_id('assist-message')).to_contain_text('structured package loaded')
+    batch=page.get_by_test_id('assist-batch')
+    if batch.get_attribute('open') is None:batch.locator('summary').click()
     for name in names:
         page.get_by_role('checkbox', name=name, exact=True).check()
     page.evaluate('window.__workerEvidence = {starts: 0, stops: 0, messages: []}')

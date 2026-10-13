@@ -1,458 +1,91 @@
 # NextMedTator
 
-NextMedTator extends MedTator with local model packages, portable prediction
-history, assisted review, and offline browser workflows. Build `dist/` for a
-static Cloudflare Pages site; Python is a build/development tool, not a hosted
-inference server. See [distribution and release gates](docs/nextmedtator/DISTRIBUTION.md)
-and [the exact BPSD adapter workflow](docs/nextmedtator/BPSD-NATIVE.md).
+**Annotate clinical text, run local models, and review every suggestion in your browser.**
 
-The original MedTator annotation screen remains the default UI. For the current
-P10 GLM and BPSD base adapters, static release downloads, and R2 setup, see
-[the current model and Cloudflare guide](docs/nextmedtator/CURRENT-MODELS.md).
+[Open the app](https://nmt.sidata.plus) · [Step-by-step tutorials](tutorial/README.md) · [Download a compiled release](https://github.com/sidataplus/NextMedTator/releases) · [Report an issue](https://github.com/sidataplus/NextMedTator/issues)
 
-Research predictions require human review. Technical model/browser conformance
-and agreement with synthetic annotations do not establish clinical validity.
-Private schemas, notes, checkpoints and model weights belong outside Git and
-static output. The existing public model catalog is separate from restricted
-or unlicensed research adapters.
+![NextMedTator: load a fictional note, run local inference, review attributes and reopen an exported project](tutorial/images/nextmedtator-walkthrough.gif)
 
-The upstream project information follows.
+*Recorded in Chrome with real P10 and BPSD WASM inference on fictional notes. The walkthrough shortens loading waits; it is not a speed benchmark.*
 
-# <img alt="MedTator" src="https://raw.githubusercontent.com/wiki/OHNLP/MedTator/img/logo.png">
+## What you can do
 
-MedTator is a serverless text annotation tool for corpus development. It is built on HTML5 techniques and many open-source packages, and was designed to be easy-to-use for your annotation task.
+- **Annotate by hand:** load a schema and notes, mark spans, edit attributes, and save XML.
+- **Ask for local assistance:** use ClinicalEvidence P10 or BPSD, inspect suggestions, and add only the annotations you choose.
+- **Choose a review mode:** Assisted for individual decisions, Auto apply for unreviewed machine tags, or Blind for freezing independent annotations before revealing predictions.
+- **Work across a corpus:** select notes for batch analysis, search text locally, and inspect annotation statistics.
+- **Keep the evidence:** export portable projects containing source text, annotations, model runs and review history. Browser recovery is separately opt-in.
 
-No Java, no Python, no PHP, no Docker, no MySQL, and no need to install any server or client runtime for corpus annotation!
-[Check Here to Start Annotation Now!](https://ohnlp.github.io/MedTator/?st=yes)
+The application is a static site. Inference runs on your device; notes are not sent to a model server. Model weights download **only after you request a download**. A previously installed matching package can be restored from browser storage without downloading it again.
 
-![MedTator Demo](https://raw.githubusercontent.com/wiki/OHNLP/MedTator/img/MedTator-demo-1.3.0.gif)
+## Try it in five steps
 
-If you're having trouble using MedTator, you can use [Issues](https://github.com/OHNLP/MedTator/issues) to tell us about the issue you're experiencing.
+1. Open [nmt.sidata.plus](https://nmt.sidata.plus) in desktop Chrome or Edge.
+2. In **Assistance → Try a fictional note**, choose **P10 clinical evidence** or **BPSD behaviors**. This loads a synthetic note, its matching schema and the model selection. It starts no download.
+3. Expand **Get a model package**, click **Show approved public model**, and choose the corresponding **Download and install** button. Alternatively, import a local `.nmt-model.zip` package.
+4. Keep **Mode → Assisted** and click **Analyze note**. Open **Add to annotation**, check the fields, then click **Write annotation**.
+5. Click **Export evidence project** to keep a portable `.nmt.zip` backup. Use **Open evidence project → Open project/files** to reopen it.
 
-## Documentation
+No model is required for manual annotation. Use the ribbon's **Sample** button for a small manual task, or load your own schema and text files.
 
-* New to MedTator? Let's have a [Quick Start](https://github.com/OHNLP/MedTator/wiki/Quick-Start).
-* More samples? Check our [Sample Datasets](https://github.com/OHNLP/MedTator/tree/main/sample).
-* No internet access? Check this [Standalone version](https://github.com/OHNLP/MedTator/wiki#download-standalone-version)
-* Effective strategies for annotating? Check this [Annotation best practices](https://github.com/OHNLP/MedTator/wiki/Annotation-Best-Practices)
-* Design annotation schema? Check this [Annotation Schema Design](https://github.com/OHNLP/MedTator/wiki/Annotation-Schema).
-* Parse annotation data? Here is the [Annotation File Format](https://github.com/OHNLP/MedTator/wiki/Annotation-Data).
-* Use annotated files for machine learning? We have some Python [Sample Scripts](https://github.com/OHNLP/MedTator/tree/main/scripts).
-* Having issues? Check the [Issues](https://github.com/OHNLP/MedTator/issues).
-* More details about MedTator? We have a [Manual](https://github.com/OHNLP/MedTator/wiki/Manual).
-* And more contents in the [Wiki](https://github.com/OHNLP/MedTator/wiki/)
+## Model packages
 
+| Model | Purpose | Download | Qualified browser execution |
+|---|---|---|---|
+| [ClinicalEvidence P10 GLM base](https://huggingface.co/na399/clinical-evidence-gliner2.5-base-lora-p10-glm) | Clinical evidence spans and attributes | About 721 MiB | WASM, fp32 |
+| [BPSD GLiNER2.5 base](https://huggingface.co/na399/bpsd-gliner2.5-base-lora-20261012) | Behavioral and psychological symptom spans and attributes | About 725 MiB | WASM, fp32 |
 
-## MedTator Development
+Allow at least twice the download size in browser storage, plus runtime memory. Downloads show bytes, progress and an estimated remaining time when enough transfer data is available. Initialization and inference show their current stage; they do not invent an ETA.
 
-MedTator itself doesn't require Python runtime environment, so you don't need to install any runtime environment to run MedTator for corpus annotation.
-For development and the debugging server, install Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+These packages retain their pinned training schemas and model-specific limits. Oversized notes are rejected rather than silently truncated. WebGPU has been exercised on the development machine, but complete decoder/attribute parity is not qualified for these releases; the public packages use WASM. See [model contracts and validation](docs/nextmedtator/CURRENT-MODELS.md).
 
-From the repository root, install the locked development dependencies:
+Model files have their own license terms, included in each package. Public availability does not change those terms. Synthetic parity checks establish technical consistency, not clinical accuracy.
 
-```bash
+## Tutorials in this repository
+
+| Guide | Outcome |
+|---|---|
+| [1. Your first annotation](tutorial/01-quickstart.md) | Open a fictional task or load your own files; find the main controls |
+| [2. Local model assistance](tutorial/02-local-models.md) | Explicitly load a model, run P10 or BPSD, and choose a review mode |
+| [3. Review, export and recover](tutorial/03-review-export.md) | Review fields, reopen a portable project, search and save a recovery copy |
+
+Every guide includes screenshots captured from the application. [Example notes and schemas](tutorial/examples) are included alongside the tutorials. All example notes are fictional.
+
+## Run a compiled release locally
+
+Download the latest `NextMedTator-*-static.zip` from [Releases](https://github.com/sidataplus/NextMedTator/releases). Serve the extracted files over HTTP on localhost or HTTPS; opening `index.html` as a `file://` URL is unsupported. To use this repository's server with the included WASM isolation headers, extract the archive's contents into `dist/` in a repository checkout, then run:
+
+```sh
+uv run --locked python scripts/serve_static.py --directory dist --port 4173
+```
+
+Open `http://127.0.0.1:4173`. The static archive includes the compiled Rust WASM core and browser runtimes; model weights remain separate. Local package import works on localhost. Public R2 downloads are configured for the deployed app origins; use a local package when running the app locally.
+
+## Build from source
+
+Requirements: Node.js 22.16+, pnpm 10.18.3, uv, and Rust 1.90.0 with the `wasm32-unknown-unknown` target. Use the committed lockfiles.
+
+```sh
+pnpm install --frozen-lockfile
 uv sync --locked
+rustup toolchain install 1.90.0 --profile minimal --target wasm32-unknown-unknown
+pnpm build:production
+pnpm audit:assets
+pnpm preview:legacy
 ```
 
-Then, run the following command to start a local server which is binding port 8086:
+The production build writes `dist/` and selects the two public R2 model packages. Python is used at build time; the deployed site needs no Python service. Cloudflare Pages hosts [nmt.sidata.plus](https://nmt.sidata.plus), with weights on a separate public R2 domain. Preserve the generated `_headers` when deploying. See [deployment details](docs/nextmedtator/DISTRIBUTION.md) and [build instructions](docs/nextmedtator/BUILD.md).
 
-```bash
-uv run --locked python web.py
+## Validation and development
+
+```sh
+pnpm test
+uv run --locked python tests/browser/test_legacy.py
+uv run --locked python tests/browser/test_assist_panel_layout.py
+uv run --locked python tests/browser/test_legacy_recovery.py
+uv run --locked python tests/browser/test_corpus_search.py
 ```
 
-Now you can open web browser and check the http://localhost:8086/. 
+[Recording instructions](tutorial/README.md#reproduce-the-screenshots-and-gif) describe the real-model tutorial check. [Model packaging](docs/nextmedtator/MODEL-PACKAGES.md), [browser contracts](docs/nextmedtator/ENTITY-CONTRACT-BROWSER.md), and [security and storage](docs/nextmedtator/SECURITY.md) cover the technical details.
 
-For more details of the parameters for `web.py`, run `uv run --locked python web.py -h` and it will show the details as follows.
-
-```
-usage: web.py [-h] [--mode {build,run,release}] [--lib {local,cdn}]
-              [--path PATH] [--fn FN]
-
-MedTator Development Server and Toolkit
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --mode {build,run,release}
-                        What do you want to do? `run` for starting the
-                        development server. `build` for generating a static
-                        HTML page for public release or local release.
-  --lib {local,cdn}     Where to get third party libs in the HTML page? If
-                        choose local, please make sure to copy the `static`
-                        folder after generated the HTML file.
-  --path PATH           Which folder to be used for the output page? The
-                        default folder is the docs/ folder for public release.
-  --fn FN               What file name to be used for the output page? The
-                        default file name is the `index.html` which could be
-                        accessed directly by browser.
-```
-
-
-## Build the static version
-
-To update the static version for publication (e.g., GitHub Pages), run the following command. It will generate a static HTML file in the docs/ folder and copy other files.
-In addition, as the default filename is `index.html`, the build script will automatically create a `index.VERSION.html` in the build path for backup.
-So that the user can access the old version for comparison or checking old functions.
-
-```bash
-uv run --locked python web.py --mode build
-```
-
-Or you can build a dev version for public testing, run the following command:
-
-```bash
-uv run --locked python web.py --mode build --fn dev.html
-```
-
-Or you can build a standalone version for local use, run the following command:
-
-```bash
-uv run --locked python web.py --mode build --lib local --fn standalone.html
-```
-
-Then, you can create a release zip file:
-
-```bash
-uv run --locked python web.py --mode release
-```
-
-## License
-
-Apache-2.0 License
-
-
-## Citation
-
-If you use MedTator in scientific work or want to learn more about it, please take a look at our paper:
-
-> He H, Fu S, Wang L, Liu S, Wen A, Liu H. MedTator: a serverless annotation tool for corpus development. Bioinformatics, Volume 38, Issue 6, 15 March 2022, Pages 1776–1778, DOI: [10.1093/bioinformatics/btab880](https://doi.org/10.1093/bioinformatics/btab880), PMID: [34983060](https://pubmed.ncbi.nlm.nih.gov/34983060/)
-
-
-## Change log
-
-### 1.3.x (2023-05)
-
-- Research on IOB2/BIO format editing
-- Research on UMAP algorithm
-- Research on in-browser text embedding
-- Add sample dataset for error analysis
-- Update icon for error analysis
-- Update Cohen's Kappa calculation
-- Update README for new features
-- Update documents for error analysis
-- Update documents for new schema
-- Update UI for error analysis
-- Update demo script for inter-sentence
-
-### 1.3.16 (2023-04-03)
-
-- Added example Python script for masking entities
-- Updated medtator_kits.py for saving xml
-- Updated relation annotation example schema and data
-- Fixed one-offset bug in first-line newline sign
-- Fixed cross-line entity render bug
-
-### 1.3.15 (2023-02-26)
-
-- Added workspace JSON drag and drop on file list
-- Added workspace saving function
-- Added workspace loading function
-- Added schema drag and drop on file list
-- Added shortcut ALT +	&uarr; / &darr; to move to prev / next file
-- Added Toolkit/MedTaggerVis for checking .ann files (experimental)
-- Added local setting cache for auto save/load (experimental)
-- Fixed error analysis Sankey link bug
-- Fixed error analysis SVG height bug
-- Fixed error analysis popup box bug
-- Updated design for .ann/.txt conversion
-- Updated FAQ in MedTator Wiki 
-- Updated scripts for downstream tasks
-- Updated sample datasets for new settings
-
-### 1.3.11 (2022-12-08)
-
-- Added annotation visualization based on brat
-- Added Python scripts for read/parse MedTator XML format
-- Added Jupyter notebook for downstream tasks with MedTator XML files.
-- Developed functions for brat vis format conversion
-- Developed tag extraction based offset spans
-- Updated style for link/relation display
-
-### 1.3.8 (2022-10-27)
-
-- Added schema of .yml extension support
-- Added auto-save (experimental) feature
-- Fixed scheme editor open bug
-
-### 1.3.7 (2022-09-29)
-
-- Update the UI for IAA
-
-### 1.3.6 (2022-09-15)
-
-- Updated a data sample for error analysis
-
-### 1.3.5 (2022-08-18)
-
-- Added label panel for error labeling
-- Added error sankey diagram for error analysis
-- Added token scatter for error analysis
-- Added heatmap of error distribution for error analysis
-- Added bar charts of error statistics for error analysis
-- Added tag list and menu items for error analysis
-- Updated scripts for text embedding web services
-- Fixed IOB2/BIO empty export bug
-- Fixed exporter window height bug
-- Fixed BioC format export annotation text encoding bug
-- Fixed BioC format export attribute text encoding bug
-
-### 1.3.2 (2022-08-04)
-
-- Added functions for error analysis
-- Added Math.js for statistics and matrix
-- Added ECharts for visualization
-- Added a sample dataset for error analysis
-- Updated the UI design for adjudication tab
-- Updated the packaged used to reduce loading time
-- Fixed open annotation files dialog bug
-- Fixed IAA download bug
-
-### 1.3.0 (2022-07-21)
-
-- Refactored file reading workflow with asynchronous processing
-- Refactored annotation file loading workflow
-- Refactored code structure to reduce code size
-- Designed JSON/YAML format schema
-- Added tokenization exceptions
-- Added pagination for large dataset
-- Added loading dataset annimation
-- Added drag and drop folder for adjudication
-- Added drag and drop folder for converter
-- Added converting text files to MedTator xml
-- Added a float text content viewer
-- Added reading JSON/YAML for schema editor
-- Added JSON/YAML download option for schema editor
-- Added cmd/ctrl + s shortcut key for saving current file
-- Updated annotation UI design for bigger drag&drop area
-- Updated converter UI design for bigger buttons
-- Updated converter for downloading individual result file
-- Updated converter with support of viewing contents
-- Updated event handlers for drag and drop events
-- Updated license files of imported libraries
-- Updated the sample schemas with JSON/YAML format
-
-### 1.2.48 (2022-07-07)
-
-- Added function for customizing sample text
-- Added changelog information on UI
-- Added sorting for corpus token list in statistics
-- Added tag details for corpus summary in statistics
-- Added filter options for token statistics
-- Added filtered count in token summaryies
-- Added a remote corpus sample
-- Updated all sample datasets
-- Updated the visual design for corpus summary in statistics
-- Updated the color encoding for annotated tags in statistics
-- Updated scripts for experimental tasks
-- Fixed ribbon menu resize bug
-
-### 1.2.41 (2022-06-23)
-
-- Added meta-data structure for annotation file
-- Added color label to annotation file
-- Added functions for updating annotator for adjudication
-- Added download all tags for adjudication
-- Added sorting by label color
-- Added MedTagger ann format converter
-- Added UI for converting MedTagger results
-- Added folder drag and drop for converter
-- Added folder drag and drop for adjudication
-- Updated IAA drop box width
-- Updated code structure for better extension
-- Updated wiki pages
-- Fixed meta copy bug when generating adjudicated copy
-
-### 1.2.32 (2022-05-26)
-
-- Added sample text for schema test
-- Added Cohen's Kappa score to exported XLSX report
-- Updated texts on UI
-- Updated CDN URLs for some packages
-- Fixed default IAA sample data bug
-
-### 1.2.30 (2022-05-12)
-
-- Added seperate file download for adjudicated file
-- Added annotator label for adjudicated files
-- Updated adjudication tab UI
-- Fixed edit bug
-
-### 1.2.29 (2022-04-28)
-
-- Added the sort for IAA file list
-- Updated iaa result box style
-- Updated sample dataset
-- Fixed duplicated tag in adjudicated results
-- Fixed ajax request type bug
-- Fixed adjudicated result download bug
-
-### 1.2.27 (2022-04-14)
-
-- Added sample schema dropdown for editor to select
-- Added sample schema files for standalone version
-- Added help to schema editor with wiki
-- Updated the tooltip information for annotation menu
-- Updated scripts for creating sample DTD files
-- Fixed the initial position of context menus
-- Fixed schema editor menu UI margin
-- Fixed path missing bug in the export script 
-
-### 1.2.24 (2022-03-31) 
-
-- Added Cohen's Kappa to IAA calculation results
-- Added dropdown for selecting Cohen's Kappa for IAA result
-- Added confusion matrix for Cohen's Kappa
-- Added schema editor for creating and editing schema
-- Added helper functions for building schema
-- Added schema editor convert functions
-- Updated annotation bar menu for schema editor
-- Updated dtd stringify function
-- Updated sample data for demo
-- Updated browser detection for Brave
-- Updated the size of search button
-- Fixed the message for secure contexts
-- Fixed the message for browsers without FSA APIs
-
-### 1.2.15 (2022-03-17)
-
-- Added sort button and menu for file list by file name or tags
-- Added dynamic sort indicator for different sort mode
-- Added a button for quickly deleting filter text
-- Fixed concept name overflow bug in adjudication tab
-- Fixed ribbon menu layout bug when resized
-
-### 1.2.13 (2022-03-03)
-
-- Added using attribute IAA calculation
-- Added menu for attribute selection
-- Added dropping file in the filelist view
-- Updated the drop zone size
-- Updated the schema and IAA sample dataset
-- Updated the the JSON files of the samples
-- Fixed switch button status when no dtd file
-
-### 1.2.10 (2022-02-17)
-
-- Added a new section in the statistics tab
-- Added a new statistics report in xlsx format
-- Added colored cells to the statistics report
-- Added importing annotation files by dropping folder(s)
-- Added memory check in settings
-- Updated the statistics summary with more items
-- Updated the XML zip file name with timestamp
-
-### 1.2.6 (2022-02-03)
-
-- Added the adjudication sheet in the IAA report xlsx file
-- Updated the included tags in the IAA report xlsx file
-- Updated the colors in IAA report xlsx file
-- Updated wiki pages
-
-### 1.2.5 (2022-01-20)
-
-- Added a setting option for showing annotated tags
-- Added fixed header for the "All Tags" in concept list 
-- Updated the context menu position calculation
-- Fixed the hover bug dismiss bug when deleting tag
-
-### 1.2.3 (2022-01-06)
-
-- Added IAA report download (as Excel XLSX format)
-- Added background colors to IAA report cells
-- Added summary and files details in the IAA report
-- Updated Wiki button for issue report
-- Updated IAA sample data annotation and schema design
-- Updated sample json files for style information
-- Updated the document-level adjudication label
-- Updated default samples
-- Fixed "Clear All" button not working bug
-
-### 1.2.0 (2021-12-20)
-
-- Added hover box to entity tag for details
-- Added show adjudication in annotation tab with 
-- Added download all annotation as a zip file
-- Added fixed tag list header scrolling
-- Added download schema dtd file
-- Added dynamic tag rendering based on selected tag
-- Added filter hinter based on selected tag
-- Added clear seperate adjudication
-- Updated the export message link
-- Updated messages related to annotation file import
-- Updated messages related to dtd file import
-- Updated simple sentencize algorithm
-- Updated sentencizer algorithm
-- Updated adjudication tab design
-- Updated mark style in editor
-- Updated hover text style for tag and hint
-- Updated animated tag style in tagging view
-- Updated active style for tag list
-- Updated conditions for saving annotation file
-- Updated sample datasets
-- Fixed rendering glitch when switching tab
-- Fixed IAA calculation click not binding bug
-- Fixed sentencizer setting not working bug
-- Fixed document-level tag rendering bug
-- Fixed tag attribute toggle in adjudication
-- Fixed popup menu dobule click 
-- Fixed popup menu initial position
-- Fixed hover tag text shaking bug
-- Fixed IAA accept button bug
-
-### 1.1.3 (2021-12-13)
-
-- Added search and clear search results in editor
-- Added highlight in tag list
-- Added script for standalone version export
-- Updated menu item for exported rulesets
-- Updated tool tips
-- Updated samples for entity and relation annotation
-
-### 1.1.0 (2021-11-28)
-
-- Added a new standalone version for local usage without internet access
-- Added build parameters for building standalone version
-- Added local cache of all libraries for local standalone version
-- Updated references configuration for standalone version
-- Updated embedded sample data for standalone version
-- Updated building output information
-- Fixed drag & drop bug when reading local dtd file
-- Fixed embedded sample JSON encoding bug
-
-### 1.0.2 (2021-11-08)
-
-- Added a sentence splitting / tokenization method for fast splitting.
-- Added a side bar for managing settings.
-- Added entity tag locating. Users could click on the `spans` to locate the entity tag in the editor. The editor will jump to the line where the clicked tag is and highlight that tag.
-
-### 1.0.1 (2021-10-15)
-
-- Added sample data for AMIA 2021 workshop.
-- Fixed typos.
-
-### 1.0.0
-
-Release Highlights
-
-- Serverless design. NO runtime installation is required.
-- Four tabs for core steps in annotation.
-- Visualized entity and relation annotation.
-- Annotation hint based on existed tags.
-- Visualized annotation results.
-- Interactive adjudication and Inter-Annotator Agreement (IAA) calculation.
-- Customizable annotation schema.
-- Multi-format export.
-- Multi-file annotation.
-
-# Acknowledgements
-
-We thank all of our team members for their insights and contributions.
+Application code is distributed under [Apache-2.0](LICENSE). Dependencies and model artifacts retain their respective licenses and notices.

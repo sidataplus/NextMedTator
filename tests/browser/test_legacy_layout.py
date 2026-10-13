@@ -2,6 +2,7 @@
 from pathlib import Path
 import json, os, subprocess, time, urllib.request
 from playwright.sync_api import sync_playwright, expect
+from browser_support import chromium_path
 
 ROOT = Path(__file__).resolve().parents[2]
 URL = 'http://127.0.0.1:4186/'
@@ -18,8 +19,7 @@ def run():
         else:
             raise RuntimeError('Static app did not start')
         with sync_playwright() as p:
-            executable = Path(os.environ.get('CHROMIUM_PATH', '/usr/bin/chromium'))
-            browser = p.chromium.launch(executable_path=str(executable) if executable.exists() else None, args=['--no-sandbox'])
+            browser = p.chromium.launch(executable_path=chromium_path(), args=['--no-sandbox'])
             page = browser.new_page(viewport={'width': 1440, 'height': 1000}, accept_downloads=True)
             errors = []
             page.on('pageerror', lambda e: errors.append(str(e)))

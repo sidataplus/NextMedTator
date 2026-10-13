@@ -2,7 +2,6 @@
 The development server for MedTator
 '''
 import os
-import re
 import json
 
 from flask import Flask
@@ -79,24 +78,9 @@ def index():
             )
             data['sample_dtd'][task_name] = open(full_fn).read()
 
-    # get the changelog
-    try:
-        medtator_ver = app.config['MEDTATOR_VERSION']
-        medtator_ver = medtator_ver.replace('.', r'\.')
-        ptn_latest_changelog = r"### (%s [\s\S]+?)###" % medtator_ver
-        full_readme = open('./README.md').read()
-        matches = re.finditer(
-            ptn_latest_changelog, 
-            full_readme, 
-            re.MULTILINE
-        )
-        matches = list(matches)
-        changelog_latest = matches[0].group(1)
-    except Exception as err:
-        print('* error parsing the change log', err)
-        changelog_latest = app.config['MEDTATOR_VERSION']
-    
-    data['changelog_latest'] = changelog_latest
+    # Release metadata is independent of the README's presentation.
+    with open(os.path.join(app.root_path, 'package.json'), encoding='utf-8') as source:
+        data['changelog_latest'] = json.load(source)['version']
 
     # now let's render the page
     return render_template(

@@ -836,21 +836,21 @@ var app_hotpot = {
         show_wiki: function() {
             // app_hotpot.start_tour_annotation();
             window.open(
-                'https://github.com/OHNLP/MedTator/wiki',
+                'https://github.com/sidataplus/NextMedTator/tree/main/tutorial',
                 '_blank'
             );
         },
 
         show_best_practice: function() {
             window.open(
-                'https://github.com/OHNLP/MedTator/wiki/Annotation-Best-Practices',
+                'https://github.com/sidataplus/NextMedTator/blob/main/tutorial/03-review-export.md',
                 '_blank'
             );
         },
 
         report_an_issue: function() {
             window.open(
-                'https://github.com/OHNLP/MedTator/issues',
+                'https://github.com/sidataplus/NextMedTator/issues',
                 '_blank'
             );
         },
@@ -870,7 +870,7 @@ var app_hotpot = {
                     // this is the first line, the title
                     html.push(
                         '<h3 class="changelog-h3">' + 
-                        '<b>MedTator</b> v' + 
+                        '<b>NextMedTator</b> v' +
                         line + 
                         '</h3>'
                     );
@@ -882,7 +882,7 @@ var app_hotpot = {
             }
             // last line is the link
             html.push(
-                '<p>For more details, check <a target="_blank" href="https://github.com/OHNLP/MedTator#change-log">the README on our GitHub repo</a>.</p>'
+                '<p>See <a target="_blank" rel="noopener noreferrer" href="https://github.com/sidataplus/NextMedTator/releases">release notes and compiled downloads</a>.</p>'
             );
             html = html.join('');
             Metro.infobox.create(html);
@@ -890,7 +890,7 @@ var app_hotpot = {
 
         show_howtouse: function() {
             window.open(
-                'https://github.com/OHNLP/MedTator/wiki/Manual#how-to-use-the-exported-data',
+                'https://github.com/sidataplus/NextMedTator/blob/main/tutorial/03-review-export.md',
                 '_blank'
             );
         },
