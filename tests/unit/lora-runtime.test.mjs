@@ -114,6 +114,13 @@ test('v3 span packages can omit uncalled record/relation graphs while record pac
  Object.assign(v,{clinicalSchema:'schema.json',clinicalRegistryHash:CLINICAL_V3.registryHash,sharedAxes:'one_value_softmax_no_attribute_threshold',recordBinding:false,
  clinicalRelease:{modelSize:'base',runtimeFingerprint:'d'.repeat(64),adapterFingerprint:'e'.repeat(64),registryHash:CLINICAL_V3.registryHash,coreThreshold:.6},threshold:.6});
  validateModelManifest(m);const bad=clone(m);bad.variants[0].clinicalRelease.coreThreshold=.7;assert.throws(()=>validateModelManifest(bad),/threshold/);
+ for(const threshold of [null,undefined,NaN,Infinity,-.1,1.1,'0.6']){
+  const invalid=clone(m);invalid.variants[0].threshold=threshold;invalid.variants[0].clinicalRelease.coreThreshold=threshold;
+  assert.throws(()=>validateModelManifest(invalid),/threshold/,`Reject clinical threshold ${threshold}`);
+ }
+ const omitted=clone(m);delete omitted.variants[0].threshold;delete omitted.variants[0].clinicalRelease.coreThreshold;
+ assert.throws(()=>validateModelManifest(omitted),/threshold/);
+ for(const threshold of [0,1]){const edge=clone(m);edge.variants[0].threshold=threshold;edge.variants[0].clinicalRelease.coreThreshold=threshold;validateModelManifest(edge);}
  const records=clone(m);records.variants[0].codec=RECORDS_CODEC;assert.throws(()=>validateModelManifest(records),/Record graph missing/);
 });
 

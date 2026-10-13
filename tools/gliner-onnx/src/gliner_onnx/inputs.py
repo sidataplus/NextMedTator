@@ -311,5 +311,7 @@ def verify_browser_contract(directory):
 
 def _verify_browser_settings(settings):
     if not isinstance(settings,dict):raise ValueError('Invalid inference settings')
-    if settings.get('maxEncodedTokens',512)>512 or settings.get('overlapPolicy')=='allow':
-        raise ValueError('This adapter requires a native token/overlap contract unsupported by the browser exporter. Use the documented local native inference and review-bundle import workflow; no model substitution or truncation was applied.')
+    if (settings.get('maxEncodedTokens',512)!=512
+            or settings.get('overlapPolicy','flat')!='flat'
+            or settings.get('threshold',.5)!=.5):
+        raise ValueError('This adapter declares a token/overlap/threshold contract unsupported by the browser exporter. Use --entity-contract with the verified native declarations, or the documented local native inference and review-bundle import workflow; no model substitution or truncation was applied.')

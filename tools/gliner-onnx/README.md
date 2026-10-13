@@ -13,6 +13,13 @@ uv run --locked --project tools/gliner-onnx gliner-onnx \
 ```
 
 With no adapter arguments, `--selection auto` chooses `clinical-v3-small`.
+Pinned clinical exports include `clinicalRelease` identity in both manifest and
+report, preserving the complete trained prompt and release-selected threshold.
+Regenerate older preset exports that omitted this identity; do not add a release
+identity to an existing package manually. The legacy generic exporter accepts
+declared settings only when they match its 512-token, flat-overlap, 0.5-threshold
+contract. Other native declarations require the supported entity-contract path
+or local native inference.
 Other built-in choices are `clinical-v3-base`, `original-small`, and
 `original-base`. The clinical choices fetch the adapter at a full immutable
 commit and verify the release manifest, registry, base assets, and all 91

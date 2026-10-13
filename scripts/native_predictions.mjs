@@ -1,4 +1,4 @@
-import {invariant, OffsetMap, sourceDocument, clone} from '../src/nextmedtator/integrity.mjs';
+import {invariant, OffsetMap, sourceDocument, clone, uniqueIds} from '../src/nextmedtator/integrity.mjs';
 import {ReviewProject, makeRun} from '../src/nextmedtator/project.mjs';
 
 export const NATIVE_NOTICE='Imported local native inference; unreviewed research predictions. No browser inference or clinical validation claim.';
@@ -11,12 +11,13 @@ export async function nativePredictionProject(receipt) {
     invariant(Array.isArray(receipt.notes)&&receipt.notes.length>0&&receipt.notes.length<=10000,'Invalid note inventory');
     const spec=receipt.schema;
     invariant(Array.isArray(spec?.entities)&&spec.entities.length>0&&Array.isArray(spec.attributes),'Explicit source schema required');
+    uniqueIds(spec.entities);
     const families={}, byLabel=new Map();
     for(const entity of spec.entities){
         invariant(!byLabel.has(entity.label),'Duplicate entity label');
         const fields={};
         for(const axis of spec.attributes)if(axis.appliesTo.includes(entity.id))fields[axis.label]={type:'enum',values:axis.values.map(v=>v.label)};
-        families[entity.label]={label:entity.label,fields};byLabel.set(entity.label,{entity,fields});
+        families[entity.id]={label:entity.label,fields};byLabel.set(entity.label,{entity,fields});
     }
     const schema={id:spec.id,version:'1',description:NATIVE_NOTICE,families};
     const docs=await Promise.all(receipt.notes.map(n=>sourceDocument(n.id,new TextEncoder().encode(n.text),{split:'unassigned',provenance:{kind:'native-local-inference',filename:n.id+'.txt',notice:NATIVE_NOTICE}})));
@@ -42,7 +43,7 @@ export async function nativePredictionProject(receipt) {
                         fields[name]=decoded;attributeScores[name]=value.confidence;
                     }
                     for(const name of Object.keys(row))invariant(['text','start','end','confidence',...Object.keys(byLabel.get(label).fields)].includes(name),'Unexpected or inapplicable native attribute');
-                    records.push({id:'native-'+i+'-'+records.length,documentId:doc.id,family:label,anchor:[anchor],fields,score:row.confidence,origin:{kind:'model',source:'native-local-inference',reviewStatus:'unreviewed',attributeScores}});
+                    records.push({id:'native-'+i+'-'+records.length,documentId:doc.id,family:byLabel.get(label).entity.id,anchor:[anchor],fields,score:row.confidence,origin:{kind:'model',source:'native-local-inference',reviewStatus:'unreviewed',attributeScores}});
                 }
             }
         }
