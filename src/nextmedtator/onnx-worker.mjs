@@ -46,7 +46,7 @@ async function loadModel(data) {
     const ort = await import('../../vendor/ort/ort.webgpu.min.mjs');
     if(data.diagnostics){ort.env.debug=true;ort.env.logLevel='verbose';}
     invariant(ort.env.versions.web === manifest.runtimeVersion, 'Package/runtime version mismatch');
-    ort.env.wasm.numThreads = wasmThreadCount({crossOriginIsolated:self.crossOriginIsolated,hardwareConcurrency:navigator.hardwareConcurrency});
+    ort.env.wasm.numThreads = wasmThreadCount({crossOriginIsolated:self.crossOriginIsolated,hardwareConcurrency:navigator.hardwareConcurrency,maxThreads:data.maxThreads});
     ort.env.wasm.proxy = false;
     ort.env.wasm.wasmPaths = new URL('../../vendor/ort/', import.meta.url).href;
     if (variant.backend === 'webgpu') {

@@ -14,7 +14,7 @@ import {exportBundle,localDownload} from './bundle.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, activeVariantForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
-import {supportsWebGPU,EXECUTION_POLICY,graphTransforms} from './execution-policy.mjs';
+import {EXECUTION_POLICY,graphTransforms} from './execution-policy.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
@@ -457,7 +457,7 @@ class LegacyAssist {
         this.blindSnapshots.set(view.key,freeze(clone({filename:view.ann._filename,text:view.ann.text,tags:view.ann.tags,frozenAt:new Date().toISOString()})));
         this.message='Independent annotation frozen in the portable evidence project. Analyze and reveal when ready.';
     }
-    async analyzeDocuments(anns) {
+    async analyzeDocuments(anns, {batch=false}={}) {
         invariant(!this.selectionDraft&&this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
         // Original-screen notes stay editable while the worker runs. Retain the
         // submitted text/filename and schema instead of rereading mutable Vue data.
@@ -488,21 +488,24 @@ class LegacyAssist {
         if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         let executionModel=model;
-        const executionOptions={backend:this.executionPreference??'auto',resolveFallback:target=>loadWasmFallback(this,target),onBackend:({backend,precision,packageData,fallbackReason})=>{executionModel=packageData;this.executionStatus={backend,precision,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
-        if(!supportsWebGPU(model.manifest,variant)&&(this.qualifiedManifest!==model.manifestHash||this.qualifiedVariant!==variant.id)){const report=await this.modelRunner.run(model,variant.id,executionOptions);invariant(report.pass,'Selected model failed its public conformance fixtures');this.qualifiedManifest=model.manifestHash;this.qualifiedVariant=variant.id;}
+        const executionOptions={maxThreads:batch&&this.batchCpu!=='balanced'?1:4,backend:this.executionPreference??'auto',resolveFallback:target=>loadWasmFallback(this,target),onBackend:({backend,precision,packageData,fallbackReason})=>{executionModel=packageData;this.executionStatus={backend,precision,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
+        // Validate and analyze in the same session, including CPU-only packages.
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
             : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
-        const requests = anns.map((ann, index) => {
+        const requests = {length:anns.length,at:index => {
+            const ann=anns[index];
             const doc = { id: ann._filename ?? `document-${index + 1}`, text: ann.text };
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
             if (this.mode === 'blind')
                 this.blinded.add(key);
             return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: thresholdSettings.threshold };
-        });
+        }};
         const runSettings={codec,...(codec===ENTITY_ATTRIBUTES_CODEC?{overlapPolicy:model.entityContracts.get(variant.id).overlapPolicy,maxEncodedTokens:variant.maxSequenceLength,contextPolicy:'reject',wordOverlap:0}:{}),...((codec===CLINICAL_V3_CODEC||codec===ENTITY_ATTRIBUTES_CODEC)?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
-        const completed=new Set();let activeIndex=0;
-        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, onProgress: index => {
+        const completed=new Set();let activeIndex=0,analysisStarted=null;
+        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, collectResults:false, qualify:true, onProgress: index => {
+            analysisStarted??=performance.now();
+            this.loadingProgress={phase:'Analyzing notes',completed:index,total:anns.length,started:analysisStarted};
             activeIndex=index;
             const ann = anns[index];
             this.progress = { index: index + 1, total: anns.length, filename: ann._filename ?? 'document' };
@@ -510,7 +513,7 @@ class LegacyAssist {
             this.render();
         }, onResult: async (result, index) => {
             const ann = anns[index];
-            const doc = { id: ann._filename ?? `document-${index + 1}`, text: requests[index].text };
+            const doc = { id: ann._filename ?? `document-${index + 1}`, text: ann.text };
             if (result.kind !== codec)
                 throw new Error('Worker did not return GLiNER span output');
             const provenance = modelRunProvenance(executionModel, result.variantId, result);
@@ -519,13 +522,18 @@ class LegacyAssist {
             const project=await this.ensureProject(ann,nativeSchema),nativeDoc=project.current.documents[0];
             const nativeRecords=records.map(r=>({...r,documentId:nativeDoc.id}));
             const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);this.runHistory.push(nativeRun);
-            completed.add(index);this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
+            completed.add(index);
+            // Project now owns the annotation snapshot; release this queue copy.
+            ann.tags=[];
+            this.loadingProgress={phase:'Analyzing notes',completed:completed.size,total:anns.length,started:analysisStarted};
+            renderLoadingProgress(this.root,this.loadingProgress);
+            this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
             if (autoApply && legacy().data.dtd===sourceDtd && legacy().data.anns.includes(sourceAnns[index]) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) await this.applyAllSuggestions(sourceAnns[index]);
         } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
-            : autoApply ? `Auto apply finished for ${anns.length} notes. Machine-applied tags are unreviewed; original predictions remain in the evidence project.` : `${notice}`;
+            : autoApply ? `Auto apply finished for ${anns.length} notes. Machine-applied tags are unreviewed; original predictions remain in the evidence project.` : `${batch?`Batch finished for ${anns.length} notes. Open each note to review its results. `:''}${notice}`;
     }
     chosenDocuments(onlySelected) {
         const view = legacy();
@@ -687,7 +695,7 @@ class LegacyAssist {
         const actions = node('div', null, { class: 'row' });
         const sourcePending=!!this.selectionDraft||this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection);
         actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !this.model || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
-        actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || !this.model || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
+        actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true),{batch:true})), { disabled: this.busy || !this.model || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => {this.installController?.abort();this.modelRunner.cancel();}, { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis or model download' }));
         const options=disclosure(this,'options','Analysis settings',this.scopeEditing);body.append(options);
         options.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:activeVariantForSchema(this.model,view?.data?.dtd?legacySchema(view.data.dtd):null),disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
@@ -743,12 +751,20 @@ class LegacyAssist {
         const anns = view?.data?.anns ?? [];
         if (anns.length) {
             const docs = disclosure(this,'batch',`Batch analysis · ${this.selected.size} selected`);docs.setAttribute('aria-label','Documents to analyze');
-            docs.append(node('p', 'Check notes for Analyze selected. The file list on the left still opens a note.', { class: 'muted' }));
-            for (const ann of anns) {
+            docs.append(node('p', 'Check notes for Analyze selected. One note runs at a time; completed results stay available for review.', { class: 'muted' }));
+            const cpu=node('select',null,{'aria-label':'Batch CPU usage','data-testid':'assist-batch-cpu',disabled:this.busy});
+            for(const [value,label]of [['low','Low CPU · 1 WASM thread'],['balanced','Balanced · up to 4 WASM threads']])cpu.append(node('option',label,{value}));
+            cpu.value=this.batchCpu??'low';cpu.addEventListener('change',()=>{this.batchCpu=cpu.value;});docs.append(labeled('CPU usage',cpu),node('p','Low CPU is the batch default. WebGPU stays preferred; the limit also applies to WASM fallback. Lower CPU use can take longer. Models load only on request.',{class:'muted'}));
+            const selections=node('div',null,{class:'row'});
+            selections.append(button('Select all',()=>{for(const ann of anns)if(typeof ann?.text==='string')this.selected.add(documentKey(ann._filename??'document',ann.text));this.render();},{disabled:this.busy,id:'assist-select-all'}),button('Clear selection',()=>{this.selected.clear();this.render();},{disabled:this.busy,id:'assist-select-none'}));docs.append(selections);
+            // Bound DOM size even when the corpus contains thousands of notes.
+            const pages=Math.ceil(anns.length/50),page=Math.min(this.batchPage??0,pages-1);
+            if(pages>1){const navigation=node('div',null,{class:'row'});navigation.append(button('Previous notes',()=>{this.batchPage=page-1;this.render();},{disabled:page===0}),node('span',`${page*50+1}–${Math.min((page+1)*50,anns.length)} of ${anns.length}`),button('Next notes',()=>{this.batchPage=page+1;this.render();},{disabled:page===pages-1}));docs.append(navigation);}
+            for (const ann of anns.slice(page*50,(page+1)*50)) {
                 if (!ann?.text && ann?.text !== '')
                     continue;
                 const key = documentKey(ann._filename ?? 'document', ann.text ?? '');
-                const input = node('input', null, { type: 'checkbox' });
+                const input = node('input', null, { type: 'checkbox',disabled:this.busy });
                 input.checked = this.selected.has(key);
                 input.addEventListener('change', () => { if (input.checked) this.selected.add(key); else this.selected.delete(key); this.render(); });
                 const row = node('label', null, { class: 'check' });

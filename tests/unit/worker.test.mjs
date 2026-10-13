@@ -3,9 +3,38 @@ import assert from 'node:assert/strict';
 import { ConformanceWorker,modelRunProvenance,selectInferenceVariant,validateModelManifest } from '../../src/nextmedtator/model-package.mjs';
 import {readFileSync} from 'node:fs';
 import {supportsWebGPU,EXECUTION_POLICY,graphTransforms,prepareGraph,wasmFallbackIdentity} from '../../src/nextmedtator/execution-policy.mjs';
+import {wasmThreadCount} from '../../src/nextmedtator/inference-options.mjs';
+import {batchStatus} from '../../src/nextmedtator/loading-progress.mjs';
 
 const packageData = { manifest: { variants: [{ id: 'wasm' }] }, manifestHash: 'fixture', files: new Map([['graph', new Uint8Array([1])]]) };
 const requests = [{ text: 'first' }, { text: 'second' }];
+
+test('batch CPU limits respect isolation and available cores; ETA starts after the first note',()=>{
+    assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:20,maxThreads:1}),1);
+    assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:2,maxThreads:4}),2);
+    assert.equal(wasmThreadCount({crossOriginIsolated:false,hardwareConcurrency:20,maxThreads:4}),1);
+    assert.match(batchStatus({completed:0,total:10,started:0,now:1000}).detail,/Estimating/);
+    assert.deepEqual(batchStatus({completed:2,total:10,started:0,now:4000}),{percent:20,detail:'2 / 10 notes completed · About 16s remaining'});
+});
+
+test('lazy streaming batch qualifies once in the analysis session and does not accumulate outputs',async t=>{
+    const workers=fakeWorker(t, m=>m.task==='fixtures'?{pass:true}:m.task==='load'?{ready:true}:{text:m.text});
+    const runner=new ConformanceWorker(),events=[];
+    const results=await runner.analyzeBatch(packageData,'wasm',{length:100,at:index=>{events.push(`request ${index}`);return {text:String(index)};}},{qualify:true,collectResults:false,maxThreads:1,onResult:(r,i)=>{assert.equal(r.text,String(i));events.push(`saved ${i}`);}});
+    assert.deepEqual(results,[]);
+    assert.equal(workers.length,1);
+    assert.equal(workers[0].messages[0].maxThreads,1);
+    assert.equal(workers[0].messages.filter(m=>m.task==='fixtures').length,1);
+    assert.deepEqual(events.slice(0,4),['request 0','saved 0','request 1','saved 1']);
+    assert.equal(events.length,200);
+    assert.equal(workers[0].terminations,1);
+});
+
+test('cancelled lazy batch never prepares the next note',async t=>{
+    fakeWorker(t);const runner=new ConformanceWorker(),prepared=[];
+    await assert.rejects(runner.analyzeBatch(packageData,'wasm',{length:100,at:i=>{prepared.push(i);return {text:String(i)};}},{collectResults:false,onResult:()=>runner.cancel()}),/Cancelled/);
+    assert.deepEqual(prepared,[0]);
+});
 
 function fakeWorker(t, respond = message => message.task === 'load' ? { ready: true } : { text: message.text }) {
     const workers = [];
@@ -89,6 +118,7 @@ test('automatic GPU initialization failure retries WASM and remembers the failur
     const result=await runner.analyze(gpuPackage,variantId,requests[0],{onBackend:e=>events.push(e.backend)});
     assert.equal(result.backend,'wasm');assert.equal(result.fallbackReason,'webgpu-initialization-failed');assert.equal(result.executionPolicy,EXECUTION_POLICY);
     assert.deepEqual(events,['webgpu','wasm']);assert.equal(workers.length,2);assert.ok(workers.every(w=>w.terminations===1));
+    assert.equal(workers[1].messages.filter(m=>m.task==='fixtures').length,1,'Fallback qualifies only once before notes');
     await runner.analyze(gpuPackage,variantId,requests[1]);assert.equal(workers[2].messages[0].backend,'wasm');
 });
 test('GPU inference failure retries only unfinished notes and records actual backends',async t=>{
@@ -101,6 +131,7 @@ test('GPU inference failure retries only unfinished notes and records actual bac
 test('GPU fixture mismatch falls back; forced GPU surfaces errors without fallback',async t=>{
     gpuNavigator(t);const workers=fakeWorker(t,(m,w)=>m.task==='fixtures'&&w.backend==='webgpu'?{pass:false}:reply(m,w));
     const runner=new ConformanceWorker();const report=await runner.run(gpuPackage,variantId);assert.equal(report.backend,'wasm');assert.equal(report.fallbackReason,'webgpu-conformance-failed');
+    assert.equal(workers[1].messages.filter(m=>m.task==='fixtures').length,1,'Reuse successful fallback qualification');
     await assert.rejects(runner.run(gpuPackage,variantId,{backend:'webgpu'}),/conformance/);assert.equal(workers.length,3);
 });
 test('cancellation and consumer errors never trigger backend retries',async t=>{

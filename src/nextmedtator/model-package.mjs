@@ -142,6 +142,7 @@ export function modelRunProvenance(packageData, variantId, result) {
             packageId: manifest.id, manifestHash: packageData.manifestHash,
             lineage: clone(manifest.lineage), artifacts: clone(manifest.files) },
         runtime: { backend: result.backend, precision: result.precision, version: manifest.runtimeVersion,
+            ...(Number.isInteger(result.wasmThreads)&&result.wasmThreads>=1&&result.wasmThreads<=4?{wasmThreads:result.wasmThreads}:{}),
             variantId, variant: clone(variant), ...(result.executionPolicy ? {executionPolicy:result.executionPolicy} : {}),
             ...(result.graphTransforms?.length ? {graphTransforms:clone(result.graphTransforms)} : {}),
             ...(result.fallbackFrom ? {fallbackFrom:clone(result.fallbackFrom)} : {}),
@@ -201,23 +202,27 @@ export class ConformanceWorker {
         const [result] = await this.analyzeBatch(packageData, variantId, [request], options);
         return result;
     }
-    async analyzeBatch(packageData, variantId, requests, { onProgress, onResult, ...options } = {}) {
+    async analyzeBatch(packageData, variantId, requests, { onProgress, onResult, collectResults=true, qualify=false, ...options } = {}) {
         invariant(requests.length > 0, 'Analysis batch is empty');
         return this.#withModel(packageData, variantId, async context => {
             // Qualify the actual session/device, including after a backend switch.
-            if (context.qualified) await this.#execute(context, {task:'fixtures'});
+            if ((context.qualified || qualify) && !context.conformancePassed) await this.#execute(context, {task:'fixtures'});
             const results = [];
-            for (const [index, request] of requests.entries()) {
+            // A lazy source prepares only the current note. Consumers that save
+            // each result need not retain a second copy of the entire batch.
+            for (let index=0;index<requests.length;index++) {
+                invariant(!this.cancelled, 'Cancelled: local model worker stopped');
                 await onProgress?.(index);
+                const request=typeof requests.at==='function'?await requests.at(index):requests[index];
                 const result = await this.#execute(context, { ...request, task: 'analyze' });
                 await onResult?.(result, index);
-                results.push(result);
+                if(collectResults)results.push(result);
             }
             invariant(!this.cancelled, 'Cancelled: local model worker stopped');
             return results;
         }, {timeoutMs:600000,...options});
     }
-    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback} = {}) {
+    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback, maxThreads=4} = {}) {
         invariant(!this.worker&&!this.active, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
@@ -227,7 +232,8 @@ export class ConformanceWorker {
         const failure = this.gpuFailures.get(packageData.manifestHash);
         const actual = backend === 'auto' ? (qualified ? (globalThis.navigator?.gpu && !failure ? 'webgpu' : 'wasm') : variant.backend) : backend;
         invariant(actual === variant.backend || qualified, 'Execution preference is not supported by this package');
-        const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,resolveFallback,
+        invariant(Number.isInteger(maxThreads)&&maxThreads>=1&&maxThreads<=4,'CPU thread limit must be between 1 and 4');
+        const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,resolveFallback,maxThreads,
             fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null};
         this.cancelled = false;this.active=true;
         try {
@@ -265,7 +271,7 @@ export class ConformanceWorker {
         invariant(!this.cancelled, 'Cancelled: local model worker stopped');
         const {packageData,variantId,backend,timeoutMs}=context;
         this.worker = new Worker(this.url, {type:'module'});
-        await this.#request({task:'load',manifest:packageData.manifest,manifestHash:packageData.manifestHash,variantId,backend,files:[...packageData.files]},backend==='webgpu'?Math.min(timeoutMs,120000):timeoutMs);
+        await this.#request({task:'load',manifest:packageData.manifest,manifestHash:packageData.manifestHash,variantId,backend,maxThreads:context.maxThreads,files:[...packageData.files]},backend==='webgpu'?Math.min(timeoutMs,120000):timeoutMs);
     }
     async #fallback(context,error,reason) {
         if(this.cancelled || !context.automatic || context.backend!=='webgpu' || !context.qualified) throw error;
@@ -279,6 +285,8 @@ export class ConformanceWorker {
         await this.#load(context);
         const report=await this.#request({task:'fixtures'},context.timeoutMs);
         invariant(report.pass,'WASM fallback failed its public conformance fixtures');
+        context.conformancePassed=true;
+        return report;
     }
     async #execute(context,message) {
         let result;
@@ -286,8 +294,8 @@ export class ConformanceWorker {
             result=await this.#request(message,context.backend==='webgpu'?Math.min(context.timeoutMs,60000):context.timeoutMs);
             if(message.task==='fixtures')invariant(result.pass!==false,'Selected backend failed its public conformance fixtures');
         } catch(error) {
-            await this.#fallback(context,error,message.task==='fixtures'?'webgpu-conformance-failed':'webgpu-inference-failed');
-            result=await this.#request(message,context.timeoutMs);
+            const report=await this.#fallback(context,error,message.task==='fixtures'?'webgpu-conformance-failed':'webgpu-inference-failed');
+            result=message.task==='fixtures'?report:await this.#request(message,context.timeoutMs);
             if(message.task==='fixtures')invariant(result.pass,'WASM fallback failed its public conformance fixtures');
         }
         return context.qualified ? {...result,executionPolicy:EXECUTION_POLICY,...(context.fallbackFrom?{fallbackFrom:context.fallbackFrom}:{}),...(context.fallbackReason?{fallbackReason:context.fallbackReason}:{})} : result;

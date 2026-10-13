@@ -84,9 +84,24 @@ In **Assisted**, you review and write each suggestion yourself. **Blind**
 requires freezing independent annotation before analysis and explicit reveal.
 Do not treat already exposed annotations as independent blind labels.
 
-For multiple notes, expand **Batch analysis**, check the desired filenames,
-then click **Analyze selected**. Opening a file in the left list does not select
-it for a batch. **Pause** stops analysis; completed results are retained.
+For multiple notes, expand **Batch analysis**:
+
+1. Click **Select all**, or check the desired filenames. **Previous notes** and
+   **Next notes** page through lists longer than 50 notes; selection spans pages.
+2. Keep **Low CPU** for one WASM thread, or choose **Balanced** for up to four.
+   WebGPU stays preferred when available; the CPU limit also applies to fallback.
+3. Click **Analyze selected**. One model session processes notes sequentially.
+   The progress bar counts finished notes and estimates remaining time after the
+   first note. Different note lengths can change that estimate.
+4. Open each note in the left list to review its results. Opening a file does not
+   select it for a batch. **Pause** stops analysis and retains finished results;
+   select remaining notes yourself before starting again.
+
+Low CPU can take longer. Models and retained annotation history still need RAM;
+INT8's smaller download does not guarantee lower runtime memory. No additional
+models are downloaded merely by selecting notes or changing CPU usage.
+
+![A four-note batch using the low-CPU setting, with progress and local WASM inference](images/17-bulk-low-cpu.png)
 
 ## If something is unavailable
 
@@ -98,8 +113,8 @@ it for a batch. **Pause** stops analysis; completed results are retained.
 | Note exceeds the model limit | Split it deliberately into smaller source documents; the app does not truncate silently |
 | No suggestions | Inspect the schema, model identity and threshold; an empty result can be valid |
 
-The public packages use qualified WASM execution. WebGPU is not a selectable
-qualified path for these releases. These examples verify the software workflow,
+The public FP32 and FP16 packages support qualified WebGPU execution with
+original FP32 WASM fallback. These examples verify the software workflow,
 not the clinical accuracy of predictions.
 
 [Previous: first annotation](01-quickstart.md) · [Next: review and export](03-review-export.md)
