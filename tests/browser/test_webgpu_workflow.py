@@ -53,7 +53,9 @@ try:
                 assert bool(run['runtime'].get('fallbackReason'))==(mode=='fallback'),run['runtime']
                 if profile=='bpsd' and mode=='webgpu':assert len(run['runtime']['graphTransforms'])==1
                 assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length')==0
-                page.get_by_test_id('assist-suggestion').first.scroll_into_view_if_needed()
+                # The panel can re-render once when machine exposure is recorded.
+                # Scroll the current node immediately; render preserves scrollTop.
+                page.get_by_test_id('assist-suggestion').first.evaluate("element=>element.scrollIntoView({block:'center'})")
                 page.screenshot(path=str(OUT/(profile+'-'+mode+'-suggestions.png')))
                 page.get_by_test_id('assist-accept').first.click();page.get_by_test_id('assist-add').click()
                 assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length')==1
