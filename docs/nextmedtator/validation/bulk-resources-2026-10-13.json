@@ -1,0 +1,849 @@
+{
+  "date": "2026-10-13",
+  "implementationCommit": "f58ecc6a25b7f5711a66e97c343dcbe8e20093d8",
+  "deploymentId": "ade53783-fa23-4002-987a-d1331441db09",
+  "url": "https://nmt.sidata.plus",
+  "release": "v0.1.0-preview.8",
+  "compiledArchiveSha256": "694fc32896e94ea9e6dbec17b87c655c53e9cd13f8107f0bdd5324127a26a8ef",
+  "assetVersion": "c2b12143a63ba44d82d246941653828cf48046ad8b5377f4f6b3770e763ed483",
+  "crossOriginIsolated": true,
+  "coop": "same-origin",
+  "coep": "require-corp",
+  "browser": "155.0.8059.40",
+  "unit": {
+    "passed": 192,
+    "skipped": 1
+  },
+  "pythonValidation": {
+    "passed": 27,
+    "skipped": 1
+  },
+  "lint": true,
+  "assetAudit": true,
+  "localCpuComparison": [
+    {
+      "profile": "p10",
+      "mode": "low",
+      "seconds": 49.86141110002063,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 1,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        2,
+        2,
+        5,
+        3
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "p10",
+      "mode": "balanced",
+      "seconds": 20.605549999978393,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 4
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 4,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        2,
+        2,
+        5,
+        3
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "bpsd",
+      "mode": "low",
+      "seconds": 45.205990799935535,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 1,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        0,
+        0,
+        5,
+        2
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "bpsd",
+      "mode": "balanced",
+      "seconds": 20.507912799948826,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 4
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 4,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 4,
+          "backend": "wasm"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        0,
+        0,
+        5,
+        2
+      ],
+      "workerReleased": true
+    }
+  ],
+  "localFinalGpuAndFallback": [
+    {
+      "profile": "p10",
+      "mode": "gpu",
+      "seconds": 19.016985199879855,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 1,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        2,
+        2,
+        5,
+        3
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "p10",
+      "mode": "fallback",
+      "seconds": 53.58624590002,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "terminated"
+        },
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 1,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        2,
+        2,
+        5,
+        3
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "bpsd",
+      "mode": "gpu",
+      "seconds": 21.710061500081792,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 1,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        0,
+        0,
+        5,
+        2
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "bpsd",
+      "mode": "fallback",
+      "seconds": 48.88534649997018,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "terminated"
+        },
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 1,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "wasm"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        0,
+        0,
+        5,
+        2
+      ],
+      "workerReleased": true
+    }
+  ],
+  "productionGpu": [
+    {
+      "profile": "p10",
+      "mode": "gpu",
+      "seconds": 20.828251200029626,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 1,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        2,
+        2,
+        5,
+        3
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "bpsd",
+      "mode": "gpu",
+      "seconds": 23.149188000010327,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 1
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 1,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 1,
+          "backend": "webgpu"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        0,
+        0,
+        5,
+        2
+      ],
+      "workerReleased": true
+    }
+  ],
+  "pagination": {
+    "notes": 121,
+    "rowsPerPage": [
+      50,
+      50,
+      21
+    ],
+    "selectAllAndClear": true
+  },
+  "network": {
+    "noUnrequestedModelDownloads": true,
+    "noNoteEgress": true,
+    "modelsImportedLocallyForInferenceTests": true
+  },
+  "limitations": [
+    "Four synthetic regression notes per model; no clinical accuracy evaluation.",
+    "Original FP32 packages used in these bulk tests; precision artifacts unchanged.",
+    "CPU comparison preceded removal of duplicate fallback validation; final GPU/fallback tests used the deployed build.",
+    "Wall times include initialization and conformance; single passes are workflow checks, not statistical benchmarks.",
+    "No OS CPU utilization or peak RAM measurement. One WASM thread limits inference parallelism, not all browser activity.",
+    "Loaded notes, model bytes and retained review history still consume memory."
+  ],
+  "screenshots": [
+    "temp/browser-validation/bulk-resources",
+    "temp/browser-validation/bulk-live"
+  ]
+}
