@@ -27,15 +27,15 @@ button.primary{background:#076b74;color:#fff;border-color:#076b74}
 button:focus:not(:focus-visible){outline:none}
 .dock{height:100%;display:flex;flex-direction:column;background:#f7f9fa}
 .rail{height:100%;width:100%;border:0;border-radius:0;background:#f7f9fa;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:.04em}
-.head{min-height:0;overflow:auto;padding:8px;border-bottom:1px solid #d7e1e7;display:flex;flex-direction:column;gap:4px}
-.head p{margin:0;overflow-wrap:anywhere}
+.head{flex-shrink:0;min-height:0;padding:12px;border-bottom:1px solid #d7e1e7;display:flex;flex-direction:column;gap:4px}
+.head p{margin:0;overflow-wrap:anywhere}.head strong{font-size:15px}.head .document-name{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.action-bar{padding:10px 12px;border-bottom:1px solid #d7e1e7;flex-shrink:0;background:#fff}.action-bar .row{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}.action-bar button{min-height:34px}.action-bar p{margin:6px 0 0;font-size:11px;color:#536976}.section{margin:0 0 12px;padding:10px;background:#fff;border:1px solid #d7e1e7;border-radius:8px}.section summary{font-weight:650;cursor:pointer;padding:2px 0}.section summary:focus-visible{outline:2px solid #137aab}.section[open]>summary{margin-bottom:10px}.section>h3{margin:0 0 8px;font-size:13px}.section .row{margin:6px 0}.section .model-selection h3{margin:0 0 8px;font-size:13px}.section .model-selection [role=status]{font-size:11px;color:#536976}.section .model-selection pre{font-size:10px}.body>.card{box-shadow:0 1px 2px #1a304108}.setup-hint{padding:8px;background:#edf4f6;border-radius:5px;margin:8px 0;font-size:12px}.body>.muted{margin:8px 0}.badge.pending{background:#fff2db;color:#78571c}.badge.ready{background:#e8f5ef;color:#176444}
 .head label{flex-direction:row;align-items:center}
 .head select{flex:1;min-width:0}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .grow{flex:1}
 .badge{border-radius:999px;padding:2px 8px;background:#e8f5ef;font-size:11px}
 .muted{color:#536976;font-size:12px}
-.body{overflow:auto;padding:8px;flex:1;min-height:80px}
+.body{overflow:auto;padding:12px;flex:1;min-height:80px}
 .card{background:#fff;border:1px solid #d7e1e7;border-radius:8px;padding:8px;margin:0 0 8px}
 .card p{margin:3px 0;overflow-wrap:anywhere}
 .anchor{font-weight:650}
@@ -129,6 +129,14 @@ export function legacySchema(dtd) {
 export function legacyRecords(ann,doc,schema){
  const map=new OffsetMap(doc.text),records=(ann.tags??[]).filter(t=>t.spans&&schema.families[t.tag]).map(t=>({id:t.id,documentId:doc.id,family:t.tag,anchor:schema.families[t.tag].documentLevel?[]:t.spans.split(',').map(range=>{const [a,b]=range.split('~').map(Number);return map.selection(a,b);}),fields:Object.fromEntries(Object.entries(schema.families[t.tag].fields).map(([name,def])=>[name,name==='concept'?t.text:((def.type==='enum'&&t[name]===''&&!def.values.includes(''))?null:t[name]??null)])),origin:{kind:'imported',source:'medtator-working-copy',reviewStatus:'unknown'}}));
  for(const tag of ann.tags??[]){const rel=schema.relations?.[tag.tag];if(!rel)continue;const head=records.find(r=>r.id===tag[rel.legacy.head]),tail=records.find(r=>r.id===tag[rel.legacy.tail]);invariant(head&&tail,'Legacy relation endpoint is missing');head.relations??=[];head.relations.push({type:tag.tag,targetId:tail.id});}return records;
+}
+function disclosure(assist,key,title,defaultOpen=false) {
+    assist.sectionState ??= new Map();
+    const details=node('details',null,{class:'section','data-testid':`assist-${key}`});
+    details.open=assist.sectionState.get(key)??defaultOpen;
+    details.append(node('summary',title));
+    details.addEventListener('toggle',()=>{if(details.isConnected)assist.sectionState.set(key,details.open);});
+    return details;
 }
 function node(tag, text, attrs = {}) {
     const n = document.createElement(tag);
@@ -626,12 +634,12 @@ class LegacyAssist {
         const view = this.current();
         const schema = view?.data?.dtd?.name;
         const status = node('div', null, { class: 'row' });
-        status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'No matching package', { class: 'badge', 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
-        head.append(title, labeled('Mode', mode), status, node('p', `${schema ? `Schema: ${schema}` : 'Schema: none loaded'}. Documents stay in the annotation workspace.`, { class: 'muted' }));
-        if(this.model)head.append(node('p', 'Active model: '+this.model.manifest.id, { class: 'muted', 'data-testid': 'assist-model-identity' }));
-        if (this.mode === 'auto') head.append(node('p', 'Analyze writes all predictions as unreviewed native tags. Apply all suggestions also uses an existing run.', {class:'muted'}));
+        status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'Model needed', { class: `badge ${this.model?'ready':'pending'}`, 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
+        head.append(title, status, labeled('Mode', mode));
+        if(this.model)head.append(node('p',modelSelectionLabel(this.modelSelection),{class:'muted','data-testid':'assist-model-identity',title:this.model.manifest.id}));
+
         if (view?.ann)
-            head.append(node('p', view.ann._filename ?? 'document', { class: 'muted', 'data-testid': 'assist-document' }));
+            head.append(node('p', view.ann._filename ?? 'document', { class: 'document-name', 'data-testid': 'assist-document',title:view.ann._filename }));
         if (view?.run && this.mode !== 'blind' && (!this.blinded.has(view.key) || this.exposed.has(view.key)))
             head.append(node('p', `${view.run.records.length} machine suggestions · ${view.ann.tags?.length ?? 0} annotation tags`, { 'data-testid': 'assist-counts' }));
         dock.append(head);
@@ -640,31 +648,35 @@ class LegacyAssist {
         renderLoadingProgress(this.root,this.busy?this.loadingProgress:null);
         const body = node('div', null, { class: 'body' });
         dock.append(body);
-        body.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));
+        const modelSettings=node('section',null,{class:'section','aria-label':'Model source'});body.append(modelSettings);
+        modelSettings.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));
         const actions = node('div', null, { class: 'row' });
         const sourcePending=!!this.selectionDraft||this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection);
-        actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
-        actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
+        actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !this.model || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
+        actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true))), { disabled: this.busy || !this.model || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
         actions.append(button('Pause', () => this.modelRunner.cancel(), { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis' }));
-        body.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:activeVariantForSchema(this.model,view?.data?.dtd?legacySchema(view.data.dtd):null),disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
-        body.append(actions);
-        body.append(renderScopeEditor(this));
+        const options=disclosure(this,'options','Analysis settings',this.scopeEditing);body.append(options);
+        options.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:activeVariantForSchema(this.model,view?.data?.dtd?legacySchema(view.data.dtd):null),disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
+        const actionBar=node('div',null,{class:'action-bar'});actionBar.append(actions,node('p',!schema?'Load a schema, then open a note.':!view?.ann?'Open a note to begin.':!this.model?'Choose a model below and install its package.':this.mode==='auto'?'Predictions are added as unreviewed tags.':this.mode==='blind'?'Freeze your annotation before revealing predictions.':'Review suggestions before adding them to the note.'));head.after(actionBar);
+        options.append(renderScopeEditor(this));
+        const storage=disclosure(this,'recovery','Local recovery & backups');
         const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
         if(!this.recoverySession.enabled)recovery.append(button('Enable local corpus recovery',()=>this.perform(async()=>{if(!confirm('Store this corpus, annotations and prediction history in this browser profile? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann,id:'assist-recovery-enable'}));
         else recovery.append(button('Save corpus checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete corpus recovery',()=>this.perform(async()=>{if(confirm('Delete this corpus recovery copy? Current in-memory annotations remain.'))await this.recoverySession.forget();})),button('Export SQLite corpus backup',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
-        recovery.append(button('List saved corpora',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore corpus '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the current in-memory corpus with this recovery copy? Export unsaved files first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));body.append(recovery);
-        body.append(node('p', this.structured()
+        recovery.append(button('List saved corpora',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore corpus '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the current in-memory corpus with this recovery copy? Export unsaved files first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));storage.append(recovery);
+        const packages=disclosure(this,'packages',this.model?'Model packages':'Get a model package',!this.model);if(!this.model)packages.append(node('p','Choose a public download or import a package. Downloads start only when you request them.',{class:'setup-hint'}));
+        packages.append(node('p', this.structured()
             ? (this.model.manifest.variants.some(v=>isRecordsCodec(v.codec))?recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec):'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        body.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})),button('Show approved public model',()=>this.perform(async()=>{
+        packages.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})),button('Show approved public model',()=>this.perform(async()=>{
             const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});
             invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();
         })));
         for(const entry of this.catalog?.entries??[]){
             const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
-            body.append(node('p',`${entry.manifest.id} · ${entry.manifest.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage. Inference stays on this device.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
+            packages.append(node('p',`${entry.manifest.id} · ${(total/1048576).toFixed(0)} MB · ${entry.manifest.license.id}. Allow ${(total*2/1048576).toFixed(0)} MB free storage.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
                 this.setSelectedModel(selectionFromManifest(entry.manifest),{render:false,restoreInstalled:false});
                 const epoch=this.modelSelectionEpoch;this.installController=new AbortController();
                 try{
@@ -678,12 +690,12 @@ class LegacyAssist {
         }
         for(const item of this.installedModels??[]){
             const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
-            body.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
+            packages.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
         }
-        if(this.model)body.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})));
+        if(this.model)packages.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})));
         const anns = view?.data?.anns ?? [];
         if (anns.length) {
-            const docs = node('div', null, { class: 'docs', 'aria-label': 'Documents to analyze' });
+            const docs = disclosure(this,'batch',`Batch analysis · ${this.selected.size} selected`);docs.setAttribute('aria-label','Documents to analyze');
             docs.append(node('p', 'Check notes for Analyze selected. The file list on the left still opens a note.', { class: 'muted' }));
             for (const ann of anns) {
                 if (!ann?.text && ann?.text !== '')
@@ -701,7 +713,8 @@ class LegacyAssist {
         else
             body.append(node('p', 'Load a schema and a note with the usual Annotation controls. Assistance stays optional.', { class: 'muted' }));
         this.renderRun(body, view);
-        body.append(button('Open evidence project', () => this.perform(async()=>this.openProject(await this.syncProject(view.ann))), { id: 'open-workspace', title: 'Open the portable evidence project for snapshots and comparison' }));
+        body.append(packages,storage);
+        body.append(button('Open evidence project', () => this.perform(async()=>this.openProject(await this.syncProject(view.ann))), { id: 'open-workspace', disabled:!view?.ann||this.busy, title: 'Open the portable evidence project for snapshots and comparison' }));
     }
     renderRun(body, view) {
         const run = view?.run;
