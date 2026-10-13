@@ -6,6 +6,7 @@ import shutil
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'preview'
 HEADERS = """/*
+  Cache-Control: no-cache
   Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://*.hf.co https://*.xethub.hf.co; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

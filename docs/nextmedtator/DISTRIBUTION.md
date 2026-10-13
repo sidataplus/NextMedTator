@@ -47,6 +47,12 @@ The repository's `wrangler.jsonc` describes an alternative Workers Static
 Assets deployment. It is not the configuration for the current Pages project.
 Python renders templates at build time; production has no Python backend.
 
+Generated Vue scripts and the workspace entry use content-hashed filenames so
+returning browsers do not mix old rendering code with the current HTML/layout.
+App responses use `Cache-Control: no-cache` for HTTP revalidation; the verified
+service-worker cache still supports explicit offline use. Keep R2's immutable
+model-cache policy separate from this app policy.
+
 ## R2 delivery
 
 The app fetches catalog metadata only when requested and weights only after an

@@ -5,6 +5,7 @@ import { parseHTML } from 'linkedom';
 import { parse } from 'acorn';
 import compiler from 'vue-template-compiler';
 import { transform } from 'esbuild';
+import {createHash} from 'node:crypto';
 const out = 'dist';
 const { document } = parseHTML(await readFile(`${out}/index.html`, 'utf8'));
 const app = document.querySelector('#app_hotpot');
@@ -47,27 +48,32 @@ const precompiled = `/* Build-time Vue render functions, never imported clinical
 var nmtTemplates=new Map([${[...templates].map(t => `[${JSON.stringify(t)},${compile(t)}]`).join(',')}]);
 var nmtRoot=${compile(app.outerHTML)};
 Vue.mixin({methods:{nmtSanitize:function(value){return DOMPurify.sanitize(String(value==null?'':value),{USE_PROFILES:{html:true}});}},beforeCreate:function(){var o=this.$options;var r=o.el==='#app_hotpot'?nmtRoot:nmtTemplates.get(o.template);if(r){o.render=r.render;o.staticRenderFns=r.staticRenderFns;delete o.template;}else if(o.template){throw Error('Uncompiled Vue template blocked');}}});`;
-await writeFile(`${out}/app/legacy-render.js`, precompiled);
+const renderFile=`legacy-render-${createHash('sha256').update(precompiled).digest('hex').slice(0,16)}.js`;
+await writeFile(`${out}/app/${renderFile}`, precompiled);
 const last = scripts.at(-1);
-for (const src of ['./vendor/dompurify/purify.min.js', './app/legacy-render.js']) {
+for (const src of ['./vendor/dompurify/purify.min.js', `./app/${renderFile}`]) {
     const tag = document.createElement('script');
     tag.setAttribute('src', src);
     last.before(tag);
 }
 for (const [i, s] of scripts.entries()) {
     const result = await transform(s.textContent, { target: 'es2020', drop: ['console', 'debugger'] });
-    await writeFile(`${out}/app/legacy-${i}.js`, result.code);
+    const filename=`legacy-${i}-${createHash('sha256').update(result.code).digest('hex').slice(0,16)}.js`;
+    await writeFile(`${out}/app/${filename}`, result.code);
     s.textContent = '';
-    s.setAttribute('src', `./app/legacy-${i}.js`);
+    s.setAttribute('src', `./app/${filename}`);
 }
 for (const node of document.querySelectorAll('*'))
     for (const a of [...node.attributes])
         if (/^on/i.test(a.name))
             throw Error(`Inline handler needs migration: ${a.name}`);
 if ((await stat('src/nextmedtator/ui.mjs').catch(() => null))?.isFile()) {
+    const source=await readFile(`${out}/app/nextmedtator/ui.mjs`,'utf8');
+    const entry=`ui-${createHash('sha256').update(source).digest('hex').slice(0,16)}.mjs`;
+    await writeFile(`${out}/app/nextmedtator/${entry}`,source);
     const module = document.createElement('script');
     module.setAttribute('type', 'module');
-    module.setAttribute('src', './app/nextmedtator/ui.mjs');
+    module.setAttribute('src', `./app/nextmedtator/${entry}`);
     document.body.append(module);
 }
 await writeFile(`${out}/index.html`, '<!doctype html>\n' + document.documentElement.outerHTML);
