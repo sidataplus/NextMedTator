@@ -1,0 +1,286 @@
+{
+  "entries": [
+    {
+      "revision": "0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223",
+      "manifest": {
+        "capabilities": [
+          "*"
+        ],
+        "files": [
+          {
+            "bytes": 741277203,
+            "path": "model.onnx",
+            "role": "graph",
+            "sha256": "f58db136bc7a07d61c0d925e172ceb137800cf2c153b9654459ed31e28e57aa7"
+          },
+          {
+            "bytes": 4942128,
+            "path": "attributes.onnx",
+            "role": "graph",
+            "sha256": "1045cde3fa3ec93a142f677f77114c43485d99eea65d33b42b59f949ba3f8d8a"
+          },
+          {
+            "bytes": 8333953,
+            "path": "tokenizer.json",
+            "role": "tokenizer",
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc"
+          },
+          {
+            "bytes": 3027,
+            "path": "entity-contract.json",
+            "role": "schema",
+            "sha256": "dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b"
+          },
+          {
+            "bytes": 1833052,
+            "path": "attributes-reference.json",
+            "role": "fixture",
+            "sha256": "5d9131630fafdbc91f06f59f0e0c3890c43249368fcc0c2193f87d9ff8d7ea32"
+          },
+          {
+            "bytes": 11540,
+            "path": "LICENSES/Apache-2.0.txt",
+            "role": "notice",
+            "sha256": "ca54561c76752a9c931f4ee1574b8e3aa873697fed1e96244f700c45a7cc7f2d"
+          },
+          {
+            "bytes": 1162,
+            "path": "LICENSES/DeBERTa-MIT.txt",
+            "role": "notice",
+            "sha256": "9906940f61b1f0b533fa7d99baf55178b2808fbe113ea51dfbfad8572ccd5f2b"
+          },
+          {
+            "bytes": 175,
+            "path": "NOTICE.txt",
+            "role": "notice",
+            "sha256": "bd10a1ce558d518fdc9ba33e5de8988ec5228e02a7b6b1f4770251f42001b8b7"
+          }
+        ],
+        "format": "nextmedtator-model-v1",
+        "id": "clinical-evidence-p10-base-r2",
+        "license": {
+          "id": "LicenseRef-Private-Research",
+          "notice": "Base fastino/gliner2.5-base-v1: LicenseRef-Hub-Base. Adapter: LicenseRef-Private-Research. Local export implies no redistribution permission. Clinical accuracy is unqualified."
+        },
+        "lineage": {
+          "adapter": {
+            "baseRevision": "54785d51df8d86a0d8f2eb212fec15871aad2c4d",
+            "configSha256": "6cfed858668e80c7ba0633764730ea71588b6be3aa1482e60ebe06bdfebf3710",
+            "repository": "na399/clinical-evidence-gliner2.5-base-lora-p10-glm",
+            "revision": "ffd6e47bd55de93dcc3fcabbb65533ad7ba32991",
+            "sha256": "6818a402cab80d1ba7f07707848a2393a5ee7127939b9f3675f8819f9fc9e34b",
+            "weightsSha256": "9ea7aa1de07577d0aab4dbfeaffac3be39e11595fd192a9991f36a848f9e583b"
+          },
+          "base": {
+            "files": {
+              "config.json": "d6b515c21ae2100c12267fb42a3f02c1e99ad87580366aebedb161efd74441c7",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            },
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "54785d51df8d86a0d8f2eb212fec15871aad2c4d"
+          },
+          "merge": "merged-export",
+          "runtime": {
+            "upstreamCommit": "b86d35c02f2c1a4d9840ea50197bd1b6d13b031e"
+          },
+          "trainedHeads": "unchanged"
+        },
+        "qualification": {
+          "kind": "numerical-head-only",
+          "notice": "Download conformance checks random-latent attributes only. Source/browser parity must be qualified separately. Clinical validity is unqualified."
+        },
+        "runtime": "onnxruntime-web",
+        "runtimeVersion": "1.23.2",
+        "variants": [
+          {
+            "abstentionThreshold": 0.5,
+            "automaticRelations": false,
+            "backend": "wasm",
+            "codec": "gliner25-entity-attributes-v1",
+            "conformanceScope": "numerical-heads-only",
+            "entityContract": "entity-contract.json",
+            "entityContractSha256": "dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b",
+            "fixedThreshold": true,
+            "fixedWords": 512,
+            "fixtures": [
+              "attributes-reference.json"
+            ],
+            "graph": "model.onnx",
+            "graphs": {
+              "attributes": "attributes.onnx",
+              "model": "model.onnx"
+            },
+            "id": "wasm-fp32",
+            "mainMaskType": "bool",
+            "maxSequenceLength": 512,
+            "pairTemperature": 1,
+            "precision": "fp32",
+            "recordBinding": false,
+            "threshold": 0.25,
+            "tokenizer": "tokenizer.json"
+          }
+        ],
+        "version": "6818a402cab80d1ba7f07707848a2393a5ee7127939b9f3675f8819f9fc9e34b"
+      },
+      "delivery": {
+        "kind": "r2",
+        "origin": "https://nmt-models.sidata.plus",
+        "prefix": "/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/"
+      },
+      "urls": {
+        "model.onnx": "https://nmt-models.sidata.plus/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/model.onnx",
+        "attributes.onnx": "https://nmt-models.sidata.plus/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/attributes.onnx",
+        "tokenizer.json": "https://nmt-models.sidata.plus/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/tokenizer.json",
+        "entity-contract.json": "https://nmt-models.sidata.plus/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/entity-contract.json",
+        "attributes-reference.json": "https://nmt-models.sidata.plus/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/attributes-reference.json",
+        "LICENSES/Apache-2.0.txt": "https://nmt-models.sidata.plus/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/LICENSES/Apache-2.0.txt",
+        "LICENSES/DeBERTa-MIT.txt": "https://nmt-models.sidata.plus/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/LICENSES/DeBERTa-MIT.txt",
+        "NOTICE.txt": "https://nmt-models.sidata.plus/nextmedtator-models/0374df44608eef43724d93e0e7f26067fb006e3850a373e0456a0a6b10001223/NOTICE.txt"
+      }
+    },
+    {
+      "revision": "2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7",
+      "manifest": {
+        "capabilities": [
+          "*"
+        ],
+        "files": [
+          {
+            "bytes": 741277203,
+            "path": "model.onnx",
+            "role": "graph",
+            "sha256": "2ee92ad268cf7afb1d54c45d2d726b01f3419c6488061755d872fc2766f85774"
+          },
+          {
+            "bytes": 7047510,
+            "path": "attributes.onnx",
+            "role": "graph",
+            "sha256": "ac37764700eabbb6ccd1fd95cdc8041836439a86dbf98ecf1c913cc67281909c"
+          },
+          {
+            "bytes": 8333953,
+            "path": "tokenizer.json",
+            "role": "tokenizer",
+            "sha256": "59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc"
+          },
+          {
+            "bytes": 3955,
+            "path": "entity-contract.json",
+            "role": "schema",
+            "sha256": "37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533"
+          },
+          {
+            "bytes": 3408014,
+            "path": "attributes-reference.json",
+            "role": "fixture",
+            "sha256": "a44febc936ace4b54d7246a621dac9517b9f8ea705e829863f6e392db3936f04"
+          },
+          {
+            "bytes": 11540,
+            "path": "LICENSES/Apache-2.0.txt",
+            "role": "notice",
+            "sha256": "ca54561c76752a9c931f4ee1574b8e3aa873697fed1e96244f700c45a7cc7f2d"
+          },
+          {
+            "bytes": 1162,
+            "path": "LICENSES/DeBERTa-MIT.txt",
+            "role": "notice",
+            "sha256": "9906940f61b1f0b533fa7d99baf55178b2808fbe113ea51dfbfad8572ccd5f2b"
+          },
+          {
+            "bytes": 172,
+            "path": "NOTICE.txt",
+            "role": "notice",
+            "sha256": "808b7086a9a969e0abcaab6357f0252f2dfdbbc750e4b96354b595c65ef0b9fc"
+          }
+        ],
+        "format": "nextmedtator-model-v1",
+        "id": "bpsd-gliner25-base-r2",
+        "license": {
+          "id": "LicenseRef-User-Provided",
+          "notice": "Base fastino/gliner2.5-base-v1: LicenseRef-Hub-Base. Adapter: LicenseRef-User-Provided. Local export implies no redistribution permission. Clinical accuracy is unqualified."
+        },
+        "lineage": {
+          "adapter": {
+            "baseRevision": "ca906247640776a07753514055be9726f9080ead",
+            "configSha256": "fd71d10bdc9071c3ce060fc6abd2c4eb437b63a671aa6b5296b0cc007688544f",
+            "repository": "na399/bpsd-gliner2.5-base-lora-20261012",
+            "revision": "5cb60383b4b8dd361841e307e54f6e17b68b6fa7",
+            "sha256": "a6a4c8380376275b940c93b03d55a605a647f2b7cf2cf11e7cb34ad2e25e1ecf",
+            "weightsSha256": "a0f26c79c4d1d87cf617105d1fc551b0f67e6458db1b3afc82bac782489b9ad8"
+          },
+          "base": {
+            "files": {
+              "config.json": "0eb92d00584d613aab32b2178f84a85176b62c87ae3689ce9084e83f6eba64d1",
+              "encoder_config/config.json": "d36a845b9f25dcaf1ec45a1c4bdf65ea4ac20596537e14530ec9f660a63aeca4",
+              "model.safetensors": "7274094de2e0c2a37a386f55fc4e23061a954da5bd7a335e7dfe56f2743c277a",
+              "tokenizer.json": "cbc8ae6037812709c9c26f2a160f8dc48b0440bcb79c8141804259ae2d6adac3",
+              "tokenizer_config.json": "0bf3ea0873234bd9bfdd3853c440395009ac6365a925b91654daed5396d655e1"
+            },
+            "model": "fastino/gliner2.5-base-v1",
+            "revision": "ca906247640776a07753514055be9726f9080ead"
+          },
+          "merge": "merged-export",
+          "runtime": {
+            "upstreamCommit": "55656fbfa01d3d4a77485e1a1eeeaf682990ccdf"
+          },
+          "trainedHeads": "400009e27d171d739308f9c37db5db5fb7abf1f75af788efd3e9299c3807a23b"
+        },
+        "qualification": {
+          "kind": "numerical-head-only",
+          "notice": "Download conformance checks random-latent attributes only. Source/browser parity must be qualified separately. Clinical validity is unqualified."
+        },
+        "runtime": "onnxruntime-web",
+        "runtimeVersion": "1.23.2",
+        "variants": [
+          {
+            "abstentionThreshold": 0.5,
+            "automaticRelations": false,
+            "backend": "wasm",
+            "codec": "gliner25-entity-attributes-v1",
+            "conformanceScope": "numerical-heads-only",
+            "entityContract": "entity-contract.json",
+            "entityContractSha256": "37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533",
+            "fixedThreshold": true,
+            "fixedWords": 1024,
+            "fixtures": [
+              "attributes-reference.json"
+            ],
+            "graph": "model.onnx",
+            "graphs": {
+              "attributes": "attributes.onnx",
+              "model": "model.onnx"
+            },
+            "id": "wasm-fp32",
+            "mainMaskType": "bool",
+            "maxSequenceLength": 1024,
+            "pairTemperature": 1,
+            "precision": "fp32",
+            "recordBinding": false,
+            "threshold": 0.5,
+            "tokenizer": "tokenizer.json"
+          }
+        ],
+        "version": "a6a4c8380376275b940c93b03d55a605a647f2b7cf2cf11e7cb34ad2e25e1ecf"
+      },
+      "delivery": {
+        "kind": "r2",
+        "origin": "https://nmt-models.sidata.plus",
+        "prefix": "/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/"
+      },
+      "urls": {
+        "model.onnx": "https://nmt-models.sidata.plus/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/model.onnx",
+        "attributes.onnx": "https://nmt-models.sidata.plus/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/attributes.onnx",
+        "tokenizer.json": "https://nmt-models.sidata.plus/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/tokenizer.json",
+        "entity-contract.json": "https://nmt-models.sidata.plus/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/entity-contract.json",
+        "attributes-reference.json": "https://nmt-models.sidata.plus/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/attributes-reference.json",
+        "LICENSES/Apache-2.0.txt": "https://nmt-models.sidata.plus/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/LICENSES/Apache-2.0.txt",
+        "LICENSES/DeBERTa-MIT.txt": "https://nmt-models.sidata.plus/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/LICENSES/DeBERTa-MIT.txt",
+        "NOTICE.txt": "https://nmt-models.sidata.plus/nextmedtator-models/2d7574bf8e467a7c39760981d3729ca5c43b2a6d58937365bbb6a6d69fb0f8a7/NOTICE.txt"
+      }
+    }
+  ]
+}

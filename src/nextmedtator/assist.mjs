@@ -1,3 +1,4 @@
+import {renderLoadingProgress} from './loading-progress.mjs';
 import {ENTITY_ATTRIBUTES_CODEC,entityContractSchema} from './entity-contract.mjs';
 import {suggestionThreshold,thresholdControl} from './threshold.mjs';
 import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
@@ -258,6 +259,7 @@ class LegacyAssist {
         if (this.busy)
             return;
         this.busy = true;
+        this.loadingProgress={phase:'Loading model / working locally',started:performance.now()};
         this.error = false;
         this.render();
         try {
@@ -270,6 +272,7 @@ class LegacyAssist {
         }
         finally {
             this.busy = false;
+            this.loadingProgress=null;
             this.progress = null;
             this.render();
         }
@@ -634,6 +637,7 @@ class LegacyAssist {
         dock.append(head);
         if (this.message)
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
+        renderLoadingProgress(this.root,this.busy?this.loadingProgress:null);
         const body = node('div', null, { class: 'body' });
         dock.append(body);
         body.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));
@@ -664,9 +668,9 @@ class LegacyAssist {
                 this.setSelectedModel(selectionFromManifest(entry.manifest),{render:false,restoreInstalled:false});
                 const epoch=this.modelSelectionEpoch;this.installController=new AbortController();
                 try{
-                    const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{this.message=`Downloading ${received} of ${total} bytes`;const message=this.root.querySelector('[data-testid=assist-message]');if(message)message.textContent=this.message;}});
+                    this.loadingProgress={phase:'Downloading model',received:0,total:total,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{Object.assign(this.loadingProgress,{received,total,phase:received===total?'Verifying model integrity':'Downloading model'});renderLoadingProgress(this.root,this.loadingProgress);}});
                     invariant(epoch===this.modelSelectionEpoch&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Model selection changed during download');
-                    const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});
+                    this.loadingProgress.phase='Installing and verifying local storage';renderLoadingProgress(this.root,this.loadingProgress);const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});
                     invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');
                     this.adoptModel(installed);this.message='Public model installed and hashes verified; analysis runs locally.';
                 }finally{this.installController=null;}

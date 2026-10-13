@@ -1,3 +1,4 @@
+import {renderLoadingProgress} from './loading-progress.mjs';
 import {ENTITY_ATTRIBUTES_CODEC,entityContractSchema} from './entity-contract.mjs';
 import {suggestionThreshold,thresholdControl} from './threshold.mjs';
 import {previewSchemaMigration,applySchemaMigration} from './migration.mjs';
@@ -135,7 +136,7 @@ export class EvidenceWorkspace {
         return true;
     }
     async perform(action) { if (this.busy)
-        return; this.busy = true; this.root.querySelector('.app')?.setAttribute('aria-busy', 'true'); for(const input of this.root.querySelectorAll('.threshold input,[data-testid=analysis-mode]'))input.disabled=true; for (const b of this.root.querySelectorAll('button'))
+        return; this.busy = true;this.loadingProgress={phase:'Loading model / working locally',started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress); this.root.querySelector('.app')?.setAttribute('aria-busy', 'true'); for(const input of this.root.querySelectorAll('.threshold input,[data-testid=analysis-mode]'))input.disabled=true; for (const b of this.root.querySelectorAll('button'))
         if (b.textContent !== 'Force stop')
             b.disabled = true; try {
         this.timer.pause(true);
@@ -148,6 +149,7 @@ export class EvidenceWorkspace {
     }
     finally {
         this.busy = false;
+        this.loadingProgress=null;
         this.timer.pause(this.manualPause);
         this.render();
     } }
@@ -276,6 +278,7 @@ export class EvidenceWorkspace {
         app.append(warning);
         if (this.message)
             app.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'message' }));
+        renderLoadingProgress(this.root,this.busy?this.loadingProgress:null);
         if (this.panel)
             this.renderPanel(app);
         if (!this.project) {
@@ -515,7 +518,7 @@ export class EvidenceWorkspace {
                 );
             }
             box.append(button('Show approved public model',()=>this.perform(async()=>{const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();})));
-            for(const entry of this.catalog?.entries??[]){const m=entry.manifest,total=m.files.reduce((n,f)=>n+f.bytes,0);box.append(node('p',`${m.id} ${entry.revision} · ${m.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage · ${m.variants.map(v=>v.backend).join(', ')} · anchored records and enums; automatic relations withheld; no anchorless records`),button('Download and install '+m.id,()=>this.perform(async()=>{this.setSelectedModel(selectionFromManifest(m),{render:false,restoreInstalled:false});const epoch=this.modelSelectionEpoch;this.installController=new AbortController();try{const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{this.message=`Downloading ${received} of ${total} bytes`;const message=this.root.querySelector('[data-testid=message]');if(message)message.textContent=this.message;}});invariant(epoch===this.modelSelectionEpoch&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Model selection changed during download');const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');this.adoptModel(installed);this.message='Public model installed and hashes verified';}finally{this.installController=null;}})),button('Force stop',()=>this.installController?.abort()));}
+            for(const entry of this.catalog?.entries??[]){const m=entry.manifest,total=m.files.reduce((n,f)=>n+f.bytes,0);box.append(node('p',`${m.id} ${entry.revision} · ${m.license.id} · ${total} download bytes; allow at least ${total*2} bytes storage · ${m.variants.map(v=>v.backend).join(', ')} · anchored records and enums; automatic relations withheld; no anchorless records`),button('Download and install '+m.id,()=>this.perform(async()=>{this.setSelectedModel(selectionFromManifest(m),{render:false,restoreInstalled:false});const epoch=this.modelSelectionEpoch;this.installController=new AbortController();try{this.loadingProgress={phase:'Downloading model',received:0,total:total,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{Object.assign(this.loadingProgress,{received,total,phase:received===total?'Verifying model integrity':'Downloading model'});renderLoadingProgress(this.root,this.loadingProgress);}});invariant(epoch===this.modelSelectionEpoch&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Model selection changed during download');this.loadingProgress.phase='Installing and verifying local storage';renderLoadingProgress(this.root,this.loadingProgress);const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');this.adoptModel(installed);this.message='Public model installed and hashes verified';}finally{this.installController=null;}})),button('Force stop',()=>this.installController?.abort()));}
             box.append(this.fileInput('Import local model package', '.zip', async ([f]) => { const epoch=this.beginModelSelectionAction();invariant(f.size <= MODEL_LIMITS.archive, 'Model archive exceeds 1 GiB preview limit'); const candidate = await importModelPackage(new Uint8Array(await f.arrayBuffer()));if(epoch!==this.modelSelectionEpoch)return; this.adoptModel(candidate,{selectSource:true}); this.modelReport = null; const small=candidate.manifest.variants.some(v=>isRecordsCodec(v.codec));const structured = candidate.manifest.variants.some(v => v.codec === GLINER_STRUCTURED); const qualified = candidate.manifest.variants.some(v => CODECS[v.codec].clinicalInference); this.message = candidate.manifest.variants[0].codec===ENTITY_ATTRIBUTES_CODEC ? 'Entity/attribute package loaded locally. Complete native prompt, explicit applicability, declared overlap and token budget; no bindings or relations.' : candidate.manifest.variants[0].codec===CLINICAL_V3_CODEC ? 'ClinicalEvidence v3 package loaded in memory. Exact anchors and explicit shared axes; record binding is unavailable.' : small ? 'GLiNER2.5 record package loaded in memory. Anchors, enums and supported record fields; automatic relations remain unqualified.' : structured ? 'GLiNER2.5 structured package loaded in memory. Analyze locally fills spans and enum attributes on this device only.' : qualified ? 'GLiNER2.5 span package loaded in memory. Analyze locally uses it on this device only.' : 'Package hashes validated. This package can run tensor fixtures only.'; }));
             if (this.model) {
                 if(this.model.manifest.variants.some(v=>v.codec===ENTITY_ATTRIBUTES_CODEC)){box.append(node('p','This model uses its complete native entity/attribute prompt and fixed threshold. Clinical scope prompts require another model.',{class:'muted'}));if(this.project?.current.extensions.suggestionScope)box.append(button('Clear clinical scope for this model',()=>{this.project.setSuggestionScope(null);this.changed();this.render();}));}

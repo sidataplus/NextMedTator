@@ -23,7 +23,7 @@ var jarvis = {
 
             if (isFSA_API_OK) {
                 jarvis.ssmsg('Initializated')
-                setTimeout('jarvis.ssclose();', 500);
+                setTimeout(function() { jarvis.ssclose(); }, 500);
 
             } else {
                 // this can be many reasons
@@ -49,7 +49,7 @@ var jarvis = {
 
             if (isFSA_API_OK) {
                 jarvis.ssmsg('Initializated')
-                setTimeout('jarvis.ssclose();', 500);
+                setTimeout(function() { jarvis.ssclose(); }, 500);
                 
             } else {
                 jarvis.ssmsg(_LMT_SUPPORT_MSG);
@@ -78,7 +78,7 @@ var jarvis = {
         // show the tour?
         var show_tour = this.get_url_paramter('st');
         if (show_tour == 'yes') {
-            setTimeout('app_hotpot.start_tour_annotation();', 550);
+            setTimeout(function() { app_hotpot.start_tour_annotation(); }, 550);
         }
     },
 

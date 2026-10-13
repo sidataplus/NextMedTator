@@ -1,0 +1,23 @@
+{
+  "site": "https://nmt.sidata.plus",
+  "pagesProject": "nextmedtator",
+  "productionBranch": "main",
+  "buildCommand": "pnpm build:production",
+  "outputDirectory": "dist",
+  "modelBucket": "nextmedtator-models",
+  "modelOrigin": "https://nmt-models.sidata.plus",
+  "catalog": "deployment/production-model-catalog.json",
+  "cors": {
+    "origins": ["https://nmt.sidata.plus", "https://nextmedtator.pages.dev"],
+    "methods": ["GET", "HEAD"],
+    "allowedHeaders": ["Range"],
+    "exposedHeaders": ["ETag", "Content-Range", "Content-Length", "Accept-Ranges", "Content-Encoding"]
+  },
+  "deliveryRequirements": {
+    "modelCompression": "disabled for nmt-models.sidata.plus",
+    "analyticsInjection": "disabled for nmt.sidata.plus",
+    "immutableObjects": true,
+    "publicRead": true,
+    "preserveStaticHeaders": true
+  }
+}

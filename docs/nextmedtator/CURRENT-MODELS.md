@@ -88,6 +88,28 @@ production hostname is assumed by the compiled release.
 
 ## Windows validation, 2026-10-13
 
+The public deployment is https://nmt.sidata.plus, with both immutable model
+packages at https://nmt-models.sidata.plus. Build its catalog configuration
+with `pnpm build:production`; publish `dist/` to the `nextmedtator` Pages
+project. Delivery settings are recorded in `deployment/cloudflare.json`.
+Disable response compression on the model hostname to preserve ranged model
+bytes, and disable injected analytics on the application hostname. Keep the
+generated `_headers` file. Screenshots and synthetic-note test reports are
+saved under ignored `temp/browser-validation/`.
+
+Chrome 155 passed the public R2 download, full artifact hashes, chunked
+IndexedDB installation/readback, reload with the model host blocked, actual
+WASM inference in the original UI, and evidence-project export/reopen for
+both packages. The two workflows observed only GET requests without note
+content. Download progress shows percentage, transferred/total size, and
+estimated time remaining; verification and installation use activity bars.
+Model downloads require an explicit "Download and install" action. Fresh
+startup requests neither model weights nor the model catalog; an existing
+installed model is restored from browser storage without a network download.
+`tests/browser/test_deployed_models.py` captures each stage. A separate real
+browser storage regression checks a 140 MiB value, missing-chunk rejection,
+and removal with `tests/browser/test_model_storage.py`.
+
 Chrome 155 on this host passed actual WASM fixtures and all four fictional
 native/merged/ONNX/browser cases for each model, including exact attribute
 values/presence. Both passed Analyze, Accept, Export, and Reopen. WASM used

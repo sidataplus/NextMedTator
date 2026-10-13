@@ -19,7 +19,7 @@ jobs:
           python-version: '3.12'
       - run: rustup toolchain install 1.90.0 --profile minimal --target wasm32-unknown-unknown
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - run: pnpm build:production
       - run: pnpm test
       - run: pnpm audit:assets
       - run: uv run --locked python scripts/package_static_release.py
