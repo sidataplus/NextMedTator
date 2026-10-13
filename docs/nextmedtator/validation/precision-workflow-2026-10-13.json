@@ -1,0 +1,598 @@
+{
+  "site": "https://nmt.sidata.plus",
+  "deployment": "e46645ee-a098-495a-8508-09633fe744bb",
+  "applicationCommit": "ef63719",
+  "assetVersion": "5ef938330600b43a53a356ce8c66d423db29cd8259eed107d3dfa30e0e8df14b",
+  "startup": {
+    "url": "https://nmt.sidata.plus/",
+    "browser": "155.0.8059.40",
+    "startupSplashCloses": true,
+    "modelDownloadRequiresRequest": true,
+    "startupModelRequests": 0,
+    "errors": []
+  },
+  "local": {
+    "p10": {
+      "profile": "p10",
+      "browser": "155.0.8059.40",
+      "runs": [
+        {
+          "mode": "fp16",
+          "wallSeconds": 11.55676140007563,
+          "records": 2,
+          "runtime": {
+            "backend": "webgpu",
+            "precision": "fp16",
+            "version": "1.23.2",
+            "variantId": "webgpu-fp16",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "webgpu",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "synthetic-precision-v1",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b",
+              "fixedThreshold": true,
+              "fixedWords": 512,
+              "fixtures": [
+                "attributes-reference.json",
+                "synthetic-0.json",
+                "synthetic-1.json",
+                "synthetic-2.json",
+                "synthetic-3.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "webgpu-fp16",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 512,
+              "pairTemperature": 1,
+              "precision": "fp16",
+              "recordBinding": false,
+              "threshold": 0.25,
+              "tokenizer": "tokenizer.json"
+            },
+            "executionPolicy": "entity-webgpu-precision-v2"
+          },
+          "reviewExportReopen": true
+        },
+        {
+          "mode": "fallback",
+          "wallSeconds": 16.88609190005809,
+          "records": 2,
+          "runtime": {
+            "backend": "wasm",
+            "precision": "fp32",
+            "version": "1.23.2",
+            "variantId": "wasm-fp32",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "wasm",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "numerical-heads-only",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b",
+              "fixedThreshold": true,
+              "fixedWords": 512,
+              "fixtures": [
+                "attributes-reference.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "wasm-fp32",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 512,
+              "pairTemperature": 1,
+              "precision": "fp32",
+              "recordBinding": false,
+              "threshold": 0.25,
+              "tokenizer": "tokenizer.json"
+            },
+            "executionPolicy": "entity-webgpu-precision-v2",
+            "fallbackFrom": {
+              "manifestHash": "c7ea1db1cfac952cce65b28175e644af1410070dcf49de931227e67186a14195",
+              "variantId": "webgpu-fp16",
+              "precision": "fp16"
+            },
+            "fallbackReason": "webgpu-initialization-failed"
+          },
+          "reviewExportReopen": true
+        },
+        {
+          "mode": "int8",
+          "wallSeconds": 20.59028540016152,
+          "records": 2,
+          "runtime": {
+            "backend": "wasm",
+            "precision": "int8",
+            "version": "1.23.2",
+            "variantId": "wasm-int8",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "wasm",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "synthetic-precision-v1",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b",
+              "fixedThreshold": true,
+              "fixedWords": 512,
+              "fixtures": [
+                "attributes-reference.json",
+                "synthetic-0.json",
+                "synthetic-1.json",
+                "synthetic-2.json",
+                "synthetic-3.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "wasm-int8",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 512,
+              "pairTemperature": 1,
+              "precision": "int8",
+              "recordBinding": false,
+              "threshold": 0.25,
+              "tokenizer": "tokenizer.json"
+            }
+          },
+          "reviewExportReopen": true
+        }
+      ],
+      "startupModelRequests": 0,
+      "noNoteEgress": true
+    },
+    "bpsd": {
+      "profile": "bpsd",
+      "browser": "155.0.8059.40",
+      "runs": [
+        {
+          "mode": "fp16",
+          "wallSeconds": 15.421593399951234,
+          "records": 5,
+          "runtime": {
+            "backend": "webgpu",
+            "precision": "fp16",
+            "version": "1.23.2",
+            "variantId": "webgpu-fp16",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "webgpu",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "synthetic-precision-v1",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533",
+              "fixedThreshold": true,
+              "fixedWords": 1024,
+              "fixtures": [
+                "attributes-reference.json",
+                "synthetic-0.json",
+                "synthetic-1.json",
+                "synthetic-2.json",
+                "synthetic-3.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "webgpu-fp16",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 1024,
+              "pairTemperature": 1,
+              "precision": "fp16",
+              "recordBinding": false,
+              "threshold": 0.5,
+              "tokenizer": "tokenizer.json"
+            },
+            "executionPolicy": "entity-webgpu-precision-v2",
+            "graphTransforms": [
+              {
+                "path": "attributes.onnx",
+                "id": "bpsd-cumsum-axis-int32-v1",
+                "sourceSha256": "ac37764700eabbb6ccd1fd95cdc8041836439a86dbf98ecf1c913cc67281909c",
+                "targetSha256": "1b382abf7125fe2d97cc2d3f006af1fca692222eec6dfee720e66ca5c1e19ae8"
+              }
+            ]
+          },
+          "reviewExportReopen": true
+        },
+        {
+          "mode": "fallback",
+          "wallSeconds": 17.319796900032088,
+          "records": 5,
+          "runtime": {
+            "backend": "wasm",
+            "precision": "fp32",
+            "version": "1.23.2",
+            "variantId": "wasm-fp32",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "wasm",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "numerical-heads-only",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533",
+              "fixedThreshold": true,
+              "fixedWords": 1024,
+              "fixtures": [
+                "attributes-reference.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "wasm-fp32",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 1024,
+              "pairTemperature": 1,
+              "precision": "fp32",
+              "recordBinding": false,
+              "threshold": 0.5,
+              "tokenizer": "tokenizer.json"
+            },
+            "executionPolicy": "entity-webgpu-precision-v2",
+            "fallbackFrom": {
+              "manifestHash": "74e58bc41ce326f310a4d3b1a31e4b4daf34b7b6d4d9093ae0b9acb20efd9ee5",
+              "variantId": "webgpu-fp16",
+              "precision": "fp16"
+            },
+            "fallbackReason": "webgpu-initialization-failed"
+          },
+          "reviewExportReopen": true
+        },
+        {
+          "mode": "int8",
+          "wallSeconds": 21.028785299975425,
+          "records": 4,
+          "runtime": {
+            "backend": "wasm",
+            "precision": "int8",
+            "version": "1.23.2",
+            "variantId": "wasm-int8",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "wasm",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "synthetic-precision-v1",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533",
+              "fixedThreshold": true,
+              "fixedWords": 1024,
+              "fixtures": [
+                "attributes-reference.json",
+                "synthetic-0.json",
+                "synthetic-1.json",
+                "synthetic-2.json",
+                "synthetic-3.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "wasm-int8",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 1024,
+              "pairTemperature": 1,
+              "precision": "int8",
+              "recordBinding": false,
+              "threshold": 0.5,
+              "tokenizer": "tokenizer.json"
+            }
+          },
+          "reviewExportReopen": true
+        }
+      ],
+      "startupModelRequests": 0,
+      "noNoteEgress": true
+    }
+  },
+  "live": {
+    "p10": {
+      "profile": "p10",
+      "browser": "155.0.8059.40",
+      "runs": [
+        {
+          "mode": "fp16",
+          "wallSeconds": 17.7976468000561,
+          "records": 2,
+          "runtime": {
+            "backend": "webgpu",
+            "precision": "fp16",
+            "version": "1.23.2",
+            "variantId": "webgpu-fp16",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "webgpu",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "synthetic-precision-v1",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b",
+              "fixedThreshold": true,
+              "fixedWords": 512,
+              "fixtures": [
+                "attributes-reference.json",
+                "synthetic-0.json",
+                "synthetic-1.json",
+                "synthetic-2.json",
+                "synthetic-3.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "webgpu-fp16",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 512,
+              "pairTemperature": 1,
+              "precision": "fp16",
+              "recordBinding": false,
+              "threshold": 0.25,
+              "tokenizer": "tokenizer.json"
+            },
+            "executionPolicy": "entity-webgpu-precision-v2"
+          },
+          "reviewExportReopen": true
+        },
+        {
+          "mode": "fallback",
+          "wallSeconds": 63.85889249993488,
+          "records": 2,
+          "runtime": {
+            "backend": "wasm",
+            "precision": "fp32",
+            "version": "1.23.2",
+            "variantId": "wasm-fp32",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "wasm",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "numerical-heads-only",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b",
+              "fixedThreshold": true,
+              "fixedWords": 512,
+              "fixtures": [
+                "attributes-reference.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "wasm-fp32",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 512,
+              "pairTemperature": 1,
+              "precision": "fp32",
+              "recordBinding": false,
+              "threshold": 0.25,
+              "tokenizer": "tokenizer.json"
+            },
+            "executionPolicy": "entity-webgpu-precision-v2",
+            "fallbackFrom": {
+              "manifestHash": "c7ea1db1cfac952cce65b28175e644af1410070dcf49de931227e67186a14195",
+              "variantId": "webgpu-fp16",
+              "precision": "fp16"
+            },
+            "fallbackReason": "webgpu-initialization-failed"
+          },
+          "reviewExportReopen": true
+        },
+        {
+          "mode": "int8",
+          "wallSeconds": 21.30747459991835,
+          "records": 2,
+          "runtime": {
+            "backend": "wasm",
+            "precision": "int8",
+            "version": "1.23.2",
+            "variantId": "wasm-int8",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "wasm",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "synthetic-precision-v1",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b",
+              "fixedThreshold": true,
+              "fixedWords": 512,
+              "fixtures": [
+                "attributes-reference.json",
+                "synthetic-0.json",
+                "synthetic-1.json",
+                "synthetic-2.json",
+                "synthetic-3.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "wasm-int8",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 512,
+              "pairTemperature": 1,
+              "precision": "int8",
+              "recordBinding": false,
+              "threshold": 0.25,
+              "tokenizer": "tokenizer.json"
+            }
+          },
+          "reviewExportReopen": true
+        }
+      ],
+      "startupModelRequests": 0,
+      "noNoteEgress": true
+    },
+    "bpsd": {
+      "profile": "bpsd",
+      "browser": "155.0.8059.40",
+      "runs": [
+        {
+          "mode": "fp16",
+          "wallSeconds": 19.986127899959683,
+          "records": 5,
+          "runtime": {
+            "backend": "webgpu",
+            "precision": "fp16",
+            "version": "1.23.2",
+            "variantId": "webgpu-fp16",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "webgpu",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "synthetic-precision-v1",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533",
+              "fixedThreshold": true,
+              "fixedWords": 1024,
+              "fixtures": [
+                "attributes-reference.json",
+                "synthetic-0.json",
+                "synthetic-1.json",
+                "synthetic-2.json",
+                "synthetic-3.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "webgpu-fp16",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 1024,
+              "pairTemperature": 1,
+              "precision": "fp16",
+              "recordBinding": false,
+              "threshold": 0.5,
+              "tokenizer": "tokenizer.json"
+            },
+            "executionPolicy": "entity-webgpu-precision-v2",
+            "graphTransforms": [
+              {
+                "path": "attributes.onnx",
+                "id": "bpsd-cumsum-axis-int32-v1",
+                "sourceSha256": "ac37764700eabbb6ccd1fd95cdc8041836439a86dbf98ecf1c913cc67281909c",
+                "targetSha256": "1b382abf7125fe2d97cc2d3f006af1fca692222eec6dfee720e66ca5c1e19ae8"
+              }
+            ]
+          },
+          "reviewExportReopen": true
+        },
+        {
+          "mode": "fallback",
+          "wallSeconds": 64.04316019988619,
+          "records": 5,
+          "runtime": {
+            "backend": "wasm",
+            "precision": "fp32",
+            "version": "1.23.2",
+            "variantId": "wasm-fp32",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "wasm",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "numerical-heads-only",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533",
+              "fixedThreshold": true,
+              "fixedWords": 1024,
+              "fixtures": [
+                "attributes-reference.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "wasm-fp32",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 1024,
+              "pairTemperature": 1,
+              "precision": "fp32",
+              "recordBinding": false,
+              "threshold": 0.5,
+              "tokenizer": "tokenizer.json"
+            },
+            "executionPolicy": "entity-webgpu-precision-v2",
+            "fallbackFrom": {
+              "manifestHash": "74e58bc41ce326f310a4d3b1a31e4b4daf34b7b6d4d9093ae0b9acb20efd9ee5",
+              "variantId": "webgpu-fp16",
+              "precision": "fp16"
+            },
+            "fallbackReason": "webgpu-initialization-failed"
+          },
+          "reviewExportReopen": true
+        },
+        {
+          "mode": "int8",
+          "wallSeconds": 21.124787900131196,
+          "records": 4,
+          "runtime": {
+            "backend": "wasm",
+            "precision": "int8",
+            "version": "1.23.2",
+            "variantId": "wasm-int8",
+            "variant": {
+              "abstentionThreshold": 0.5,
+              "automaticRelations": false,
+              "backend": "wasm",
+              "codec": "gliner25-entity-attributes-v1",
+              "conformanceScope": "synthetic-precision-v1",
+              "entityContract": "entity-contract.json",
+              "entityContractSha256": "37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533",
+              "fixedThreshold": true,
+              "fixedWords": 1024,
+              "fixtures": [
+                "attributes-reference.json",
+                "synthetic-0.json",
+                "synthetic-1.json",
+                "synthetic-2.json",
+                "synthetic-3.json"
+              ],
+              "graph": "model.onnx",
+              "graphs": {
+                "attributes": "attributes.onnx",
+                "model": "model.onnx"
+              },
+              "id": "wasm-int8",
+              "mainMaskType": "bool",
+              "maxSequenceLength": 1024,
+              "pairTemperature": 1,
+              "precision": "int8",
+              "recordBinding": false,
+              "threshold": 0.5,
+              "tokenizer": "tokenizer.json"
+            }
+          },
+          "reviewExportReopen": true
+        }
+      ],
+      "startupModelRequests": 0,
+      "noNoteEgress": true
+    }
+  }
+}

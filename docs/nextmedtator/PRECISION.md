@@ -122,3 +122,8 @@ exports, and reopens each precision run. It asserts zero model/catalog requests
 at startup and no note egress. `--live` repeats against the deployed site and R2.
 Raw screenshots and receipts are kept in gitignored
 `temp/browser-validation/precision-{local,live}/`.
+
+All six local flows and all six live flows passed. The committed
+[workflow receipts](validation/precision-workflow-2026-10-13.json) record the
+production deployment, real runtime provenance, startup download checks, and
+review/export/reopen results for both models and all three execution paths.

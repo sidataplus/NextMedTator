@@ -168,3 +168,11 @@ test('cancelling FP16 fallback loading never starts the downloaded model',async 
     await assert.rejects(runner.analyze(fp16Package(),'webgpu-fp16',requests[0],{resolveFallback:async()=>{runner.cancel();return gpuPackage;}}),/Cancelled/);
     assert.equal(workers.length,0);
 });
+test('fallback resolution holds the runner lock until its pending request finishes',async t=>{
+    gpuNavigator(t);delete globalThis.navigator.gpu;fakeWorker(t,reply);
+    const runner=new ConformanceWorker();let resolve;
+    const pending=runner.analyze(fp16Package(),'webgpu-fp16',requests[0],{resolveFallback:()=>new Promise(done=>{resolve=done;})});
+    await assert.rejects(runner.analyze(gpuPackage,variantId,requests[1]),/One model worker/);
+    resolve(gpuPackage);await pending;
+    assert.equal((await runner.analyze(gpuPackage,variantId,requests[1])).backend,'wasm');
+});

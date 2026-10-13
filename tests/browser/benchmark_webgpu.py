@@ -96,6 +96,7 @@ try:
             (OUT/(profile+('-'+args.precision if args.precision!='fp32' else '')+args.output_suffix+'.json')).write_text(json.dumps(result,indent=2),encoding='utf-8')
             browser.close()
             assert all(not r.get('error') and not r.get('conformanceError') and r['conformance']['pass'] for r in result['runs']),result
+            assert all((c['gpuSubmissions']>0 if r['backend']=='webgpu' else c['gpuSubmissions']==0) for r in result['runs'] for c in r['cases'])
             if args.precision=='fp32':assert all(c['check']['pass'] for r in result['runs'] for c in r['cases'])
             assert all(c['pass'] for c in result['comparisons'])
 finally:server.shutdown()
