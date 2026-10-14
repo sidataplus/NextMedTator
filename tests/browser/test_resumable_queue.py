@@ -10,7 +10,9 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path=chromium_path(),headless=True)
     context=browser.new_context(viewport={'width':1440,'height':1050},accept_downloads=True,service_workers='block')
     page=context.new_page();page.set_default_timeout(30000);expect.set_options(timeout=30000);page.on('dialog',lambda d:d.accept())
-    errors=[];network=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:network.append(r.url))
+    errors=[];network=[];failed_requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:network.append(r.url))
+    page.on('requestfailed',lambda r:failed_requests.append({'url':r.url,'failure':r.failure}))
+    page.on('response',lambda r:failed_requests.append({'url':r.url,'status':r.status}) if r.status>=400 else None)
     try:
         response=page.goto(URL);headers=response.all_headers();expect(page.locator('#start-screen')).to_be_hidden();page.get_by_test_id('assist-practice-p10').click()
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
@@ -82,10 +84,12 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/'03-retried.png'))
         assert not errors,errors
         receipt={'url':URL,'browser':browser.version,'assetVersion':page.evaluate("async()=> (await (await fetch('/asset-manifest.json')).json()).version"),'crossOriginIsolated':page.evaluate('crossOriginIsolated'),'coop':headers.get('cross-origin-opener-policy'),'coep':headers.get('cross-origin-embedder-policy'),'unrequestedModelDownloads':0,'checkpointReloadResume':True,'completedRunsNotReplayed':True,'settingsMismatchBlocked':True,'retryFailedOnly':True,'completionReport':True}
+        assert receipt['crossOriginIsolated'] and receipt['coop']=='same-origin' and receipt['coep']=='require-corp',receipt
         (OUT/'result.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8')
         print('Retry and completion report passed',flush=True)
     except Exception:
         page.screenshot(path=str(OUT/'failure.png'))
-        (OUT/'failure-state.json').write_text(json.dumps(page.evaluate("()=>{const a=document.querySelector('nextmedtator-assist').assist;return {error:a.error,message:a.message,queue:a.batchQueue,body:a.root.innerText}}"),indent=2),encoding='utf-8')
+        state=page.evaluate("()=>{const a=document.querySelector('nextmedtator-assist')?.assist;return a?{error:a.error,message:a.message,queue:a.batchQueue,body:a.root.innerText}:{body:document.body.innerText}}")
+        (OUT/'failure-state.json').write_text(json.dumps({'state':state,'pageErrors':errors,'failedRequests':failed_requests},indent=2),encoding='utf-8')
         raise
     finally:context.close();browser.close()

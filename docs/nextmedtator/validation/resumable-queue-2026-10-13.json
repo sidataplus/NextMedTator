@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-13",
+  "timezone": "America/New_York",
+  "implementationCommit": "d40b233af5a14f03cfe11d0252b479c117bdeddc",
+  "deploymentId": "687608a9-f25c-4318-aa65-28d67f2cb08d",
+  "release": "v0.1.0-preview.9",
+  "compiledArchiveSha256": "8126bb666e93b029c879319cfea9b7edc659704401de659221adc2e49caa0fcc",
+  "live": {
+    "url": "https://nmt.sidata.plus/",
+    "browser": "155.0.8059.40",
+    "assetVersion": "e97cb31440194e47ae437aaa4d6016487980d1e776ab548d674d7bcafe970fa8",
+    "crossOriginIsolated": true,
+    "coop": "same-origin",
+    "coep": "require-corp",
+    "unrequestedModelDownloads": 0,
+    "checkpointReloadResume": true,
+    "completedRunsNotReplayed": true,
+    "settingsMismatchBlocked": true,
+    "retryFailedOnly": true,
+    "completionReport": true
+  },
+  "unit": {
+    "passed": 198,
+    "skipped": 1
+  },
+  "pythonValidation": {
+    "passed": 27,
+    "skipped": 1
+  },
+  "lint": true,
+  "assetAudit": true,
+  "assetInventoryFiles": 286,
+  "benchmark": "bulk-100-resources-2026-10-13.json",
+  "postBenchmarkBuildDifference": {
+    "benchmarkAssetVersion": "edc64502cd6e50167b9df723bac7e4587c2169d992596e4d39bcfc64185c0406",
+    "releaseAssetVersion": "e97cb31440194e47ae437aaa4d6016487980d1e776ab548d674d7bcafe970fa8",
+    "changedAssets": [
+      "app/nextmedtator/batch-queue.mjs"
+    ],
+    "reason": "Completion-report redaction also applies to jobs originally run in Blind mode after changing the current mode. No timed inference or checkpoint commit code changed."
+  },
+  "atomicAutoApplyCheckpoint": {
+    "waited": true,
+    "status": "completed",
+    "tags": 2
+  },
+  "blindReportAfterModeSwitchRedacted": true,
+  "freshProductionStarts": [
+    {
+      "url": "https://nmt.sidata.plus/",
+      "browser": "155.0.8059.40",
+      "startupSplashCloses": true,
+      "modelDownloadRequiresRequest": true,
+      "startupModelRequests": 0,
+      "errors": []
+    },
+    {
+      "url": "https://nmt.sidata.plus/",
+      "browser": "155.0.8059.40",
+      "startupSplashCloses": true,
+      "modelDownloadRequiresRequest": true,
+      "startupModelRequests": 0,
+      "errors": []
+    },
+    {
+      "url": "https://nmt.sidata.plus/",
+      "browser": "155.0.8059.40",
+      "startupSplashCloses": true,
+      "modelDownloadRequiresRequest": true,
+      "startupModelRequests": 0,
+      "errors": []
+    }
+  ],
+  "browserUiInspection": {
+    "tool": "Browser / cua_repl",
+    "practiceNoteLoadedWithoutModel": true,
+    "selectAllAndCpuChoice": true,
+    "expandedPanelRetained": true
+  },
+  "initialLiveAttempt": {
+    "startupStalled": true,
+    "subsequentFullWorkflowPassed": true,
+    "subsequentColdStartsPassed": 3,
+    "cause": "Not established; no application change between attempts."
+  },
+  "screenshots": {
+    "benchmark": "temp/browser-validation/bulk-100",
+    "liveQueue": "temp/browser-validation/resumable-queue-live",
+    "tutorial": [
+      "tutorial/images/18-queue-paused.png",
+      "tutorial/images/19-queue-complete.png"
+    ]
+  }
+}
