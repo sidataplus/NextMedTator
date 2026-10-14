@@ -12,6 +12,7 @@ for (const asset of manifest.assets) {
 const html = await readFile(`${root}/index.html`, 'utf8');
 assert.ok(!/<script[^>]+src=["']https?:/i.test(html), 'Remote executable asset');
 assert.ok(!/<script(?![^>]*src=)[^>]*>\s*\S/i.test(html), 'Inline executable script');
+assert.ok(!/href=["']javascript:/i.test(html), 'Executable navigation URL');
 const headers = await readFile(`${root}/_headers`, 'utf8');
 assert.ok(!headers.includes("'unsafe-eval'"), 'Unrestricted eval forbidden');
 console.log(`Static asset inventory passed: ${manifest.assets.length} files; not a full legacy XSS/egress audit.`);

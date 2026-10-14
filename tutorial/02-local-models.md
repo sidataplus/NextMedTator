@@ -3,6 +3,13 @@
 **Goal:** generate suggestions for a fictional note using a model on your device.
 Start with [the P10 practice task](01-quickstart.md).
 
+The Assistance panel uses the same compact controls as the annotation toolbar.
+Labeled icons guide analysis, downloads, installed packages, settings, and
+backups. Section headers expand by click or keyboard; the analysis controls stay
+visible while the panel scrolls.
+
+![Assistance controls in WebKit with the original annotation workspace](images/29-assistance-toolbar.png)
+
 The default device setting is **Automatic · WebGPU with WASM fallback**. Both
 models run locally. The Assistance header shows the actual backend after you
 analyze. To force CPU execution, choose **Model packages → Inference device →

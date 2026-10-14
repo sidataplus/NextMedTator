@@ -26,16 +26,18 @@ import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTUR
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
 const styles = `
-:host{display:block;height:100%;color:#1a3041;font:13px/1.45 system-ui,sans-serif}
+:host{--assist-accent:#0078d7;display:block;height:100%;color:#222;font:12px/1.45 "Segoe UI",Arial,sans-serif}
 *{box-sizing:border-box}
 button,input,select{font:inherit;color:inherit}
-button,select{border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:5px 8px;cursor:pointer}
-button:hover{background:#eef5f7}
+button,select{border:1px solid #bdbdbd;border-radius:0;background:#fafafa;padding:4px 7px;cursor:pointer;max-width:100%}
+button{min-height:28px;text-align:left;overflow-wrap:anywhere}
+button:hover{background:#e5f3ff;border-color:#0078d7}
 button:disabled{opacity:.5;cursor:not-allowed}
-button.primary{background:#076b74;color:#fff;border-color:#076b74}
+button.primary{background:#0078d7;color:#fff;border-color:#0078d7}
+button.primary:hover{background:#005a9e}
 :focus-visible{outline:3px solid #137aab;outline-offset:2px}
 button:focus:not(:focus-visible){outline:none}
-.dock{height:100%;display:flex;flex-direction:column;background:#f7f9fa}
+.dock{height:100%;display:flex;flex-direction:column;background:#fff}
 .rail{height:100%;width:100%;border:0;border-radius:0;background:#f7f9fa;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:.04em}
 .head{flex-shrink:0;min-height:0;padding:12px;border-bottom:1px solid #d7e1e7;display:flex;flex-direction:column;gap:4px}
 .head p{margin:0;overflow-wrap:anywhere}.head strong{font-size:15px}.head .document-name{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.action-bar{padding:10px 12px;border-bottom:1px solid #d7e1e7;flex-shrink:0;background:#fff}.action-bar .row{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}.action-bar button{min-height:34px}.action-bar p{margin:6px 0 0;font-size:11px;color:#536976}.section{margin:0 0 12px;padding:10px;background:#fff;border:1px solid #d7e1e7;border-radius:8px}.section summary{font-weight:650;cursor:pointer;padding:2px 0}.section summary:focus-visible{outline:2px solid #137aab}.section[open]>summary{margin-bottom:10px}.section>h3{margin:0 0 8px;font-size:13px}.section .row{margin:6px 0}.section .model-selection h3{margin:0 0 8px;font-size:13px}.section .model-selection [role=status]{font-size:11px;color:#536976}.section .model-selection pre{font-size:10px}.body>.card{box-shadow:0 1px 2px #1a304108}.setup-hint{padding:8px;background:#edf4f6;border-radius:5px;margin:8px 0;font-size:12px}.body>.muted{margin:8px 0}.badge.pending{background:#fff2db;color:#78571c}.badge.ready{background:#e8f5ef;color:#176444}
@@ -43,9 +45,9 @@ button:focus:not(:focus-visible){outline:none}
 .head select{flex:1;min-width:0}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .grow{flex:1}
-.badge{border-radius:999px;padding:2px 8px;background:#e8f5ef;font-size:11px}
+.badge{border-radius:2px;padding:1px 5px;background:#eef5f0;font-size:10px;border:1px solid #d5e3da}
 .muted{color:#536976;font-size:12px}
-.body{overflow:auto;padding:12px;flex:1;min-height:80px}
+.body{overflow:auto;padding:8px;flex:1;min-height:80px;scrollbar-gutter:stable}
 .card{background:#fff;border:1px solid #d7e1e7;border-radius:8px;padding:8px;margin:0 0 8px}
 .card p{margin:3px 0;overflow-wrap:anywhere}
 .anchor{font-weight:650}
@@ -68,8 +70,38 @@ input[type=file]{max-width:100%;font-size:11px}
 .compact button{font-size:10px;padding:3px 4px;margin-left:2px}
 .compact strong,.compact small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .compact small{font-size:10px;color:#536976}
+.icon{font-family:"Font Awesome 5 Free";font-weight:900;font-style:normal;display:inline-block;width:1.15em;text-align:center;margin-right:6px;line-height:1;flex-shrink:0;speak:none}
+.icon::before{content:attr(data-glyph)}
+.head{padding:8px 10px;background:#f5f5f5;border-color:#d9d9d9;gap:5px}
+.head strong{font-size:13px;font-weight:600}.head .row>.icon{font-size:16px;margin-right:0}
+.head select{background:#fff}.head .document-name{font-size:11px}
+.action-bar{padding:8px;background:#f5f5f5;border-color:#d9d9d9}.action-bar .row{gap:4px}.action-bar button{min-height:42px;padding:5px 3px;text-align:center;line-height:1.25;font-size:11px}.action-bar button .icon{display:block;margin:0 auto 4px;font-size:16px}
+.section{padding:8px;margin-bottom:8px;border:1px solid #d9d9d9;border-radius:0;background:#fff}
+.section>summary{margin:-8px;padding:7px 8px;background:#f5f5f5;font-weight:600;font-size:12px;user-select:none}
+.section>summary:hover{background:#e5f3ff}.section[open]>summary{margin-bottom:8px;border-bottom:1px solid #ddd}
+.section>summary .icon{color:#444}.section .section{margin-top:8px;margin-bottom:0}.section .section>summary{font-size:11px;background:#fafafa}
+.section>button{margin:3px 3px 3px 0}.section>label{margin:7px 0}.section>h3,.section .model-selection h3{font-size:12px;font-weight:600}
+.setup-hint{border-radius:0;border-left:3px solid #0078d7;background:#eff6fc;padding:7px 8px;margin:7px 0;font-size:11px}.setup-hint p{margin:4px 0}.setup-hint .section{border:0;padding-bottom:0}.setup-hint .section>summary{background:transparent}
+.message{border-radius:0;background:#eff6fc;border-left:3px solid #0078d7;margin:0 8px 6px;font-size:11px;padding:6px 8px}
+.card,.docs,.scope,.scope textarea{border-radius:0;border-color:#d9d9d9}.body>.card{box-shadow:none}
+.muted,.section .model-selection [role=status]{color:#595959;font-size:11px}.threshold input[type=range]{accent-color:#0078d7}
+input[type=text],textarea{border:1px solid #bdbdbd;padding:4px;max-width:100%}input[type=checkbox]{accent-color:#0078d7}
+input[type=file]{width:100%;padding:4px 0}input::file-selector-button{font:inherit;border:1px solid #bdbdbd;border-radius:0;background:#fafafa;padding:4px 7px;margin-right:6px;cursor:pointer}
+a{color:#0067b8}label{gap:4px;font-size:11px}.section label>span{font-weight:600}.check{font-weight:400}
+.model-download{border-top:1px solid #ddd;padding-top:6px;margin-top:8px}.model-download button{width:100%;padding:7px;text-align:left}.model-download p{margin:4px 0}
+.dock .loading-progress{border-color:#d9d9d9;border-radius:0;color:#222;font:12px/1.45 "Segoe UI",Arial,sans-serif;padding:8px}.dock .loading-progress progress{accent-color:#0078d7;height:10px}
+.rail{background:#f5f5f5;color:#333;font-size:12px}.rail .icon{margin:0 0 6px}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 `;
+
+// Reuse the same local Font Awesome face as the original ribbon. Decorative
+// glyphs stay out of accessible names; every action retains its text label.
+const ICONS={assist:'f0d0',practice:'f15c',collections:'f07c',options:'f1de',recovery:'f0c7',packages:'f1b2','device-details':'f108','package-details':'f05a','local-packages':'f0a0',batch:'f03a',download:'f019',upload:'f093',play:'f04b',pause:'f04c',save:'f0c7',open:'f07c',check:'f00c',undo:'f0e2',remove:'f2ed',close:'f00d',list:'f03a',hide:'f054',search:'f002'};
+function icon(name){return node('span',null,{class:'icon','aria-hidden':'true','data-glyph':String.fromCodePoint(parseInt(ICONS[name]??ICONS.assist,16))});}
+function actionIcon(text){
+    for(const [pattern,name] of [[/^Analyze|^Resume/,'play'],[/^Pause/,'pause'],[/^Download|^Export|^Use browser download/,'download'],[/^Import|^Install/,'upload'],[/^Save|^Enable local/,'save'],[/^Open|^Restore|^Use installed/,'open'],[/^Reject|^Cancel|^Close|^Unload|^Disable/,'close'],[/^Remove|^Delete/,'remove'],[/^Undo|^Retry|^Reset/,'undo'],[/^Select|^Apply|^Write|^Add to|^Use recommended/,'check'],[/^List/,'list'],[/^Show approved/,'search'],[/^Hide/,'hide'],[/^P10|^BPSD/,'practice']])if(pattern.test(text))return name;
+    return null;
+}
 
 export function utf16Offset(text, codePointOffset) {
     if (!Number.isInteger(codePointOffset) || codePointOffset < 0)
@@ -145,6 +177,7 @@ function disclosure(assist,key,title,defaultOpen=false) {
     const details=node('details',null,{class:'section','data-testid':`assist-${key}`});
     details.open=assist.sectionState.get(key)??defaultOpen;
     const summary=node('summary',title);
+    if(ICONS[key])summary.prepend(icon(key));
     // The native toggle event is deferred. Preserve the user's intent before
     // another control rerenders this panel in the same event cycle.
     summary.addEventListener('click',()=>assist.sectionState.set(key,!details.open));
@@ -163,6 +196,7 @@ function node(tag, text, attrs = {}) {
 }
 function button(text, fn, { disabled = false, primary = false, id, title } = {}) {
     const n = node('button', text, { type: 'button', disabled, class: primary ? 'primary' : '', title, ...(id ? { 'data-testid': id } : {}) });
+    const guide=actionIcon(text);if(guide)n.prepend(icon(guide));
     n.addEventListener('click', fn);
     return n;
 }
@@ -843,7 +877,7 @@ class LegacyAssist {
         this.root.append(dock);
         const head = node('div', null, { class: 'head' });
         const title = node('div', null, { class: 'row' });
-        title.append(node('strong', 'Assistance'), node('span', null, { class: 'grow' }), button('Hide', () => this.setOpen(false), { id: 'assist-collapse', title: 'Collapse the assistance panel' }));
+        title.append(icon('assist'),node('strong', 'Assistance'), node('span', null, { class: 'grow' }), button('Hide', () => this.setOpen(false), { id: 'assist-collapse', title: 'Collapse the assistance panel' }));
         const mode = node('select', null, { 'aria-label': 'Workspace mode', 'data-testid': 'assist-mode', disabled:this.busy });
         for (const [value, label] of [['assisted', 'Assisted'], ['auto', 'Auto apply'], ['blind', 'Blind']])
             mode.append(node('option', label, { value }));
@@ -939,7 +973,8 @@ class LegacyAssist {
         }
         for(const entry of (this.catalog?.entries??[]).filter(e=>e.manifest.variants[0].precision===(this.downloadPrecision??'fp32')).sort((a,b)=>Number(modelSelectionMatchesManifest(this.modelSelection,b.manifest))-Number(modelSelectionMatchesManifest(this.modelSelection,a.manifest)))){
             const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
-            packages.append(node('p',`${entry.manifest.id} · ${(total/1048576).toFixed(0)} MiB · ${entry.manifest.license.id}. Allow ${(total*2/1048576).toFixed(0)} MiB free storage.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
+            const downloadRow=node('div',null,{class:'model-download'});packages.append(downloadRow);
+            downloadRow.append(node('p',`${entry.manifest.id} · ${(total/1048576).toFixed(0)} MiB · ${entry.manifest.license.id}. Allow ${(total*2/1048576).toFixed(0)} MiB free storage.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
                 this.setSelectedModel(selectionFromManifest(entry.manifest),{render:false,restoreInstalled:false});
                 const epoch=this.modelSelectionEpoch;this.installController=new AbortController();
                 try{

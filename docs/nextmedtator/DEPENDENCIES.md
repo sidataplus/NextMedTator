@@ -29,6 +29,14 @@ Public primary references inspected include Flask's 3.1.3 security release, the 
 
 The Rust core uses pinned serde_json and its locked dependencies. The actual WASM/SQLite unit suite requires a compiled core and the pinned npm SQLite package. Cargo.lock and reproduced third-party notices are checked in; build output is generated, never committed.
 
+The production finalizer applies one checked Metro compatibility patch: its
+detached HTML parser no longer inserts a redundant `base` element, which WebKit
+rejects under `base-uri 'none'`. Nodes resolve URLs after insertion into the
+destination document. The build fails if the exact upstream fragment changes.
+Legacy `javascript:void(0)` action links become ordinary, default-prevented
+anchors before Vue compilation. Neither change relaxes the CSP. The obsolete
+file-picker startup warning and its inline Continue handler were removed.
+
 Sources:
 - https://github.com/pallets/flask/releases/tag/3.1.3
 - https://v2.vuejs.org/lts/

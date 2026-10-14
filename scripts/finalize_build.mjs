@@ -7,7 +7,18 @@ import compiler from 'vue-template-compiler';
 import { transform } from 'esbuild';
 import {createHash} from 'node:crypto';
 const out = 'dist';
-const { document } = parseHTML(await readFile(`${out}/index.html`, 'utf8'));
+// Metro's detached-document HTML parser adds a redundant <base> element.
+// WebKit enforces the inherited base-uri CSP even in this detached document.
+// Returned nodes resolve URLs in the destination document when inserted.
+const metroFile=`${out}/static/lib/metroui/js/metro.min.js`;
+const metro=await readFile(metroFile,'utf8');
+const detachedBase='(n=(s=document.implementation.createHTMLDocument("")).createElement("base")).href=document.location.href,s.head.appendChild(n),';
+if(metro.split(detachedBase).length!==2)throw Error('Review Metro detached parser patch after dependency changes');
+await writeFile(metroFile,metro.replace(detachedBase,'s=document.implementation.createHTMLDocument(""),'));
+// Legacy action links must not execute javascript: URLs under the strict CSP.
+// This also covers strings compiled into Vue templates below.
+const sourceHtml=(await readFile(`${out}/index.html`, 'utf8')).replace(/href=(["'])javascript:void\(0\);?\1/gi,'href="#" data-nmt-action-link="true"');
+const { document } = parseHTML(sourceHtml);
 const app = document.querySelector('#app_hotpot');
 if (!app)
     throw Error('Upstream mount point changed');

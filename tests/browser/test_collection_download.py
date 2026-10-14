@@ -8,7 +8,8 @@ ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'temp/browser-validation/collection-download';OUT.mkdir(parents=True,exist_ok=True)
 URL=os.environ.get('NMT_DOWNLOAD_URL','http://127.0.0.1:4299/')
 with sync_playwright() as p:
-    browser=p.chromium.launch(executable_path=chromium_path())
+    engine=os.environ.get('NMT_BROWSER','chromium')
+    browser=getattr(p,engine).launch(**({'executable_path':chromium_path()} if engine=='chromium' else {}))
     results=[]
     for mode in ('unsupported','denied','cancelled'):
         context=browser.new_context(viewport={'width':1440,'height':1000})

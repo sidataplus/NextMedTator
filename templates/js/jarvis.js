@@ -19,43 +19,13 @@ var jarvis = {
 
         app_hotpot.init();
 
-        if (isCHROME) { 
-
-            if (isFSA_API_OK) {
-                jarvis.ssmsg('Initializated')
-                setTimeout(function() { jarvis.ssclose(); }, 500);
-
-            } else {
-                // this can be many reasons
-                if (isHTTPS) {
-                    // 2022-03-24: Thanks to Adam Cross@UIC who reported this bug!
-                    jarvis.ssmsg(_DISABLED_API_MSG);
-
-                } else if (isLOCALFILE) {
-                    // 2022-03-24: Thanks to Adam Cross@UIC who reported this bug!
-                    jarvis.ssmsg(_DISABLED_API_MSG);
-
-                } else if (!isLOCALHOST) {
-                    // not HTTPs and not localhost
-                    // so can not use FSA API
-                    jarvis.ssmsg(_SEC_LMT_MSG);
-
-                } else {
-                    // ?
-                    jarvis.ssmsg(_DISABLED_API_MSG);
-                }
-            }
-        } else {
-
-            if (isFSA_API_OK) {
-                jarvis.ssmsg('Initializated')
-                setTimeout(function() { jarvis.ssclose(); }, 500);
-                
-            } else {
-                jarvis.ssmsg(_LMT_SUPPORT_MSG);
-            }
-
-        }
+        // File pickers are an optional enhancement. Safari/Firefox use ordinary
+        // file inputs and downloads and must never be trapped behind an inline handler.
+        jarvis.ssmsg('Ready');
+        setTimeout(function() { jarvis.ssclose(); }, 500);
+        document.addEventListener('click', function(event) {
+            if (event.target.closest && event.target.closest('[data-nmt-action-link]')) event.preventDefault();
+        });
 
         $(window).resize(function() {
             app_hotpot.resize();

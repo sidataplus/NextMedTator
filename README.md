@@ -31,6 +31,12 @@ The annotation application is a static site; a small Cloudflare Worker verifies 
 
 No model is required for manual annotation. Use the ribbon's **Sample** button for a small manual task, or load your own schema and text files.
 
+Safari opens the annotation workspace directly and uses ordinary file inputs and
+downloads. File System Access APIs are optional. The compact Assistance panel
+shares the workspace's toolbar styling and labeled icons. Startup, XML/schema
+downloads and collection backup/restore are tested in WebKit on Windows;
+this does not substitute for testing the shipping Safari app on macOS/iOS.
+
 ## Model packages
 
 | Model | Purpose | Download | Qualified browser execution |
