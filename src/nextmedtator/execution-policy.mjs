@@ -2,7 +2,7 @@
 // Existing offline packages retain their original manifest and content hashes.
 import {AXIS_PATCH} from './webgpu-axis-patch.mjs';
 import {invariant,sha256} from './integrity.mjs';
-export const EXECUTION_POLICY = 'entity-webgpu-precision-v2';
+export const EXECUTION_POLICY = 'entity-webgpu-precision-v3';
 const graphs = [
     ['f58db136bc7a07d61c0d925e172ceb137800cf2c153b9654459ed31e28e57aa7','1045cde3fa3ec93a142f677f77114c43485d99eea65d33b42b59f949ba3f8d8a','dc0f0ea7c64094aae9fe7bd1245d49470635674d1e1b00be93fc76616aa3ed7b'],
     ['2ee92ad268cf7afb1d54c45d2d726b01f3419c6488061755d872fc2766f85774','ac37764700eabbb6ccd1fd95cdc8041836439a86dbf98ecf1c913cc67281909c','37889e4338ebc5c00a6f9e563599894a9ee3e611f4fb90348d052e69d4fb4533']
@@ -20,6 +20,11 @@ export function supportsWebGPU(manifest, variant) {
         hash(variant.tokenizer) === '59e858fa7dc08cfadc58ffd3ca685a1868a007a0aac05c4803828f58095f45cc' &&
         qualified.some(([model, attributes, contract]) => hash(variant.graphs?.model) === model &&
             hash(variant.graphs?.attributes) === attributes && hash(variant.entityContract) === contract);
+}
+/** Backend rounding allowance for the exact FP16 releases only. Semantics stay exact. */
+export function recordConformanceOptions(manifest,variant){
+    return variant.backend==='webgpu'&&variant.precision==='fp16'&&supportsWebGPU(manifest,variant)
+        ? {tolerance:.05,threshold:variant.threshold} : {};
 }
 /** Only the exact original FP32 releases may recover these FP16 graphs. */
 export function wasmFallbackIdentity(manifest,variant){

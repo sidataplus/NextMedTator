@@ -78,11 +78,20 @@ async function analyzeEntityWindow(api,text,schema,contract,variant){
     for(const e of entities){const family=byLabel.get(e.label);if(!family)continue;const fields={},definition=projection.families[family];if(definition.fields.concept)fields.concept=text.slice(e.start,e.end);for(const [key,value]of Object.entries(e.fields))if(definition.fields[key])fields[key]=value;records.push({id:uuid(),documentId:'pending',family,anchor:[source.selection(e.start,e.end)],fields,evidence:[],score:e.score,attributeScores:e.attributeScores,origin:{kind:'model',codec:ENTITY_ATTRIBUTES_CODEC}});}
     return {...base,records,status:'complete',coverage:[[0,source.length]],windows:[{sourceRange:[0,source.length],encodedTokens:plan.encodedTokens}]};
 }
-export function compareEntityContractRecords(expected,actual,{tolerance=1e-4}={}){
+export function compareEntityContractRecords(expected,actual,{tolerance=1e-4,threshold=null}={}){
     invariant(Number.isFinite(tolerance)&&tolerance>=0,'Invalid score tolerance');
+    invariant(threshold===null||(Number.isFinite(threshold)&&threshold>=0&&threshold<=1),'Invalid conformance threshold');
     const key=r=>canonical([r.family,r.anchor]),index=rows=>new Map(rows.map(r=>[key(r),r])),left=index(expected),right=index(actual);let maxScoreError=0;
     if(left.size!==expected.length||right.size!==actual.length||canonical([...left.keys()].sort())!==canonical([...right.keys()].sort()))return {pass:false,reason:'entity-spans-differ',expectedSpans:expected.length,actualSpans:actual.length};
-    for(const [id,row]of left){const got=right.get(id);if(canonical(row.fields)!==canonical(got.fields)||canonical(Object.keys(row.attributeScores??{}).sort())!==canonical(Object.keys(got.attributeScores??{}).sort()))return {pass:false,reason:'attribute-values-or-presence-differ'};maxScoreError=Math.max(maxScoreError,Math.abs(row.score-got.score),...Object.entries(row.attributeScores??{}).map(([field,value])=>Math.abs(value-got.attributeScores[field])));}
+    for(const [id,row]of left){
+        const got=right.get(id);
+        if(canonical(row.fields)!==canonical(got.fields)||canonical(Object.keys(row.attributeScores??{}).sort())!==canonical(Object.keys(got.attributeScores??{}).sort()))return {pass:false,reason:'attribute-values-or-presence-differ'};
+        const scores=[row.score,got.score,...Object.values(row.attributeScores??{}),...Object.values(got.attributeScores??{})];
+        if(scores.some(score=>!Number.isFinite(score)))return {pass:false,reason:'non-finite-score'};
+        if(scores.some(score=>score<0||score>1))return {pass:false,reason:'invalid-confidence-score'};
+        if(threshold!==null&&(row.score>=threshold)!==(got.score>=threshold))return {pass:false,reason:'confidence-threshold-differs'};
+        maxScoreError=Math.max(maxScoreError,Math.abs(row.score-got.score),...Object.entries(row.attributeScores??{}).map(([field,value])=>Math.abs(value-got.attributeScores[field])));
+    }
     const pass=Number.isFinite(maxScoreError)&&maxScoreError<=tolerance;
     return {pass,spans:expected.length,maxScoreError,tolerance,...(!pass?{reason:Number.isFinite(maxScoreError)?'confidence-scores-differ':'non-finite-score'}:{})};
 }

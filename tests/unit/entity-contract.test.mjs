@@ -43,3 +43,17 @@ test('native/browser record comparison checks missing fields, applicability and 
  const actual=structuredClone(row);actual.score+=1e-5;assert.equal(compareEntityContractRecords([row],[actual]).pass,true);
  actual.fields.phase='later';assert.equal(compareEntityContractRecords([row],[actual]).pass,false);delete actual.fields.phase;actual.attributeScores.owner=.8;assert.equal(compareEntityContractRecords([row],[actual]).pass,false);
 });
+test('bounded FP16 confidence drift never permits semantic, threshold or invalid-score changes',()=>{
+ const row={family:'report',anchor:[{start:0,end:6,text:'report'}],fields:{owner:'subject'},score:.9,attributeScores:{owner:.7}};
+ const options={tolerance:.05,threshold:.5},actual=structuredClone(row);actual.score-=.038;actual.attributeScores.owner+=.04;
+ assert.equal(compareEntityContractRecords([row],[actual],options).pass,true);
+ assert.equal(compareEntityContractRecords([row],[actual]).pass,false,'FP32 default stays strict');
+ for(const mutate of [r=>r.score=.849,r=>r.family='action',r=>r.anchor[0].end=5,r=>r.fields.owner='other',r=>delete r.attributeScores.owner,r=>r.score=NaN,r=>r.attributeScores.owner=Infinity,r=>r.score=1.01,r=>r.attributeScores.owner=-.01]){
+  const changed=structuredClone(row);mutate(changed);assert.equal(compareEntityContractRecords([row],[changed],options).pass,false);
+ }
+ assert.equal(compareEntityContractRecords([{...row,score:.51}],[{...row,score:.49}],options).pass,false,'crossing the acceptance threshold is forbidden');
+ assert.equal(compareEntityContractRecords([{...row,score:.99}],[{...row,score:1.01}],options).reason,'invalid-confidence-score');
+ assert.equal(compareEntityContractRecords([{...row,attributeScores:{owner:.01}}],[{...row,attributeScores:{owner:-.01}}],options).reason,'invalid-confidence-score');
+ assert.equal(compareEntityContractRecords([row],[],options).pass,false);
+ assert.equal(compareEntityContractRecords([row],[row,row],options).pass,false);
+});

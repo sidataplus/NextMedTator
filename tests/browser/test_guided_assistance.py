@@ -6,7 +6,7 @@ The real model import/inference path uses the local BPSD package without mocks.
 import json,os
 from pathlib import Path
 from urllib.parse import urlparse,parse_qs
-from playwright.sync_api import sync_playwright,expect
+from playwright.sync_api import sync_playwright,expect,TimeoutError as PlaywrightTimeoutError
 from browser_support import chromium_path
 ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'temp/browser-validation/guided-assistance';OUT.mkdir(parents=True,exist_ok=True)
@@ -16,8 +16,9 @@ with sync_playwright() as p:
     for engine in os.environ.get('NMT_ENGINES','chromium,webkit').split(','):
         browser=getattr(p,engine).launch(**({'executable_path':chromium_path()} if engine=='chromium' else {}))
         context=browser.new_context(viewport={'width':1440,'height':1000});page=context.new_page();page.set_default_timeout(60000)
-        errors=[];requests=[];grants=[]
+        errors=[];requests=[];request_log=[];grants=[]
         page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append(r.url))
+        context.on('request',lambda r:request_log.append({'method':r.method,'url':r.url}))
         page.goto(URL);expect(page.locator('#start-screen')).to_be_hidden()
         expect(page.get_by_test_id('assist-model-source')).to_have_value('clinical-p10')
         assert page.get_by_test_id('assist-model-source').locator('option').first.get_attribute('value')=='clinical-p10'
@@ -46,11 +47,35 @@ with sync_playwright() as p:
         expect(page.get_by_role('dialog',name='Verify model download')).to_be_visible()
         with context.expect_page() as opened:page.get_by_role('button',name='Open verification tab').click()
         verification=opened.value;verification.wait_for_load_state()
+        popup_errors=[];popup_console=[]
+        verification.on('pageerror',lambda e:popup_errors.append(str(e)))
+        verification.on('console',lambda m:popup_console.append(f'{m.type}: {m.text}'))
         assert not verification.evaluate('crossOriginIsolated')
         assert page.evaluate('crossOriginIsolated')
-        verification.frame_locator('iframe').get_by_role('button',name='Complete test check').click()
+        def handoff_state():
+            state={'engine':engine,'popupUrl':verification.url,'requestLog':request_log[-20:],
+                   'pageErrors':errors,'popupErrors':popup_errors,'popupConsole':popup_console}
+            try:state['app']=page.evaluate("()=>{const a=document.querySelector('nextmedtator-assist').assist;return {busy:a.busy,error:a.error,message:a.message};}")
+            except Exception as error:state['appReadError']=str(error)
+            try:state['popupStatus']=verification.locator('#status').inner_text(timeout=1000)
+            except Exception as error:state['popupStatusError']=str(error)
+            try:state['iframeUrl']=verification.locator('iframe').get_attribute('src',timeout=1000)
+            except Exception as error:state['iframeUrlError']=str(error)
+            try:state['iframeText']=verification.frame_locator('iframe').locator('body').inner_text(timeout=1000)
+            except Exception as error:state['iframeTextError']=str(error)
+            return state
+        try:
+            with page.expect_request(lambda r:r.url=='https://nmt-models.sidata.plus/grant' and r.method=='POST',timeout=20000) as grant_event:
+                verification.frame_locator('iframe').get_by_role('button',name='Complete test check').click()
+            grant_request=grant_event.value
+        except PlaywrightTimeoutError as error:
+            raise AssertionError('Synthetic popup token did not reach the grant endpoint: '+json.dumps(handoff_state())) from error
+        payload=grant_request.post_data_json
+        assert payload['token']=='synthetic-test-token',payload
+        revision=payload.get('revision','')
+        assert len(revision)==64 and all(c in '0123456789abcdef' for c in revision),payload
         expect(page.get_by_test_id('assist-message')).to_contain_text('verification failed')
-        assert len(grants)==1 and grants[0]['token']=='synthetic-test-token',grants
+        assert len(grants)==1 and grants[0]==payload,grants
         expect(page.get_by_role('dialog')).to_have_count(0)
         # Retry and cancel are ordinary UI paths, with no retained worker/download.
         page.get_by_test_id('assist-load-model').click();page.get_by_role('button',name='Cancel download').click()
@@ -65,7 +90,7 @@ with sync_playwright() as p:
         assert not page.evaluate("document.querySelector('nextmedtator-assist').assist.error")
         assert not any('.onnx' in u for u in requests)
         assert not errors,errors
-        results.append({'engine':engine,'version':browser.version,'url':URL,'P10FirstAndDefault':True,'fourSteps':True,'popupHandoff':True,'appStillIsolated':True,'retryCancel':True,'weightsRequested':False})
+        results.append({'engine':engine,'version':browser.version,'url':URL,'P10FirstAndDefault':True,'fourSteps':True,'popupHandoff':True,'popupGrantRequest':True,'appStillIsolated':True,'retryCancel':True,'weightsRequested':False})
         if os.environ.get('NMT_INFERENCE')=='1' and engine=='chromium':
             context.unroute('https://nmt-models.sidata.plus/verify?*');context.unroute('https://nmt-models.sidata.plus/grant')
             model_results=[]

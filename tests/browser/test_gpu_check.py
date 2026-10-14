@@ -14,7 +14,7 @@ with sync_playwright() as p:
         page.goto(URL);expect(page.locator('#start-screen')).to_be_hidden()
         page.get_by_test_id('assist-practice-'+profile).click()
         page.get_by_test_id('assist-local-packages').locator(':scope > summary').click()
-        page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}-fp16.nmt-model.zip'))
+        page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(Path(os.environ.get('NMT_MODEL_DIR',ROOT/'work'))/f'{profile}-fp16.nmt-model.zip'))
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy")
         page.get_by_test_id('assist-download-options').locator(':scope > summary').click()
         print(profile+' checking real FP16',flush=True)
@@ -24,19 +24,19 @@ with sync_playwright() as p:
         with page.expect_download() as saved:page.get_by_test_id('assist-save-gpu-check').click()
         path=OUT/f'{profile}-actual.json';saved.value.save_as(str(path));actual=json.loads(path.read_text(encoding='utf-8'))
         assert actual['precision']=='fp16' and len(actual['fixtures'])==5
-        assert all('records' not in f or 'spans' in f['records'] for f in actual['fixtures'])
+        assert all('records' not in f or ('spans' in f['records'] and f['records']['tolerance']==0.05) for f in actual['fixtures'])
         assert 'anchor' not in json.dumps(actual) and 'fever' not in json.dumps(actual)
         page.screenshot(path=str(OUT/f'{profile}-actual.png'))
         def mismatch(route):
             response=route.fetch()
             # Only inject a synthetic failed result in this test; real inference
             # and unchanged reference checks were verified above.
-            hook="const originalPost=self.postMessage.bind(self);self.postMessage=data=>{if(data.result?.results){data.result.pass=false;const row=data.result.results.find(r=>r.nativeChecks);row.pass=false;row.nativeChecks={pass:false,reason:'confidence-scores-differ',spans:2,maxScoreError:0.003,tolerance:0.0001};}originalPost(data);};\n"
+            hook="const originalPost=self.postMessage.bind(self);self.postMessage=data=>{if(data.result?.results){data.result.pass=false;const row=data.result.results.find(r=>r.nativeChecks);row.pass=false;row.nativeChecks={pass:false,reason:'confidence-scores-differ',spans:2,maxScoreError:0.06,tolerance:0.05};}originalPost(data);};\n"
             route.fulfill(response=response,body=hook+response.text())
         context.route('**/onnx-worker.mjs',mismatch)
         page.get_by_test_id('assist-check-gpu').click();page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy")
         expect(page.get_by_test_id('assist-gpu-check-result')).to_contain_text('spans and attributes match')
-        expect(page.get_by_test_id('assist-gpu-check-result')).to_contain_text('0.003000 exceeds 0.0001')
+        expect(page.get_by_test_id('assist-gpu-check-result')).to_contain_text('0.06000 exceeds 0.05')
         state=page.evaluate("()=>{const a=document.querySelector('nextmedtator-assist').assist;return {error:a.error,worker:!!a.modelRunner.worker,precision:a.model.manifest.variants[0].precision,check:a.gpuCheck,run:!!a.current().run};}")
         assert not state['error'] and not state['worker'] and not state['run'] and state['precision']=='fp16' and not state['check']['pass'],state
         page.screenshot(path=str(OUT/f'{profile}-injected-mismatch.png'))

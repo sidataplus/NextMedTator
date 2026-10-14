@@ -16,7 +16,7 @@ import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
 import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD, sameScope} from './scope.mjs';
 import {renderScopeEditor} from './scope-ui.mjs';
-import {ModelStore,downloadCatalogPackage,cacheModelForSession} from './model-store.mjs';
+import {ModelIntegrityError,ModelStore,downloadCatalogPackage,cacheModelForSession} from './model-store.mjs';
 import {createModelSelectionState,saveModelSelectionState,setModelSelection,selectionThresholdOverride,setSelectionThresholdOverride,restoreSelectionThresholdOverride,modelSelectionKey,modelSelectionControlValue,modelSelectionLabel,modelSelectionMatchesManifest,matchingInstalledModels,selectionFromManifest,localAdapterSelection,renderModelSelectionControls} from './model-selection.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
@@ -100,6 +100,11 @@ a{color:#0067b8}label{gap:4px;font-size:11px}.section label>span{font-weight:600
 // Reuse the same local Font Awesome face as the original ribbon. Decorative
 // glyphs stay out of accessible names; every action retains its text label.
 const ICONS={assist:'f0d0',practice:'f15c',collections:'f07c',options:'f1de',recovery:'f0c7',packages:'f1b2','device-details':'f108','package-details':'f05a','local-packages':'f0a0',batch:'f03a',download:'f019',upload:'f093',play:'f04b',pause:'f04c',save:'f0c7',open:'f07c',check:'f00c',undo:'f0e2',remove:'f2ed',close:'f00d',list:'f03a',hide:'f054',search:'f002'};
+function firstManifestPrecision(manifest){
+    if(!Array.isArray(manifest?.variants)||manifest.variants.length===0)return null;
+    const precision=manifest.variants[0]?.precision;
+    return typeof precision==='string'&&precision.length?precision:null;
+}
 function icon(name){return node('span',null,{class:'icon','aria-hidden':'true','data-glyph':String.fromCodePoint(parseInt(ICONS[name]??ICONS.assist,16))});}
 function actionIcon(text){
     for(const [pattern,name] of [[/^Analyze|^Resume/,'play'],[/^Pause/,'pause'],[/^Download|^Export|^Use browser download/,'download'],[/^Import|^Install/,'upload'],[/^Save|^Enable local/,'save'],[/^Open|^Restore|^Use installed/,'open'],[/^Reject|^Cancel|^Close|^Unload|^Disable/,'close'],[/^Remove|^Delete/,'remove'],[/^Undo|^Retry|^Reset/,'undo'],[/^Check GPU|^Select|^Apply|^Write|^Add to|^Use recommended/,'check'],[/^List/,'list'],[/^Show approved/,'search'],[/^Hide/,'hide'],[/^P10|^BPSD/,'practice']])if(pattern.test(text))return name;
@@ -235,6 +240,7 @@ class LegacyAssist {
         this.detail = null;
         this.model = null;
         this.modelRunner = new ConformanceWorker();this.modelStore=new ModelStore();this.collectionStore=new CollectionStore();
+        this.unavailableInstalledModels=new Map();
         this.runs = new Map();
         this.projects = new Map();
         this.runHistory = [];this.corpusCreatedAt=null;this.corpusIdentity=null;
@@ -343,19 +349,24 @@ class LegacyAssist {
     }
     async loadSelectedPackage(){
         const precision=this.downloadPrecision??deviceRecommendation(this.deviceProfile,{execution:this.executionPreference}).precision??'fp32';
-        const installed=matchingInstalledModels(this.modelSelection,this.installedModels??[]).find(item=>item.manifest.variants[0].precision===precision);
-        if(installed){await this.useInstalledModel(installed.manifestHash);this.message='Model ready. Continue to Analyze note.';return;}
+        const selection=this.modelSelection,selectionKey=modelSelectionKey(selection),epoch=this.modelSelectionEpoch;
+        const installedCandidates=matchingInstalledModels(selection,this.installedModels??[]).filter(item=>firstManifestPrecision(item.manifest)===precision);
+        const installed=installedCandidates.find(item=>!this.unavailableInstalledModels.has(item.manifestHash))??installedCandidates[0];
+        if(installed&&!this.unavailableInstalledModels.has(installed.manifestHash)){
+            await this.useInstalledModel(installed.manifestHash);this.message='Model ready. Continue to Analyze note.';return;
+        }
         if(!this.catalog){const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});invariant(response.ok,'Model list could not load. Check your connection and retry.');this.catalog=await response.json();}
-        const entry=this.catalog.entries.find(item=>modelSelectionMatchesManifest(this.modelSelection,item.manifest)&&item.manifest.variants[0].precision===precision);
+        invariant(epoch===this.modelSelectionEpoch&&selectionKey===modelSelectionKey(this.modelSelection),'Model selection changed while loading. Select the model again and retry.');
+        const entry=this.catalog.entries.find(item=>modelSelectionMatchesManifest(selection,item.manifest)&&firstManifestPrecision(item.manifest)===precision);
         invariant(entry,'No public download matches this source. Choose P10 or BPSD, or import a local package.');
         const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
-                this.setSelectedModel(selectionFromManifest(entry.manifest),{render:false,restoreInstalled:false});
-                const epoch=this.modelSelectionEpoch;this.installController=new AbortController();
+                this.installController=new AbortController();
                 try{
                     this.loadingProgress={phase:'Downloading model',received:0,total:total,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onStage:stage=>{this.loadingProgress={...stage,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},onProgress:({received,total,file})=>{if(this.loadingProgress.phase!=='Downloading model')this.loadingProgress.started=performance.now();Object.assign(this.loadingProgress,{received,total,file,phase:received===total?'Verifying model integrity':'Downloading model'});renderLoadingProgress(this.root,this.loadingProgress);}});
-                    invariant(epoch===this.modelSelectionEpoch&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Model selection changed during download');
+                    invariant(epoch===this.modelSelectionEpoch&&selectionKey===modelSelectionKey(this.modelSelection)&&modelSelectionMatchesManifest(selection,candidate.manifest),'Model selection changed during download');
                     this.loadingProgress.phase='Installing and verifying local storage';renderLoadingProgress(this.root,this.loadingProgress);const installed=await cacheModelForSession(this,candidate,{signal:this.installController.signal});
                     invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');
+                    if(!this.modelStorageNotice)this.unavailableInstalledModels.delete(installed.manifestHash);
                     this.adoptModel(installed);await this.inspectStorage();this.message='Model ready. Continue to Analyze note in step 4.';
                 }finally{this.installController=null;}
 
@@ -461,9 +472,12 @@ class LegacyAssist {
     }
     async useInstalledModel(manifestHash) {
         const epoch=this.beginModelSelectionAction();
-        const candidate=await this.modelStore.read(manifestHash);
+        let candidate;
+        try{candidate=await this.modelStore.read(manifestHash);}
+        catch(error){if(error instanceof ModelIntegrityError)this.unavailableInstalledModels.set(manifestHash,'corrupt');throw error;}
         if(epoch!==this.modelSelectionEpoch)return false;
-        invariant(candidate,'Installed package missing');
+        if(!candidate){this.unavailableInstalledModels.set(manifestHash,'missing');throw new Error('Installed package is missing from local storage. Download it again before continuing.');}
+        this.unavailableInstalledModels.delete(manifestHash);
         this.adoptModel(candidate,{selectSource:true});this.modelStorageNotice=null;
         return true;
     }
@@ -991,11 +1005,22 @@ class LegacyAssist {
         const localPackages=disclosure(this,'local-packages','Installed packages & local import');
         localPackages.append(labeled('Local model package', file),button('List installed models',()=>this.perform(()=>this.inspectStorage())));
         const precisionValue=this.downloadPrecision??recommended.precision??'fp32';
-        const installed=matchingInstalledModels(this.modelSelection,this.installedModels??[]).find(item=>item.manifest.variants[0].precision===precisionValue);
+        const matchingInstalled=matchingInstalledModels(this.modelSelection,this.installedModels??[]);
+        const installedCandidates=matchingInstalled.filter(item=>firstManifestPrecision(item.manifest)===precisionValue);
+        const installed=installedCandidates.find(item=>!this.unavailableInstalledModels.has(item.manifestHash))??installedCandidates[0];
+        const malformedInstalled=installedCandidates.length?null:matchingInstalled.find(item=>firstManifestPrecision(item.manifest)===null);
+        const actionableInstalled=installed??malformedInstalled;
         if(!this.model&&['clinical-p10','bpsd-base'].includes(this.modelSelection.id)){
             const modelName=this.modelSelection.id==='clinical-p10'?'P10':'BPSD';
-            packages.append(button(installed?'Load installed '+modelName:'Download '+modelName+' · '+precisionValue.toUpperCase(),()=>this.perform(()=>this.loadSelectedPackage()),{id:'assist-load-model',primary:true,disabled:this.busy||!this.deviceProfile}));
-            packages.append(node('p',installed?'Saved on this device. No download needed.':'Downloads only when you click. A short verification check may open in another tab.',{class:'muted'}));
+            const unavailableReason=actionableInstalled&&(this.unavailableInstalledModels.get(actionableInstalled.manifestHash)??(malformedInstalled?'corrupt':undefined));
+            const loadLabel=unavailableReason==='corrupt'?`Repair download ${modelName} · ${precisionValue.toUpperCase()}`:
+                unavailableReason==='missing'?`Download again ${modelName} · ${precisionValue.toUpperCase()}`:
+                installed?`Load installed ${modelName}`:malformedInstalled?`Repair download ${modelName} · ${precisionValue.toUpperCase()}`:`Download ${modelName} · ${precisionValue.toUpperCase()}`;
+            packages.append(button(loadLabel,()=>this.perform(()=>this.loadSelectedPackage()),{id:'assist-load-model',primary:true,disabled:this.busy||!this.deviceProfile}));
+            const loadHint=unavailableReason==='corrupt'?`The installed ${modelName} ${precisionValue.toUpperCase()} failed local integrity checks. Repair downloads a replacement and verifies it before installation.`:
+                unavailableReason==='missing'?`The installed ${modelName} ${precisionValue.toUpperCase()} is missing from local storage. Download it again to continue.`:
+                installed?'Saved on this device. No download needed.':malformedInstalled?`The installed ${modelName} package metadata is incomplete. Repair downloads the matching catalog package and verifies it before installation.`:'Downloads only when you click. A short verification check may open in another tab.';
+            packages.append(node('p',loadHint,{class:'muted'}));
         }
         const downloadOptions=disclosure(this,'download-options','Model options');
         const precision=node('select',null,{'aria-label':'Model precision to download','data-testid':'assist-precision',disabled:this.busy});
@@ -1009,7 +1034,11 @@ class LegacyAssist {
         packages.append(downloadOptions);
         for(const item of this.installedModels??[]){
             const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
-            localPackages.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
+            const unavailableReason=this.unavailableInstalledModels.get(item.manifestHash);
+            const sizeLabel=Number.isSafeInteger(item.bytes)?`${item.bytes} bytes`:'size unavailable';
+            localPackages.append(node('p',`${item.manifest.id} · ${sizeLabel} · ${matches?'matches selected source':'different source'}${unavailableReason==='corrupt'?' · failed local integrity checks':unavailableReason==='missing'?' · missing from local storage':''}`,{class:'muted'}));
+            if(unavailableReason)localPackages.append(node('p','Use the main model action to download and verify a replacement. This cached entry has not been removed.',{class:'muted'}));
+            else localPackages.append(button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
         }
         downloadOptions.append(node('p',this.model?`Loaded model buffers: ${(this.model.manifest.files.reduce((n,f)=>n+f.bytes,0)/1048576).toFixed(0)} MiB. Runtime memory is additional.`:'No model weights loaded in memory.',{class:'muted','data-testid':'assist-model-memory'}));
         if(this.storageEstimate)downloadOptions.append(node('p',`Browser storage: ${(this.storageEstimate.usage/1048576).toFixed(0)} MiB used of approximately ${(this.storageEstimate.quota/1048576).toFixed(0)} MiB available quota.`,{class:'muted'}));
@@ -1021,7 +1050,11 @@ class LegacyAssist {
                 node('p','Report includes public reference-check measurements, model identity and browser version. It excludes your notes and annotations.',{class:'muted'}));
         }
         if(this.model)downloadOptions.append(button('Unload model',()=>this.unloadModel(),{disabled:this.busy,id:'assist-unload-model'}));
-        if(this.model)downloadOptions.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.modelStorageNotice=null;await this.inspectStorage();this.message='Model package installed and read-back verified';})));
+        if(this.model)downloadOptions.append(button('Install package for offline use',()=>this.perform(async()=>{
+            const installed=await this.modelStore.install(this.model);
+            this.unavailableInstalledModels.delete(installed.manifestHash);
+            this.adoptModel(installed);this.modelStorageNotice=null;await this.inspectStorage();this.message='Model package installed and read-back verified';
+        })));
         const anns = this.allDocuments();
         if (anns.length) {
             const docs = disclosure(this,'batch',`Batch analysis · ${this.selected.size} selected`);docs.setAttribute('aria-label','Documents to analyze');

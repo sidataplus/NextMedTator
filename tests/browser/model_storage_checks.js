@@ -1,5 +1,5 @@
 async () => {
-    const {ModelStore,cacheModelForSession}=await import('./app/nextmedtator/model-store.mjs');
+    const {ModelStore,ModelIntegrityError,cacheModelForSession}=await import('./app/nextmedtator/model-store.mjs');
     const {sha256,fingerprint}=await import('./app/nextmedtator/integrity.mjs');
     const bytes=new Uint8Array(140*1024*1024+17);bytes[0]=31;bytes[bytes.length-1]=97;
     const fixture=new Uint8Array([1,2,3]);
@@ -45,8 +45,8 @@ async () => {
         const connection=await request(indexedDB.open('nextmedtator-public-models-v1',2));
         const row=await request(connection.transaction('packages').objectStore('packages').get(hash));
         await new Promise((ok,no)=>{const tx=connection.transaction('artifacts','readwrite');tx.objectStore('artifacts').delete(row.artifactPrefix+':test.onnx:chunk:2');tx.oncomplete=ok;tx.onabort=()=>no(tx.error);});connection.close();
-        let detected=false;try{await store.read(hash);}catch(e){detected=/missing or corrupt/.test(e.message);}
-        check(detected,'Missing chunk was accepted');
+        let detected;try{await store.read(hash);}catch(e){detected=e;}
+        check(detected instanceof ModelIntegrityError&&/missing or corrupt/.test(detected.cause?.message??detected.message),'Missing chunk was not typed as installed-model corruption');
         await store.remove(hash);check(!await store.read(hash),'Removal failed');check((await keys()).length===0,'Removal leaked chunks');
         // Existing v2 installations use the manifest hash directly as the prefix.
         const legacyManifest=structuredClone(manifest),small=bytes.slice(0,17);
@@ -59,6 +59,15 @@ async () => {
         });legacyDb.close();
         check((await store.read(legacyHash)).files.get('test.onnx')[0]===31,'Existing installation no longer readable');
         await store.remove(legacyHash);check((await keys()).length===0,'Existing installation removal failed');
-        return {largeValueBytes:bytes.length,maxSerializedBuffer:maxBuffer,installAndRestore:true,quotaKeepsSession:true,cancelStops:true,replacementPreserved:true,partialCleanup:true,abandonedInstallCleanup:!!navigator.locks,missingChunkRejected:true,remove:true,existingInstallCompatible:true};
+        const malformedManifest=structuredClone(manifest);delete malformedManifest.files;
+        const malformedDb=await request(indexedDB.open('nextmedtator-public-models-v1',2));
+        await new Promise((ok,no)=>{const tx=malformedDb.transaction('packages','readwrite');tx.objectStore('packages').put({manifestHash:hash,manifest:malformedManifest,installedAt:'2026-10-14'});tx.oncomplete=ok;tx.onabort=()=>no(tx.error);});malformedDb.close();
+        const listed=await store.listExisting(),malformedRow=listed.find(row=>row.manifestHash===hash);
+        check(malformedRow&&malformedRow.bytes===null,'Malformed package metadata blocked listing or reported a fabricated size');
+        let malformedRead;try{await store.read(hash);}catch(error){malformedRead=error;}
+        check(malformedRead instanceof ModelIntegrityError,'Malformed installed metadata was not typed as corruption on read');
+        const cleanupDb=await request(indexedDB.open('nextmedtator-public-models-v1',2));
+        await new Promise((ok,no)=>{const tx=cleanupDb.transaction('packages','readwrite');tx.objectStore('packages').delete(hash);tx.oncomplete=ok;tx.onabort=()=>no(tx.error);});cleanupDb.close();
+        return {largeValueBytes:bytes.length,maxSerializedBuffer:maxBuffer,installAndRestore:true,quotaKeepsSession:true,cancelStops:true,replacementPreserved:true,partialCleanup:true,abandonedInstallCleanup:!!navigator.locks,missingChunkRejected:true,typedIntegrityError:true,remove:true,existingInstallCompatible:true,malformedMetadataListed:true,typedMalformedMetadata:true};
     }finally{IDBObjectStore.prototype.put=original;}
 }

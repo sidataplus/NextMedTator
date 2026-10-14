@@ -1,6 +1,6 @@
 import {ENTITY_ATTRIBUTES_CODEC,validateEntityContract,packEntityContract,analyzeEntityContract,compareEntityContractRecords} from './entity-contract.mjs';
 import {wasmThreadCount} from './inference-options.mjs';
-import {supportsWebGPU,prepareGraph,graphTransforms,EXECUTION_POLICY} from './execution-policy.mjs';
+import {supportsWebGPU,prepareGraph,graphTransforms,EXECUTION_POLICY,recordConformanceOptions} from './execution-policy.mjs';
 import {CLINICAL_V3_CODEC,validateClinicalV3Registry} from './clinical-v3.mjs';
 import {RECORDS_CODEC,isRecordsCodec,smallRuntime,analyzeSmall} from './gliner-small.mjs';
 import { validateModelManifest, compareTensors, compareCandidateSpans, CODECS } from './model-package.mjs';
@@ -46,11 +46,13 @@ async function loadModel(data) {
     }
     for(const path of Object.values(variant.graphs??{}))files.set(path,await prepareGraph(manifest,variant,path,files.get(path)));
     if(variant.codec===CLINICAL_V3_CODEC)validateClinicalV3Registry(jsonParse(new TextDecoder('utf-8',{fatal:true}).decode(files.get(variant.clinicalSchema))));
-    initialization('Starting inference runtime','Preparing the local runtime. The first run can take longer.');
+    initialization('Starting inference runtime','Loading the local ONNX runtime.');
     const ort = await import('../../vendor/ort/ort.webgpu.min.mjs');
     if(data.diagnostics){ort.env.debug=true;ort.env.logLevel='verbose';}
     invariant(ort.env.versions.web === manifest.runtimeVersion, 'Package/runtime version mismatch');
-    ort.env.wasm.numThreads = wasmThreadCount({crossOriginIsolated:self.crossOriginIsolated,hardwareConcurrency:navigator.hardwareConcurrency,maxThreads:data.maxThreads});
+    ort.env.wasm.numThreads = wasmThreadCount({crossOriginIsolated:self.crossOriginIsolated,hardwareConcurrency:navigator.hardwareConcurrency,maxThreads:data.maxThreads,userAgent:navigator.userAgent,codec:variant.codec,fixedWords:variant.fixedWords});
+    const runtimeDetail=variant.backend==='wasm'?`Preparing the local runtime with ${ort.env.wasm.numThreads} WASM thread${ort.env.wasm.numThreads===1?'':'s'}. The first run can take longer.`:'Preparing the local runtime. The first run can take longer.';
+    initialization('Starting inference runtime',runtimeDetail);
     ort.env.wasm.proxy = false;
     ort.env.wasm.wasmPaths = new URL('../../vendor/ort/', import.meta.url).href;
     if (variant.backend === 'webgpu') {
@@ -226,6 +228,6 @@ async function runSmall(context,request){
             checks.candidates=compareCandidateSpans(outputs,fixture.outputs);
             for(const name of ['pair_indices','pair_logits','pair_valid'])delete checks[name];
         }
-        results.push({fixture:path,checks,...(rawCandidateChecks?{rawCandidateChecks}:{}),tokenIdsExact:fixture.tokenRows.length?true:null,pass:Object.values(checks).every(c=>c.pass)});continue;}const actual=await analyze(fixture);const {canonical}=await import('./integrity.mjs');const rows=records=>records.map(({id,origin,score,documentId,...r})=>r).sort((a,b)=>canonical(a).localeCompare(canonical(b)));const nativeChecks=context.entityContract?compareEntityContractRecords(fixture.records,actual.records):null;const pass=nativeChecks?nativeChecks.pass&&actual.encodedTokens===fixture.encodedTokens:canonical(rows(actual.records))===canonical(rows(fixture.records));results.push({fixture:path,pass,status:actual.status,encodedTokensMatch:actual.encodedTokens===fixture.encodedTokens,...(nativeChecks?{nativeChecks}:{}),records:actual.records});}
+        results.push({fixture:path,checks,...(rawCandidateChecks?{rawCandidateChecks}:{}),tokenIdsExact:fixture.tokenRows.length?true:null,pass:Object.values(checks).every(c=>c.pass)});continue;}const actual=await analyze(fixture);const {canonical}=await import('./integrity.mjs');const rows=records=>records.map(({id,origin,score,documentId,...r})=>r).sort((a,b)=>canonical(a).localeCompare(canonical(b)));const nativeChecks=context.entityContract?compareEntityContractRecords(fixture.records,actual.records,recordConformanceOptions(context.manifest,context.variant)):null;const pass=nativeChecks?nativeChecks.pass&&actual.encodedTokens===fixture.encodedTokens:canonical(rows(actual.records))===canonical(rows(fixture.records));results.push({fixture:path,pass,status:actual.status,encodedTokensMatch:actual.encodedTokens===fixture.encodedTokens,...(nativeChecks?{nativeChecks}:{}),records:actual.records});}
     return {kind:context.variant.codec,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision,wasmThreads:context.ort.env.wasm.numThreads,results,pass:results.every(r=>r.pass)};
 }

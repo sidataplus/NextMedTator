@@ -72,6 +72,8 @@ def run():
             page.get_by_role('link', name='Adjudication').click()
             page.locator('#tab_link_annotation').click()
             page.locator('.file-list-item-name', has_text='doc_01.txt.xml').wait_for()
+            more=page.get_by_test_id('assist-more')
+            if more.get_attribute('open') is None:more.locator(':scope > summary').click()
             page.get_by_test_id('open-workspace').click();page.get_by_test_id('source').wait_for()
             assert page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current.documents.length') == 1
             page.get_by_role('button', name='Back to annotation', exact=True).click()

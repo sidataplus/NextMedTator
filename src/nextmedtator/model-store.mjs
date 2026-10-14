@@ -1,5 +1,5 @@
-import {invariant, sha256, clone, fingerprint} from './integrity.mjs';
-import {validateModelManifest,parseEntityContracts} from './model-package.mjs';
+import {invariant, sha256, clone, fingerprint, ValidationError} from './integrity.mjs';
+import {validateModelManifest,parseEntityContracts,MODEL_LIMITS} from './model-package.mjs';
 import {catalogArtifactURL,downloadArtifact} from './model-download.mjs';
 import {authorizeDownload,clearDownloadGrants} from './download-gate.mjs';
 const request = r => new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
@@ -8,6 +8,25 @@ const MODEL_DB='nextmedtator-public-models-v1';
 const CHUNK_BYTES=16*1024*1024;
 export class ModelStorageError extends Error {
     constructor(cause){super(`Browser could not save the model (${cause?.name??'storage unavailable'}).`,{cause});this.name='ModelStorageError';}
+}
+export class ModelIntegrityError extends Error {
+    constructor(message='Installed model is corrupt; reimport this package',{cause}={}){super(message,{cause});this.name='ModelIntegrityError';}
+}
+function installedIntegrityError(error){
+    // Only package-contract failures become recoverable integrity errors.
+    // IndexedDB, crypto, and other operational failures retain their identity.
+    if(error instanceof ModelIntegrityError)return error;
+    if(error instanceof ValidationError)return new ModelIntegrityError(undefined,{cause:error});
+    return error;
+}
+function validateManifestStructure(manifest){
+    try{return validateModelManifest(manifest);}
+    catch(error){
+        // Keep this conversion tightly around structural validation. A TypeError
+        // from hashing or storage must remain an operational error.
+        if(error instanceof TypeError)throw new ValidationError('Model manifest structure is invalid');
+        throw error;
+    }
 }
 function checkCancellation(signal){if(signal?.aborted)throw new DOMException('Model installation cancelled','AbortError');}
 // Wait for each small transaction to commit before allocating the next chunk.
@@ -59,17 +78,17 @@ export async function cacheModelForSession(owner,candidate,{signal}={}){
 async function readArtifact(db,key){
     const value=await request(db.transaction('artifacts').objectStore('artifacts').get(key));
     if(!value?.nmtChunks)return value;
-    invariant(Number.isSafeInteger(value.bytes)&&value.bytes>CHUNK_BYTES&&value.nmtChunks===Math.ceil(value.bytes/CHUNK_BYTES),'Invalid model chunk index');
+    invariant(Number.isSafeInteger(value.bytes)&&value.bytes>CHUNK_BYTES&&value.bytes<=MODEL_LIMITS.file&&value.nmtChunks===Math.ceil(value.bytes/CHUNK_BYTES),'Invalid model chunk index');
     const bytes=new Uint8Array(value.bytes);
     for(let i=0;i<value.nmtChunks;i++){
         const chunk=await request(db.transaction('artifacts').objectStore('artifacts').get(`${key}:chunk:${i}`));
-        invariant(chunk?.byteLength===Math.min(CHUNK_BYTES,value.bytes-i*CHUNK_BYTES),'Installed model chunk is missing or corrupt');
+        invariant(chunk instanceof Uint8Array&&chunk.byteLength===Math.min(CHUNK_BYTES,value.bytes-i*CHUNK_BYTES),'Installed model chunk is missing or corrupt');
         bytes.set(chunk,i*CHUNK_BYTES);
     }
     return bytes;
 }
 async function database(){const r=indexedDB.open(MODEL_DB,2);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('packages'))db.createObjectStore('packages',{keyPath:'manifestHash'});if(!db.objectStoreNames.contains('artifacts'))db.createObjectStore('artifacts');const store=r.transaction.objectStore('packages'),cursor=store.openCursor();cursor.onsuccess=()=>{const c=cursor.result;if(!c)return;const row=c.value;if(row.files){for(const [path,bytes] of row.files)r.transaction.objectStore('artifacts').put(bytes,`${row.manifestHash}:${path}`);delete row.files;c.update(row);}c.continue();};};return request(r);}
-async function verified(row){validateModelManifest(row.manifest);invariant(await fingerprint(row.manifest)===row.manifestHash,'Installed manifest hash mismatch');const files=new Map(row.files);for(const f of row.manifest.files){const b=files.get(f.path);invariant(b?.byteLength===f.bytes&&await sha256(b)===f.sha256,'Installed model is corrupt; reimport this package');}return {...row,files,entityContracts:parseEntityContracts(row.manifest,files)};}
+async function verified(row){validateManifestStructure(row.manifest);invariant(await fingerprint(row.manifest)===row.manifestHash,'Installed manifest hash mismatch');const files=new Map(row.files);for(const f of row.manifest.files){const b=files.get(f.path);invariant(b instanceof Uint8Array&&b.byteLength===f.bytes&&await sha256(b)===f.sha256,'Installed model is corrupt; reimport this package');}return {...row,files,entityContracts:parseEntityContracts(row.manifest,files)};}
 export class ModelStore {
     async install(packageData, {signal}={}) {
         checkCancellation(signal);
@@ -107,8 +126,28 @@ export class ModelStore {
             return packageData;
         } finally {if(!published)await removeArtifacts(db,row).catch(()=>{});db.close();}
     }
-    async read(hash){const db=await database();try{const row=await request(db.transaction('packages').objectStore('packages').get(hash));if(!row)return null;row.files=[];for(const f of row.manifest.files)row.files.push([f.path,await readArtifact(db,`${row.artifactPrefix??hash}:${f.path}`)]);return verified(row);}finally{db.close();}}
-    async list(){const db=await database();try{return (await request(db.transaction('packages').objectStore('packages').getAll())).map(({manifest,manifestHash,installedAt})=>({manifest,manifestHash,installedAt,bytes:manifest.files.reduce((n,f)=>n+f.bytes,0)}));}finally{db.close();}}
+    async read(hash){const db=await database();try{
+        const row=await request(db.transaction('packages').objectStore('packages').get(hash));if(!row)return null;
+        try{
+            invariant(row&&typeof row==='object'&&!Array.isArray(row),'Installed model metadata is invalid');
+            invariant(row.manifest&&typeof row.manifest==='object','Installed model manifest is missing');
+            validateManifestStructure(row.manifest);
+            invariant(await fingerprint(row.manifest)===row.manifestHash,'Installed manifest hash mismatch');
+        }
+        catch(error){throw installedIntegrityError(error);}
+        const files=[];
+        for(const f of row.manifest.files){
+            let bytes;
+            try{bytes=await readArtifact(db,`${row.artifactPrefix??hash}:${f.path}`);}
+            catch(error){if(error instanceof ValidationError)throw installedIntegrityError(error);throw error;}
+            files.push([f.path,bytes]);
+        }
+        try{return await verified({...row,files});}catch(error){throw installedIntegrityError(error);}
+    }finally{db.close();}}
+    async list(){const db=await database();try{return (await request(db.transaction('packages').objectStore('packages').getAll())).map(({manifest,manifestHash,installedAt})=>{
+        const files=manifest?.files,validSizes=Array.isArray(files)&&files.length>0&&files.every(file=>Number.isSafeInteger(file?.bytes)&&file.bytes>=0);
+        return {manifest,manifestHash,installedAt,bytes:validSizes?files.reduce((n,f)=>n+f.bytes,0):null};
+    });}finally{db.close();}}
     async listExisting(){if(!globalThis.indexedDB)return [];if(indexedDB.databases){const databases=await indexedDB.databases();if(!databases.some(item=>item.name===MODEL_DB))return [];}return this.list();}
     async remove(hash){const db=await database();try{const meta=await request(db.transaction('packages').objectStore('packages').get(hash));await write(db,['packages','artifacts'],tx=>{if(meta)for(const key of artifactKeys(meta))tx.objectStore('artifacts').delete(key);tx.objectStore('packages').delete(hash);});}finally{db.close();}}
 }

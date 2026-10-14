@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ConformanceWorker,modelRunProvenance,selectInferenceVariant,validateModelManifest } from '../../src/nextmedtator/model-package.mjs';
 import {readFileSync} from 'node:fs';
-import {supportsWebGPU,EXECUTION_POLICY,graphTransforms,prepareGraph,wasmFallbackIdentity} from '../../src/nextmedtator/execution-policy.mjs';
+import {supportsWebGPU,EXECUTION_POLICY,graphTransforms,prepareGraph,wasmFallbackIdentity,recordConformanceOptions} from '../../src/nextmedtator/execution-policy.mjs';
 import {defaultCpuThreads,wasmThreadCount} from '../../src/nextmedtator/inference-options.mjs';
 import {batchStatus} from '../../src/nextmedtator/loading-progress.mjs';
 
@@ -29,6 +29,17 @@ test('batch CPU limits respect isolation and available cores; ETA starts after t
     assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:20,maxThreads:1}),1);
     assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:2,maxThreads:4}),2);
     assert.equal(wasmThreadCount({crossOriginIsolated:false,hardwareConcurrency:20,maxThreads:4}),1);
+    const safari='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15';
+    const chrome='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36';
+    const firefox='Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:132.0) Gecko/20100101 Firefox/132.0';
+    const bpsd={codec:'gliner25-entity-attributes-v1',fixedWords:1024};
+    const device={crossOriginIsolated:true,hardwareConcurrency:8,maxThreads:7};
+    assert.equal(wasmThreadCount({...device,...bpsd,userAgent:safari}),1,'WebKit BPSD must use its safe one-thread limit');
+    assert.equal(wasmThreadCount({...device,...bpsd,userAgent:safari,maxThreads:1}),1,'explicit low-CPU remains one');
+    assert.equal(wasmThreadCount({...device,...bpsd,fixedWords:512,userAgent:safari}),7,'P10 keeps the default WebKit limit');
+    assert.equal(wasmThreadCount({...device,...bpsd,userAgent:chrome}),7,'Blink Chrome keeps its default limit');
+    assert.equal(wasmThreadCount({...device,...bpsd,userAgent:firefox}),7,'Firefox keeps its default limit');
+    assert.equal(wasmThreadCount({...device,codec:'gliner25-records-v1',fixedWords:1024,userAgent:safari}),7,'other codecs keep their default limit');
     assert.match(batchStatus({completed:0,total:10,started:0,now:1000}).detail,/Estimating/);
     assert.deepEqual(batchStatus({completed:2,total:10,started:0,now:4000}),{percent:20,detail:'2 / 10 notes completed · About 16s remaining'});
 });
@@ -150,6 +161,17 @@ test('qualification pins both graphs, tokenizer, contract and runtime',()=>{
     for(const role of ['graph','tokenizer','schema']){const manifest=structuredClone(entry.manifest);manifest.files.find(f=>f.role===role).sha256='0'.repeat(64);assert.equal(supportsWebGPU(manifest,manifest.variants[0]),false);}
     const manifest=structuredClone(entry.manifest);manifest.runtimeVersion='other';assert.equal(supportsWebGPU(manifest,manifest.variants[0]),false);
 });
+test('FP16 score tolerance applies only to the qualified WebGPU graph identities',()=>{
+ const catalog=JSON.parse(readFileSync(new URL('../../deployment/production-model-catalog.json',import.meta.url)));
+ for(const id of ['p10-fp16-r2','bpsd-fp16-r2']){
+  const manifest=catalog.entries.find(e=>e.manifest.id===id).manifest,variant={...manifest.variants[0],backend:'webgpu'};
+  assert.deepEqual(recordConformanceOptions(manifest,variant),{tolerance:.05,threshold:variant.threshold});
+  assert.deepEqual(recordConformanceOptions(manifest,{...variant,backend:'wasm'}),{});
+  const changed=structuredClone(manifest);changed.files.find(f=>f.path===variant.graph).sha256='0'.repeat(64);
+  assert.deepEqual(recordConformanceOptions(changed,variant),{});
+ }
+ assert.deepEqual(recordConformanceOptions(entry.manifest,{...entry.manifest.variants[0],backend:'webgpu'}),{});
+});
 test('automatic GPU initialization failure retries WASM and remembers the failure',async t=>{
     gpuNavigator(t);const workers=fakeWorker(t,(m,w)=>m.task==='load'&&m.backend==='webgpu'?{error:'GPU unavailable'}:reply(m,w));
     const runner=new ConformanceWorker(),events=[];
@@ -251,7 +273,7 @@ test('fallback resolution holds the runner lock until its pending request finish
 
 test('GPU diagnostics return failed fixtures without fallback downloads and cannot qualify analysis',async t=>{
     gpuNavigator(t);const pkg=fp16Package(),seen=[];
-    const workers=fakeWorker(t,(m,w)=>m.task==='fixtures'?{pass:false,backend:'webgpu',precision:'fp16',results:[{fixture:'synthetic-0.json',pass:false,nativeChecks:{pass:false,reason:'confidence-scores-differ',maxScoreError:.003,tolerance:.0001}}]}:reply(m,w));
+    const workers=fakeWorker(t,(m,w)=>m.task==='fixtures'?{pass:false,backend:'webgpu',precision:'fp16',results:[{fixture:'synthetic-0.json',pass:false,nativeChecks:{pass:false,reason:'confidence-scores-differ',maxScoreError:.06,tolerance:.05}}]}:reply(m,w));
     const runner=new ConformanceWorker();let downloads=0;
     const result=await runner.checkGPU(pkg,'webgpu-fp16',{onConformance:r=>seen.push(r),resolveFallback:()=>{downloads++;}});
     assert.equal(result.pass,false);assert.equal(seen[0].fixtures[0].records.reason,'confidence-scores-differ');
