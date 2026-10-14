@@ -12,7 +12,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait,Select
 ROOT=Path(__file__).resolve().parents[2];OUT=ROOT/'temp/browser-validation/guided-assistance';OUT.mkdir(parents=True,exist_ok=True)
 URL=os.environ.get('NMT_GUIDED_URL','http://127.0.0.1:4299/')
+MODEL_DIR=Path(os.environ.get('NMT_MODEL_DIR',ROOT/'work'))
+DOWNLOADS=OUT/'firefox-downloads';DOWNLOADS.mkdir(parents=True,exist_ok=True)
 options=Options();options.add_argument('-headless');options.enable_bidi=True
+options.unhandled_prompt_behavior='accept'
+options.set_preference('browser.download.folderList',2)
+options.set_preference('browser.download.dir',str(DOWNLOADS.resolve()))
+options.set_preference('browser.helperApps.neverAsk.saveToDisk','application/zip,application/octet-stream')
 driver=webdriver.Firefox(options=options);driver.set_window_size(1440,1050);wait=WebDriverWait(driver,120)
 def el(selector):return driver.find_element(By.CSS_SELECTOR,'nextmedtator-assist').shadow_root.find_element(By.CSS_SELECTOR,selector)
 def testid(name):return el('[data-testid="'+name+'"]')
@@ -21,6 +27,9 @@ def ready():wait.until(lambda d:d.execute_script("return !document.querySelector
 def expand(name):
     details=testid(name)
     if not details.get_attribute('open'):click(details.find_element(By.TAG_NAME,'summary'))
+
+def assist_button(caption):
+    return next(button for button in driver.find_element(By.CSS_SELECTOR,'nextmedtator-assist').shadow_root.find_elements(By.CSS_SELECTOR,'button') if button.text.strip()==caption)
 grants=[];requests=[]
 def intercept(request):
     requests.append(request.url)
@@ -71,19 +80,40 @@ try:
             if name=='bpsd':
                 driver.get(URL);wait.until(lambda d:not d.find_element(By.ID,'start-screen').is_displayed())
                 click(testid('assist-practice-bpsd'));ready()
+            Select(testid('assist-mode')).select_by_value('assisted')
             expand('assist-packages');expand('assist-local-packages')
-            el('input[aria-label="Import model package into the annotation assistance panel"]').send_keys(str(ROOT/'work'/f'{name}.nmt-model.zip'))
+            package=MODEL_DIR/f'{name}-fp32.nmt-model.zip'
+            if not package.is_file():package=MODEL_DIR/f'{name}.nmt-model.zip'
+            el('input[aria-label="Import model package into the annotation assistance panel"]').send_keys(str(package))
             ready();wait.until(lambda d:testid('assist-analyze').is_enabled())
+            print(name+': imported; running real inference',flush=True)
             click(testid('assist-analyze'))
             WebDriverWait(driver,360).until(lambda d:not d.execute_script("return document.querySelector('nextmedtator-assist').assist.busy"))
             result=driver.execute_script("const a=document.querySelector('nextmedtator-assist').assist;return {error:a.error,message:a.message,backend:a.current().run?.backend,suggestions:a.current().run?.records.length,worker:!!a.modelRunner.worker}")
-            assert not result['error'] and result['suggestions']>0 and not result['worker'],result
+            assert not result['error'] and result['suggestions']==(2 if name=='p10' else 5) and not result['worker'],result
+            assert driver.execute_script('return app_hotpot.vpp.$data.anns[app_hotpot.vpp.$data.ann_idx].tags.length')==0
             click(testid('assist-accept'));click(testid('assist-add'));ready()
             assert driver.execute_script('return app_hotpot.vpp.$data.anns[app_hotpot.vpp.$data.ann_idx].tags.length')==1
             driver.save_screenshot(str(OUT/f'firefox-installed-{name}-review.png'))
             result['model']=name;result['reviewWritten']=True;results['models'].append(result)
-            (OUT/'firefox-installed-report.json').write_text(json.dumps(results,indent=2))
+            print(name+': inference and review passed; exporting',flush=True)
+            before=set(DOWNLOADS.glob('*.nmt.zip'))
+            click(assist_button('Export Evidence Project'))
+            archive=wait.until(lambda d:next((path for path in DOWNLOADS.glob('*.nmt.zip') if path not in before and not path.with_suffix(path.suffix+'.part').exists()),None))
+            expand('assist-more');click(assist_button('Open Evidence Project'))
+            driver.execute_script("window.__beforeReimport=document.querySelector('nextmedtator-workspace').workspace.project")
+            driver.find_element(By.CSS_SELECTOR,'nextmedtator-workspace').shadow_root.find_element(By.CSS_SELECTOR,'input[aria-label="Open project/files"]').send_keys(str(archive))
+            wait.until(lambda d:d.execute_script("const w=document.querySelector('nextmedtator-workspace').workspace;return !w.busy&&!w.error&&w.project!==window.__beforeReimport"))
+            wait.until(lambda d:len(d.find_element(By.CSS_SELECTOR,'nextmedtator-workspace').shadow_root.find_elements(By.CSS_SELECTOR,'[data-testid="human-record"]'))==1)
+            reopened=driver.execute_script("const p=document.querySelector('nextmedtator-workspace').workspace.project.current;return {records:p.draft.records.length,runs:p.runs.length,suggestions:p.runs.at(-1).records.length,backend:p.runs.at(-1).runtime.backend}")
+            assert reopened=={'records':1,'runs':1,'suggestions':result['suggestions'],'backend':result['backend']},reopened
+            result['exportReimport']=True;result['archive']=str(archive)
+            driver.save_screenshot(str(OUT/f'firefox-installed-{name}-reopened.png'))
+            workspace=driver.find_element(By.CSS_SELECTOR,'nextmedtator-workspace').shadow_root
+            click(next(button for button in workspace.find_elements(By.CSS_SELECTOR,'button') if button.text.strip()=='Back to annotation'))
+            (OUT/'firefox-installed-report.json').write_text(json.dumps(results,indent=2),encoding='utf-8')
             expand('assist-packages');expand('assist-download-options');click(testid('assist-unload-model'));ready()
             assert driver.execute_script("return document.querySelector('nextmedtator-assist').assist.model===null")
+            print(name+': export/reimport and model unload passed',flush=True)
     (OUT/'firefox-installed-report.json').write_text(json.dumps(results,indent=2));print(json.dumps(results),flush=True)
 finally:driver.quit()
