@@ -8,6 +8,7 @@ Start at [nmt.sidata.plus](https://nmt.sidata.plus); no account is required.
 | [1. Your first annotation](01-quickstart.md) | A loaded note and schema, ready for annotation |
 | [2. Local model assistance](02-local-models.md) | P10 or BPSD predictions in the Assistance panel |
 | [3. Review, export and recover](03-review-export.md) | A reviewed annotation and portable backup |
+| [4. Long notes and large collections](04-large-collections.md) | On-demand model memory, faster review, a disk-backed queue and streamed backups |
 
 ![Recorded NextMedTator walkthrough](images/nextmedtator-walkthrough.gif)
 
@@ -48,3 +49,9 @@ Assisted review, export/reopen, corpus search, statistics, recovery and BPSD
 Auto apply. Local package imports avoid a repeated 1.4 GiB public download.
 
 [Back to the project README](../README.md)
+
+The large-collection guide has a separate four-step recording. Run
+`tests/browser/test_workflow_improvements.py` with `NMT_COLLECTION_COUNT=5`, copy
+its P10 model-manager, long-note, collection-import and collection-complete
+frames to `images/21-model-memory.png` through `images/24-collection-resume.png`,
+then encode them with `uv run --with pillow python scripts/make_tutorial_gif.py --collection`.

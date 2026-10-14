@@ -83,6 +83,16 @@ function fakeWorker(t, respond = message => message.task === 'load' ? { ready: t
     return workers;
 }
 
+test('window progress is forwarded and its callback is released with the worker',async t=>{
+    fakeWorker(t,(message,worker)=>{
+        if(message.task==='analyze')worker.onmessage({data:{progress:{completed:1,total:2}}});
+        return message.task==='load'?{ready:true}:{text:message.text};
+    });
+    const runner=new ConformanceWorker(),progress=[];
+    await runner.analyze(packageData,'wasm',requests[0],{onWindowProgress:p=>progress.push(p)});
+    assert.deepEqual(progress,[{completed:1,total:2}]);assert.equal(runner.onWindowProgress,null);assert.equal(runner.worker,null);
+});
+
 // Node does not expose a browser Worker; restore the original after each case.
 test('batch loads package once, reuses the worker, and publishes completed notes in order', async t => {
     const workers = fakeWorker(t);

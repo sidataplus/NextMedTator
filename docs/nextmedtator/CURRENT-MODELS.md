@@ -18,8 +18,9 @@ review interface. No hosted Python process or inference API is required.
 
 Both selectors offer these explicit presets. Existing startup preferences are
 retained. Neither model is routed through the older clinical-v3 schema. P10
-retains `clinical_finding`, planned assertion, and unspecified time. Oversized
-notes are rejected without truncation; segment them deliberately before use.
+retains `clinical_finding`, planned assertion, and unspecified time. Long notes are scanned through overlapping GLiNER2.5 windows by the application,
+while each window retains the package’s original complete prompt and token limits.
+See [long notes and disk-backed collections](../../tutorial/04-large-collections.md).
 Changing the output schema does not remove any queries from the trained prompt.
 
 Export once using the standalone locked CPU environment:

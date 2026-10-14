@@ -1,0 +1,24 @@
+{
+  "notes": 10000,
+  "bytes": 9208890,
+  "backupBytes": 16908963,
+  "interruptedQueueRecovered": true,
+  "concurrentSaveRejected": true,
+  "backupRoundTrip": true,
+  "truncatedBackupRejected": true,
+  "editDuringSavePreserved": true,
+  "noteHistoriesLoaded": 1,
+  "editorNotes": 1,
+  "resources": {
+    "wallSeconds": 97.06430319999345,
+    "cpuSeconds": 172.78125,
+    "averageCpuCorePercent": 178.00699567584354,
+    "averageMachineCpuPercent": 8.900349783792178,
+    "peakWorkingSetMiB": 1159.8984375,
+    "peakPrivateMiB": 968.4609375,
+    "samples": 343
+  },
+  "measurementErrors": [],
+  "browser": "155.0.8059.40",
+  "assetVersion": "415b760a1cf1bfce026168a573df302a84ede3acaa0194d49fc19111773e5a31"
+}

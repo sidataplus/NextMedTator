@@ -1,0 +1,23 @@
+{
+  "notes": 10000,
+  "bytes": 9208890,
+  "backupBytes": 16908963,
+  "interruptedQueueRecovered": true,
+  "concurrentSaveRejected": true,
+  "backupRoundTrip": true,
+  "truncatedBackupRejected": true,
+  "noteHistoriesLoaded": 1,
+  "editorNotes": 1,
+  "resources": {
+    "wallSeconds": 87.5178607001435,
+    "cpuSeconds": 157.140625,
+    "averageCpuCorePercent": 179.55263501972502,
+    "averageMachineCpuPercent": 8.977631750986252,
+    "peakWorkingSetMiB": 1157.515625,
+    "peakPrivateMiB": 967.6015625,
+    "samples": 308
+  },
+  "measurementErrors": [],
+  "browser": "155.0.8059.40",
+  "scope": "Storage, queue recovery and streaming backups; no model inference"
+}

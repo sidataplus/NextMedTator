@@ -1,4 +1,5 @@
 /** Fixed, declarative entity/attribute contracts. Model artifacts never supply code. */
+import {planLongContext,scanLongContext} from './long-context.mjs';
 import {invariant,validId,clone,OffsetMap,uuid,canonical} from './integrity.mjs';
 import {buildEntitiesSchemaTokens,packInput,resolveOverlapsFlat} from './vendor/gliner25/gliner-boundary.mjs';
 export const ENTITY_ATTRIBUTES_CODEC='gliner25-entity-attributes-v1';
@@ -55,7 +56,15 @@ export function decodeContractEntities(marg,contract,text){
 export function selectContractAttribute(logits,choices,temperature=1){
     invariant(logits.length===choices.length&&logits.every(Number.isFinite),'Invalid attribute scores');const values=logits.map(v=>Math.fround(v/temperature));let best=0;for(let i=1;i<values.length;i++)if(values[i]>values[best])best=i;const maximum=values[best],exponents=values.map(v=>Math.exp(v-maximum)),sum=exponents.reduce((a,b)=>a+b,0);return {value:choices[best].value,score:Math.fround(exponents[best]/sum)};
 }
-export async function analyzeEntityContract(api,text,schema,contract,variant){
+export async function analyzeEntityContract(api,text,schema,contract,variant,{longContext=false,onProgress}={}){
+    if(!longContext)return analyzeEntityWindow(api,text,schema,contract,variant);
+    let windows;
+    try{windows=planLongContext(text,{split:splitContractWords,pack:part=>packEntityContract(part,contract,t=>api.rt._tokenize(t)),maxWords:contract.maxWords??contract.maxEncodedTokens});}
+    catch(error){return {records:[],status:'unsupported',coverage:[],windows:[],reason:error.message};}
+    if(windows.length===1)return analyzeEntityWindow(api,text,schema,contract,variant);
+    return scanLongContext(text,windows,part=>analyzeEntityWindow(api,part,schema,contract,variant),{overlapPolicy:contract.overlapPolicy,onProgress});
+}
+async function analyzeEntityWindow(api,text,schema,contract,variant){
     const plan=packEntityContract(text,contract,t=>api.rt._tokenize(t)),base={threshold:contract.threshold,encodedTokens:plan.encodedTokens,contextPolicy:'reject',overlapPolicy:contract.overlapPolicy,windows:[],notice:ENTITY_ATTRIBUTES_NOTICE,limitations:['annotation-defaults-not-inferred','record-binding-unsupported','relations-unsupported']};
     if(!plan.supported)return {...base,records:[],status:'unsupported',coverage:[],reason:'Encoded input including the complete schema exceeds the declared budget; no truncation or windowing applied'};
     const projection=entityContractSchema(schema,contract),byLabel=new Map(Object.entries(projection.families).map(([family,def])=>[def.label,family]));

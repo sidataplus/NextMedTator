@@ -1,3 +1,7 @@
+import {suggestionPage,validateUndoTags} from './review-queue.mjs';
+import {exportCollection,importCollectionBackup} from './collection-backup.mjs';
+import {CollectionStore} from './collection-store.mjs';
+import {LONG_CONTEXT_SETTINGS} from './long-context.mjs';
 import {defaultCpuThreads} from './inference-options.mjs';
 import {CorpusCommitGate,createBatchQueue,restoreBatchQueue,checkpointBatchQueue,queueCounts,queueWork,batchReport} from './batch-queue.mjs';
 import {loadWasmFallback} from './model-fallback.mjs';
@@ -192,7 +196,7 @@ class LegacyAssist {
         this.suggestionView = 'cards';
         this.detail = null;
         this.model = null;
-        this.modelRunner = new ConformanceWorker();this.modelStore=new ModelStore();
+        this.modelRunner = new ConformanceWorker();this.modelStore=new ModelStore();this.collectionStore=new CollectionStore();
         this.runs = new Map();
         this.projects = new Map();
         this.runHistory = [];this.corpusCreatedAt=null;this.corpusIdentity=null;
@@ -211,11 +215,12 @@ class LegacyAssist {
         this.unwatch=null;
         host.setAttribute('role', 'complementary');
         host.setAttribute('aria-label', 'Local assistance');
+        this.root.addEventListener('keydown',event=>this.reviewShortcut(event));
         this.render();
         void this.restoreSelectedModel();
         this.timer = setInterval(() => this.sync(), 500);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) this.sync(); });
-        window.addEventListener('beforeunload',event=>{const session=this.recoverySession;if(session.enabled&&(session.pending||session.revision!==session.savedRevision)){event.preventDefault();event.returnValue='';}});
+        window.addEventListener('beforeunload',event=>{const session=this.recoverySession;if(this.collectionDirty||session.enabled&&(session.pending||session.revision!==session.savedRevision)){event.preventDefault();event.returnValue='';}});
     }
     current() {
         const view = legacy();
@@ -227,12 +232,12 @@ class LegacyAssist {
         return { ...view, key, run: this.runs.get(key) ?? null };
     }
     sync() {
-        if(!this.unwatch&&legacy()?.vpp?.$watch)this.unwatch=legacy().vpp.$watch(()=>({dtd:legacy().data.dtd,anns:legacy().data.anns}),()=>this.recoverySession.touch(),{deep:true});
+        if(!this.unwatch&&legacy()?.vpp?.$watch)this.unwatch=legacy().vpp.$watch(()=>({dtd:legacy().data.dtd,anns:legacy().data.anns}),()=>{if(this.collection){this.collectionEditRevision=(this.collectionEditRevision??0)+1;this.collectionDirty=true;clearTimeout(this.collectionSaveTimer);this.collectionSaveTimer=setTimeout(()=>{if(!this.busy)this.perform(()=>this.saveCollectionCurrent());},1200);}else this.recoverySession.touch();},{deep:true});
         const host = document.querySelector('nextmedtator-assist');
         if (host && host !== this.host) {
             this.host = host;
             this.root = host.attachShadow({ mode: 'open' });
-            host.assist = this;
+            host.assist = this;this.root.addEventListener('keydown',event=>this.reviewShortcut(event));
             host.setAttribute('role', 'complementary');
             host.setAttribute('aria-label', 'Local assistance');
             this.signature = '';
@@ -263,7 +268,7 @@ class LegacyAssist {
             tags: ann?.tags?.length ?? 0,
             schema: dtd?.name ?? '',
             files: (view?.data?.anns ?? []).map(item => item?._filename ?? ''),
-            selected: [...this.selected],
+            selected: this.selected.size,
             exposed: [...this.exposed],
             frozen: this.blindSnapshots.has(view?.key),
             run: view?.run ? { status: view.run.status, decisions: view.run.decisions, count: view.run.records.length } : null,
@@ -281,6 +286,7 @@ class LegacyAssist {
         this.render();
         try {
             await action();
+            if(this.collection)await this.saveCollectionCurrent();
             if(this.recoverySession.enabled)this.recoverySession.touch();
         }
         catch (error) {
@@ -291,7 +297,8 @@ class LegacyAssist {
         finally {
             this.busy = false;
             this.loadingProgress=null;
-            this.progress = null;
+            this.progress = null;this.windowProgress=null;
+            if(this.collectionDirty&&!this.error){clearTimeout(this.collectionSaveTimer);this.collectionSaveTimer=setTimeout(()=>{if(!this.busy)this.perform(()=>this.saveCollectionCurrent());},1200);}
             this.render();
         }
     }
@@ -306,6 +313,7 @@ class LegacyAssist {
         invariant(view, 'The annotation workspace is still starting.');
         if(view.data.anns.length&&!confirm('Replace the current notes with a fictional practice task? Export your current work first.'))return;
         const schema=window.dtd_parser.parse(task.dtd,'dtd');
+        if(this.collection){await this.saveCollectionCurrent();this.collection=null;}
         await this.recoverySession.disable();
         this.runs.clear();this.projects.clear();this.runHistory=[];this.batchQueue=null;
         this.corpusIdentity=null;this.corpusCreatedAt=null;
@@ -354,10 +362,17 @@ class LegacyAssist {
             if(!current()||this.model)return;
             this.installedModels=installed;
             const matches=matchingInstalledModels(this.modelSelection,installed);
-            if(matches.length===1){const candidate=await this.modelStore.read(matches[0].manifestHash);if(current()&&!this.model&&candidate&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest)){this.adoptModel(candidate);this.message=`Matching installed model loaded: ${candidate.manifest.id}.`;}}
+            if(matches.length===1)this.message='Matching model is installed on disk. Choose Use installed to load it into memory.';
             else if(matches.length>1)this.message='Multiple installed packages match this source. Choose the package to load.';
         } catch(error) {if(current()){this.error=true;this.message=`Selected model could not be verified from local storage: ${error.message}`;}}
         if(current())this.render();
+    }
+    unloadModel(){
+        this.beginModelSelectionAction();this.modelRunner.cancel();this.model=null;this.scopeTokenizer=null;this.scopeTokenizerManifest=null;this.scopeTokenizerPath=null;this.qualifiedManifest=null;this.qualifiedVariant=null;this.executionStatus=null;
+        this.message='Model unloaded from memory. Installed files and annotations remain available.';this.render();
+    }
+    async inspectStorage(){
+        this.installedModels=await this.modelStore.listExisting();this.storageEstimate=await navigator.storage?.estimate?.();
     }
     async useInstalledModel(manifestHash) {
         const epoch=this.beginModelSelectionAction();
@@ -417,6 +432,64 @@ class LegacyAssist {
         view.vpp.refresh_v_anns();
         view.vpp.$forceUpdate();this.message='Clinical annotation schema loaded. Apply scope, then analyze your notes.';
     }
+    allDocuments(){return this.collection?.notes??legacy()?.data?.anns??[];}
+    async openCollection(id,{replaceConfirmed=false}={}){
+        if(this.collection)await this.saveCollectionCurrent();
+        else if(!replaceConfirmed&&legacy().data.anns.length&&!confirm('Open this disk-backed collection? Export the current ordinary workspace first.'))return;
+        await this.recoverySession.disable();
+        const meta=await this.collectionStore.read(id);invariant(meta,'Collection no longer exists');
+        this.collection=meta;this.batchQueue=restoreBatchQueue(meta.queue);this.mode=meta.settings?.mode??meta.queue?.settings?.mode??'assisted';this.longContext=meta.settings?.longContext??true;this.selected.clear();this.batchPage=0;
+        this.projects.clear();this.runs.clear();this.runHistory=[];this.blindSnapshots.clear();this.blinded.clear();this.exposed.clear();this.exposure=[];this.reviewUndo=[];
+        const view=legacy();view.data.anns=[];view.app.set_dtd(meta.dtd);view.data.dtd=meta.dtd;view.vpp.refresh_v_anns();
+        this.message=`${meta.notes.length} notes on disk. Open a note or select notes to analyze.`;
+    }
+    async importCollection(files){
+        invariant(legacy()?.data.dtd,'Load an annotation schema first');
+        if(this.collection)await this.saveCollectionCurrent();
+        if(legacy().data.anns.length&&!this.collection&&!confirm('Store a new collection on this device? Export the current workspace before replacing it.'))return;
+        const meta=await this.collectionStore.create(legacy().data.dtd,files[0]?.name?'Collection · '+files[0].name:'Local collection');
+        this.installController=new AbortController();const started=performance.now();
+        try{await this.collectionStore.importFiles(meta,files,{keyFor:documentKey,signal:this.installController.signal,onProgress:progress=>{this.loadingProgress={phase:'Storing collection locally',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}});}
+        finally{this.installController=null;await this.openCollection(meta.id,{replaceConfirmed:true});}
+    }
+    async hydrateCollectionNote(item){
+        const row=await this.collectionStore.note(this.collection.id,item._diskKey);
+        invariant(row.sourceHash===item.sourceHash,'Collection source changed');
+        if(row.project){const project=await ReviewProject.open(row.project);this.projects.set(item._diskKey,project);if(row.run){const saved=project.current.runs.find(r=>r.id===row.run.nativeRunId);invariant(saved,'Stored prediction history is missing');this.runs.set(item._diskKey,{...row.run,records:saved.records,project});}}
+        if(row.blindSnapshot)this.blindSnapshots.set(item._diskKey,freeze(row.blindSnapshot));
+        if(row.blinded)this.blinded.add(item._diskKey);if(row.exposed)this.exposed.add(item._diskKey);
+        return row.ann;
+    }
+    evictCollectionNotes(){
+        const key=this.current().key;
+        for(const map of [this.projects,this.runs,this.blindSnapshots])for(const id of map.keys())if(id!==key)map.delete(id);
+        this.runHistory=[];this.reviewUndo=(this.reviewUndo??[]).filter(u=>u.key===key);
+        this.blinded=new Set([...this.blinded].filter(id=>id===key));this.exposed=new Set([...this.exposed].filter(id=>id===key));this.exposure=this.exposure.filter(e=>e.key===key);
+    }
+    async saveCollectionNote(ann,{editRevision=this.collectionEditRevision??0}={}){
+        if(!this.collection||!ann?._diskKey)return;
+        const item=this.collection.notes.find(n=>n._diskKey===ann._diskKey);invariant(item&&documentKey(ann._filename,ann.text)===item._diskKey,'Collection source or filename changed. Export this note before reopening the collection.');
+        const project=this.projects.get(item._diskKey),run=this.runs.get(item._diskKey);
+        this.collection.queue=this.batchQueue;this.collection.settings={mode:this.mode,longContext:this.longContext!==false};
+        await this.collectionStore.commit(this.collection,{key:item._diskKey,sourceHash:item.sourceHash,ann:jsonParse(JSON.stringify(ann,(key,value)=>key==='_fh'?null:value)),project:project?.current??null,run:run?{...run,project:undefined,records:undefined}:null,blindSnapshot:this.blindSnapshots.get(item._diskKey)??null,blinded:this.blinded.has(item._diskKey),exposed:this.exposed.has(item._diskKey)});
+        this.collectionDirty=(this.collectionEditRevision??0)!==editRevision;
+    }
+    async saveCollectionCurrent(){
+        const ann=this.current().ann;if(!this.collection||!ann?._diskKey)return;
+        const editRevision=this.collectionEditRevision??0,snapshot=jsonParse(JSON.stringify(ann,(key,value)=>key==='_fh'?null:value));
+        await this.syncProject(snapshot);await this.saveCollectionNote(snapshot,{editRevision});
+    }
+    async openCollectionNote(key){
+        await this.saveCollectionCurrent();
+        invariant(!legacy().data.anns.some(a=>!a._diskKey),'Close the collection before importing ordinary workspace notes; export those notes first.');
+        const item=this.collection.notes.find(n=>n._diskKey===key);invariant(item,'Collection note missing');
+        const ann=await this.hydrateCollectionNote(item),view=legacy();
+        view.data.anns=[];const active=view.vpp.add_sample_txt_as_ann(ann.text);Object.assign(active,ann);view.vpp.set_ann_idx(0);view.vpp.refresh_v_anns();
+        this.apply=null;this.detail=null;this.evictCollectionNotes();this.refreshNativeHints();this.message='Note loaded from local storage. Other notes and histories remain on disk.';
+    }
+    async closeCollection(){
+        await this.saveCollectionCurrent();this.collection=null;this.batchQueue=null;this.selected.clear();this.projects.clear();this.runs.clear();this.runHistory=[];this.reviewUndo=[];legacy().data.anns=legacy().data.anns.filter(a=>!a._diskKey);legacy().vpp.refresh_v_anns();this.message='Collection closed. Its local files remain available under List collections.';
+    }
     async ensureProject(ann,schema=legacySchema(legacy().data.dtd)) {
         const key=documentKey(ann._filename??'document',ann.text??''),hash=await fingerprint(schema);
         let project=this.projects.get(key);
@@ -473,10 +546,13 @@ class LegacyAssist {
         this.message='Independent annotation frozen in the portable evidence project. Analyze and reveal when ready.';
     }
     async analyzeDocuments(anns, {batch=false,resume=false,retryFailed=false}={}) {
+        const managed=batch&&!!this.collection;
+        if(managed)await this.saveCollectionCurrent();
+        const annKey=a=>a._diskKey??documentKey(a._filename??'document',a.text);
         if(resume){
             invariant(this.batchQueue,'No batch to resume');
             const eligible=this.batchQueue.notes.filter(n=>retryFailed?n.status==='failed':['pending','cancelled'].includes(n.status));
-            const available=new Map(anns.map(a=>[documentKey(a._filename??'document',a.text),a]));
+            const available=new Map(anns.map(a=>[annKey(a),a]));
             for(const note of eligible)if(!available.has(note.key)){note.status='failed';note.error='Source note was removed or changed; start a new batch for its current version.';}
             anns=eligible.filter(n=>available.has(n.key)).map(n=>available.get(n.key));
         }
@@ -484,7 +560,7 @@ class LegacyAssist {
         // Original-screen notes stay editable while the worker runs. Retain the
         // submitted text/filename and schema instead of rereading mutable Vue data.
         const model=this.model,sourceAnns=[...anns],sourceDtd=legacy().data.dtd;
-        anns=anns.map(ann=>({_filename:ann._filename,text:ann.text,tags:clone(ann.tags??[])}));
+        anns=managed?anns.map(ann=>({...ann})):anns.map(ann=>({_filename:ann._filename,text:ann.text,tags:clone(ann.tags??[])}));
         if (!model)
             throw new Error('Import a GLiNER2.5 boundary model package in this panel');
         invariant(modelSelectionMatchesManifest(this.modelSelection,this.model.manifest),'The active package does not match the selected model source. Load a matching package before analysis.');
@@ -494,10 +570,11 @@ class LegacyAssist {
         const activeVariant=selectInferenceVariant(model,qualifyForSchema(model,nativeSchema).level),activeCodec=activeVariant.codec;
         invariant(activeCodec!==ENTITY_ATTRIBUTES_CODEC||!scope,'Clear the clinical suggestion scope before using a fixed entity-contract model. Its complete native prompt must be retained.');
         const schema=activeCodec===ENTITY_ATTRIBUTES_CODEC?entityContractSchema(nativeSchema,model.entityContracts.get(activeVariant.id)):scope?compileScope(scope,nativeSchema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(nativeSchema):nativeSchema;
+        if(managed)invariant(this.mode!=='blind','For blind review, open and freeze each collection note and analyze it individually.');
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
         const autoApply = this.mode === 'auto';
         if (autoApply) for (const ann of anns) {
-            const key = documentKey(ann._filename ?? 'document', ann.text);
+            const key = annKey(ann);
             invariant(!this.blinded.has(key) || this.exposed.has(key), 'Reveal each protected note explicitly before auto apply');
         }
         const qualification = qualifyForSchema(model, schema);
@@ -515,40 +592,41 @@ class LegacyAssist {
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
             : { ...schemaEntityLabels(schema), contentCount: undefined, groups: undefined };
-        const requests = {length:anns.length,at:index => {
+        const requests = {length:anns.length,at:async index => {
+            if(managed){const item=anns[index];const active=this.current().ann;const loaded=active?._diskKey===item._diskKey?active:await this.hydrateCollectionNote(item);sourceAnns[index]=loaded;anns[index]={...loaded,tags:clone(loaded.tags??[]),sourceHash:item.sourceHash};}
             const ann=anns[index];
             const doc = { id: ann._filename ?? `document-${index + 1}`, text: ann.text };
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
             if (this.mode === 'blind')
                 this.blinded.add(key);
-            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: thresholdSettings.threshold };
+            return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: thresholdSettings.threshold, longContext:this.longContext!==false };
         }};
-        const runSettings={codec,...(codec===ENTITY_ATTRIBUTES_CODEC?{overlapPolicy:model.entityContracts.get(variant.id).overlapPolicy,maxEncodedTokens:variant.maxSequenceLength,contextPolicy:'reject',wordOverlap:0}:{}),...((codec===CLINICAL_V3_CODEC||codec===ENTITY_ATTRIBUTES_CODEC)?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const runSettings={codec,...(codec===ENTITY_ATTRIBUTES_CODEC?{overlapPolicy:model.entityContracts.get(variant.id).overlapPolicy,maxEncodedTokens:variant.maxSequenceLength,...(this.longContext===false?{contextPolicy:'reject',wordOverlap:0}:LONG_CONTEXT_SETTINGS)}:{}),...((codec===CLINICAL_V3_CODEC||codec===ENTITY_ATTRIBUTES_CODEC)?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
         const context=await fingerprint({manifestHash:model.manifestHash,variantId:variant.id,schema:nativeSchema,settings:runSettings,mode:this.mode});
         let queueRows=[];
         if(batch){
             if(resume){
                 const eligible=new Map(queueWork(this.batchQueue,context,{retryFailed}).map(n=>[n.key,n]));
-                queueRows=anns.map(ann=>eligible.get(documentKey(ann._filename??'document',ann.text)));
-                for(const [i,row]of queueRows.entries())invariant(row&&row.sourceHash===await sha256(anns[i].text),'Queued source changed; start a new batch.');
+                queueRows=anns.map(ann=>eligible.get(annKey(ann)));
+                for(const [i,row]of queueRows.entries())invariant(row&&row.sourceHash===(managed?anns[i].sourceHash:await sha256(anns[i].text)),'Queued source changed; start a new batch.');
             }else{
-                const notes=[];for(const ann of anns)notes.push({key:documentKey(ann._filename??'document',ann.text),filename:ann._filename??'document',sourceHash:await sha256(ann.text)});
+                const notes=[];for(const ann of anns)notes.push({key:annKey(ann),filename:ann._filename??'document',sourceHash:managed?ann.sourceHash:await sha256(ann.text)});
                 this.batchQueue=createBatchQueue(context,notes);queueRows=this.batchQueue.notes;
                 this.batchQueue.model={packageId:model.manifest.id,manifestHash:model.manifestHash,variantId:variant.id};
                 this.batchQueue.settings={schemaHash:await fingerprint(nativeSchema),mode:this.mode,...thresholdSettings};
             }
-            this.batchQueue.state='running';
+            this.batchQueue.state='running';if(managed){this.collection.queue=this.batchQueue;await this.collectionStore.commit(this.collection);}
         }
         const completed=new Set();let activeIndex=0,analysisStarted=null;
         const updateProgress=()=>{
             const counts=batch?queueCounts(this.batchQueue):{completed:completed.size,failed:0,total:anns.length};
             this.loadingProgress={phase:'Analyzing notes',completed:counts.completed+counts.failed,failed:counts.failed,total:counts.total,started:analysisStarted-(batch?this.batchQueue.elapsedMs:0)};
         };
-        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, collectResults:false, qualify:true, onProgress: index => {
+        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, collectResults:false, qualify:true, onWindowProgress: progress=>{this.windowProgress=progress;this.message=`${this.progress?.filename??'Note'} · window ${Math.min(progress.completed+1,progress.total)} / ${progress.total}`;this.render();}, onProgress: index => {
             analysisStarted??=performance.now();
             if(batch){const row=queueRows[index];row.status='running';row.attempts++;row.startedAt=new Date().toISOString();delete row.error;}
             updateProgress();
-            activeIndex=index;
+            activeIndex=index;this.windowProgress=null;
             const ann = anns[index];
             this.progress = { index: index + 1, total: anns.length, filename: ann._filename ?? 'document' };
             this.message = `Analyzing ${index + 1} of ${anns.length} on this device.`;
@@ -566,14 +644,15 @@ class LegacyAssist {
             const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);const storedRun=project.current.runs.at(-1);this.runHistory.push(storedRun);
             // Project now owns the annotation snapshot; release this queue copy.
             ann.tags=[];
-            this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records:storedRun.records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
-            if (autoApply && result.status==='complete' && legacy().data.dtd===sourceDtd && legacy().data.anns.includes(sourceAnns[index]) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) await this.applyAllSuggestions(sourceAnns[index]);
+            this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records:storedRun.records, notice:result.notice??notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
+            if (autoApply && result.status==='complete' && legacy().data.dtd===sourceDtd && (managed||legacy().data.anns.includes(sourceAnns[index])) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) await this.applyAllSuggestions(sourceAnns[index]);
             completed.add(index);
             if(batch){Object.assign(queueRows[index],{status:result.status==='complete'?'completed':'failed',runId:nativeRun.id,suggestions:records.length,backend:result.backend,precision:result.precision,wasmThreads:result.wasmThreads,finishedAt:new Date().toISOString()});if(result.status!=='complete')queueRows[index].error=result.reason??'Input is unsupported by this model';}
+            if(managed){await this.saveCollectionNote(sourceAnns[index]);const item=this.collection.notes.find(n=>n._diskKey===key);anns[index]=item;sourceAnns[index]=item;this.evictCollectionNotes();}
             updateProgress();renderLoadingProgress(this.root,this.loadingProgress);
             if(batch&&completed.size%10===0&&this.recoverySession.enabled)this.recoverySession.touch();
-        }) });}catch(error){if(batch&&!completed.has(activeIndex)){const row=queueRows[activeIndex];row.status=/Cancelled|AbortError/.test(error.message+' '+error.name)?'cancelled':'failed';row.error=row.status==='cancelled'?'Stopped by user':'Local inference failed; retry this note';row.finishedAt=new Date().toISOString();}if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
-        finally{if(batch){if(analysisStarted!==null)this.batchQueue.elapsedMs+=performance.now()-analysisStarted;const counts=queueCounts(this.batchQueue);this.batchQueue.state=counts.pending+counts.cancelled?'paused':counts.failed?'needs-attention':'completed';if(this.recoverySession.enabled)this.recoverySession.touch();}}
+        }) });}catch(error){if(batch&&!completed.has(activeIndex)){const row=queueRows[activeIndex];row.status=/Cancelled|AbortError/.test(error.message+' '+error.name)?'cancelled':'failed';row.error=row.status==='cancelled'?'Stopped by user':'Local inference failed; retry this note';row.finishedAt=new Date().toISOString();}if(!completed.has(activeIndex)&&typeof anns[activeIndex]?.text==='string'){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
+        finally{if(batch){if(analysisStarted!==null)this.batchQueue.elapsedMs+=performance.now()-analysisStarted;const counts=queueCounts(this.batchQueue);this.batchQueue.state=counts.pending+counts.cancelled?'paused':counts.failed?'needs-attention':'completed';if(managed){this.collection.queue=this.batchQueue;await this.collectionStore.commit(this.collection);this.evictCollectionNotes();}if(this.recoverySession.enabled)this.recoverySession.touch();}}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
@@ -581,10 +660,10 @@ class LegacyAssist {
     }
     chosenDocuments(onlySelected) {
         const view = legacy();
-        const anns = view?.data?.anns ?? [];
+        const anns = this.allDocuments();
         if (!onlySelected)
             return view?.ann ? [view.ann] : [];
-        return anns.filter(ann => ann && this.selected.has(documentKey(ann._filename ?? 'document', ann.text ?? '')));
+        return anns.filter(ann => ann && this.selected.has(ann._diskKey??documentKey(ann._filename ?? 'document', ann.text ?? '')));
     }
     forCurrentNote(key, action) {
         return (...args) => {
@@ -628,7 +707,7 @@ class LegacyAssist {
     }
     async applyAllSuggestions(ann = this.current().ann) {
         const view = legacy(), dtd = view?.data?.dtd;
-        invariant(ann && view.data.anns.includes(ann), 'Open a document first');
+        invariant(ann && (view.data.anns.includes(ann)||this.collection&&ann._diskKey), 'Open a document first');
         const key = documentKey(ann._filename ?? 'document', ann.text), run = this.runs.get(key);
         invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this protected note explicitly before auto apply');
         invariant(run?.status === 'complete', 'Auto apply requires a complete run');
@@ -662,17 +741,59 @@ class LegacyAssist {
         // Commit native tags and their evidence lineage together. No await can
         // interleave source navigation or human editing in this section.
         ann.tags.push(...additions.map(({tag})=>tag));
+        const undoDecisions=Object.fromEntries(additions.map(({record})=>[record.id,run.decisions[record.id]??null]));
         run.project = candidate; this.projects.set(key,candidate);
         for (const {record,tag} of additions) run.decisions[record.id] = {status:'applied',tagId:tag.id,reviewStatus:'unreviewed'};
+        this.rememberReviewUndo(run,undoDecisions,additions.map(({tag})=>tag));
         this.recordExposure({ann,key},run,'auto-apply');
         ann._has_saved = false; view.vpp.refresh_v_anns();
-        for (const {tag} of additions) view.app.update_hint_dict_by_tag(ann,tag);
+        if(!this.collection||legacy().ann===ann)for (const {tag} of additions) view.app.update_hint_dict_by_tag(ann,tag);
         if (legacy().ann === ann) {
             view.data.display_tag_name = '__all__'; view.app.cm_update_marks?.();
             view.vpp.set_ann_unsaved(ann);
         }
         view.vpp.$forceUpdate(); this.apply = null; this.detail = null;
         this.message = `Auto-applied ${additions.length} suggestions as native annotation tags. Machine-applied tags are unreviewed; existing tags and original predictions were preserved.`;
+    }
+    rememberReviewUndo(run,decisions,added=[]){
+        this.reviewUndo??=[];
+        const event=[...run.project.current.events].reverse().find(e=>e.details?.undo||e.details?.before);
+        this.reviewUndo.push({key:run.key,runId:run.nativeRunId,eventId:event?.id,decisions:clone(decisions),added:clone(added)});if(this.reviewUndo.length>20)this.reviewUndo.shift();
+    }
+    refreshNativeHints(){
+        const view=legacy();view.vpp.hint_dict={};for(const ann of view.data.anns)view.app.update_hint_dict_by_ann(ann);view.app.cm_update_marks?.();
+    }
+    undoReview(){
+        const view=this.current(),run=view.run,entry=this.reviewUndo?.at(-1);
+        invariant(entry&&entry.key===view.key&&entry.runId===run?.nativeRunId,'Open the note and run for the last review action');
+        const undone=new Set(run.project.current.events.filter(e=>e.action==='undo').map(e=>e.details.undoes));
+        const event=[...run.project.current.events].reverse().find(e=>!undone.has(e.id)&&(e.details?.undo||e.details?.before));
+        invariant(event?.id===entry.eventId,'Another annotation change follows this action; review it before undoing');
+        const tags=validateUndoTags(view.ann.tags,entry.added);
+        run.project.undo();view.ann.tags=tags;
+        for(const [id,decision]of Object.entries(entry.decisions)){if(decision)run.decisions[id]=decision;else delete run.decisions[id];}
+        this.reviewUndo.pop();view.vpp.set_ann_unsaved(view.ann);view.vpp.refresh_v_anns();this.refreshNativeHints();view.vpp.$forceUpdate();this.apply=null;this.message='Last assistance action undone. Original model predictions are retained.';
+    }
+    rejectSuggestion(view,run,record){
+        const before={[record.id]:run.decisions[record.id]??null};
+        run.project.review(run.nativeRunId,record.id,'rejected');run.decisions[record.id]={status:'rejected'};this.rememberReviewUndo(run,before);
+        this.apply=null;this.message='Suggestion rejected. Original annotation tags stay as they were.';
+    }
+    reviewShortcut(event){
+        if(!event.altKey||event.ctrlKey||event.metaKey||this.busy)return;
+        const view=this.current(),run=view.run;if(!run||this.mode==='blind'||this.blinded.has(view.key)&&!this.exposed.has(view.key))return;
+        const key=event.key.toLowerCase();if(!['j','k','a','r','u','enter'].includes(key))return;
+        const target=event.composedPath()[0];if(['INPUT','SELECT','TEXTAREA'].includes(target?.tagName)&&key!=='enter')return;
+        event.preventDefault();
+        const records=suggestionPage(run.records,run.decisions,{...this.reviewFilter,page:this.reviewPage??0}).records;
+        let at=records.findIndex(r=>r.id===this.reviewFocus);if(at<0)at=0;
+        if(key==='j'||key==='k'){at=Math.max(0,Math.min(records.length-1,at+(key==='j'?1:-1)));const record=records[at];if(record){this.reviewFocus=record.id;this.detail=record.id;this.locate(record);this.render();this.root.querySelector('[data-testid=assist-review-controls]')?.focus();}return;}
+        if(key==='u'){this.perform(()=>this.undoReview());return;}
+        if(key==='enter'){this.root.querySelector('[data-testid=assist-add]')?.click();return;}
+        const record=records[at];if(!record||run.decisions[record.id])return;
+        this.reviewFocus=record.id;this.detail=record.id;
+        if(key==='a'){this.apply={id:record.id,tag:preferredTag(record.family,view.data.dtd.etags)};this.render();this.root.querySelector('[data-testid=assist-add]')?.focus();}
+        else this.perform(()=>this.rejectSuggestion(view,run,record));
     }
     locate(record) {
         const view = legacy();
@@ -726,6 +847,7 @@ class LegacyAssist {
         if (this.message)
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
         renderLoadingProgress(this.root,this.busy?this.loadingProgress:null);
+        if(this.busy&&this.windowProgress?.total>1){const progress=node('progress',null,{max:this.windowProgress.total,value:this.windowProgress.completed,'aria-label':'Note window progress'});progress.style.width='100%';dock.append(progress);}
         const body = node('div', null, { class: 'body' });
         dock.append(body);
         const practice=disclosure(this,'practice','Try a fictional note',!view?.ann);
@@ -734,6 +856,14 @@ class LegacyAssist {
         for(const task of PRACTICE_TASKS)practiceActions.append(button(task.title,()=>this.perform(()=>this.loadPracticeTask(task)),{id:'assist-practice-'+task.id,disabled:this.busy||!view?.vpp}));
         practice.append(practiceActions,node('a','Step-by-step tutorials',{href:'https://github.com/sidataplus/NextMedTator/tree/main/tutorial',target:'_blank',rel:'noopener noreferrer'}));
         if(!view?.ann)body.append(practice);
+        const collections=disclosure(this,'collections','Large collections · local disk');
+        collections.append(node('p','Store up to 10,000 UTF-8 text notes on this device. Only the open note and the note being analyzed enter the editor / memory. Annotations and history are checkpointed per note. Browser storage is not a portable backup.',{class:'muted'}));
+        const collectionFiles=node('input',null,{type:'file',multiple:true,accept:'.txt','aria-label':'Store text files as a local collection','data-testid':'assist-collection-import',disabled:this.busy||!view?.data.dtd});collectionFiles.addEventListener('change',()=>{const files=[...collectionFiles.files];if(files.length)this.perform(()=>this.importCollection(files));});collections.append(labeled('Store text files on this device',collectionFiles),button('List collections',()=>this.perform(async()=>{this.savedCollections=await this.collectionStore.list();}),{disabled:this.busy,id:'assist-collection-list'}));
+        for(const saved of this.savedCollections??[])collections.append(button(`Open collection: ${saved.name} (${saved.count} notes)`,()=>this.perform(()=>this.openCollection(saved.id)),{disabled:this.busy,id:'assist-collection-restore'}));
+        if(this.collection){collections.append(node('p',`${this.collection.notes.length} notes stored · ${this.projects.size} note histories loaded`,{'data-testid':'assist-collection-memory'}),button('Save open note',()=>this.perform(()=>this.saveCollectionCurrent()),{disabled:this.busy,id:'assist-collection-save'}),button('Close collection',()=>this.perform(()=>this.closeCollection()),{disabled:this.busy,id:'assist-collection-close'}));}
+        const backup=node('input',null,{type:'file',accept:'.jsonl','aria-label':'Restore collection backup','data-testid':'assist-collection-backup-import',disabled:this.busy});backup.addEventListener('change',()=>{const file=backup.files[0];if(file)this.perform(async()=>{const meta=await importCollectionBackup(this.collectionStore,file,{keyFor:documentKey});await this.openCollection(meta.id);});});collections.append(labeled('Restore portable collection backup',backup));
+        if(this.collection){collections.append(button('Export collection backup',async()=>{if(!window.showSaveFilePicker){this.error=true;this.message='Streaming collection export requires desktop Chrome or Edge. Individual notes can still be exported using the annotation controls.';this.render();return;}let handle;try{handle=await window.showSaveFilePicker({suggestedName:'collection.nmt.jsonl',types:[{description:'NextMedTator collection',accept:{'application/x-ndjson':['.jsonl']}}]});}catch{return;}this.perform(async()=>{const started=performance.now();await this.saveCollectionCurrent();await exportCollection(this.collectionStore,this.collection,await handle.createWritable(),{onProgress:progress=>{this.loadingProgress={phase:'Exporting collection',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}});this.message='Portable collection backup saved with per-note integrity checks.';});},{disabled:this.busy,id:'assist-collection-export'}));}
+        body.append(collections);
         const modelSettings=node('section',null,{class:'section','aria-label':'Model source'});body.append(modelSettings);
         modelSettings.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));
         const actions = node('div', null, { class: 'row' });
@@ -744,10 +874,11 @@ class LegacyAssist {
         const options=disclosure(this,'options','Analysis settings',this.scopeEditing);body.append(options);
         options.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:activeVariantForSchema(this.model,view?.data?.dtd?legacySchema(view.data.dtd):null),disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
         const actionBar=node('div',null,{class:'action-bar'});actionBar.append(actions,node('p',!schema?'Load a schema, then open a note.':!view?.ann?'Open a note to begin.':!this.model?'Choose a model below and install its package.':this.mode==='auto'?'Predictions are added as unreviewed tags.':this.mode==='blind'?'Freeze your annotation before revealing predictions.':'Review suggestions before adding them to the note.'));head.after(actionBar);
+        const longNotes=node('input',null,{type:'checkbox','aria-label':'Analyze long notes with overlapping windows','data-testid':'assist-long-context',disabled:this.busy});longNotes.checked=this.longContext!==false;longNotes.addEventListener('change',()=>{this.longContext=longNotes.checked;});options.append(labeled('Analyze long notes with GLiNER2.5 windows',longNotes),node('p','Keeps the full prompt, maps spans back to the original note, and merges overlap duplicates. Attributes use window-local context. Turning this off rejects oversized notes.',{class:'muted'}));
         options.append(renderScopeEditor(this));
         const storage=disclosure(this,'recovery','Local recovery & backups');
         const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
-        if(!this.recoverySession.enabled)recovery.append(button('Enable local corpus recovery',()=>this.perform(async()=>{if(!confirm('Store this corpus, annotations and prediction history in this browser profile? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann,id:'assist-recovery-enable'}));
+        if(!this.recoverySession.enabled)recovery.append(button('Enable local corpus recovery',()=>this.perform(async()=>{if(!confirm('Store this corpus, annotations and prediction history in this browser profile? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann||!!this.collection,id:'assist-recovery-enable'}));
         else recovery.append(button('Save corpus checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete corpus recovery',()=>this.perform(async()=>{if(confirm('Delete this corpus recovery copy? Current in-memory annotations remain.'))await this.recoverySession.forget();})),button('Export SQLite corpus backup',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
         recovery.append(button('List saved corpora',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore corpus '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the current in-memory corpus with this recovery copy? Export unsaved files first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));storage.append(recovery);
         const packages=disclosure(this,'packages',this.model?'Model packages':'Get a model package',!this.model);if(!this.model)packages.append(node('p','Choose a public download or import a package. Downloads start only when you request them.',{class:'setup-hint'}));
@@ -761,7 +892,7 @@ class LegacyAssist {
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        packages.append(labeled('Local model package', file),button('List installed models',()=>this.perform(async()=>{this.installedModels=await this.modelStore.list();})),button('Show approved public model',()=>this.perform(async()=>{
+        packages.append(labeled('Local model package', file),button('List installed models',()=>this.perform(()=>this.inspectStorage())),button('Show approved public model',()=>this.perform(async()=>{
             const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});
             invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();
         })));
@@ -791,8 +922,12 @@ class LegacyAssist {
             const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
             packages.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
         }
+        packages.append(node('p',this.model?`Loaded model buffers: ${(this.model.manifest.files.reduce((n,f)=>n+f.bytes,0)/1048576).toFixed(0)} MiB. Runtime memory is additional.`:'No model weights loaded in memory.',{class:'muted','data-testid':'assist-model-memory'}));
+        if(this.storageEstimate)packages.append(node('p',`Browser storage: ${(this.storageEstimate.usage/1048576).toFixed(0)} MiB used of approximately ${(this.storageEstimate.quota/1048576).toFixed(0)} MiB available quota.`,{class:'muted'}));
+        for(const item of this.installedModels??[])packages.append(button('Remove installed '+item.manifest.id,()=>this.perform(async()=>{if(!confirm('Remove this cached model from this browser? You can download or import it again.'))return;if(this.model?.manifestHash===item.manifestHash)this.unloadModel();await this.modelStore.remove(item.manifestHash);await this.inspectStorage();}),{disabled:this.busy,id:'assist-remove-model'}));
+        if(this.model)packages.append(button('Unload model',()=>this.unloadModel(),{disabled:this.busy,id:'assist-unload-model'}));
         if(this.model)packages.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})));
-        const anns = view?.data?.anns ?? [];
+        const anns = this.allDocuments();
         if (anns.length) {
             const docs = disclosure(this,'batch',`Batch analysis · ${this.selected.size} selected`);docs.setAttribute('aria-label','Documents to analyze');
             docs.append(node('p', 'Check notes for Analyze selected. One note runs at a time; completed results stay available for review.', { class: 'muted' }));
@@ -801,28 +936,29 @@ class LegacyAssist {
             cpu.value=this.batchCpu??'auto';cpu.addEventListener('change',()=>{this.batchCpu=cpu.value;});docs.append(labeled('CPU usage',cpu),node('p','Automatic prefers WebGPU, including Metal on supported Apple browsers. CPU fallback uses browser-reported logical cores minus one (minimum one); without cross-origin isolation it uses one thread. Low CPU and Balanced reduce CPU use. Models load only on request.',{class:'muted'}));
             const queuedByKey=new Map((this.batchQueue?.notes??[]).map(n=>[n.key,n]));
             const selections=node('div',null,{class:'row'});
-            selections.append(button('Select all',()=>{for(const ann of anns)if(typeof ann?.text==='string')this.selected.add(documentKey(ann._filename??'document',ann.text));this.render();},{disabled:this.busy,id:'assist-select-all'}),button('Clear selection',()=>{this.selected.clear();this.render();},{disabled:this.busy,id:'assist-select-none'}));docs.append(selections);
-            selections.append(button('Select unfinished',()=>{this.selected.clear();for(const ann of anns){const key=documentKey(ann._filename??'document',ann.text??'');if(queuedByKey.get(key)?.status!=='completed')this.selected.add(key);}this.render();},{disabled:this.busy,id:'assist-select-unfinished'}));
+            selections.append(button('Select all',()=>{for(const ann of anns)if(ann._diskKey||typeof ann?.text==='string')this.selected.add(ann._diskKey??documentKey(ann._filename??'document',ann.text));this.render();},{disabled:this.busy,id:'assist-select-all'}),button('Clear selection',()=>{this.selected.clear();this.render();},{disabled:this.busy,id:'assist-select-none'}));docs.append(selections);
+            selections.append(button('Select unfinished',()=>{this.selected.clear();for(const ann of anns){const key=ann._diskKey??documentKey(ann._filename??'document',ann.text??'');if(queuedByKey.get(key)?.status!=='completed')this.selected.add(key);}this.render();},{disabled:this.busy,id:'assist-select-unfinished'}));
             if(this.batchQueue){
                 const counts=queueCounts(this.batchQueue),controls=node('div',null,{class:'row'});
                 docs.append(node('p',`${counts.completed} completed · ${counts.failed} failed · ${counts.pending+counts.cancelled} unfinished`,{'data-testid':'assist-batch-summary'}));
                 const bar=node('progress',null,{max:counts.total,value:counts.completed+counts.failed,'aria-label':'Overall queue progress'});bar.style.width='100%';docs.append(bar);
-                controls.append(button('Resume unfinished',()=>this.perform(()=>this.analyzeDocuments(legacy().data.anns,{batch:true,resume:true})),{disabled:this.busy||!this.model||counts.pending+counts.cancelled===0,id:'assist-batch-resume'}),button('Retry failed',()=>this.perform(()=>this.analyzeDocuments(legacy().data.anns,{batch:true,resume:true,retryFailed:true})),{disabled:this.busy||!this.model||counts.failed===0,id:'assist-batch-retry'}),button('Export completion report',()=>localDownload(new TextEncoder().encode(JSON.stringify(batchReport(this.batchQueue,{blind:this.mode==='blind'}),null,2)),`batch-${this.batchQueue.id}.json`,'application/json'),{disabled:this.busy,id:'assist-batch-report'}));
-                docs.append(controls,node('p','Resume skips finished notes and checks model, schema, threshold and review mode. Enable local corpus recovery to preserve the queue across reloads; checkpoints are requested every 10 processed notes and when stopping. The report contains filenames and statuses.',{class:'muted'}));
+                controls.append(button('Resume unfinished',()=>this.perform(()=>this.analyzeDocuments(this.allDocuments(),{batch:true,resume:true})),{disabled:this.busy||!this.model||counts.pending+counts.cancelled===0,id:'assist-batch-resume'}),button('Retry failed',()=>this.perform(()=>this.analyzeDocuments(this.allDocuments(),{batch:true,resume:true,retryFailed:true})),{disabled:this.busy||!this.model||counts.failed===0,id:'assist-batch-retry'}),button('Export completion report',()=>localDownload(new TextEncoder().encode(JSON.stringify(batchReport(this.batchQueue,{blind:this.mode==='blind'}),null,2)),`batch-${this.batchQueue.id}.json`,'application/json'),{disabled:this.busy,id:'assist-batch-report'}));
+                docs.append(controls,node('p',this.collection?'Each completed note and queue status are saved together on this device. Resume skips finished notes and checks model, schema, threshold and review mode. Export a collection backup for portability.':'Resume skips finished notes and checks model, schema, threshold and review mode. Enable local corpus recovery to preserve the queue across reloads; checkpoints are requested every 10 processed notes and when stopping. The report contains filenames and statuses.',{class:'muted'}));
             }
             // Bound DOM size even when the corpus contains thousands of notes.
             const pages=Math.ceil(anns.length/50),page=Math.min(this.batchPage??0,pages-1);
             if(pages>1){const navigation=node('div',null,{class:'row'});navigation.append(button('Previous notes',()=>{this.batchPage=page-1;this.render();},{disabled:page===0}),node('span',`${page*50+1}–${Math.min((page+1)*50,anns.length)} of ${anns.length}`),button('Next notes',()=>{this.batchPage=page+1;this.render();},{disabled:page===pages-1}));docs.append(navigation);}
             for (const ann of anns.slice(page*50,(page+1)*50)) {
-                if (!ann?.text && ann?.text !== '')
+                if (!ann?._diskKey && !ann?.text && ann?.text !== '')
                     continue;
-                const key = documentKey(ann._filename ?? 'document', ann.text ?? '');
+                const key = ann._diskKey??documentKey(ann._filename ?? 'document', ann.text ?? '');
                 const input = node('input', null, { type: 'checkbox',disabled:this.busy,'aria-label':ann._filename??'document' });
                 input.checked = this.selected.has(key);
                 input.addEventListener('change', () => { if (input.checked) this.selected.add(key); else this.selected.delete(key); this.render(); });
                 const row = node('label', null, { class: 'check' });
                 const queued=queuedByKey.get(key);
                 row.append(input, node('span', ann._filename ?? 'document'));
+                if(this.collection)row.append(button('Open',()=>this.perform(()=>this.openCollectionNote(key)),{disabled:this.busy,title:'Load this note from disk',id:'assist-collection-open-note'}));
                 if(queued)row.append(node('span',queued.status,{class:'badge','data-testid':'assist-note-status',title:queued.error??`${queued.attempts} attempts`}));
                 docs.append(row);
             }
@@ -876,11 +1012,18 @@ class LegacyAssist {
         display.value = this.suggestionView;
         display.addEventListener('change', () => { this.suggestionView = display.value; this.detail = null; this.apply = null; this.render(); });
         body.append(labeled('Suggestion view', display));
+        const reviewControls=node('div',null,{class:'section',tabindex:0,'data-testid':'assist-review-controls','aria-label':'Suggestion review controls'});
+        const filter=(name,values)=>{const select=node('select',null,{'aria-label':'Filter suggestions by '+name});for(const [value,label]of values)select.append(node('option',label,{value}));select.value=this.reviewFilter?.[name]??'all';select.addEventListener('change',()=>{this.reviewFilter={...this.reviewFilter,[name]:select.value};this.reviewPage=0;this.reviewFocus=null;this.render();});return labeled(name,select);};
+        reviewControls.append(filter('family',[['all','All families'],...[...new Set(run.records.map(r=>r.family))].map(f=>[f,f])]),filter('status',[['all','All decisions'],['unreviewed','Unreviewed'],['accepted','Accepted'],['rejected','Rejected'],['applied','Machine-applied']]));
+        const reviewPage=suggestionPage(run.records,run.decisions,{...this.reviewFilter,page:this.reviewPage??0});
+        reviewControls.append(node('p',`${reviewPage.total} matching suggestions · page ${reviewPage.page+1} / ${reviewPage.pages}`,{'data-testid':'assist-review-page'}),button('Previous suggestions',()=>{this.reviewPage=reviewPage.page-1;this.render();},{disabled:reviewPage.page===0}),button('Next suggestions',()=>{this.reviewPage=reviewPage.page+1;this.render();},{disabled:reviewPage.page+1===reviewPage.pages}),button('Undo assistance action',()=>this.perform(()=>this.undoReview()),{disabled:this.busy||this.reviewUndo?.at(-1)?.key!==view.key,id:'assist-review-undo'}),node('p','Focus this panel: Alt+J/K next/previous, Alt+A review/add, Alt+Enter write, Alt+R reject, Alt+U undo. Twenty suggestions per page.',{class:'muted'}));body.append(reviewControls);
+        const runReceipt=run.project.current.runs.find(r=>r.id===run.nativeRunId);
+        if(runReceipt?.windows?.length>1)body.append(node('p',`Long note: ${runReceipt.windows.length} windows · ${run.status}. Attributes use local window context; cross-window mentions are not stitched.`,{'data-testid':'assist-window-coverage'}));
         if (this.suggestionView === 'compact') {
             const table = node('table', null, { class: 'compact', 'aria-label': 'Machine suggestions' });
             const caption = node('caption', `${run.records.length} original machine suggestions`);
             const rows = node('tbody');
-            for (const record of run.records) {
+            for (const record of reviewPage.records) {
                 const row = node('tr', null, { 'data-testid': 'assist-compact-suggestion' });
                 const cell = node('td');
                 const anchor = record.anchor.map(span => span.text).join(' … ');
@@ -899,11 +1042,11 @@ class LegacyAssist {
             const detail = run.records.find(record => record.id === this.detail);
             if (detail) body.append(this.card(view, run, detail));
         } else {
-            for (const record of run.records) body.append(this.card(view, run, record));
+            for (const record of reviewPage.records) body.append(this.card(view, run, record));
         }
     }
     card(view, run, record) {
-        const card = node('article', null, { class: 'card', 'data-testid': 'assist-suggestion' });
+        const card = node('article', null, { class: 'card', tabindex:0, 'data-testid': 'assist-suggestion' });card.addEventListener('focusin',()=>{this.reviewFocus=record.id;});if(this.reviewFocus===record.id)card.style.borderColor='#087e8b';
         const decision = run.decisions[record.id];
         card.append(node('div', 'Machine suggestion', { class: 'tag' }), node('p', record.anchor.map(span => span.text).join(' … '), { class: 'anchor' }), node('p', `${record.family.replaceAll('_', ' ')} · score ${Number(record.score).toFixed(3)}`, { class: 'muted' }));
         if(record.conceptId)card.append(node('p',`Concept: ${record.conceptId}`,{class:'muted'}));
@@ -914,7 +1057,7 @@ class LegacyAssist {
         const actions = node('div', null, { class: 'row' });
         actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-locate' }));
         if (!decision) {
-            actions.append(button('Add to annotation', this.forCurrentNote(view.key, () => { this.apply = { id: record.id, tag: preferredTag(record.family, view?.data?.dtd?.etags) }; this.render(); }), { id: 'assist-accept' }), button('Reject', this.forCurrentNote(view.key, () => { run.decisions[record.id] = { status: 'rejected' }; run.project.review(run.nativeRunId,record.id,'rejected'); if (this.apply?.id === record.id) this.apply = null; this.message = 'Suggestion rejected. Original annotation tags stay as they were.'; this.render(); }), { id: 'assist-reject' }));
+            actions.append(button('Add to annotation', this.forCurrentNote(view.key, () => { this.apply = { id: record.id, tag: preferredTag(record.family, view?.data?.dtd?.etags) }; this.render(); }), { id: 'assist-accept' }), button('Reject', this.forCurrentNote(view.key, () => { this.perform(()=>this.rejectSuggestion(view,run,record)); }), { id: 'assist-reject' }));
         }
         card.append(actions);
         if (this.apply?.id === record.id)
@@ -953,7 +1096,7 @@ class LegacyAssist {
                 input = node('input', null, { type: 'text', value: draft.values[attr.name] ?? '', 'aria-label': attr.name });
             }
             inputs.set(attr.name, input);
-            form.append(labeled(attr.name, input));
+            const field=labeled(attr.name,input);input.addEventListener('input',()=>{field.style.background=input.value!==(draft.values[attr.name]??'')?'#fff3cd':'';field.title=input.value!==(draft.values[attr.name]??'')?'Changed from model suggestion':'';});form.append(field);
         }
         form.append(node('p', 'Link attributes stay empty. Confirming writes a new annotation tag and leaves this suggestion unchanged.', { class: 'muted' }));
         form.append(button('Write annotation', this.forCurrentNote(view.key, () => {
@@ -961,10 +1104,11 @@ class LegacyAssist {
             for (const [name, input] of inputs)
                 values[name] = input.value;
             this.perform(() => {
+                const before={[record.id]:run.decisions[record.id]??null};
                 const tagId = this.writeAnnotation(record, picker.value, values);
                 run.decisions[record.id] = { status: 'accepted', tagId };
                 const copy={...clone(record),documentId:run.project.current.documents[0].id};for(const [name,value] of Object.entries(values))if(run.project.current.schema.families[copy.family].fields[name])copy.fields[name]=value;
-                run.project.review(run.nativeRunId,record.id,'modified',copy);
+                run.project.review(run.nativeRunId,record.id,'modified',copy);this.rememberReviewUndo(run,before,[view.ann.tags.find(t=>t.id===tagId)]);
                 this.apply = null;
                 this.message = `Added ${tagId} to the open annotation. The machine suggestion remains in this panel.`;
             });

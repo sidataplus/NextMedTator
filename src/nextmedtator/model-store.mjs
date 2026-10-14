@@ -33,7 +33,9 @@ export class ModelStore {
         const db=await database();try {
             const row={manifestHash:packageData.manifestHash,manifest:clone(packageData.manifest),installedAt:new Date().toISOString()};
             await new Promise((resolve,reject)=>{const tx=db.transaction(['packages','artifacts'],'readwrite');const abort=()=>tx.abort();signal?.addEventListener('abort',abort,{once:true});tx.oncomplete=()=>{signal?.removeEventListener('abort',abort);resolve();};tx.onabort=()=>{signal?.removeEventListener('abort',abort);reject(new Error('Model installation cancelled or storage unavailable'));};tx.onerror=()=>reject(tx.error??new Error('Model storage write failed'));try{for(const [path,bytes] of packageData.files)if(path!=='manifest.json')storeArtifact(tx.objectStore('artifacts'),`${row.manifestHash}:${path}`,bytes);tx.objectStore('packages').put(row);}catch(error){tx.abort();reject(error);}});
-            return await this.read(row.manifestHash);
+            // Read back and verify one artifact at a time; reuse the caller's verified package.
+            for(const f of row.manifest.files){const bytes=await readArtifact(db,`${row.manifestHash}:${f.path}`);invariant(bytes?.byteLength===f.bytes&&await sha256(bytes)===f.sha256,'Installed model read-back verification failed');}
+            return packageData;
         } finally {db.close();}
     }
     async read(hash){const db=await database();try{const row=await request(db.transaction('packages').objectStore('packages').get(hash));if(!row)return null;row.files=[];for(const f of row.manifest.files)row.files.push([f.path,await readArtifact(db,`${hash}:${f.path}`)]);return verified(row);}finally{db.close();}}

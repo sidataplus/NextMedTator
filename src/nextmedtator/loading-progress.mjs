@@ -28,9 +28,9 @@ export function renderLoadingProgress(root,state){
     }
     const bar=box.querySelector('progress');
     const downloading=state.phase==='Downloading model';
-    const batch=state.phase==='Analyzing notes';
+    const batch=Number.isFinite(state.completed);
     const status=state.total?(batch?batchStatus(state):downloading?downloadStatus(state):null):null;
-    bar.setAttribute('aria-label',batch?'Batch analysis progress':'Model loading progress');
+    bar.setAttribute('aria-label',batch?(state.phase==='Analyzing notes'?'Batch analysis progress':'Collection progress'):'Model loading progress');
     box.querySelector('[data-part=label]').textContent=status?`${state.phase} · ${status.percent}%`:state.phase;
     box.querySelector('[data-part=detail]').textContent=status?.detail??'Working on this device. Time depends on model size and available memory.';
     if(status)bar.value=status.percent;else bar.removeAttribute('value');

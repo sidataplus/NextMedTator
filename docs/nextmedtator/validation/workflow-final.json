@@ -1,0 +1,105 @@
+{
+  "browser": "155.0.8059.40",
+  "url": "http://127.0.0.1:4299/",
+  "runs": [
+    {
+      "model": "p10",
+      "longNote": {
+        "status": "complete",
+        "backend": "webgpu",
+        "records": 164,
+        "windows": 7,
+        "coverage": [
+          [
+            0,
+            5302
+          ]
+        ],
+        "offsetsExact": true,
+        "lastAnchor": 5299,
+        "length": 5302
+      },
+      "workflowSeconds": 155.30786150018685,
+      "memory": {
+        "beforeUnload": {
+          "t": 81.50962159992196,
+          "cpuSeconds": 325.234375,
+          "workingSetBytes": 3331207168,
+          "privateBytes": 3041333248,
+          "processes": 8
+        },
+        "afterUnload30s": {
+          "t": 111.69521520007402,
+          "cpuSeconds": 325.59375,
+          "workingSetBytes": 1635139584,
+          "privateBytes": 1421103104,
+          "processes": 8
+        },
+        "afterCompletion5s": {
+          "t": 194.2496690999251,
+          "cpuSeconds": 638.25,
+          "workingSetBytes": 2552537088,
+          "privateBytes": 2333163520,
+          "processes": 8
+        }
+      },
+      "measurementErrors": [],
+      "collectionNotes": 5,
+      "pauseAndResume": true,
+      "completedRunIdsPreserved": true,
+      "noteHistoriesResident": 0,
+      "workerReleased": true,
+      "errors": []
+    },
+    {
+      "model": "bpsd",
+      "longNote": {
+        "status": "complete",
+        "backend": "webgpu",
+        "records": 35,
+        "windows": 3,
+        "coverage": [
+          [
+            0,
+            5302
+          ]
+        ],
+        "offsetsExact": true,
+        "lastAnchor": 4947,
+        "length": 5302
+      },
+      "workflowSeconds": 161.64703190000728,
+      "memory": {
+        "beforeUnload": {
+          "t": 260.2521472000517,
+          "cpuSeconds": 939.96875,
+          "workingSetBytes": 4203638784,
+          "privateBytes": 4174962688,
+          "processes": 8
+        },
+        "afterUnload30s": {
+          "t": 290.2298787999898,
+          "cpuSeconds": 940.390625,
+          "workingSetBytes": 1614557184,
+          "privateBytes": 1384898560,
+          "processes": 8
+        },
+        "afterCompletion5s": {
+          "t": 390.71042430005036,
+          "cpuSeconds": 1378.9375,
+          "workingSetBytes": 1738493952,
+          "privateBytes": 1516703744,
+          "processes": 8
+        }
+      },
+      "measurementErrors": [],
+      "collectionNotes": 5,
+      "pauseAndResume": true,
+      "completedRunIdsPreserved": true,
+      "noteHistoriesResident": 0,
+      "workerReleased": true,
+      "errors": []
+    }
+  ],
+  "assetVersion": "415b760a1cf1bfce026168a573df302a84ede3acaa0194d49fc19111773e5a31"
+}

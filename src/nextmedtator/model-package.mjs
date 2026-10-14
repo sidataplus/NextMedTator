@@ -225,7 +225,7 @@ export class ConformanceWorker {
             return results;
         }, {timeoutMs:600000,...options});
     }
-    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback, maxThreads=defaultCpuThreads()} = {}) {
+    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback, onWindowProgress, maxThreads=defaultCpuThreads()} = {}) {
         invariant(!this.worker&&!this.active, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
@@ -238,7 +238,7 @@ export class ConformanceWorker {
         invariant(Number.isSafeInteger(maxThreads)&&maxThreads>=1,'CPU thread limit must be a positive integer');
         const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,resolveFallback,maxThreads,
             fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null};
-        this.cancelled = false;this.active=true;
+        this.cancelled = false;this.active=true;this.onWindowProgress=onWindowProgress;
         try {
             if(actual==='wasm')await this.#resolveWasm(context);
             this.#notifyBackend(context);
@@ -250,7 +250,7 @@ export class ConformanceWorker {
             this.worker?.terminate();
             this.worker = null;
             this.reject = null;
-            this.active=false;
+            this.active=false;this.onWindowProgress=null;
         }
     }
     #notifyBackend(context){
@@ -316,10 +316,10 @@ export class ConformanceWorker {
                 worker.onmessage = worker.onerror = null;
                 error ? reject(error) : resolve(result);
             };
-            const timer = setTimeout(() => finish(new Error('Local model worker timed out and was stopped')), timeoutMs);
+            const timeout=()=>finish(new Error('Local model worker timed out and was stopped'));let timer=setTimeout(timeout,timeoutMs);
             this.reject = error => finish(error);
             worker.onerror = () => finish(new Error('Local ONNX worker failed. Check installed runtime assets.'));
-            worker.onmessage = ({ data }) => data.progress ? undefined : data.error ? finish(new Error(data.error)) : finish(null, data.result);
+            worker.onmessage = ({data})=>{if(data.progress){clearTimeout(timer);timer=setTimeout(timeout,timeoutMs);try{this.onWindowProgress?.(data.progress);}catch(error){finish(error);}}else if(data.error)finish(new Error(data.error));else finish(null,data.result);};
             try { worker.postMessage(message); }
             catch (error) { finish(error); }
         });
