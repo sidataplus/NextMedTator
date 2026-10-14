@@ -1,0 +1,16 @@
+{
+  "name": "nextmedtator-downloads",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "vars": {"TURNSTILE_SITEKEY":"0x4AAAAAAFWL4EFpwyytpcJp"},
+  "routes": [{"pattern":"nmt-models.sidata.plus/*","zone_name":"sidata.plus"}],
+  "r2_buckets": [{"binding":"MODELS","bucket_name":"nextmedtator-models"}],
+  "ratelimits": [
+    {"name":"GRANT_LIMIT","namespace_id":"2026101301","simple":{"limit":5,"period":60}},
+    {"name":"ARTIFACT_LIMIT","namespace_id":"2026101302","simple":{"limit":240,"period":60}}
+  ],
+  "observability": {"enabled":true,"head_sampling_rate":0.01}
+}

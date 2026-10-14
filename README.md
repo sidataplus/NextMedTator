@@ -19,13 +19,13 @@
 - **Review efficiently:** filter by family or decision, page through suggestions, use keyboard shortcuts, and undo assistance actions.
 - **Keep the evidence:** export portable projects containing source text, annotations, model runs and review history. Browser recovery is separately opt-in.
 
-The application is a static site. Inference runs on your device; notes are not sent to a model server. Model weights download **only on request**, never on website load or precision selection. After selecting FP16, an explicit Analyze request may download the disclosed FP32 WASM fallback if needed. Installed packages are reused locally. The annotation workspace lists installed packages without loading their weights at startup; **Use installed** loads them explicitly. **Unload model** releases model references while preserving installed files and annotations.
+The annotation application is a static site; a small Cloudflare Worker verifies public model downloads. Inference runs on your device; notes are not sent to a model server. Model weights download **only on request**, never on website load or precision selection. After selecting FP16, an explicit Analyze request may download the disclosed FP32 WASM fallback if needed. Installed packages are reused locally. The annotation workspace lists installed packages without loading their weights at startup; **Use installed** loads them explicitly. **Unload model** releases model references while preserving installed files and annotations.
 
 ## Try it in five steps
 
 1. Open [nmt.sidata.plus](https://nmt.sidata.plus) in desktop Chrome or Edge.
 2. In **Assistance → Try a fictional note**, choose **P10 clinical evidence** or **BPSD behaviors**. This loads a synthetic note, its matching schema and the model selection. It starts no download.
-3. Expand **Get a model package**, click **Show approved public model**, choose **Model precision to download**, and click the corresponding **Download and install** button. Alternatively, import a local `.nmt-model.zip` package.
+3. Expand **Get a model package**, click **Show approved public model**, choose **Model precision to download**, and click the corresponding **Download and install** button. Complete the on-demand Cloudflare check. Alternatively, expand **Installed packages & local import** to use a local `.nmt-model.zip` package.
 4. Keep **Mode → Assisted** and click **Analyze note**. Open **Add to annotation**, check the fields, then click **Write annotation**.
 5. Click **Export evidence project** to keep a portable `.nmt.zip` backup. Use **Open evidence project → Open project/files** to reopen it.
 
@@ -40,7 +40,9 @@ No model is required for manual annotation. Use the ribbon's **Sample** button f
 
 Both models also offer **FP16 WebGPU** packages (about **369 / 372 MiB**, P10 / BPSD). These preserve all spans and attribute choices on eight synthetic regression notes, with small confidence differences. FP16 saves download bytes; it did not improve warm inference speed on this machine. **INT8 weights with FP32 WASM computation** are a separate experimental option: smaller downloads, changed outputs, and individual suggestion review required. See [precision benchmarks and choices](docs/nextmedtator/PRECISION.md).
 
-Allow at least twice the download size in browser storage, plus runtime memory. Downloads show bytes, progress and an estimated remaining time when enough transfer data is available. Batch analysis estimates remaining time after the first completed note; initialization has no ETA.
+The package panel detects browser capabilities and recommends **FP16** for compatible WebGPU devices or **FP32** for CPU/compatibility. You can override the recommendation; INT8 is never recommended automatically. Device hints stay local. Public model downloads require a Cloudflare verification check and are rate-limited. See [download protection and validation](docs/nextmedtator/DOWNLOAD-PROTECTION.md).
+
+Allow at least twice the download size in browser storage, plus runtime memory. Downloads show bytes, progress and an estimated remaining time when enough transfer data is available. Batch analysis estimates remaining time after the first completed note; initialization names each preparation stage and has no speculative ETA.
 
 For bulk assistance, open **Batch analysis**, use **Select all** or check individual notes, then click **Analyze selected**. The default **Automatic** device prefers WebGPU, including Metal on supported Apple browsers. If GPU inference is unavailable or fails, WASM uses the browser-reported logical CPU count minus one (minimum one; one without cross-origin isolation). This also applies to single-note analysis. Choose **Low CPU** to cap batch WASM at one thread or **Balanced** for up to four. All modes process one note at a time using one model session. Requests are prepared on demand, raw outputs are released after saving each result, and the selector shows 50 notes per page. These reduce temporary work and memory overhead; loaded notes, retained review history and model sessions still use RAM. **Pause** releases the inference worker and preserves the queue. **Resume unfinished** skips completed notes; **Retry failed** targets failed notes. Per-note status, overall progress, ETA, **Select unfinished**, and a downloadable JSON completion report are available in the batch panel. For ordinary loaded notes, enable **local corpus recovery** to checkpoint the queue and results across reloads. Explicitly imported disk-backed collections save each note and queue outcome atomically without that toggle. Processing resumes only when you request it.
 
@@ -69,7 +71,7 @@ Download the latest `NextMedTator-*-static.zip` from [Releases](https://github.c
 uv run --locked python scripts/serve_static.py --directory dist --port 4173
 ```
 
-Open `http://127.0.0.1:4173`. The static archive includes the compiled Rust WASM core and browser runtimes; model weights remain separate. Local package import works on localhost. Public R2 downloads are configured for the deployed app origins; use a local package when running the app locally.
+Open `http://127.0.0.1:4173`. The static archive includes the compiled Rust WASM core and browser runtimes; model weights remain separate. Local package import works on localhost. Protected R2 downloads also work on localhost in current Chrome/Edge. Other self-hosted origins should use local packages or configure their own verification deployment.
 
 ## Build from source
 
@@ -84,7 +86,7 @@ pnpm audit:assets
 pnpm preview:legacy
 ```
 
-The production build writes `dist/` and selects the two public R2 model packages. Python is used at build time; the deployed site needs no Python service. Cloudflare Pages hosts [nmt.sidata.plus](https://nmt.sidata.plus), with weights on a separate public R2 domain. Preserve the generated `_headers` when deploying. See [deployment details](docs/nextmedtator/DISTRIBUTION.md) and [build instructions](docs/nextmedtator/BUILD.md).
+The production build writes `dist/` and selects the two public R2 model packages. Python is used at build time; the deployed site needs no Python service. Cloudflare Pages hosts [nmt.sidata.plus](https://nmt.sidata.plus), with public model downloads protected by a Worker on the separate R2 domain. Preserve the generated `_headers` when deploying. See [deployment details](docs/nextmedtator/DISTRIBUTION.md) and [build instructions](docs/nextmedtator/BUILD.md).
 
 ## Validation and development
 

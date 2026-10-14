@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'preview'
 HEADERS = """/*
   Cache-Control: no-cache
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://*.hf.co https://*.xethub.hf.co; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://huggingface.co https://*.hf.co https://*.xethub.hf.co; frame-src https://nmt-models.sidata.plus; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Cross-Origin-Opener-Policy: same-origin
@@ -18,7 +18,7 @@ if __package__:
 else:
     from model_delivery import connect_origins
 if connect_origins():
-    HEADERS=HEADERS.replace("; worker-src 'self'",' '+' '.join(connect_origins())+"; worker-src 'self'")
+    HEADERS=HEADERS.replace("; frame-src",' '+' '.join(connect_origins())+"; frame-src")
 
 def offline_assets(out: Path) -> None:
     inventory=[]

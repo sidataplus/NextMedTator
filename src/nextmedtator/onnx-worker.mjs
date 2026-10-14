@@ -8,6 +8,7 @@ import { invariant, jsonParse, sha256 } from './integrity.mjs';
 import { GLINER_CODEC, GLINER_STRUCTURED, GLINER_LIMITS, SPAN_NOTICE, STRUCTURED_NOTICE, GlinerTokenizer, readGlinerConfig, prepareWindow, planWindows, decodeBoundary, locateSpans, documentCoverage, resolveFlat, splitWords, attributeFields, compareSpanOccurrences } from './gliner.mjs';
 // ORT and its WASM files are copied locally by the build. No fallback URL or API.
 let loaded = null;
+const initialization=(phase,detail)=>self.postMessage({progress:{kind:'initialization',phase,detail}});
 self.onmessage = async ({ data }) => {
     try {
         let result;
@@ -19,6 +20,7 @@ self.onmessage = async ({ data }) => {
         else {
             invariant(loaded, 'Load a model before requesting inference');
             const { ort, files, manifest, variant, sessions } = loaded;
+            if(data.task==='fixtures')initialization('Checking model compatibility','Running the package’s reference checks on the selected device. This may take a minute.');
             const request = { ...data, manifestHash: loaded.manifestHash };
             result = loaded.small ? await runSmall(loaded,request) : loaded.tokenizer
                 ? await runBoundary(loaded, request)
@@ -32,6 +34,7 @@ self.onmessage = async ({ data }) => {
     }
 };
 async function loadModel(data) {
+    initialization('Verifying runtime model files','Checking hashes before the model is initialized. No download is needed for installed files.');
     const manifest = validateModelManifest(data.manifest), files = new Map(data.files), declaredVariant = manifest.variants.find(v => v.id === data.variantId);
     invariant(declaredVariant, 'Unknown model variant');
     const backend = data.backend ?? declaredVariant.backend;
@@ -43,6 +46,7 @@ async function loadModel(data) {
     }
     for(const path of Object.values(variant.graphs??{}))files.set(path,await prepareGraph(manifest,variant,path,files.get(path)));
     if(variant.codec===CLINICAL_V3_CODEC)validateClinicalV3Registry(jsonParse(new TextDecoder('utf-8',{fatal:true}).decode(files.get(variant.clinicalSchema))));
+    initialization('Starting inference runtime','Preparing the local runtime. The first run can take longer.');
     const ort = await import('../../vendor/ort/ort.webgpu.min.mjs');
     if(data.diagnostics){ort.env.debug=true;ort.env.logLevel='verbose';}
     invariant(ort.env.versions.web === manifest.runtimeVersion, 'Package/runtime version mismatch');
@@ -60,6 +64,7 @@ async function loadModel(data) {
     const context = { ort, files, manifest, variant, entityContract, manifestHash: data.manifestHash, sessions: [] };
     const codec = CODECS[variant.codec];
     if (isRecordsCodec(variant.codec)) {
+        initialization('Preparing tokenizer','Building the local text tokenizer.');
         const tokenizer=GlinerTokenizer.fromJson(new TextDecoder().decode(files.get(variant.tokenizer)));
         const graphs={};for(const [name,path] of Object.entries(variant.graphs))graphs[name]=await openSession(ort,files,variant,path,context.sessions);
         if(variant.codec!=='gliner25-small-records-v5')invariant(graphs.model.outputNames.includes('null_logits'),'Generic GLiNER graph lacks source abstention output');
@@ -85,6 +90,7 @@ function releaseGraphBuffers(context){
 }
 
 async function openSession(ort, files, variant, graph, sessions) {
+    initialization(`Initializing ${variant.backend==='webgpu'?'WebGPU':'WASM'} · ${graph}`,'Compiling the model for this device. An accurate ETA is not available yet.');
     const session = await ort.InferenceSession.create(files.get(graph), { executionProviders: [variant.backend], externalData: (variant.externalData ?? []).map(f => ({ path: f.name, data: files.get(f.path) })), logSeverityLevel: 3 });
     sessions.push(session);
     return session;

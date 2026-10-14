@@ -1,3 +1,4 @@
+import {detectDevice,deviceRecommendation} from './device-profile.mjs';
 import {suggestionPage,validateUndoTags} from './review-queue.mjs';
 import {exportCollection,importCollectionBackup} from './collection-backup.mjs';
 import {CollectionStore} from './collection-store.mjs';
@@ -218,6 +219,7 @@ class LegacyAssist {
         this.root.addEventListener('keydown',event=>this.reviewShortcut(event));
         this.render();
         void this.restoreSelectedModel();
+        void detectDevice().then(device=>{this.deviceProfile=device;this.render();});
         this.timer = setInterval(() => this.sync(), 500);
         document.addEventListener('visibilitychange', () => { if (!document.hidden) this.sync(); });
         window.addEventListener('beforeunload',event=>{const session=this.recoverySession;if(this.collectionDirty||session.enabled&&(session.pending||session.revision!==session.savedRevision)){event.preventDefault();event.returnValue='';}});
@@ -290,7 +292,7 @@ class LegacyAssist {
             if(this.recoverySession.enabled)this.recoverySession.touch();
         }
         catch (error) {
-            const cancelled=/Cancelled/.test(error?.message??'')||error?.name==='AbortError';
+            const cancelled=/cancelled/i.test(error?.message??'')||error?.name==='AbortError';
             this.error = !cancelled;
             this.message = cancelled&&this.batchQueue?.state==='paused'?'Batch paused. Completed results are retained. Choose Resume unfinished to continue.':error?.message ?? 'The annotation was left unchanged.';
         }
@@ -587,7 +589,7 @@ class LegacyAssist {
         if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         let executionModel=model;
-        const executionOptions={maxThreads:batch&&this.batchCpu==='low'?1:batch&&this.batchCpu==='balanced'?4:defaultCpuThreads(),backend:this.executionPreference??'auto',resolveFallback:target=>loadWasmFallback(this,target),onBackend:({backend,precision,packageData,fallbackReason})=>{executionModel=packageData;this.executionStatus={backend,precision,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
+        const executionOptions={onInitialization:stage=>{this.loadingProgress={phase:stage.phase,detail:stage.detail,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},maxThreads:batch&&this.batchCpu==='low'?1:batch&&this.batchCpu==='balanced'?4:defaultCpuThreads(),backend:this.executionPreference??'auto',resolveFallback:target=>loadWasmFallback(this,target),onBackend:({backend,precision,packageData,fallbackReason})=>{executionModel=packageData;this.executionStatus={backend,precision,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
         // Validate and analyze in the same session, including CPU-only packages.
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
@@ -881,50 +883,61 @@ class LegacyAssist {
         if(!this.recoverySession.enabled)recovery.append(button('Enable local corpus recovery',()=>this.perform(async()=>{if(!confirm('Store this corpus, annotations and prediction history in this browser profile? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann||!!this.collection,id:'assist-recovery-enable'}));
         else recovery.append(button('Save corpus checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete corpus recovery',()=>this.perform(async()=>{if(confirm('Delete this corpus recovery copy? Current in-memory annotations remain.'))await this.recoverySession.forget();})),button('Export SQLite corpus backup',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
         recovery.append(button('List saved corpora',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore corpus '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the current in-memory corpus with this recovery copy? Export unsaved files first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));storage.append(recovery);
-        const packages=disclosure(this,'packages',this.model?'Model packages':'Get a model package',!this.model);if(!this.model)packages.append(node('p','Choose a public download or import a package. Downloads start only when you request them.',{class:'setup-hint'}));
+        const packages=disclosure(this,'packages',this.model?'Model packages':'Get a model package',!this.model);
+        const recommended=deviceRecommendation(this.deviceProfile,{execution:this.executionPreference});
+        const deviceCard=node('section',null,{class:'setup-hint','data-testid':'assist-device'});
+        deviceCard.append(node('strong',recommended.title),node('p',recommended.reason));
+        if(this.deviceProfile){const details=disclosure(this,'device-details','Device details');details.append(node('p',`${this.deviceProfile.gpu?'WebGPU available':'CPU / WASM'} · ${this.deviceProfile.cores??'Unknown'} logical cores${this.deviceProfile.memory!==null?` · browser memory hint ${this.deviceProfile.memory} GiB`:''}. RAM and GPU memory are not measured.`,{class:'muted'}));deviceCard.append(details);}
+        if(recommended.caution)deviceCard.append(node('p',recommended.caution));
+        packages.append(deviceCard);
+        if(!this.model&&!this.catalog)packages.append(node('p','Browse public downloads or use an installed / local package below. Downloads start only on request.',{class:'muted'}));
         const execution=node('select',null,{'aria-label':'Inference device','data-testid':'assist-execution',disabled:this.busy});
         for(const [value,label]of [['auto','Automatic · WebGPU with WASM fallback'],['wasm','CPU · WASM']])execution.append(node('option',label,{value}));
-        execution.value=this.executionPreference??'auto';execution.addEventListener('change',()=>{this.executionPreference=execution.value;this.executionStatus=null;this.qualifiedManifest=null;this.render();});packages.append(labeled('Inference device',execution));
+        execution.value=this.executionPreference??'auto';execution.addEventListener('change',()=>{this.executionPreference=execution.value;this.executionStatus=null;this.qualifiedManifest=null;this.render();});
         if(this.model?.manifest.variants.some(v=>v.precision==='fp16'))packages.append(node('p','FP16 uses WebGPU. On Analyze, CPU mode or a GPU failure uses the original FP32 WASM model. If it is not installed, it downloads about 725 MiB once; install FP32 beforehand for offline fallback.',{class:'setup-hint'}));
         if(this.model?.manifest.variants.some(v=>v.precision==='int8'))packages.append(node('p','Experimental INT8 weights / FP32 computation: smaller downloads, but slower in these browser tests and some spans differ from FP32. Inspect each suggestion.',{class:'setup-hint','data-testid':'assist-int8-notice'}));
-        packages.append(node('p', this.structured()
+        const modelDetails=disclosure(this,'package-details','Package details & limitations');
+        modelDetails.append(node('p', this.structured()
             ? (this.model.manifest.variants.some(v=>isRecordsCodec(v.codec))?recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec):'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
-        const file = node('input', null, { type: 'file', accept: '.zip', 'aria-label': 'Import model package into the annotation assistance panel' });
+        const file = node('input', null, { type: 'file', accept: '.zip', disabled:this.busy, 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        packages.append(labeled('Local model package', file),button('List installed models',()=>this.perform(()=>this.inspectStorage())),button('Show approved public model',()=>this.perform(async()=>{
+        const localPackages=disclosure(this,'local-packages','Installed packages & local import');
+        localPackages.append(labeled('Local model package', file),button('List installed models',()=>this.perform(()=>this.inspectStorage())));
+        packages.append(button('Show approved public model',()=>this.perform(async()=>{
             const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});
-            invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();
+            invariant(response.ok,'Model catalog unavailable');this.catalog=await response.json();this.downloadPrecision??=deviceRecommendation(this.deviceProfile,{execution:this.executionPreference}).precision??'fp32';
         })));
         if(this.catalog){
             const precision=node('select',null,{'aria-label':'Model precision to download','data-testid':'assist-precision',disabled:this.busy});
             for(const [value,label]of [['fp32','FP32 · original precision'],['fp16','FP16 · smaller GPU model, FP32 WASM fallback'],['int8','INT8 weights · experimental, FP32 CPU computation']])precision.append(node('option',label,{value}));
             precision.value=this.downloadPrecision??'fp32';precision.addEventListener('change',()=>{this.downloadPrecision=precision.value;this.render();});packages.append(labeled('Model precision to download',precision));
-            packages.append(node('p','Changing precision does not download or switch the active model. Choose Download and install below, or use an installed package.',{class:'muted'}));
+            if(recommended.precision)packages.append(button('Use recommended '+recommended.precision.toUpperCase(),()=>{this.downloadPrecision=recommended.precision;this.render();},{disabled:this.busy}));
+            packages.append(node('p','Choose Download and install to start. Verification is required for public downloads.',{class:'muted'}));
             if(this.downloadPrecision==='fp16')packages.append(node('p','About half the FP32 download. GPU failure or CPU selection on Analyze can download the original FP32 fallback once (about 725 MiB). Download FP32 in advance for offline fallback.',{class:'setup-hint'}));
             if(this.downloadPrecision==='int8')packages.append(node('p','Smallest download. Activations remain FP32; WASM inference was slower and some spans changed in synthetic tests. Individual review required. Never used for automatic fallback.',{class:'setup-hint'}));
         }
-        for(const entry of (this.catalog?.entries??[]).filter(e=>e.manifest.variants[0].precision===(this.downloadPrecision??'fp32'))){
+        for(const entry of (this.catalog?.entries??[]).filter(e=>e.manifest.variants[0].precision===(this.downloadPrecision??'fp32')).sort((a,b)=>Number(modelSelectionMatchesManifest(this.modelSelection,b.manifest))-Number(modelSelectionMatchesManifest(this.modelSelection,a.manifest)))){
             const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
             packages.append(node('p',`${entry.manifest.id} · ${(total/1048576).toFixed(0)} MiB · ${entry.manifest.license.id}. Allow ${(total*2/1048576).toFixed(0)} MiB free storage.`,{class:'muted'}),button('Download and install '+entry.manifest.id,()=>this.perform(async()=>{
                 this.setSelectedModel(selectionFromManifest(entry.manifest),{render:false,restoreInstalled:false});
                 const epoch=this.modelSelectionEpoch;this.installController=new AbortController();
                 try{
-                    this.loadingProgress={phase:'Downloading model',received:0,total:total,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onProgress:({received,total})=>{Object.assign(this.loadingProgress,{received,total,phase:received===total?'Verifying model integrity':'Downloading model'});renderLoadingProgress(this.root,this.loadingProgress);}});
+                    this.loadingProgress={phase:'Downloading model',received:0,total:total,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onStage:stage=>{this.loadingProgress={...stage,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},onProgress:({received,total,file})=>{if(this.loadingProgress.phase!=='Downloading model')this.loadingProgress.started=performance.now();Object.assign(this.loadingProgress,{received,total,file,phase:received===total?'Verifying model integrity':'Downloading model'});renderLoadingProgress(this.root,this.loadingProgress);}});
                     invariant(epoch===this.modelSelectionEpoch&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Model selection changed during download');
                     this.loadingProgress.phase='Installing and verifying local storage';renderLoadingProgress(this.root,this.loadingProgress);const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});
                     invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');
-                    this.adoptModel(installed);this.message='Public model installed and hashes verified; analysis runs locally.';
+                    this.adoptModel(installed);this.message='Model installed and verified. Choose Analyze note to initialize the runtime and run locally.';
                 }finally{this.installController=null;}
-            })),button('Stop model download',()=>this.installController?.abort()));
+            }),{disabled:this.busy,primary:true}));
         }
         for(const item of this.installedModels??[]){
             const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
-            packages.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
+            localPackages.append(node('p',`${item.manifest.id} · ${item.bytes} bytes · ${matches?'matches selected source':'different source'}`,{class:'muted'}),button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
         }
         packages.append(node('p',this.model?`Loaded model buffers: ${(this.model.manifest.files.reduce((n,f)=>n+f.bytes,0)/1048576).toFixed(0)} MiB. Runtime memory is additional.`:'No model weights loaded in memory.',{class:'muted','data-testid':'assist-model-memory'}));
         if(this.storageEstimate)packages.append(node('p',`Browser storage: ${(this.storageEstimate.usage/1048576).toFixed(0)} MiB used of approximately ${(this.storageEstimate.quota/1048576).toFixed(0)} MiB available quota.`,{class:'muted'}));
-        for(const item of this.installedModels??[])packages.append(button('Remove installed '+item.manifest.id,()=>this.perform(async()=>{if(!confirm('Remove this cached model from this browser? You can download or import it again.'))return;if(this.model?.manifestHash===item.manifestHash)this.unloadModel();await this.modelStore.remove(item.manifestHash);await this.inspectStorage();}),{disabled:this.busy,id:'assist-remove-model'}));
+        for(const item of this.installedModels??[])localPackages.append(button('Remove installed '+item.manifest.id,()=>this.perform(async()=>{if(!confirm('Remove this cached model from this browser? You can download or import it again.'))return;if(this.model?.manifestHash===item.manifestHash)this.unloadModel();await this.modelStore.remove(item.manifestHash);await this.inspectStorage();}),{disabled:this.busy,id:'assist-remove-model'}));
         if(this.model)packages.append(button('Unload model',()=>this.unloadModel(),{disabled:this.busy,id:'assist-unload-model'}));
         if(this.model)packages.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.message='Model package installed and read-back verified';})));
         const anns = this.allDocuments();
@@ -967,7 +980,9 @@ class LegacyAssist {
         else
             body.append(node('p', 'Load a schema and a note with the usual Annotation controls. Assistance stays optional.', { class: 'muted' }));
         this.renderRun(body, view);
-        body.append(packages,storage);
+        localPackages.append(modelDetails);packages.append(labeled('Inference device',execution),localPackages);
+        if(this.busy)for(const control of packages.querySelectorAll('button,input,select'))control.disabled=true;
+        modelSettings.after(packages);body.append(storage,collections);
         if(view?.ann)body.append(practice);
         body.append(button('Open evidence project', () => this.perform(async()=>this.openProject(await this.syncProject(view.ann))), { id: 'open-workspace', disabled:!view?.ann||this.busy, title: 'Open the portable evidence project for snapshots and comparison' }));
         body.scrollTop=scrollTop;

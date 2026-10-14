@@ -76,6 +76,7 @@ with sync_playwright() as p:
         assert not page.evaluate(STATE)['worker']
         page.wait_for_timeout(30000);after_unload=meter.mark()
         if profile=='p10':
+            page.get_by_test_id('assist-local-packages').locator(':scope > summary').click()
             page.get_by_role('button',name='List installed models',exact=True).click();idle(page)
             page.get_by_role('button',name='Use installed ',exact=False).click();idle(page)
         else:

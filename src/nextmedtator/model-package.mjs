@@ -225,7 +225,7 @@ export class ConformanceWorker {
             return results;
         }, {timeoutMs:600000,...options});
     }
-    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback, onWindowProgress, maxThreads=defaultCpuThreads()} = {}) {
+    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback, onWindowProgress, onInitialization, maxThreads=defaultCpuThreads()} = {}) {
         invariant(!this.worker&&!this.active, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
@@ -238,7 +238,7 @@ export class ConformanceWorker {
         invariant(Number.isSafeInteger(maxThreads)&&maxThreads>=1,'CPU thread limit must be a positive integer');
         const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,resolveFallback,maxThreads,
             fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null};
-        this.cancelled = false;this.active=true;this.onWindowProgress=onWindowProgress;
+        this.cancelled = false;this.active=true;this.onWindowProgress=onWindowProgress;this.onInitialization=onInitialization;
         try {
             if(actual==='wasm')await this.#resolveWasm(context);
             this.#notifyBackend(context);
@@ -250,7 +250,7 @@ export class ConformanceWorker {
             this.worker?.terminate();
             this.worker = null;
             this.reject = null;
-            this.active=false;this.onWindowProgress=null;
+            this.active=false;this.onWindowProgress=null;this.onInitialization=null;
         }
     }
     #notifyBackend(context){
@@ -273,6 +273,7 @@ export class ConformanceWorker {
     async #load(context) {
         invariant(!this.cancelled, 'Cancelled: local model worker stopped');
         const {packageData,variantId,backend,timeoutMs}=context;
+        this.onInitialization?.({phase:'Preparing model worker',detail:'Copying verified model data into an isolated worker. Analysis begins after runtime and compatibility checks.'});
         this.worker = new Worker(this.url, {type:'module'});
         await this.#request({task:'load',manifest:packageData.manifest,manifestHash:packageData.manifestHash,variantId,backend,maxThreads:context.maxThreads,files:[...packageData.files]},backend==='webgpu'?Math.min(timeoutMs,120000):timeoutMs);
     }
@@ -319,7 +320,7 @@ export class ConformanceWorker {
             const timeout=()=>finish(new Error('Local model worker timed out and was stopped'));let timer=setTimeout(timeout,timeoutMs);
             this.reject = error => finish(error);
             worker.onerror = () => finish(new Error('Local ONNX worker failed. Check installed runtime assets.'));
-            worker.onmessage = ({data})=>{if(data.progress){clearTimeout(timer);timer=setTimeout(timeout,timeoutMs);try{this.onWindowProgress?.(data.progress);}catch(error){finish(error);}}else if(data.error)finish(new Error(data.error));else finish(null,data.result);};
+            worker.onmessage = ({data})=>{if(data.progress){clearTimeout(timer);timer=setTimeout(timeout,timeoutMs);try{if(data.progress.kind==='initialization')this.onInitialization?.(data.progress);else this.onWindowProgress?.(data.progress);}catch(error){finish(error);}}else if(data.error)finish(new Error(data.error));else finish(null,data.result);};
             try { worker.postMessage(message); }
             catch (error) { finish(error); }
         });

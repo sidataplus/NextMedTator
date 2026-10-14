@@ -33,7 +33,7 @@ async function copyResponse(response,target,start,expected,progress,signal){
 }
 
 /** Bounded HTTP ranges reduce transient copies; full SHA-256 remains authoritative. */
-export async function downloadArtifact(url,file,{ranged=false,signal,onBytes,fetcher=globalThis.fetch,chunkBytes=8*1024*1024}={}){
+export async function downloadArtifact(url,file,{ranged=false,headers={},signal,onBytes,fetcher=globalThis.fetch,chunkBytes=8*1024*1024}={}){
     invariant(Number.isSafeInteger(chunkBytes)&&chunkBytes>0,'Invalid download chunk size');
     invariant(!signal?.aborted,'Download cancelled');
     const data=new Uint8Array(file.bytes),range=ranged&&file.bytes>chunkBytes;
@@ -41,8 +41,8 @@ export async function downloadArtifact(url,file,{ranged=false,signal,onBytes,fet
     for(let start=0;start<file.bytes;){
         invariant(!signal?.aborted,'Download cancelled');
         const end=range?Math.min(file.bytes-1,start+chunkBytes-1):file.bytes-1;
-        const response=await fetcher(url,{credentials:'omit',referrerPolicy:'no-referrer',signal,cache:'no-store',redirect:ranged?'error':'follow',headers:range?{Range:`bytes=${start}-${end}`}:{}});
-        invariant(response.ok,'Public artifact download failed');
+        const response=await fetcher(url,{credentials:'omit',referrerPolicy:'no-referrer',signal,cache:'no-store',redirect:ranged?'error':'follow',headers:{...headers,...(range?{Range:`bytes=${start}-${end}`}:{})}});
+        invariant(response.ok,response.status===403?'Download authorization expired. Request the download again.':response.status===429?'Download rate limit reached. Wait a minute and retry.':'Public artifact download failed');
         invariant(!response.headers.get('content-encoding')||response.headers.get('content-encoding')==='identity','Encoded model response is unsupported');
         if(range&&response.status===206){
             invariant(response.headers.get('content-range')===`bytes ${start}-${end}/${file.bytes}`,'Invalid or unexposed artifact Content-Range');

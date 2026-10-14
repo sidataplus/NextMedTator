@@ -46,6 +46,7 @@ try:
             page.screenshot(path=str(OUT/(profile+'-precision-choice.png')))
             if args.choices_only:context.close();continue
             if args.reuse_installed:
+                page.get_by_test_id('assist-local-packages').locator(':scope > summary').click()
                 page.get_by_role('button',name='List installed models',exact=True).click()
                 page.get_by_role('button',name='Use installed '+profile+'-fp16-r2',exact=True).click()
             else:page.get_by_role('button',name='Download and install '+profile+'-fp16-r2',exact=True).click()

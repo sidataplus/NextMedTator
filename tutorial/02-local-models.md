@@ -14,7 +14,11 @@ attributes ran faster on CPU; see [the speed comparison](../docs/nextmedtator/WE
 Expand **Get a model package** and click **Show approved public model**.
 Choose **Download and install clinical-evidence-p10-base-r2** for P10, or
 **Download and install bpsd-gliner25-base-r2** for BPSD. Browsing the catalog
-loads metadata only; the download button starts the weight transfer.
+loads metadata only. The download button first opens a Cloudflare verification check, then starts the weight transfer.
+
+The panel recommends FP16 when the browser exposes compatible WebGPU support, or FP32 otherwise. CPU selection recommends FP32. These hints stay on your device and never trigger a download.
+
+![Device recommendation and model controls](images/25-device-recommendation.png)
 
 Use **Model precision to download** to choose FP32 (original), FP16 (smaller
 WebGPU package), or experimental INT8 weights (FP32 WASM computation).
@@ -22,7 +26,11 @@ Changing this selection starts no download and does not replace the active model
 Click the matching **Download and install** button, then check the Assistance
 header for the active package and the actual precision after analysis.
 
-![Choose precision before requesting a download](images/14-precision-choice.png)
+Downloads show bytes and an ETA; verification and installation are separate stages. On **Analyze note**, the panel identifies worker preparation, file checks, tokenizer setup, graph initialization and compatibility checks. **Pause** cancels a download or initialization.
+
+![Protected P10 download progress](images/26-protected-download.jpg)
+
+![BPSD runtime initialization](images/27-runtime-initialization.png)
 
 FP16 downloads about 369 MiB for P10 or 372 MiB for BPSD. On an Analyze request,
 GPU failure or explicit CPU selection uses the original FP32 WASM model. If it
@@ -149,3 +157,5 @@ original FP32 WASM fallback. These examples verify the software workflow,
 not the clinical accuracy of predictions.
 
 [Previous: first annotation](01-quickstart.md) · [Next: review and export](03-review-export.md)
+
+Public verification needs a current Chrome/Edge browser with credentialless iframe support. **Installed packages & local import** works without CAPTCHA. See [download protection](../docs/nextmedtator/DOWNLOAD-PROTECTION.md).

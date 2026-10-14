@@ -19,7 +19,7 @@ export async function loadWasmFallback(owner,{manifestHash},{offline=false}={}){
     owner.loadingProgress={phase:'Downloading FP32 WASM fallback',received:0,total,started:performance.now()};
     owner.message='Preparing the original FP32 WASM fallback. This download is cached for later use.';owner.render();
     try{
-        const candidate=await downloadCatalogPackage(entry,{signal:owner.installController.signal,onProgress:({received,total})=>{Object.assign(owner.loadingProgress,{received,total});renderLoadingProgress(owner.root,owner.loadingProgress);}});
+        const candidate=await downloadCatalogPackage(entry,{signal:owner.installController.signal,onStage:stage=>{owner.loadingProgress={...stage,started:performance.now()};renderLoadingProgress(owner.root,owner.loadingProgress);},onProgress:({received,total})=>{if(!owner.loadingProgress.phase.startsWith('Downloading'))owner.loadingProgress.started=performance.now();Object.assign(owner.loadingProgress,{phase:'Downloading FP32 WASM fallback',received,total});renderLoadingProgress(owner.root,owner.loadingProgress);}});
         owner.loadingProgress.phase='Installing FP32 WASM fallback';renderLoadingProgress(owner.root,owner.loadingProgress);
         return await owner.modelStore.install(candidate,{signal:owner.installController.signal});
     }finally{owner.installController=null;}
