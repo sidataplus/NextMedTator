@@ -22,7 +22,8 @@ with sync_playwright() as p:
         const restored=await store.read(hash);
         if(restored.files.get('test.onnx')[0]!==31)throw Error('Restored bytes differ');
         const db=await new Promise((ok,no)=>{const r=indexedDB.open('nextmedtator-public-models-v1',2);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});
-        await new Promise((ok,no)=>{const tx=db.transaction('artifacts','readwrite');tx.objectStore('artifacts').delete(hash+':test.onnx:chunk:2');tx.oncomplete=ok;tx.onabort=()=>no(tx.error);});db.close();
+        const row=await new Promise((ok,no)=>{const r=db.transaction('packages').objectStore('packages').get(hash);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});
+        await new Promise((ok,no)=>{const tx=db.transaction('artifacts','readwrite');tx.objectStore('artifacts').delete((row.artifactPrefix??hash)+':test.onnx:chunk:2');tx.oncomplete=ok;tx.onabort=()=>no(tx.error);});db.close();
         let detected=false;try{await store.read(hash);}catch(e){detected=/missing or corrupt/.test(e.message);}
         if(!detected)throw Error('Missing chunk was accepted');
         await store.remove(hash);

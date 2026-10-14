@@ -15,7 +15,7 @@ import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
 import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD, sameScope} from './scope.mjs';
 import {renderScopeEditor} from './scope-ui.mjs';
-import {ModelStore,downloadCatalogPackage} from './model-store.mjs';
+import {ModelStore,downloadCatalogPackage,cacheModelForSession} from './model-store.mjs';
 import {createModelSelectionState,saveModelSelectionState,setModelSelection,selectionThresholdOverride,setSelectionThresholdOverride,restoreSelectionThresholdOverride,modelSelectionKey,modelSelectionControlValue,modelSelectionLabel,modelSelectionMatchesManifest,matchingInstalledModels,selectionFromManifest,localAdapterSelection,renderModelSelectionControls} from './model-selection.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
 import {exportBundle,localDownload} from './bundle.mjs';
@@ -353,7 +353,7 @@ class LegacyAssist {
                 try{
                     this.loadingProgress={phase:'Downloading model',received:0,total:total,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onStage:stage=>{this.loadingProgress={...stage,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},onProgress:({received,total,file})=>{if(this.loadingProgress.phase!=='Downloading model')this.loadingProgress.started=performance.now();Object.assign(this.loadingProgress,{received,total,file,phase:received===total?'Verifying model integrity':'Downloading model'});renderLoadingProgress(this.root,this.loadingProgress);}});
                     invariant(epoch===this.modelSelectionEpoch&&modelSelectionMatchesManifest(this.modelSelection,candidate.manifest),'Model selection changed during download');
-                    this.loadingProgress.phase='Installing and verifying local storage';renderLoadingProgress(this.root,this.loadingProgress);const installed=await this.modelStore.install(candidate,{signal:this.installController.signal});
+                    this.loadingProgress.phase='Installing and verifying local storage';renderLoadingProgress(this.root,this.loadingProgress);const installed=await cacheModelForSession(this,candidate,{signal:this.installController.signal});
                     invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');
                     this.adoptModel(installed);await this.inspectStorage();this.message='Model ready. Continue to Analyze note in step 4.';
                 }finally{this.installController=null;}
@@ -438,18 +438,18 @@ class LegacyAssist {
         if(current())this.render();
     }
     unloadModel(){
-        this.beginModelSelectionAction();this.modelRunner.cancel();this.model=null;this.scopeTokenizer=null;this.scopeTokenizerManifest=null;this.scopeTokenizerPath=null;this.qualifiedManifest=null;this.qualifiedVariant=null;this.executionStatus=null;
+        this.beginModelSelectionAction();this.modelRunner.cancel();this.model=null;this.modelStorageNotice=null;this.scopeTokenizer=null;this.scopeTokenizerManifest=null;this.scopeTokenizerPath=null;this.qualifiedManifest=null;this.qualifiedVariant=null;this.executionStatus=null;
         this.message='Model unloaded from memory. Installed files and annotations remain available.';this.render();
     }
     async inspectStorage(){
-        this.installedModels=await this.modelStore.listExisting();this.storageEstimate=await navigator.storage?.estimate?.();
+        this.installedModels=await this.modelStore.listExisting().catch(()=>[]);this.storageEstimate=await navigator.storage?.estimate?.().catch(()=>null);
     }
     async useInstalledModel(manifestHash) {
         const epoch=this.beginModelSelectionAction();
         const candidate=await this.modelStore.read(manifestHash);
         if(epoch!==this.modelSelectionEpoch)return false;
         invariant(candidate,'Installed package missing');
-        this.adoptModel(candidate,{selectSource:true});
+        this.adoptModel(candidate,{selectSource:true});this.modelStorageNotice=null;
         return true;
     }
     async importPackage(file) {
@@ -458,7 +458,7 @@ class LegacyAssist {
             throw new Error('Model archive exceeds 1 GiB');
         const candidate = await importModelPackage(new Uint8Array(await file.arrayBuffer()));
         if(epoch!==this.modelSelectionEpoch)return;
-        this.adoptModel(candidate,{selectSource:true});
+        this.adoptModel(candidate,{selectSource:true});this.modelStorageNotice=null;
         const structured = candidate.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
         const qualified = candidate.manifest.variants.some(variant => CODECS[variant.codec].clinicalInference);
         this.message = candidate.manifest.variants[0].codec===ENTITY_ATTRIBUTES_CODEC
@@ -657,7 +657,7 @@ class LegacyAssist {
         if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         let executionModel=model;
-        const executionOptions={onInitialization:stage=>{this.loadingProgress={phase:stage.phase,detail:stage.detail,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},maxThreads:batch&&this.batchCpu==='low'?1:batch&&this.batchCpu==='balanced'?4:defaultCpuThreads(),backend:this.executionPreference??'auto',resolveFallback:target=>loadWasmFallback(this,target),onBackend:({backend,precision,packageData,fallbackReason})=>{executionModel=packageData;this.executionStatus={backend,precision,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
+        const executionOptions={onInitialization:stage=>{this.loadingProgress={phase:stage.phase,detail:stage.detail,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},maxThreads:batch&&this.batchCpu==='low'?1:batch&&this.batchCpu==='balanced'?4:defaultCpuThreads(),backend:this.executionPreference??'auto',resolveFallback:(target,context)=>loadWasmFallback(this,target,context),onBackend:({backend,precision,packageData,fallbackReason,fallbackDetail})=>{executionModel=packageData;this.model=packageData;this.executionStatus={backend,precision,fallbackReason,fallbackDetail};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
         // Validate and analyze in the same session, including CPU-only packages.
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
@@ -913,6 +913,8 @@ class LegacyAssist {
         if (view?.run && this.mode !== 'blind' && (!this.blinded.has(view.key) || this.exposed.has(view.key)))
             head.append(node('p', `${view.run.records.length} machine suggestions · ${view.ann.tags?.length ?? 0} annotation tags`, { 'data-testid': 'assist-counts' }));
         dock.append(head);
+        if(this.model&&this.modelStorageNotice)head.append(node('p',this.modelStorageNotice,{class:'muted',role:'status','data-testid':'assist-storage-notice'}));
+        if(this.executionStatus?.fallbackDetail){const details=disclosure(this,'execution-details','Why CPU was used');details.append(node('p',this.executionStatus.fallbackDetail,{class:'muted',style:'overflow-wrap:anywhere'}));head.append(details);}
         if (this.message)
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
         renderLoadingProgress(this.root,this.busy?this.loadingProgress:null);
@@ -998,7 +1000,7 @@ class LegacyAssist {
         if(this.storageEstimate)downloadOptions.append(node('p',`Browser storage: ${(this.storageEstimate.usage/1048576).toFixed(0)} MiB used of approximately ${(this.storageEstimate.quota/1048576).toFixed(0)} MiB available quota.`,{class:'muted'}));
         for(const item of this.installedModels??[])localPackages.append(button('Remove installed '+item.manifest.id,()=>this.perform(async()=>{if(!confirm('Remove this cached model from this browser? You can download or import it again.'))return;if(this.model?.manifestHash===item.manifestHash)this.unloadModel();await this.modelStore.remove(item.manifestHash);await this.inspectStorage();}),{disabled:this.busy,id:'assist-remove-model'}));
         if(this.model)downloadOptions.append(button('Unload model',()=>this.unloadModel(),{disabled:this.busy,id:'assist-unload-model'}));
-        if(this.model)downloadOptions.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));await this.inspectStorage();this.message='Model package installed and read-back verified';})));
+        if(this.model)downloadOptions.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.modelStorageNotice=null;await this.inspectStorage();this.message='Model package installed and read-back verified';})));
         const anns = this.allDocuments();
         if (anns.length) {
             const docs = disclosure(this,'batch',`Batch analysis · ${this.selected.size} selected`);docs.setAttribute('aria-label','Documents to analyze');

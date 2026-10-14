@@ -195,7 +195,7 @@ export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
 }
 /** Dedicated worker owns ORT sessions. Force stop disposes the worker, never human state. */
 export class ConformanceWorker {
-    constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.reject = null; this.cancelled = false; this.gpuFailures = new Map(); }
+    constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.reject = null; this.cancelled = false; this.gpuFailures = new Map();this.gpuFailureDetails=new Map(); }
     async run(packageData, variantId, options = {}) {
         // A diagnostic WASM check returns mismatches for inspection. Analysis
         // still requires a passing report; qualified GPU checks retain fallback.
@@ -237,7 +237,8 @@ export class ConformanceWorker {
         invariant(actual === variant.backend || qualified, 'Execution preference is not supported by this package');
         invariant(Number.isSafeInteger(maxThreads)&&maxThreads>=1,'CPU thread limit must be a positive integer');
         const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,resolveFallback,maxThreads,
-            fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null};
+            fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null,
+            fallbackDetail: backend==='auto'&&qualified ? (this.gpuFailureDetails.get(packageData.manifestHash)??(!globalThis.navigator?.gpu?'This browser does not expose WebGPU on this device.':null)) : null};
         this.cancelled = false;this.active=true;this.onWindowProgress=onWindowProgress;this.onInitialization=onInitialization;
         try {
             if(actual==='wasm')await this.#resolveWasm(context);
@@ -255,20 +256,23 @@ export class ConformanceWorker {
     }
     #notifyBackend(context){
         const variant=context.packageData.manifest.variants.find(v=>v.id===context.variantId);
-        context.onBackend?.({backend:context.backend,precision:variant.precision,packageData:context.packageData,variantId:context.variantId,fallbackReason:context.fallbackReason});
+        context.onBackend?.({backend:context.backend,precision:variant.precision,packageData:context.packageData,variantId:context.variantId,fallbackReason:context.fallbackReason,fallbackDetail:context.fallbackDetail});
     }
     async #resolveWasm(context){
         const source=context.packageData,variant=source.manifest.variants.find(v=>v.id===context.variantId);
         if(variant.backend!=='webgpu')return;
         const target=wasmFallbackIdentity(source.manifest,variant);
         invariant(target&&context.resolveFallback,'FP16 needs the original FP32 package for WASM fallback');
-        const candidate=await context.resolveFallback(target);
+        const candidate=await context.resolveFallback(target,{reason:context.fallbackReason,detail:context.fallbackDetail});
         invariant(!this.cancelled,'Cancelled: local model worker stopped');
         invariant(candidate?.manifestHash===target.manifestHash&&await fingerprint(candidate.manifest)===target.manifestHash,'WASM fallback package identity mismatch');
         const fallback=candidate.manifest.variants.find(v=>v.id===target.variantId);
         invariant(fallback?.backend==='wasm'&&fallback.precision==='fp32','WASM fallback variant mismatch');
         context.fallbackFrom={manifestHash:source.manifestHash,variantId:variant.id,precision:variant.precision};
         context.packageData=candidate;context.variantId=fallback.id;
+        // Reusing the in-memory CPU fallback must not retry the failed GPU on
+        // every Analyze click or force another download when caching is disabled.
+        if(context.automatic&&context.fallbackReason){this.gpuFailures.set(candidate.manifestHash,context.fallbackReason);this.gpuFailureDetails.set(candidate.manifestHash,context.fallbackDetail);}
     }
     async #load(context) {
         invariant(!this.cancelled, 'Cancelled: local model worker stopped');
@@ -282,8 +286,9 @@ export class ConformanceWorker {
         // Terminate the failed GPU context before creating fresh CPU sessions.
         // Completed notes have already been published and are never replayed.
         this.worker?.terminate();this.worker=null;
-        context.backend='wasm';context.fallbackReason=reason;
+        context.backend='wasm';context.fallbackReason=reason;context.fallbackDetail=String(error?.message??error).slice(0,1000);
         this.gpuFailures.set(context.packageData.manifestHash,reason);
+        this.gpuFailureDetails.set(context.packageData.manifestHash,context.fallbackDetail);
         await this.#resolveWasm(context);
         this.#notifyBackend(context);
         await this.#load(context);

@@ -219,8 +219,11 @@ test('FP16 failure resolves the original FP32 package and reports its actual pre
     assert.equal(resolved,1);assert.equal(workers[1].messages[0].manifestHash,entry.revision);
     assert.equal(workers[1].messages[0].variantId,variantId);
     assert.equal(events.at(-1).precision,'fp32');assert.equal(events.at(-1).packageData,gpuPackage);
+    assert.equal(events.at(-1).fallbackDetail,'No shader-f16');
     assert.deepEqual(result.fallbackFrom,{manifestHash:pkg.manifestHash,variantId:'webgpu-fp16',precision:'fp16'});
     assert.equal(result.fallbackReason,'webgpu-initialization-failed');
+    const again=await runner.analyze(events.at(-1).packageData,variantId,requests[0]);
+    assert.equal(again.backend,'wasm');assert.equal(resolved,1);
 });
 test('FP16 starts directly on the original FP32 for CPU choice or no GPU; forged fallback is rejected',async t=>{
     gpuNavigator(t);delete globalThis.navigator.gpu;const workers=fakeWorker(t,reply),pkg=fp16Package();

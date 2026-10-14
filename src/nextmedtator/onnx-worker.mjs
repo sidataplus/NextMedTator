@@ -55,9 +55,12 @@ async function loadModel(data) {
     ort.env.wasm.wasmPaths = new URL('../../vendor/ort/', import.meta.url).href;
     if (variant.backend === 'webgpu') {
         invariant(!!navigator.gpu, 'WebGPU unavailable');
-        const adapter=await navigator.gpu.requestAdapter();
+        const adapter=await navigator.gpu.requestAdapter({powerPreference:'high-performance'});
         invariant(!!adapter, 'No usable GPU adapter');
         if(variant.precision==='fp16')invariant(adapter.features.has('shader-f16'),'This GPU does not support FP16 shaders');
+        // Use the adapter we checked, rather than letting ORT select a different
+        // default adapter after the FP16 capability check.
+        ort.env.webgpu.adapter=adapter;
     }
     let entityContract=null;
     if(variant.codec===ENTITY_ATTRIBUTES_CODEC){entityContract=validateEntityContract(jsonParse(new TextDecoder().decode(files.get(variant.entityContract))));invariant(entityContract.threshold===variant.threshold&&entityContract.maxEncodedTokens===variant.maxSequenceLength,'Native entity contract differs from manifest');}
