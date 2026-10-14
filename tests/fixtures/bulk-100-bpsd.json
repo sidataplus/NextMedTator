@@ -1,0 +1,402 @@
+[
+  {
+    "filename": "synthetic-001.txt.xml",
+    "text": "Synthetic case S001.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-002.txt.xml",
+    "text": "Synthetic case S002.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-003.txt.xml",
+    "text": "Synthetic case S003.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-004.txt.xml",
+    "text": "Synthetic case S004.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-005.txt.xml",
+    "text": "Synthetic case S005.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-006.txt.xml",
+    "text": "Synthetic case S006.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-007.txt.xml",
+    "text": "Synthetic case S007.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-008.txt.xml",
+    "text": "Synthetic case S008.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-009.txt.xml",
+    "text": "Synthetic case S009.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-010.txt.xml",
+    "text": "Synthetic case S010.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-011.txt.xml",
+    "text": "Synthetic case S011.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-012.txt.xml",
+    "text": "Synthetic case S012.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-013.txt.xml",
+    "text": "Synthetic case S013.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-014.txt.xml",
+    "text": "Synthetic case S014.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-015.txt.xml",
+    "text": "Synthetic case S015.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-016.txt.xml",
+    "text": "Synthetic case S016.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-017.txt.xml",
+    "text": "Synthetic case S017.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-018.txt.xml",
+    "text": "Synthetic case S018.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-019.txt.xml",
+    "text": "Synthetic case S019.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-020.txt.xml",
+    "text": "Synthetic case S020.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-021.txt.xml",
+    "text": "Synthetic case S021.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-022.txt.xml",
+    "text": "Synthetic case S022.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-023.txt.xml",
+    "text": "Synthetic case S023.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-024.txt.xml",
+    "text": "Synthetic case S024.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-025.txt.xml",
+    "text": "Synthetic case S025.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-026.txt.xml",
+    "text": "Synthetic case S026.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-027.txt.xml",
+    "text": "Synthetic case S027.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-028.txt.xml",
+    "text": "Synthetic case S028.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-029.txt.xml",
+    "text": "Synthetic case S029.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-030.txt.xml",
+    "text": "Synthetic case S030.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-031.txt.xml",
+    "text": "Synthetic case S031.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-032.txt.xml",
+    "text": "Synthetic case S032.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-033.txt.xml",
+    "text": "Synthetic case S033.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-034.txt.xml",
+    "text": "Synthetic case S034.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-035.txt.xml",
+    "text": "Synthetic case S035.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-036.txt.xml",
+    "text": "Synthetic case S036.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-037.txt.xml",
+    "text": "Synthetic case S037.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-038.txt.xml",
+    "text": "Synthetic case S038.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-039.txt.xml",
+    "text": "Synthetic case S039.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-040.txt.xml",
+    "text": "Synthetic case S040.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-041.txt.xml",
+    "text": "Synthetic case S041.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-042.txt.xml",
+    "text": "Synthetic case S042.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-043.txt.xml",
+    "text": "Synthetic case S043.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-044.txt.xml",
+    "text": "Synthetic case S044.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-045.txt.xml",
+    "text": "Synthetic case S045.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-046.txt.xml",
+    "text": "Synthetic case S046.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-047.txt.xml",
+    "text": "Synthetic case S047.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-048.txt.xml",
+    "text": "Synthetic case S048.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-049.txt.xml",
+    "text": "Synthetic case S049.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-050.txt.xml",
+    "text": "Synthetic case S050.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-051.txt.xml",
+    "text": "Synthetic case S051.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-052.txt.xml",
+    "text": "Synthetic case S052.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-053.txt.xml",
+    "text": "Synthetic case S053.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-054.txt.xml",
+    "text": "Synthetic case S054.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-055.txt.xml",
+    "text": "Synthetic case S055.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-056.txt.xml",
+    "text": "Synthetic case S056.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-057.txt.xml",
+    "text": "Synthetic case S057.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-058.txt.xml",
+    "text": "Synthetic case S058.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-059.txt.xml",
+    "text": "Synthetic case S059.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-060.txt.xml",
+    "text": "Synthetic case S060.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-061.txt.xml",
+    "text": "Synthetic case S061.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-062.txt.xml",
+    "text": "Synthetic case S062.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-063.txt.xml",
+    "text": "Synthetic case S063.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-064.txt.xml",
+    "text": "Synthetic case S064.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-065.txt.xml",
+    "text": "Synthetic case S065.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-066.txt.xml",
+    "text": "Synthetic case S066.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-067.txt.xml",
+    "text": "Synthetic case S067.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-068.txt.xml",
+    "text": "Synthetic case S068.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-069.txt.xml",
+    "text": "Synthetic case S069.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-070.txt.xml",
+    "text": "Synthetic case S070.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-071.txt.xml",
+    "text": "Synthetic case S071.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-072.txt.xml",
+    "text": "Synthetic case S072.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-073.txt.xml",
+    "text": "Synthetic case S073.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-074.txt.xml",
+    "text": "Synthetic case S074.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-075.txt.xml",
+    "text": "Synthetic case S075.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-076.txt.xml",
+    "text": "Synthetic case S076.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-077.txt.xml",
+    "text": "Synthetic case S077.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-078.txt.xml",
+    "text": "Synthetic case S078.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-079.txt.xml",
+    "text": "Synthetic case S079.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-080.txt.xml",
+    "text": "Synthetic case S080.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-081.txt.xml",
+    "text": "Synthetic case S081.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-082.txt.xml",
+    "text": "Synthetic case S082.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-083.txt.xml",
+    "text": "Synthetic case S083.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-084.txt.xml",
+    "text": "Synthetic case S084.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-085.txt.xml",
+    "text": "Synthetic case S085.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-086.txt.xml",
+    "text": "Synthetic case S086.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-087.txt.xml",
+    "text": "Synthetic case S087.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-088.txt.xml",
+    "text": "Synthetic case S088.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-089.txt.xml",
+    "text": "Synthetic case S089.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-090.txt.xml",
+    "text": "Synthetic case S090.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-091.txt.xml",
+    "text": "Synthetic case S091.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-092.txt.xml",
+    "text": "Synthetic case S092.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-093.txt.xml",
+    "text": "Synthetic case S093.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-094.txt.xml",
+    "text": "Synthetic case S094.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-095.txt.xml",
+    "text": "Synthetic case S095.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-096.txt.xml",
+    "text": "Synthetic case S096.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  },
+  {
+    "filename": "synthetic-097.txt.xml",
+    "text": "Synthetic case S097.\nThe patient has fever. Aspirin is planned for tomorrow."
+  },
+  {
+    "filename": "synthetic-098.txt.xml",
+    "text": "Synthetic case S098.\nHer mother has diabetes. The patient denies pain."
+  },
+  {
+    "filename": "synthetic-099.txt.xml",
+    "text": "Synthetic case S099.\nShe is pacing, shouting and resisting morning care. No hallucinations."
+  },
+  {
+    "filename": "synthetic-100.txt.xml",
+    "text": "Synthetic case S100.\nCafé 👩‍⚕️. The patient was agitated last year and is agitated today."
+  }
+]

@@ -1,0 +1,1145 @@
+{
+  "date": "2026-10-13",
+  "method": {
+    "notesPerModel": 100,
+    "templatesPerModel": 4,
+    "uniqueSyntheticCaseIds": true,
+    "freshChromePerMode": true,
+    "precision": "original FP32 for all modes",
+    "intervalSeconds": 0.25,
+    "cpu": "Windows GetProcessTimes, summed Chrome process tree; one fully occupied logical processor = 100% core CPU. Machine CPU divides by 20 logical processors.",
+    "ram": "Windows GetProcessMemoryInfo. Working set is resident memory including shared pages (may be counted in multiple processes). Private bytes are committed memory, not resident RAM. GPU VRAM is excluded.",
+    "postRunSeconds": [
+      0,
+      5,
+      15,
+      30
+    ],
+    "forcedGarbageCollection": false,
+    "recoveryDuringBenchmark": false,
+    "singlePass": true,
+    "cancellation": "Second 100-note job in the same browser; stop after at least 10 completed notes. Retain the initial corpus/model and all completed prediction history.",
+    "rawResults": "temp/browser-validation/bulk-100",
+    "sources": [
+      "https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex",
+      "https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocesstimes"
+    ],
+    "samplingLimit": "Processes that exit before their first sample can be missed. Observed snapshot/open races are recorded as transientProcessExits; their short-lived CPU usage is unknown. Sampled memory peaks are lower bounds."
+  },
+  "results": [
+    {
+      "profile": "p10",
+      "mode": "low",
+      "precision": "fp32",
+      "browser": "155.0.8059.40",
+      "gpuDevices": [
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9278"
+        }
+      ],
+      "assetVersion": "edc64502cd6e50167b9df723bac7e4587c2169d992596e4d39bcfc64185c0406",
+      "logicalProcessors": 20,
+      "sampleIntervalSeconds": 0.25,
+      "corpusSha256": "bebbd74c1ffb368e969d2f7de18c3fcb6e56eebc3d0cc2798cf371ff001d9e2c",
+      "notes": 100,
+      "modelReady": {
+        "t": 42.35555769992061,
+        "cpuSeconds": 49.890625,
+        "workingSetBytes": 2874146816,
+        "privateBytes": 2653941760,
+        "processes": 8
+      },
+      "beforeImport": {
+        "t": 3.384092800086364,
+        "cpuSeconds": 7.578125,
+        "workingSetBytes": 623165440,
+        "privateBytes": 435646464,
+        "processes": 8
+      },
+      "import": {
+        "wallSeconds": 38.971464899834245,
+        "cpuSeconds": 42.3125,
+        "averageCpuCorePercent": 108.57302928887327,
+        "averageMachineCpuPercent": 5.428651464443663,
+        "peakWorkingSetMiB": 3425.21875,
+        "peakPrivateMiB": 3245.0546875,
+        "samples": 140
+      },
+      "completion": {
+        "wallSeconds": 424.40403309999965,
+        "cpuSeconds": 444.375,
+        "averageCpuCorePercent": 104.70564965043457,
+        "averageMachineCpuPercent": 5.235282482521728,
+        "peakWorkingSetMiB": 5952.2265625,
+        "peakPrivateMiB": 6487.59375,
+        "samples": 1537
+      },
+      "afterCompletion": {
+        "0": {
+          "t": 467.0269398998935,
+          "cpuSeconds": 494.609375,
+          "workingSetBytes": 1559904256,
+          "privateBytes": 1295093760,
+          "processes": 8
+        },
+        "5": {
+          "t": 472.0092929000966,
+          "cpuSeconds": 494.640625,
+          "workingSetBytes": 1556357120,
+          "privateBytes": 1291431936,
+          "processes": 8
+        },
+        "15": {
+          "t": 482.14847990009,
+          "cpuSeconds": 494.640625,
+          "workingSetBytes": 1556361216,
+          "privateBytes": 1291436032,
+          "processes": 8
+        },
+        "30": {
+          "t": 497.03956410009414,
+          "cpuSeconds": 494.640625,
+          "workingSetBytes": 1556381696,
+          "privateBytes": 1291472896,
+          "processes": 8
+        }
+      },
+      "cancellation": {
+        "wallSeconds": 71.87414279999211,
+        "cpuSeconds": 85.046875,
+        "averageCpuCorePercent": 118.32749816114583,
+        "averageMachineCpuPercent": 5.916374908057291,
+        "peakWorkingSetMiB": 5464.98046875,
+        "peakPrivateMiB": 6038.828125,
+        "samples": 259
+      },
+      "cancelledAfterNotes": 10,
+      "afterCancellation": {
+        "0": {
+          "t": 570.0289310000371,
+          "cpuSeconds": 580.5,
+          "workingSetBytes": 3853058048,
+          "privateBytes": 3655077888,
+          "processes": 8
+        },
+        "5": {
+          "t": 574.9952565999702,
+          "cpuSeconds": 582.609375,
+          "workingSetBytes": 1557667840,
+          "privateBytes": 1291079680,
+          "processes": 8
+        },
+        "15": {
+          "t": 585.1494831000455,
+          "cpuSeconds": 582.609375,
+          "workingSetBytes": 1557667840,
+          "privateBytes": 1291079680,
+          "processes": 8
+        },
+        "30": {
+          "t": 600.0568758000154,
+          "cpuSeconds": 582.609375,
+          "workingSetBytes": 1557954560,
+          "privateBytes": 1291407360,
+          "processes": 8
+        }
+      },
+      "workerReleasedAfterBoth": true,
+      "queueResumeEnabled": true,
+      "retainedCompletedRuns": 110,
+      "measurementErrors": [],
+      "transientProcessExits": [
+        17252
+      ],
+      "peakWorkingSetEntireSessionMiB": 5952.2265625,
+      "peakPrivateEntireSessionMiB": 6487.59375,
+      "actualSamplingIntervalSeconds": {
+        "mean": 0.27676744054426433,
+        "max": 0.3003067998215556
+      },
+      "model": {
+        "packageId": "clinical-evidence-p10-base",
+        "manifestHash": "e15cfbecb435c23a7ff697cbc17c084e686c2ce846739098552ac12bfff8cc53",
+        "variantId": "wasm-fp32"
+      },
+      "settings": {
+        "schemaHash": "7882216bd8d46cb92b29810936e28e6f4c3dbf7c706020ad15d21dbf3a4ad22d",
+        "mode": "assisted",
+        "threshold": 0.25,
+        "thresholdSource": "model"
+      },
+      "workingSetAboveLoadedBaseline30sMiB": -1256.71875,
+      "privateAboveLoadedBaseline30sMiB": -1299.3515625,
+      "spanOrAttributeDifferencesAgainstLowCpu": [],
+      "maxMatchedConfidenceDifference": 0,
+      "predictionCount": 337,
+      "peakWorkingSetIncludingImportMiB": 5952.2265625,
+      "workingSetAfterCompletion30sMiB": 1484.28125,
+      "privateAfterCompletion30sMiB": 1231.64453125,
+      "workingSetAfterCancellation30sMiB": 1485.78125,
+      "privateAfterCancellation30sMiB": 1231.58203125,
+      "workingSetDropAfterCompletionMiB": 4467.9453125,
+      "workingSetDropAfterCancellationMiB": 3979.19921875
+    },
+    {
+      "profile": "p10",
+      "mode": "balanced",
+      "precision": "fp32",
+      "browser": "155.0.8059.40",
+      "gpuDevices": [
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9278"
+        }
+      ],
+      "assetVersion": "edc64502cd6e50167b9df723bac7e4587c2169d992596e4d39bcfc64185c0406",
+      "logicalProcessors": 20,
+      "sampleIntervalSeconds": 0.25,
+      "corpusSha256": "bebbd74c1ffb368e969d2f7de18c3fcb6e56eebc3d0cc2798cf371ff001d9e2c",
+      "notes": 100,
+      "modelReady": {
+        "t": 41.95012049982324,
+        "cpuSeconds": 50.078125,
+        "workingSetBytes": 2882277376,
+        "privateBytes": 2664112128,
+        "processes": 8
+      },
+      "beforeImport": {
+        "t": 3.372834699926898,
+        "cpuSeconds": 8.125,
+        "workingSetBytes": 644583424,
+        "privateBytes": 452538368,
+        "processes": 9
+      },
+      "import": {
+        "wallSeconds": 38.577285799896345,
+        "cpuSeconds": 41.953125,
+        "averageCpuCorePercent": 108.75084685224985,
+        "averageMachineCpuPercent": 5.437542342612493,
+        "peakWorkingSetMiB": 3493.9453125,
+        "peakPrivateMiB": 3289.81640625,
+        "samples": 139
+      },
+      "completion": {
+        "wallSeconds": 131.28391580004245,
+        "cpuSeconds": 511.625,
+        "averageCpuCorePercent": 389.70882067476737,
+        "averageMachineCpuPercent": 19.48544103373837,
+        "peakWorkingSetMiB": 6031.47265625,
+        "peakPrivateMiB": 6608.97265625,
+        "samples": 476
+      },
+      "afterCompletion": {
+        "0": {
+          "t": 173.510904799914,
+          "cpuSeconds": 561.71875,
+          "workingSetBytes": 3847831552,
+          "privateBytes": 3659341824,
+          "processes": 8
+        },
+        "5": {
+          "t": 178.4981827000156,
+          "cpuSeconds": 561.921875,
+          "workingSetBytes": 1570623488,
+          "privateBytes": 1308569600,
+          "processes": 8
+        },
+        "15": {
+          "t": 188.7436228999868,
+          "cpuSeconds": 563.28125,
+          "workingSetBytes": 1521426432,
+          "privateBytes": 1257455616,
+          "processes": 8
+        },
+        "30": {
+          "t": 203.68562050000764,
+          "cpuSeconds": 563.296875,
+          "workingSetBytes": 1521610752,
+          "privateBytes": 1257947136,
+          "processes": 8
+        }
+      },
+      "cancellation": {
+        "wallSeconds": 27.609287900151685,
+        "cpuSeconds": 94.390625,
+        "averageCpuCorePercent": 341.8799693109123,
+        "averageMachineCpuPercent": 17.093998465545614,
+        "peakWorkingSetMiB": 5492.71875,
+        "peakPrivateMiB": 6367.5,
+        "samples": 100
+      },
+      "cancelledAfterNotes": 10,
+      "afterCancellation": {
+        "0": {
+          "t": 231.8573100999929,
+          "cpuSeconds": 657.9375,
+          "workingSetBytes": 5484265472,
+          "privateBytes": 6050615296,
+          "processes": 8
+        },
+        "5": {
+          "t": 237.1068100000266,
+          "cpuSeconds": 663.453125,
+          "workingSetBytes": 1628184576,
+          "privateBytes": 1365090304,
+          "processes": 8
+        },
+        "15": {
+          "t": 247.12422470003366,
+          "cpuSeconds": 663.5,
+          "workingSetBytes": 1627230208,
+          "privateBytes": 1364037632,
+          "processes": 8
+        },
+        "30": {
+          "t": 262.1547009998467,
+          "cpuSeconds": 663.5,
+          "workingSetBytes": 1627734016,
+          "privateBytes": 1364701184,
+          "processes": 8
+        }
+      },
+      "workerReleasedAfterBoth": true,
+      "queueResumeEnabled": true,
+      "retainedCompletedRuns": 110,
+      "measurementErrors": [],
+      "transientProcessExits": [
+        17060
+      ],
+      "peakWorkingSetEntireSessionMiB": 6031.47265625,
+      "peakPrivateEntireSessionMiB": 6608.97265625,
+      "actualSamplingIntervalSeconds": {
+        "mean": 0.2773924290697754,
+        "max": 0.2972864001058042
+      },
+      "model": {
+        "packageId": "clinical-evidence-p10-base",
+        "manifestHash": "e15cfbecb435c23a7ff697cbc17c084e686c2ce846739098552ac12bfff8cc53",
+        "variantId": "wasm-fp32"
+      },
+      "settings": {
+        "schemaHash": "7882216bd8d46cb92b29810936e28e6f4c3dbf7c706020ad15d21dbf3a4ad22d",
+        "mode": "assisted",
+        "threshold": 0.25,
+        "thresholdSource": "model"
+      },
+      "workingSetAboveLoadedBaseline30sMiB": -1297.6328125,
+      "privateAboveLoadedBaseline30sMiB": -1341.0234375,
+      "spanOrAttributeDifferencesAgainstLowCpu": [],
+      "maxMatchedConfidenceDifference": 0,
+      "predictionCount": 337,
+      "peakWorkingSetIncludingImportMiB": 6031.47265625,
+      "workingSetAfterCompletion30sMiB": 1451.12109375,
+      "privateAfterCompletion30sMiB": 1199.671875,
+      "workingSetAfterCancellation30sMiB": 1552.328125,
+      "privateAfterCancellation30sMiB": 1301.48046875,
+      "workingSetDropAfterCompletionMiB": 4580.3515625,
+      "workingSetDropAfterCancellationMiB": 3940.390625
+    },
+    {
+      "profile": "p10",
+      "mode": "gpu",
+      "precision": "fp32",
+      "browser": "155.0.8059.40",
+      "gpuDevices": [
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9278"
+        }
+      ],
+      "assetVersion": "edc64502cd6e50167b9df723bac7e4587c2169d992596e4d39bcfc64185c0406",
+      "logicalProcessors": 20,
+      "sampleIntervalSeconds": 0.25,
+      "corpusSha256": "bebbd74c1ffb368e969d2f7de18c3fcb6e56eebc3d0cc2798cf371ff001d9e2c",
+      "notes": 100,
+      "modelReady": {
+        "t": 42.56692619994283,
+        "cpuSeconds": 49.34375,
+        "workingSetBytes": 2876063744,
+        "privateBytes": 2655035392,
+        "processes": 8
+      },
+      "beforeImport": {
+        "t": 3.399524800013751,
+        "cpuSeconds": 6.9375,
+        "workingSetBytes": 640434176,
+        "privateBytes": 445882368,
+        "processes": 10
+      },
+      "import": {
+        "wallSeconds": 39.167401399929076,
+        "cpuSeconds": 42.40625,
+        "averageCpuCorePercent": 108.26924555703812,
+        "averageMachineCpuPercent": 5.413462277851906,
+        "peakWorkingSetMiB": 3466.953125,
+        "peakPrivateMiB": 3275.08984375,
+        "samples": 141
+      },
+      "completion": {
+        "wallSeconds": 74.78861559997313,
+        "cpuSeconds": 83.65625,
+        "averageCpuCorePercent": 111.85693080275449,
+        "averageMachineCpuPercent": 5.5928465401377245,
+        "peakWorkingSetMiB": 6774.296875,
+        "peakPrivateMiB": 7078.9375,
+        "samples": 271
+      },
+      "afterCompletion": {
+        "0": {
+          "t": 117.35554179991595,
+          "cpuSeconds": 133.0,
+          "workingSetBytes": 5476732928,
+          "privateBytes": 5111508992,
+          "processes": 8
+        },
+        "5": {
+          "t": 122.65072679985315,
+          "cpuSeconds": 134.8125,
+          "workingSetBytes": 1708003328,
+          "privateBytes": 1447759872,
+          "processes": 8
+        },
+        "15": {
+          "t": 132.63087799982168,
+          "cpuSeconds": 134.828125,
+          "workingSetBytes": 1591173120,
+          "privateBytes": 1330544640,
+          "processes": 8
+        },
+        "30": {
+          "t": 147.58210609992966,
+          "cpuSeconds": 134.84375,
+          "workingSetBytes": 1556369408,
+          "privateBytes": 1292394496,
+          "processes": 8
+        }
+      },
+      "cancellation": {
+        "wallSeconds": 21.675411500036716,
+        "cpuSeconds": 32.703125,
+        "averageCpuCorePercent": 150.87660504136036,
+        "averageMachineCpuPercent": 7.543830252068018,
+        "peakWorkingSetMiB": 6791.46875,
+        "peakPrivateMiB": 7115.078125,
+        "samples": 79
+      },
+      "cancelledAfterNotes": 10,
+      "afterCancellation": {
+        "0": {
+          "t": 169.82038169982843,
+          "cpuSeconds": 167.796875,
+          "workingSetBytes": 5575524352,
+          "privateBytes": 5162778624,
+          "processes": 8
+        },
+        "5": {
+          "t": 174.83239210001193,
+          "cpuSeconds": 168.4375,
+          "workingSetBytes": 1707114496,
+          "privateBytes": 1445289984,
+          "processes": 8
+        },
+        "15": {
+          "t": 185.01818549982272,
+          "cpuSeconds": 169.703125,
+          "workingSetBytes": 1597575168,
+          "privateBytes": 1334681600,
+          "processes": 8
+        },
+        "30": {
+          "t": 200.18917359993793,
+          "cpuSeconds": 169.703125,
+          "workingSetBytes": 1595600896,
+          "privateBytes": 1332736000,
+          "processes": 8
+        }
+      },
+      "workerReleasedAfterBoth": true,
+      "queueResumeEnabled": true,
+      "retainedCompletedRuns": 110,
+      "measurementErrors": [],
+      "transientProcessExits": [],
+      "peakWorkingSetEntireSessionMiB": 6791.46875,
+      "peakPrivateEntireSessionMiB": 7115.078125,
+      "actualSamplingIntervalSeconds": {
+        "mean": 0.2776240478502264,
+        "max": 0.2989010000601411
+      },
+      "model": {
+        "packageId": "clinical-evidence-p10-base",
+        "manifestHash": "e15cfbecb435c23a7ff697cbc17c084e686c2ce846739098552ac12bfff8cc53",
+        "variantId": "wasm-fp32"
+      },
+      "settings": {
+        "schemaHash": "7882216bd8d46cb92b29810936e28e6f4c3dbf7c706020ad15d21dbf3a4ad22d",
+        "mode": "assisted",
+        "threshold": 0.25,
+        "thresholdSource": "model"
+      },
+      "workingSetAboveLoadedBaseline30sMiB": -1258.55859375,
+      "privateAboveLoadedBaseline30sMiB": -1299.515625,
+      "spanOrAttributeDifferencesAgainstLowCpu": [],
+      "maxMatchedConfidenceDifference": 5.602836608886719e-06,
+      "predictionCount": 337,
+      "peakWorkingSetIncludingImportMiB": 6774.296875,
+      "workingSetAfterCompletion30sMiB": 1484.26953125,
+      "privateAfterCompletion30sMiB": 1232.5234375,
+      "workingSetAfterCancellation30sMiB": 1521.68359375,
+      "privateAfterCancellation30sMiB": 1270.99609375,
+      "workingSetDropAfterCompletionMiB": 5290.02734375,
+      "workingSetDropAfterCancellationMiB": 5269.78515625
+    },
+    {
+      "profile": "bpsd",
+      "mode": "low",
+      "precision": "fp32",
+      "browser": "155.0.8059.40",
+      "gpuDevices": [
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9278"
+        }
+      ],
+      "assetVersion": "edc64502cd6e50167b9df723bac7e4587c2169d992596e4d39bcfc64185c0406",
+      "logicalProcessors": 20,
+      "sampleIntervalSeconds": 0.25,
+      "corpusSha256": "bebbd74c1ffb368e969d2f7de18c3fcb6e56eebc3d0cc2798cf371ff001d9e2c",
+      "notes": 100,
+      "modelReady": {
+        "t": 42.22300620004535,
+        "cpuSeconds": 49.390625,
+        "workingSetBytes": 2882068480,
+        "privateBytes": 2666090496,
+        "processes": 8
+      },
+      "beforeImport": {
+        "t": 3.3493860999587923,
+        "cpuSeconds": 7.296875,
+        "workingSetBytes": 625807360,
+        "privateBytes": 438181888,
+        "processes": 8
+      },
+      "import": {
+        "wallSeconds": 38.873620100086555,
+        "cpuSeconds": 42.09375,
+        "averageCpuCorePercent": 108.28358637971634,
+        "averageMachineCpuPercent": 5.414179318985816,
+        "peakWorkingSetMiB": 3491.1796875,
+        "peakPrivateMiB": 3287.39453125,
+        "samples": 140
+      },
+      "completion": {
+        "wallSeconds": 418.83123790007085,
+        "cpuSeconds": 438.09375,
+        "averageCpuCorePercent": 104.59911065767378,
+        "averageMachineCpuPercent": 5.229955532883689,
+        "peakWorkingSetMiB": 6801.01171875,
+        "peakPrivateMiB": 7378.87109375,
+        "samples": 1516
+      },
+      "afterCompletion": {
+        "0": {
+          "t": 461.0542441001162,
+          "cpuSeconds": 487.484375,
+          "workingSetBytes": 1566195712,
+          "privateBytes": 1301458944,
+          "processes": 8
+        },
+        "5": {
+          "t": 466.0363018999342,
+          "cpuSeconds": 487.53125,
+          "workingSetBytes": 1563422720,
+          "privateBytes": 1298919424,
+          "processes": 8
+        },
+        "15": {
+          "t": 476.25676320004277,
+          "cpuSeconds": 487.546875,
+          "workingSetBytes": 1563406336,
+          "privateBytes": 1298841600,
+          "processes": 8
+        },
+        "30": {
+          "t": 491.20853969990276,
+          "cpuSeconds": 487.578125,
+          "workingSetBytes": 1567375360,
+          "privateBytes": 1300488192,
+          "processes": 8
+        }
+      },
+      "cancellation": {
+        "wallSeconds": 68.74859940004535,
+        "cpuSeconds": 82.5,
+        "averageCpuCorePercent": 120.00244473336221,
+        "averageMachineCpuPercent": 6.000122236668111,
+        "peakWorkingSetMiB": 5490.8359375,
+        "peakPrivateMiB": 6567.1875,
+        "samples": 247
+      },
+      "cancelledAfterNotes": 10,
+      "afterCancellation": {
+        "0": {
+          "t": 560.7788307999726,
+          "cpuSeconds": 570.71875,
+          "workingSetBytes": 3870642176,
+          "privateBytes": 3668959232,
+          "processes": 8
+        },
+        "5": {
+          "t": 565.7720266999677,
+          "cpuSeconds": 572.859375,
+          "workingSetBytes": 1575665664,
+          "privateBytes": 1307058176,
+          "processes": 8
+        },
+        "15": {
+          "t": 575.7247665999457,
+          "cpuSeconds": 572.890625,
+          "workingSetBytes": 1556561920,
+          "privateBytes": 1287557120,
+          "processes": 8
+        },
+        "30": {
+          "t": 590.7887252999935,
+          "cpuSeconds": 572.90625,
+          "workingSetBytes": 1527726080,
+          "privateBytes": 1258635264,
+          "processes": 8
+        }
+      },
+      "workerReleasedAfterBoth": true,
+      "queueResumeEnabled": true,
+      "retainedCompletedRuns": 110,
+      "measurementErrors": [],
+      "transientProcessExits": [
+        42604
+      ],
+      "peakWorkingSetEntireSessionMiB": 6801.01171875,
+      "peakPrivateEntireSessionMiB": 7378.87109375,
+      "actualSamplingIntervalSeconds": {
+        "mean": 0.2770965652133391,
+        "max": 0.3008497999981046
+      },
+      "model": {
+        "packageId": "bpsd-gliner25-base",
+        "manifestHash": "88f61b06406fc43a80511813c72c369e9214ba7d4a41c238d4a7fec3b2558d82",
+        "variantId": "wasm-fp32"
+      },
+      "settings": {
+        "schemaHash": "773e4c38ed90e742c1d33aeaa7dbb2d213b4cc22a1435c842ac2fd45adab4452",
+        "mode": "assisted",
+        "threshold": 0.5,
+        "thresholdSource": "model"
+      },
+      "workingSetAboveLoadedBaseline30sMiB": -1253.7890625,
+      "privateAboveLoadedBaseline30sMiB": -1302.33984375,
+      "spanOrAttributeDifferencesAgainstLowCpu": [],
+      "maxMatchedConfidenceDifference": 0,
+      "predictionCount": 151,
+      "peakWorkingSetIncludingImportMiB": 6801.01171875,
+      "workingSetAfterCompletion30sMiB": 1494.765625,
+      "privateAfterCompletion30sMiB": 1240.2421875,
+      "workingSetAfterCancellation30sMiB": 1456.953125,
+      "privateAfterCancellation30sMiB": 1200.328125,
+      "workingSetDropAfterCompletionMiB": 5306.24609375,
+      "workingSetDropAfterCancellationMiB": 4033.8828125
+    },
+    {
+      "profile": "bpsd",
+      "mode": "balanced",
+      "precision": "fp32",
+      "browser": "155.0.8059.40",
+      "gpuDevices": [
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9278"
+        }
+      ],
+      "assetVersion": "edc64502cd6e50167b9df723bac7e4587c2169d992596e4d39bcfc64185c0406",
+      "logicalProcessors": 20,
+      "sampleIntervalSeconds": 0.25,
+      "corpusSha256": "bebbd74c1ffb368e969d2f7de18c3fcb6e56eebc3d0cc2798cf371ff001d9e2c",
+      "notes": 100,
+      "modelReady": {
+        "t": 44.41977149993181,
+        "cpuSeconds": 52.859375,
+        "workingSetBytes": 2883485696,
+        "privateBytes": 2667626496,
+        "processes": 8
+      },
+      "beforeImport": {
+        "t": 3.356296199839562,
+        "cpuSeconds": 7.609375,
+        "workingSetBytes": 625311744,
+        "privateBytes": 440213504,
+        "processes": 8
+      },
+      "import": {
+        "wallSeconds": 41.06347530009225,
+        "cpuSeconds": 45.25,
+        "averageCpuCorePercent": 110.19525178839002,
+        "averageMachineCpuPercent": 5.509762589419501,
+        "peakWorkingSetMiB": 3430.9453125,
+        "peakPrivateMiB": 3251.72265625,
+        "samples": 147
+      },
+      "completion": {
+        "wallSeconds": 142.5204219999723,
+        "cpuSeconds": 560.484375,
+        "averageCpuCorePercent": 393.26600857251805,
+        "averageMachineCpuPercent": 19.663300428625902,
+        "peakWorkingSetMiB": 6827.4453125,
+        "peakPrivateMiB": 8484.09375,
+        "samples": 515
+      },
+      "afterCompletion": {
+        "0": {
+          "t": 187.21018739999272,
+          "cpuSeconds": 613.4375,
+          "workingSetBytes": 3858145280,
+          "privateBytes": 3672367104,
+          "processes": 8
+        },
+        "5": {
+          "t": 192.41833489993587,
+          "cpuSeconds": 613.6875,
+          "workingSetBytes": 1574060032,
+          "privateBytes": 1314795520,
+          "processes": 8
+        },
+        "15": {
+          "t": 202.54366720002145,
+          "cpuSeconds": 613.6875,
+          "workingSetBytes": 1574055936,
+          "privateBytes": 1314758656,
+          "processes": 8
+        },
+        "30": {
+          "t": 217.402006899938,
+          "cpuSeconds": 613.6875,
+          "workingSetBytes": 1524383744,
+          "privateBytes": 1263190016,
+          "processes": 8
+        }
+      },
+      "cancellation": {
+        "wallSeconds": 26.762596499873325,
+        "cpuSeconds": 92.03125,
+        "averageCpuCorePercent": 343.88012389020474,
+        "averageMachineCpuPercent": 17.19400619451024,
+        "peakWorkingSetMiB": 5494.171875,
+        "peakPrivateMiB": 6078.93359375,
+        "samples": 97
+      },
+      "cancelledAfterNotes": 10,
+      "afterCancellation": {
+        "0": {
+          "t": 244.99743409990333,
+          "cpuSeconds": 707.28125,
+          "workingSetBytes": 4006322176,
+          "privateBytes": 3844792320,
+          "processes": 8
+        },
+        "5": {
+          "t": 249.93340629991144,
+          "cpuSeconds": 712.96875,
+          "workingSetBytes": 1640292352,
+          "privateBytes": 1377853440,
+          "processes": 8
+        },
+        "15": {
+          "t": 260.1056197998114,
+          "cpuSeconds": 712.96875,
+          "workingSetBytes": 1637003264,
+          "privateBytes": 1373609984,
+          "processes": 8
+        },
+        "30": {
+          "t": 275.0005908999592,
+          "cpuSeconds": 713.0,
+          "workingSetBytes": 1548656640,
+          "privateBytes": 1284325376,
+          "processes": 8
+        }
+      },
+      "workerReleasedAfterBoth": true,
+      "queueResumeEnabled": true,
+      "retainedCompletedRuns": 110,
+      "measurementErrors": [],
+      "transientProcessExits": [
+        40184
+      ],
+      "peakWorkingSetEntireSessionMiB": 6827.4453125,
+      "peakPrivateEntireSessionMiB": 8484.09375,
+      "actualSamplingIntervalSeconds": {
+        "mean": 0.2774769090725796,
+        "max": 0.3051538998261094
+      },
+      "model": {
+        "packageId": "bpsd-gliner25-base",
+        "manifestHash": "88f61b06406fc43a80511813c72c369e9214ba7d4a41c238d4a7fec3b2558d82",
+        "variantId": "wasm-fp32"
+      },
+      "settings": {
+        "schemaHash": "773e4c38ed90e742c1d33aeaa7dbb2d213b4cc22a1435c842ac2fd45adab4452",
+        "mode": "assisted",
+        "threshold": 0.5,
+        "thresholdSource": "model"
+      },
+      "workingSetAboveLoadedBaseline30sMiB": -1296.140625,
+      "privateAboveLoadedBaseline30sMiB": -1339.375,
+      "spanOrAttributeDifferencesAgainstLowCpu": [],
+      "maxMatchedConfidenceDifference": 0,
+      "predictionCount": 151,
+      "peakWorkingSetIncludingImportMiB": 6827.4453125,
+      "workingSetAfterCompletion30sMiB": 1453.765625,
+      "privateAfterCompletion30sMiB": 1204.671875,
+      "workingSetAfterCancellation30sMiB": 1476.9140625,
+      "privateAfterCancellation30sMiB": 1224.828125,
+      "workingSetDropAfterCompletionMiB": 5373.6796875,
+      "workingSetDropAfterCancellationMiB": 4017.2578125
+    },
+    {
+      "profile": "bpsd",
+      "mode": "gpu",
+      "precision": "fp32",
+      "browser": "155.0.8059.40",
+      "gpuDevices": [
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "NVIDIA",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 4318,
+          "deviceId": 9392,
+          "subSysId": 346886184,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA RTX A4000",
+          "driverVendor": "",
+          "driverVersion": "32.0.15.9595"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9278"
+        }
+      ],
+      "assetVersion": "edc64502cd6e50167b9df723bac7e4587c2169d992596e4d39bcfc64185c0406",
+      "logicalProcessors": 20,
+      "sampleIntervalSeconds": 0.25,
+      "corpusSha256": "bebbd74c1ffb368e969d2f7de18c3fcb6e56eebc3d0cc2798cf371ff001d9e2c",
+      "notes": 100,
+      "modelReady": {
+        "t": 42.00926790013909,
+        "cpuSeconds": 49.25,
+        "workingSetBytes": 2883317760,
+        "privateBytes": 2660835328,
+        "processes": 8
+      },
+      "beforeImport": {
+        "t": 3.633026600116864,
+        "cpuSeconds": 7.625,
+        "workingSetBytes": 626257920,
+        "privateBytes": 440688640,
+        "processes": 8
+      },
+      "import": {
+        "wallSeconds": 38.37624130002223,
+        "cpuSeconds": 41.625,
+        "averageCpuCorePercent": 108.46554688506164,
+        "averageMachineCpuPercent": 5.423277344253083,
+        "peakWorkingSetMiB": 3452.23046875,
+        "peakPrivateMiB": 3264.2734375,
+        "samples": 138
+      },
+      "completion": {
+        "wallSeconds": 141.56495689996518,
+        "cpuSeconds": 84.796875,
+        "averageCpuCorePercent": 59.899622658678496,
+        "averageMachineCpuPercent": 2.994981132933925,
+        "peakWorkingSetMiB": 8233.46875,
+        "peakPrivateMiB": 8454.81640625,
+        "samples": 512
+      },
+      "afterCompletion": {
+        "0": {
+          "t": 183.57422480010428,
+          "cpuSeconds": 134.046875,
+          "workingSetBytes": 4263362560,
+          "privateBytes": 4506476544,
+          "processes": 8
+        },
+        "5": {
+          "t": 188.8251292000059,
+          "cpuSeconds": 134.390625,
+          "workingSetBytes": 1655136256,
+          "privateBytes": 1388900352,
+          "processes": 8
+        },
+        "15": {
+          "t": 198.79514150018804,
+          "cpuSeconds": 134.40625,
+          "workingSetBytes": 1655119872,
+          "privateBytes": 1388883968,
+          "processes": 8
+        },
+        "30": {
+          "t": 213.79408890008926,
+          "cpuSeconds": 134.40625,
+          "workingSetBytes": 1654583296,
+          "privateBytes": 1388273664,
+          "processes": 8
+        }
+      },
+      "cancellation": {
+        "wallSeconds": 27.713706200011075,
+        "cpuSeconds": 32.21875,
+        "averageCpuCorePercent": 116.25565259108912,
+        "averageMachineCpuPercent": 5.812782629554456,
+        "peakWorkingSetMiB": 6796.1171875,
+        "peakPrivateMiB": 7174.86328125,
+        "samples": 100
+      },
+      "cancelledAfterNotes": 10,
+      "afterCancellation": {
+        "0": {
+          "t": 242.36185159999877,
+          "cpuSeconds": 167.34375,
+          "workingSetBytes": 4391985152,
+          "privateBytes": 5197438976,
+          "processes": 8
+        },
+        "5": {
+          "t": 247.3061544999946,
+          "cpuSeconds": 167.734375,
+          "workingSetBytes": 1726111744,
+          "privateBytes": 1461530624,
+          "processes": 8
+        },
+        "15": {
+          "t": 257.52706870017573,
+          "cpuSeconds": 167.75,
+          "workingSetBytes": 1725325312,
+          "privateBytes": 1460715520,
+          "processes": 8
+        },
+        "30": {
+          "t": 272.52869930001907,
+          "cpuSeconds": 167.75,
+          "workingSetBytes": 1725288448,
+          "privateBytes": 1460633600,
+          "processes": 8
+        }
+      },
+      "workerReleasedAfterBoth": true,
+      "queueResumeEnabled": true,
+      "retainedCompletedRuns": 110,
+      "measurementErrors": [],
+      "transientProcessExits": [],
+      "peakWorkingSetEntireSessionMiB": 8233.46875,
+      "peakPrivateEntireSessionMiB": 8454.81640625,
+      "actualSamplingIntervalSeconds": {
+        "mean": 0.2777843962282998,
+        "max": 0.2975047999061644
+      },
+      "model": {
+        "packageId": "bpsd-gliner25-base",
+        "manifestHash": "88f61b06406fc43a80511813c72c369e9214ba7d4a41c238d4a7fec3b2558d82",
+        "variantId": "wasm-fp32"
+      },
+      "settings": {
+        "schemaHash": "773e4c38ed90e742c1d33aeaa7dbb2d213b4cc22a1435c842ac2fd45adab4452",
+        "mode": "assisted",
+        "threshold": 0.5,
+        "thresholdSource": "model"
+      },
+      "workingSetAboveLoadedBaseline30sMiB": -1171.8125,
+      "privateAboveLoadedBaseline30sMiB": -1213.609375,
+      "spanOrAttributeDifferencesAgainstLowCpu": [],
+      "maxMatchedConfidenceDifference": 1.5616416931152344e-05,
+      "predictionCount": 151,
+      "peakWorkingSetIncludingImportMiB": 8233.46875,
+      "workingSetAfterCompletion30sMiB": 1577.93359375,
+      "privateAfterCompletion30sMiB": 1323.9609375,
+      "workingSetAfterCancellation30sMiB": 1645.36328125,
+      "privateAfterCancellation30sMiB": 1392.96875,
+      "workingSetDropAfterCompletionMiB": 6655.53515625,
+      "workingSetDropAfterCancellationMiB": 5150.75390625
+    }
+  ],
+  "hardware": {
+    "cpu": "Intel Xeon Silver 4210R @ 2.40GHz",
+    "logicalProcessors": 20,
+    "installedRamBytes": 68349784064
+  },
+  "timezone": "America/New_York",
+  "corpora": {
+    "p10": {
+      "characters": {
+        "min": 70,
+        "max": 91,
+        "mean": 81.5
+      },
+      "whitespaceWords": {
+        "min": 11,
+        "max": 15,
+        "mean": 12.75
+      }
+    },
+    "bpsd": {
+      "characters": {
+        "min": 70,
+        "max": 91,
+        "mean": 81.5
+      },
+      "whitespaceWords": {
+        "min": 11,
+        "max": 15,
+        "mean": 12.75
+      }
+    }
+  }
+}

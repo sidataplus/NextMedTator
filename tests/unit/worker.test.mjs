@@ -9,6 +9,15 @@ import {batchStatus} from '../../src/nextmedtator/loading-progress.mjs';
 const packageData = { manifest: { variants: [{ id: 'wasm' }] }, manifestHash: 'fixture', files: new Map([['graph', new Uint8Array([1])]]) };
 const requests = [{ text: 'first' }, { text: 'second' }];
 
+test('diagnostic WASM reports mismatches but qualified analysis refuses them',async t=>{
+    const workers=fakeWorker(t,m=>m.task==='fixtures'?{pass:false,results:[{missing:['span']}]}:{ready:true});
+    const runner=new ConformanceWorker();
+    const report=await runner.run(packageData,'wasm');
+    assert.equal(report.pass,false);assert.deepEqual(report.results,[{missing:['span']}]);
+    await assert.rejects(runner.analyzeBatch(packageData,'wasm',requests,{qualify:true}),/conformance/);
+    assert.ok(workers.every(w=>w.terminations===1&&!w.messages.some(m=>m.task==='analyze')));
+});
+
 test('batch CPU limits respect isolation and available cores; ETA starts after the first note',()=>{
     assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:20,maxThreads:1}),1);
     assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:2,maxThreads:4}),2);

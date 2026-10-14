@@ -100,9 +100,9 @@ def check_worker_regressions(page):
     page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy',timeout=30000)
     expect(page.get_by_test_id('assist-message')).to_contain_text('Local analysis finished')
     evidence = page.evaluate('window.__workerEvidence')
-    assert evidence == {'starts': 2, 'stops': 2, 'messages': [
+    assert evidence == {'starts': 1, 'stops': 1, 'messages': [
         {'task': 'load', 'files': True}, {'task': 'fixtures', 'files': False},
-        {'task': 'load', 'files': True}, {'task': 'analyze', 'files': False}, {'task': 'analyze', 'files': False}
+        {'task': 'analyze', 'files': False}, {'task': 'analyze', 'files': False}
     ]}, evidence
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
     expect(page.get_by_test_id('assist-summary')).to_have_count(0)
@@ -113,6 +113,10 @@ def check_worker_regressions(page):
     expect(page.get_by_test_id('assist-reveal')).to_be_enabled()
     # Switching the selector cannot reveal a protected note.
     page.get_by_test_id('assist-mode').select_option('assisted')
+    with page.expect_download() as blind_download:
+        page.get_by_test_id('assist-batch-report').click()
+    blind_report=json.loads(Path(blind_download.value.path()).read_text(encoding='utf-8'))
+    assert all('suggestions' not in n and 'runId' not in n for n in blind_report['notes'])
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
     expect(page.get_by_test_id('assist-summary')).to_have_count(0)
     expect(page.get_by_test_id('assist-counts')).to_have_count(0)
@@ -257,6 +261,23 @@ def check_worker_regressions(page):
         });
     }''',auto_names)
     assert page.evaluate('JSON.stringify([...document.querySelector("nextmedtator-assist").assist.blindSnapshots.values()])') == frozen
+    # Force checkpoint capture to overlap Auto apply. Its completed queue row
+    # must never be persisted before both the prediction and native tags.
+    atomic_checkpoint=page.evaluate('''async text=>{
+        const a=document.querySelector('nextmedtator-assist').assist,v=app_hotpot.vpp;
+        const name=v.add_sample_txt_as_ann(text)._filename,ann=v.$data.anns.find(n=>n._filename===name);
+        let release,entered;const hold=new Promise(r=>release=r),started=new Promise(r=>entered=r);
+        const original=a.applyAllSuggestions.bind(a);
+        a.applyAllSuggestions=async n=>{entered();await hold;return original(n);};
+        try{
+            const job=a.analyzeDocuments([ann],{batch:true});await started;
+            let captured=false;const saving=a.captureCorpus().then(p=>{captured=true;return p;});
+            await new Promise(r=>setTimeout(r,20));const waited=!captured;
+            release();await job;const saved=await saving,workspace=saved.extensions.legacyWorkspace;
+            return {waited,status:workspace.batchQueue.notes[0].status,tags:workspace.anns.find(n=>n._filename===name).tags.length};
+        }finally{release();a.applyAllSuggestions=original;}
+    }''',NOTE)
+    assert atomic_checkpoint=={'waited':True,'status':'completed','tags':2},atomic_checkpoint
     results = ROOT / 'test-results'
     results.mkdir(exist_ok=True)
     page.screenshot(path=str(results / 'legacy-worker-review.png'), full_page=True)
@@ -267,5 +288,6 @@ def check_worker_regressions(page):
         'preserve_blind_snapshot_after_accept': True,
         'automatic_assisted_exposure_prevents_blind_freeze': exposure,
         'auto_apply_all_and_batch': True, 'machine_applied_export_reopen': True,
-        'auto_apply_protects_blind_and_rejected': True
+        'auto_apply_protects_blind_and_rejected': True,
+        'checkpoint_waits_for_auto_apply': atomic_checkpoint
     }, indent=2))

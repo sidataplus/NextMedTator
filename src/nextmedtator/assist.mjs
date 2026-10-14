@@ -1,3 +1,4 @@
+import {CorpusCommitGate,createBatchQueue,restoreBatchQueue,checkpointBatchQueue,queueCounts,queueWork,batchReport} from './batch-queue.mjs';
 import {loadWasmFallback} from './model-fallback.mjs';
 import {renderLoadingProgress} from './loading-progress.mjs';
 import {PRACTICE_TASKS} from './practice-tasks.mjs';
@@ -137,7 +138,11 @@ function disclosure(assist,key,title,defaultOpen=false) {
     assist.sectionState ??= new Map();
     const details=node('details',null,{class:'section','data-testid':`assist-${key}`});
     details.open=assist.sectionState.get(key)??defaultOpen;
-    details.append(node('summary',title));
+    const summary=node('summary',title);
+    // The native toggle event is deferred. Preserve the user's intent before
+    // another control rerenders this panel in the same event cycle.
+    summary.addEventListener('click',()=>assist.sectionState.set(key,!details.open));
+    details.append(summary);
     details.addEventListener('toggle',()=>{if(details.isConnected)assist.sectionState.set(key,details.open);});
     return details;
 }
@@ -278,8 +283,9 @@ class LegacyAssist {
             if(this.recoverySession.enabled)this.recoverySession.touch();
         }
         catch (error) {
-            this.error = true;
-            this.message = error?.message ?? 'The annotation was left unchanged.';
+            const cancelled=/Cancelled/.test(error?.message??'')||error?.name==='AbortError';
+            this.error = !cancelled;
+            this.message = cancelled&&this.batchQueue?.state==='paused'?'Batch paused. Completed results are retained. Choose Resume unfinished to continue.':error?.message ?? 'The annotation was left unchanged.';
         }
         finally {
             this.busy = false;
@@ -300,7 +306,7 @@ class LegacyAssist {
         if(view.data.anns.length&&!confirm('Replace the current notes with a fictional practice task? Export your current work first.'))return;
         const schema=window.dtd_parser.parse(task.dtd,'dtd');
         await this.recoverySession.disable();
-        this.runs.clear();this.projects.clear();this.runHistory=[];
+        this.runs.clear();this.projects.clear();this.runHistory=[];this.batchQueue=null;
         this.corpusIdentity=null;this.corpusCreatedAt=null;
         this.exposed.clear();this.exposure=[];this.blinded.clear();this.blindSnapshots.clear();this.selected.clear();
         this.apply=null;this.detail=null;this.scope=null;this.scopeEditing=false;this.mode='assisted';
@@ -428,7 +434,14 @@ class LegacyAssist {
         }
         return project;
     }
+    async withCorpusCommit(action){
+        this.corpusCommits??=new CorpusCommitGate();
+        return this.corpusCommits.run(action);
+    }
     async captureCorpus(id=uuid()){
+        return this.withCorpusCommit(()=>this.captureCorpusSnapshot(id));
+    }
+    async captureCorpusSnapshot(id){
         const view=legacy();invariant(view?.data.dtd&&view.data.anns.length,'Load a schema and documents before enabling recovery');
         const workspace=jsonParse(JSON.stringify({dtd:view.data.dtd,anns:view.data.anns,annIndex:view.data.ann_idx},(key,value)=>key==='_fh'?null:value));
         const schema=legacySchema(workspace.dtd),documents=[],records=[],children=[];
@@ -439,7 +452,8 @@ class LegacyAssist {
             for(const record of current)records.push({...record,id:ids.get(record.id),relations:(record.relations??[]).map(rel=>({...rel,targetId:ids.get(rel.targetId)})),origin:{kind:'imported',source:'legacy-recovery',legacyProjectId:project.current.id,legacyRecordId:record.id,reviewStatus:'preserved-in-child-project'}});
         }
         const project=await ReviewProject.create(documents,schema,{id,actor:'legacy-annotator'}),data=clone(project.current);data.draft.records=records;if(this.corpusIdentity!==id){this.corpusIdentity=id;this.corpusCreatedAt=data.createdAt;}data.createdAt=this.corpusCreatedAt;
-        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,thresholdOverride:this.thresholdOverride,thresholdSelectionKey:modelSelectionKey(this.modelSelection),scope:clone(this.scope),children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots]};
+        const capturedRuns=new Map(children.map(c=>[c.key,new Set(c.project.runs.map(r=>r.id))]));
+        data.extensions.legacyWorkspace={version:1,dtd:workspace.dtd,anns:workspace.anns,annIndex:workspace.annIndex,mode:this.mode,thresholdOverride:this.thresholdOverride,thresholdSelectionKey:modelSelectionKey(this.modelSelection),scope:clone(this.scope),children,runs:[...this.runs].map(([key,run])=>[key,{...run,project:undefined}]),exposed:[...this.exposed],exposure:clone(this.exposure),blinded:[...this.blinded],blindSnapshots:[...this.blindSnapshots],batchQueue:checkpointBatchQueue(this.batchQueue,(key,id)=>capturedRuns.get(key)?.has(id))};
         // JSON transport excludes file handles/functions; public model bytes stay in ModelStore.
         return (await ReviewProject.open(jsonParse(JSON.stringify(data)))).current;
     }
@@ -449,7 +463,7 @@ class LegacyAssist {
         const children=new Map();for(const child of saved.children??[])children.set(child.key,await ReviewProject.open(child.project));
         const view=legacy();invariant(view,'Original annotation workspace unavailable');
         view.app.set_vpp_data_json({dtd:clone(saved.dtd),anns:clone(saved.anns),ann_idx:saved.annIndex,mn4anns:1});
-        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'auto';this.thresholdOverride=restoreSelectionThresholdOverride(this.modelSelectionState,saved.thresholdSelectionKey,saved.thresholdOverride);if(saved.thresholdSelectionKey===modelSelectionKey(this.modelSelection))saveModelSelectionState(this.modelSelectionState);this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.selected.clear();this.apply=null;this.render();
+        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'auto';this.thresholdOverride=restoreSelectionThresholdOverride(this.modelSelectionState,saved.thresholdSelectionKey,saved.thresholdOverride);if(saved.thresholdSelectionKey===modelSelectionKey(this.modelSelection))saveModelSelectionState(this.modelSelectionState);this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.batchQueue=restoreBatchQueue(checkpointBatchQueue(saved.batchQueue,(key,id)=>children.get(key)?.current.runs.some(r=>r.id===id)));this.selected.clear();this.apply=null;this.render();
     }
     async freezeNote(view){
         invariant(!this.exposed.has(view.key),'This note was already exposed');
@@ -457,7 +471,14 @@ class LegacyAssist {
         this.blindSnapshots.set(view.key,freeze(clone({filename:view.ann._filename,text:view.ann.text,tags:view.ann.tags,frozenAt:new Date().toISOString()})));
         this.message='Independent annotation frozen in the portable evidence project. Analyze and reveal when ready.';
     }
-    async analyzeDocuments(anns, {batch=false}={}) {
+    async analyzeDocuments(anns, {batch=false,resume=false,retryFailed=false}={}) {
+        if(resume){
+            invariant(this.batchQueue,'No batch to resume');
+            const eligible=this.batchQueue.notes.filter(n=>retryFailed?n.status==='failed':['pending','cancelled'].includes(n.status));
+            const available=new Map(anns.map(a=>[documentKey(a._filename??'document',a.text),a]));
+            for(const note of eligible)if(!available.has(note.key)){note.status='failed';note.error='Source note was removed or changed; start a new batch for its current version.';}
+            anns=eligible.filter(n=>available.has(n.key)).map(n=>available.get(n.key));
+        }
         invariant(!this.selectionDraft&&this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
         // Original-screen notes stay editable while the worker runs. Retain the
         // submitted text/filename and schema instead of rereading mutable Vue data.
@@ -467,7 +488,7 @@ class LegacyAssist {
             throw new Error('Import a GLiNER2.5 boundary model package in this panel');
         invariant(modelSelectionMatchesManifest(this.modelSelection,this.model.manifest),'The active package does not match the selected model source. Load a matching package before analysis.');
         if (!anns.length)
-            throw new Error('Open a document first');
+            throw new Error(resume?'No matching unfinished notes remain. Changed or removed notes need a new batch.':'Open a document first');
         const nativeSchema=legacySchema(legacy().data.dtd),scope=this.scope?clone(this.scope):null;
         const activeVariant=selectInferenceVariant(model,qualifyForSchema(model,nativeSchema).level),activeCodec=activeVariant.codec;
         invariant(activeCodec!==ENTITY_ATTRIBUTES_CODEC||!scope,'Clear the clinical suggestion scope before using a fixed entity-contract model. Its complete native prompt must be retained.');
@@ -502,16 +523,36 @@ class LegacyAssist {
             return { text: doc.text, labels: prompt.labels, contentCount: prompt.contentCount, groups: prompt.groups, schema, threshold: thresholdSettings.threshold };
         }};
         const runSettings={codec,...(codec===ENTITY_ATTRIBUTES_CODEC?{overlapPolicy:model.entityContracts.get(variant.id).overlapPolicy,maxEncodedTokens:variant.maxSequenceLength,contextPolicy:'reject',wordOverlap:0}:{}),...((codec===CLINICAL_V3_CODEC||codec===ENTITY_ATTRIBUTES_CODEC)?{inferenceSchema:clone(schema),inferenceSchemaHash:await fingerprint(schema)}:{}),...thresholdSettings,...(scope?{scope:await scopeIdentity(scope,schema)}:{}),limitations:isRecordsCodec(codec)?[...(codec===CLINICAL_V3_CODEC?['family-choice-spans-unqualified','literal-spans-unqualified','record-binding-unsupported']:[]),'cross-window-relations','anchorless-records',...(Object.keys(schema.relations??{}).length?['automatic-relations-unqualified']:[])]:[]};
+        const context=await fingerprint({manifestHash:model.manifestHash,variantId:variant.id,schema:nativeSchema,settings:runSettings,mode:this.mode});
+        let queueRows=[];
+        if(batch){
+            if(resume){
+                const eligible=new Map(queueWork(this.batchQueue,context,{retryFailed}).map(n=>[n.key,n]));
+                queueRows=anns.map(ann=>eligible.get(documentKey(ann._filename??'document',ann.text)));
+                for(const [i,row]of queueRows.entries())invariant(row&&row.sourceHash===await sha256(anns[i].text),'Queued source changed; start a new batch.');
+            }else{
+                const notes=[];for(const ann of anns)notes.push({key:documentKey(ann._filename??'document',ann.text),filename:ann._filename??'document',sourceHash:await sha256(ann.text)});
+                this.batchQueue=createBatchQueue(context,notes);queueRows=this.batchQueue.notes;
+                this.batchQueue.model={packageId:model.manifest.id,manifestHash:model.manifestHash,variantId:variant.id};
+                this.batchQueue.settings={schemaHash:await fingerprint(nativeSchema),mode:this.mode,...thresholdSettings};
+            }
+            this.batchQueue.state='running';
+        }
         const completed=new Set();let activeIndex=0,analysisStarted=null;
+        const updateProgress=()=>{
+            const counts=batch?queueCounts(this.batchQueue):{completed:completed.size,failed:0,total:anns.length};
+            this.loadingProgress={phase:'Analyzing notes',completed:counts.completed+counts.failed,failed:counts.failed,total:counts.total,started:analysisStarted-(batch?this.batchQueue.elapsedMs:0)};
+        };
         try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, collectResults:false, qualify:true, onProgress: index => {
             analysisStarted??=performance.now();
-            this.loadingProgress={phase:'Analyzing notes',completed:index,total:anns.length,started:analysisStarted};
+            if(batch){const row=queueRows[index];row.status='running';row.attempts++;row.startedAt=new Date().toISOString();delete row.error;}
+            updateProgress();
             activeIndex=index;
             const ann = anns[index];
             this.progress = { index: index + 1, total: anns.length, filename: ann._filename ?? 'document' };
             this.message = `Analyzing ${index + 1} of ${anns.length} on this device.`;
             this.render();
-        }, onResult: async (result, index) => {
+        }, onResult: (result, index) => this.withCorpusCommit(async()=>{
             const ann = anns[index];
             const doc = { id: ann._filename ?? `document-${index + 1}`, text: ann.text };
             if (result.kind !== codec)
@@ -521,19 +562,21 @@ class LegacyAssist {
             const key = documentKey(ann._filename ?? 'document', doc.text ?? '');
             const project=await this.ensureProject(ann,nativeSchema),nativeDoc=project.current.documents[0];
             const nativeRecords=records.map(r=>({...r,documentId:nativeDoc.id}));
-            const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);this.runHistory.push(nativeRun);
-            completed.add(index);
+            const nativeRun=await makeRun(project,nativeDoc,nativeRecords,{...provenance,status:result.status,coverage:result.coverage,windows:result.windows??[],settings:runSettings});await project.addRun(nativeRun);const storedRun=project.current.runs.at(-1);this.runHistory.push(storedRun);
             // Project now owns the annotation snapshot; release this queue copy.
             ann.tags=[];
-            this.loadingProgress={phase:'Analyzing notes',completed:completed.size,total:anns.length,started:analysisStarted};
-            renderLoadingProgress(this.root,this.loadingProgress);
-            this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
-            if (autoApply && legacy().data.dtd===sourceDtd && legacy().data.anns.includes(sourceAnns[index]) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) await this.applyAllSuggestions(sourceAnns[index]);
-        } });}catch(error){if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
+            this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records:storedRun.records, notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
+            if (autoApply && result.status==='complete' && legacy().data.dtd===sourceDtd && legacy().data.anns.includes(sourceAnns[index]) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) await this.applyAllSuggestions(sourceAnns[index]);
+            completed.add(index);
+            if(batch){Object.assign(queueRows[index],{status:result.status==='complete'?'completed':'failed',runId:nativeRun.id,suggestions:records.length,backend:result.backend,precision:result.precision,wasmThreads:result.wasmThreads,finishedAt:new Date().toISOString()});if(result.status!=='complete')queueRows[index].error=result.reason??'Input is unsupported by this model';}
+            updateProgress();renderLoadingProgress(this.root,this.loadingProgress);
+            if(batch&&completed.size%10===0&&this.recoverySession.enabled)this.recoverySession.touch();
+        }) });}catch(error){if(batch&&!completed.has(activeIndex)){const row=queueRows[activeIndex];row.status=/Cancelled|AbortError/.test(error.message+' '+error.name)?'cancelled':'failed';row.error=row.status==='cancelled'?'Stopped by user':'Local inference failed; retry this note';row.finishedAt=new Date().toISOString();}if(!completed.has(activeIndex)){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
+        finally{if(batch){if(analysisStarted!==null)this.batchQueue.elapsedMs+=performance.now()-analysisStarted;const counts=queueCounts(this.batchQueue);this.batchQueue.state=counts.pending+counts.cancelled?'paused':counts.failed?'needs-attention':'completed';if(this.recoverySession.enabled)this.recoverySession.touch();}}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
-            : autoApply ? `Auto apply finished for ${anns.length} notes. Machine-applied tags are unreviewed; original predictions remain in the evidence project.` : `${batch?`Batch finished for ${anns.length} notes. Open each note to review its results. `:''}${notice}`;
+            : autoApply ? `Auto apply finished for ${anns.length} notes. Machine-applied tags are unreviewed; original predictions remain in the evidence project.` : `${batch?`Batch: ${queueCounts(this.batchQueue).completed} completed, ${queueCounts(this.batchQueue).failed} failed. Open each note to review its results. `:''}${notice}`;
     }
     chosenDocuments(onlySelected) {
         const view = legacy();
@@ -755,8 +798,17 @@ class LegacyAssist {
             const cpu=node('select',null,{'aria-label':'Batch CPU usage','data-testid':'assist-batch-cpu',disabled:this.busy});
             for(const [value,label]of [['low','Low CPU · 1 WASM thread'],['balanced','Balanced · up to 4 WASM threads']])cpu.append(node('option',label,{value}));
             cpu.value=this.batchCpu??'low';cpu.addEventListener('change',()=>{this.batchCpu=cpu.value;});docs.append(labeled('CPU usage',cpu),node('p','Low CPU is the batch default. WebGPU stays preferred; the limit also applies to WASM fallback. Lower CPU use can take longer. Models load only on request.',{class:'muted'}));
+            const queuedByKey=new Map((this.batchQueue?.notes??[]).map(n=>[n.key,n]));
             const selections=node('div',null,{class:'row'});
             selections.append(button('Select all',()=>{for(const ann of anns)if(typeof ann?.text==='string')this.selected.add(documentKey(ann._filename??'document',ann.text));this.render();},{disabled:this.busy,id:'assist-select-all'}),button('Clear selection',()=>{this.selected.clear();this.render();},{disabled:this.busy,id:'assist-select-none'}));docs.append(selections);
+            selections.append(button('Select unfinished',()=>{this.selected.clear();for(const ann of anns){const key=documentKey(ann._filename??'document',ann.text??'');if(queuedByKey.get(key)?.status!=='completed')this.selected.add(key);}this.render();},{disabled:this.busy,id:'assist-select-unfinished'}));
+            if(this.batchQueue){
+                const counts=queueCounts(this.batchQueue),controls=node('div',null,{class:'row'});
+                docs.append(node('p',`${counts.completed} completed · ${counts.failed} failed · ${counts.pending+counts.cancelled} unfinished`,{'data-testid':'assist-batch-summary'}));
+                const bar=node('progress',null,{max:counts.total,value:counts.completed+counts.failed,'aria-label':'Overall queue progress'});bar.style.width='100%';docs.append(bar);
+                controls.append(button('Resume unfinished',()=>this.perform(()=>this.analyzeDocuments(legacy().data.anns,{batch:true,resume:true})),{disabled:this.busy||!this.model||counts.pending+counts.cancelled===0,id:'assist-batch-resume'}),button('Retry failed',()=>this.perform(()=>this.analyzeDocuments(legacy().data.anns,{batch:true,resume:true,retryFailed:true})),{disabled:this.busy||!this.model||counts.failed===0,id:'assist-batch-retry'}),button('Export completion report',()=>localDownload(new TextEncoder().encode(JSON.stringify(batchReport(this.batchQueue,{blind:this.mode==='blind'}),null,2)),`batch-${this.batchQueue.id}.json`,'application/json'),{disabled:this.busy,id:'assist-batch-report'}));
+                docs.append(controls,node('p','Resume skips finished notes and checks model, schema, threshold and review mode. Enable local corpus recovery to preserve the queue across reloads; checkpoints are requested every 10 processed notes and when stopping. The report contains filenames and statuses.',{class:'muted'}));
+            }
             // Bound DOM size even when the corpus contains thousands of notes.
             const pages=Math.ceil(anns.length/50),page=Math.min(this.batchPage??0,pages-1);
             if(pages>1){const navigation=node('div',null,{class:'row'});navigation.append(button('Previous notes',()=>{this.batchPage=page-1;this.render();},{disabled:page===0}),node('span',`${page*50+1}–${Math.min((page+1)*50,anns.length)} of ${anns.length}`),button('Next notes',()=>{this.batchPage=page+1;this.render();},{disabled:page===pages-1}));docs.append(navigation);}
@@ -764,11 +816,13 @@ class LegacyAssist {
                 if (!ann?.text && ann?.text !== '')
                     continue;
                 const key = documentKey(ann._filename ?? 'document', ann.text ?? '');
-                const input = node('input', null, { type: 'checkbox',disabled:this.busy });
+                const input = node('input', null, { type: 'checkbox',disabled:this.busy,'aria-label':ann._filename??'document' });
                 input.checked = this.selected.has(key);
                 input.addEventListener('change', () => { if (input.checked) this.selected.add(key); else this.selected.delete(key); this.render(); });
                 const row = node('label', null, { class: 'check' });
+                const queued=queuedByKey.get(key);
                 row.append(input, node('span', ann._filename ?? 'document'));
+                if(queued)row.append(node('span',queued.status,{class:'badge','data-testid':'assist-note-status',title:queued.error??`${queued.attempts} attempts`}));
                 docs.append(row);
             }
             body.append(docs);

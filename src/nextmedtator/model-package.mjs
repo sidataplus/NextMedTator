@@ -196,7 +196,9 @@ export function compareTensors(actual, expected, { atol = 0, rtol = 0 } = {}) {
 export class ConformanceWorker {
     constructor(url = new URL('./onnx-worker.mjs', import.meta.url)) { this.url = url; this.worker = null; this.reject = null; this.cancelled = false; this.gpuFailures = new Map(); }
     async run(packageData, variantId, options = {}) {
-        return this.#withModel(packageData, variantId, context => this.#execute(context, {task:'fixtures'}), {timeoutMs:120000,...options});
+        // A diagnostic WASM check returns mismatches for inspection. Analysis
+        // still requires a passing report; qualified GPU checks retain fallback.
+        return this.#withModel(packageData, variantId, context => this.#execute(context, {task:'fixtures'}, {allowFailedReport:!context.qualified}), {timeoutMs:120000,...options});
     }
     async analyze(packageData, variantId, request, options) {
         const [result] = await this.analyzeBatch(packageData, variantId, [request], options);
@@ -288,11 +290,11 @@ export class ConformanceWorker {
         context.conformancePassed=true;
         return report;
     }
-    async #execute(context,message) {
+    async #execute(context,message,{allowFailedReport=false}={}) {
         let result;
         try {
             result=await this.#request(message,context.backend==='webgpu'?Math.min(context.timeoutMs,60000):context.timeoutMs);
-            if(message.task==='fixtures')invariant(result.pass!==false,'Selected backend failed its public conformance fixtures');
+            if(message.task==='fixtures'&&!allowFailedReport)invariant(result.pass!==false,'Selected backend failed its public conformance fixtures');
         } catch(error) {
             const report=await this.#fallback(context,error,message.task==='fixtures'?'webgpu-conformance-failed':'webgpu-inference-failed');
             result=message.task==='fixtures'?report:await this.#request(message,context.timeoutMs);

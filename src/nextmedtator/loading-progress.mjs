@@ -7,10 +7,10 @@ export function downloadStatus({received,total,started,now=performance.now()}){
     return {percent:Math.min(100,Math.floor(received/total*100)),detail:`${size(received)} / ${size(total)} · ${eta}`};
 }
 
-export function batchStatus({completed,total,started,now=performance.now()}){
+export function batchStatus({completed,total,failed=0,started,now=performance.now()}){
     const seconds=completed>0?Math.ceil(Math.max(0,now-started)/1000/completed*(total-completed)):null;
     const eta=seconds===null?'Estimating time remaining…':seconds<60?`About ${seconds}s remaining`:`About ${Math.ceil(seconds/60)} min remaining`;
-    return {percent:Math.min(100,Math.floor(completed/total*100)),detail:`${completed} / ${total} notes completed · ${eta}`};
+    return {percent:Math.min(100,Math.floor(completed/total*100)),detail:`${completed} / ${total} notes ${failed?'processed':'completed'}${failed?` · ${failed} failed`:''} · ${eta}`};
 }
 
 /** Visible in the original assistance dock and the portable evidence workspace. */

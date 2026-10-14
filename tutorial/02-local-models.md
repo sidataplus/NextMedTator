@@ -94,8 +94,36 @@ For multiple notes, expand **Batch analysis**:
    The progress bar counts finished notes and estimates remaining time after the
    first note. Different note lengths can change that estimate.
 4. Open each note in the left list to review its results. Opening a file does not
-   select it for a batch. **Pause** stops analysis and retains finished results;
-   select remaining notes yourself before starting again.
+   select it for a batch. **Pause** stops inference and retains finished results.
+5. Use **Resume unfinished** to continue pending or interrupted notes without
+   rerunning completed ones. **Retry failed** processes only failures. Oversized
+   notes still need deliberate splitting and a new batch for their changed text.
+6. **Select unfinished** selects notes without a completed result in this queue.
+   **Analyze selected** starts a new batch; **Resume unfinished** continues the
+   existing one. Use **Export completion report** to download a JSON summary with
+   filenames, statuses, attempts, model identity and run identifiers.
+
+To resume after a reload, enable **Local recovery & backups → Enable local corpus
+recovery** before analysis. Checkpoints are requested every ten processed notes
+and on pause/completion. Wait for **Local checkpoint verified** before closing
+for an orderly stop; an unexpected crash may require repeating work since the
+last checkpoint. Restore the saved corpus, load the same model package, and
+choose **Resume unfinished**. The app does not download a model or restart
+inference automatically. Model, schema, threshold and review mode must match the
+original batch. Changing the execution device or CPU limit is allowed.
+
+![Paused queue: one completed note, three unfinished, and explicit resume controls](images/18-queue-paused.png)
+
+Unsupported inputs remain failed while the queue continues. A runtime failure
+stops that session; retry the failed note or resume the remaining notes. The
+completion report contains filenames and status metadata; it does not include
+source note text. Blind-mode reports omit suggestion counts.
+
+![Completed queue after retrying a failed note, with completion-report export](images/19-queue-complete.png)
+
+See the [100-note CPU and RAM benchmark](../docs/nextmedtator/BULK-RESOURCES.md)
+for measurements of Low CPU, Balanced and WebGPU, including memory after a job
+finishes or is cancelled.
 
 Low CPU can take longer. Models and retained annotation history still need RAM;
 INT8's smaller download does not guarantee lower runtime memory. No additional
