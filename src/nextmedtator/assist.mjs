@@ -1,3 +1,4 @@
+import {defaultCpuThreads} from './inference-options.mjs';
 import {CorpusCommitGate,createBatchQueue,restoreBatchQueue,checkpointBatchQueue,queueCounts,queueWork,batchReport} from './batch-queue.mjs';
 import {loadWasmFallback} from './model-fallback.mjs';
 import {renderLoadingProgress} from './loading-progress.mjs';
@@ -509,7 +510,7 @@ class LegacyAssist {
         if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         let executionModel=model;
-        const executionOptions={maxThreads:batch&&this.batchCpu!=='balanced'?1:4,backend:this.executionPreference??'auto',resolveFallback:target=>loadWasmFallback(this,target),onBackend:({backend,precision,packageData,fallbackReason})=>{executionModel=packageData;this.executionStatus={backend,precision,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
+        const executionOptions={maxThreads:batch&&this.batchCpu==='low'?1:batch&&this.batchCpu==='balanced'?4:defaultCpuThreads(),backend:this.executionPreference??'auto',resolveFallback:target=>loadWasmFallback(this,target),onBackend:({backend,precision,packageData,fallbackReason})=>{executionModel=packageData;this.executionStatus={backend,precision,fallbackReason};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
         // Validate and analyze in the same session, including CPU-only packages.
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
@@ -796,8 +797,8 @@ class LegacyAssist {
             const docs = disclosure(this,'batch',`Batch analysis · ${this.selected.size} selected`);docs.setAttribute('aria-label','Documents to analyze');
             docs.append(node('p', 'Check notes for Analyze selected. One note runs at a time; completed results stay available for review.', { class: 'muted' }));
             const cpu=node('select',null,{'aria-label':'Batch CPU usage','data-testid':'assist-batch-cpu',disabled:this.busy});
-            for(const [value,label]of [['low','Low CPU · 1 WASM thread'],['balanced','Balanced · up to 4 WASM threads']])cpu.append(node('option',label,{value}));
-            cpu.value=this.batchCpu??'low';cpu.addEventListener('change',()=>{this.batchCpu=cpu.value;});docs.append(labeled('CPU usage',cpu),node('p','Low CPU is the batch default. WebGPU stays preferred; the limit also applies to WASM fallback. Lower CPU use can take longer. Models load only on request.',{class:'muted'}));
+            for(const [value,label]of [['auto',`Automatic · ${defaultCpuThreads()} WASM threads (cores − 1)`],['low','Low CPU · 1 WASM thread'],['balanced','Balanced · up to 4 WASM threads']])cpu.append(node('option',label,{value}));
+            cpu.value=this.batchCpu??'auto';cpu.addEventListener('change',()=>{this.batchCpu=cpu.value;});docs.append(labeled('CPU usage',cpu),node('p','Automatic prefers WebGPU, including Metal on supported Apple browsers. CPU fallback uses browser-reported logical cores minus one (minimum one); without cross-origin isolation it uses one thread. Low CPU and Balanced reduce CPU use. Models load only on request.',{class:'muted'}));
             const queuedByKey=new Map((this.batchQueue?.notes??[]).map(n=>[n.key,n]));
             const selections=node('div',null,{class:'row'});
             selections.append(button('Select all',()=>{for(const ann of anns)if(typeof ann?.text==='string')this.selected.add(documentKey(ann._filename??'document',ann.text));this.render();},{disabled:this.busy,id:'assist-select-all'}),button('Clear selection',()=>{this.selected.clear();this.render();},{disabled:this.busy,id:'assist-select-none'}));docs.append(selections);

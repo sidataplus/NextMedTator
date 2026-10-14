@@ -1,3 +1,4 @@
+import {defaultCpuThreads} from './inference-options.mjs';
 import {ENTITY_ATTRIBUTES_CODEC,validateEntityContract,entityContractSchema} from './entity-contract.mjs';
 import {EXECUTION_POLICY,supportsWebGPU,graphTransforms,wasmFallbackIdentity} from './execution-policy.mjs';
 import {CLINICAL_V3_CODEC,CLINICAL_V3,validateClinicalV3Registry} from './clinical-v3.mjs';
@@ -224,7 +225,7 @@ export class ConformanceWorker {
             return results;
         }, {timeoutMs:600000,...options});
     }
-    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback, maxThreads=4} = {}) {
+    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback, maxThreads=defaultCpuThreads()} = {}) {
         invariant(!this.worker&&!this.active, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
@@ -234,7 +235,7 @@ export class ConformanceWorker {
         const failure = this.gpuFailures.get(packageData.manifestHash);
         const actual = backend === 'auto' ? (qualified ? (globalThis.navigator?.gpu && !failure ? 'webgpu' : 'wasm') : variant.backend) : backend;
         invariant(actual === variant.backend || qualified, 'Execution preference is not supported by this package');
-        invariant(Number.isInteger(maxThreads)&&maxThreads>=1&&maxThreads<=4,'CPU thread limit must be between 1 and 4');
+        invariant(Number.isSafeInteger(maxThreads)&&maxThreads>=1,'CPU thread limit must be a positive integer');
         const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,resolveFallback,maxThreads,
             fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null};
         this.cancelled = false;this.active=true;

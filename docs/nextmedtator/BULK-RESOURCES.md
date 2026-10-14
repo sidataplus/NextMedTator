@@ -5,6 +5,11 @@ Windows. It measures the entire test browser process tree, including its
 renderer, workers and GPU process. It does not substitute JavaScript heap size
 for RAM or estimate CPU usage from elapsed time.
 
+The following measurements use explicit Low CPU (1 thread), Balanced (up to 4),
+and WebGPU settings. Starting with preview.10, the default remains GPU-first and
+CPU fallback uses logical processors minus one; these 100-note measurements do
+not characterize that new automatic CPU setting.
+
 ## Results — October 13, 2026
 
 Windows, Chrome 155.0.8059.40, Intel Xeon Silver 4210R (20 logical processors), NVIDIA RTX A4000, approximately 64 GiB RAM. Original FP32 throughout; 100 short synthetic notes per run. CPU percentages below are averages of the whole 20-processor machine.

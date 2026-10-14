@@ -88,8 +88,11 @@ For multiple notes, expand **Batch analysis**:
 
 1. Click **Select all**, or check the desired filenames. **Previous notes** and
    **Next notes** page through lists longer than 50 notes; selection spans pages.
-2. Keep **Low CPU** for one WASM thread, or choose **Balanced** for up to four.
-   WebGPU stays preferred when available; the CPU limit also applies to fallback.
+2. Keep **Automatic** to prefer WebGPU (Metal on supported Apple browsers),
+   then fall back to WASM using logical CPU cores minus one, with a minimum of
+   one thread. Choose **Low CPU** for one WASM thread or **Balanced** for up to
+   four. The CPU limit also applies to fallback; without cross-origin isolation,
+   WASM uses one thread. Single-note analysis uses the automatic CPU default.
 3. Click **Analyze selected**. One model session processes notes sequentially.
    The progress bar counts finished notes and estimates remaining time after the
    first note. Different note lengths can change that estimate.

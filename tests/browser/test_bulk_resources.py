@@ -43,18 +43,19 @@ with sync_playwright() as p:
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}.nmt-model.zip'))
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy")
         page.get_by_text('Batch analysis · 0 selected',exact=True).click()
-        expect(page.get_by_test_id('assist-batch-cpu')).to_have_value('low')
+        expect(page.get_by_test_id('assist-batch-cpu')).to_have_value('auto')
         page.get_by_test_id('assist-select-all').click()
         baseline=None
-        for mode in os.environ.get('NMT_BULK_MODES','low,balanced,gpu,fallback').split(','):
-            page.get_by_test_id('assist-batch-cpu').select_option('balanced' if mode=='balanced' else 'low')
+        for mode in os.environ.get('NMT_BULK_MODES','low,balanced,gpu,fallback,auto-gpu,auto-fallback').split(','):
+            page.get_by_test_id('assist-batch-cpu').select_option('auto' if mode.startswith('auto-') else 'balanced' if mode=='balanced' else 'low')
             page.get_by_text('Model packages',exact=True).click() if not page.get_by_test_id('assist-execution').is_visible() else None
-            page.get_by_test_id('assist-execution').select_option('auto' if mode in ['gpu','fallback'] else 'wasm')
-            if mode=='fallback':
+            page.get_by_test_id('assist-execution').select_option('auto' if mode in ['gpu','fallback','auto-gpu','auto-fallback'] else 'wasm')
+            if mode in ['fallback','auto-fallback']:
                 def break_gpu(route):
                     response=route.fetch();route.fulfill(response=response,body="Object.defineProperty(navigator,'gpu',{value:{requestAdapter:async()=>null}});\n"+response.text())
                 context.route('**/onnx-worker.mjs',break_gpu)
-            page.evaluate('window.bulkEvents=[]')
+            expected_threads=page.evaluate('Math.max(1,navigator.hardwareConcurrency-1)') if mode.startswith('auto-') else 4 if mode=='balanced' else 1
+            page.evaluate("()=>{window.bulkEvents=[];document.querySelector('nextmedtator-assist').assist.modelRunner.gpuFailures.clear();}")
             start=time.perf_counter();page.get_by_test_id('assist-analyze-selected').click()
             expect(page.get_by_label('Batch analysis progress',exact=True)).to_be_visible()
             page.screenshot(path=str(OUT/f'{profile}-{mode}-progress.png'))
@@ -64,14 +65,14 @@ with sync_playwright() as p:
             assert not state['error'],state
             assert state['workerReleased']
             events=state['events'];loads=[e for e in events if e['type']=='load']
-            assert len(loads)==(2 if mode=='fallback' else 1),events
-            assert all(e['maxThreads']==(4 if mode=='balanced' else 1) for e in loads),events
+            assert len(loads)==(2 if mode in ['fallback','auto-fallback'] else 1),events
+            assert all(e['maxThreads']==expected_threads for e in loads),events
             ready=[e for e in events if e.get('ready')]
-            assert ready and all(e['threads']==(4 if mode=='balanced' else 1) for e in ready),ready
+            assert ready and all(e['threads']==expected_threads for e in ready),ready
             assert len([e for e in events if e['type']=='analyze'])==len(notes)
             assert len([e for e in events if e['type']=='fixtures'])==1,'Qualification should run once per successful session'
             actual=rows(page)
-            assert len(actual)==len(notes) and all(r['backend']==('webgpu' if mode=='gpu' else 'wasm') for r in actual)
+            assert len(actual)==len(notes) and all(r['backend']==('webgpu' if mode in ['gpu','auto-gpu'] else 'wasm') for r in actual)
             assert [len(r['records']) for r in actual]==([2,2,5,3] if profile=='p10' else [0,0,5,2])
             if baseline:
                 for a,b in zip(actual,baseline):
@@ -83,6 +84,7 @@ with sync_playwright() as p:
             page.screenshot(path=str(OUT/f'{profile}-{mode}-complete.png'))
             reports.append({'profile':profile,'mode':mode,'seconds':elapsed,'notes':len(notes),'events':events,'records':[len(r['records']) for r in actual],'workerReleased':True})
             print(f'{profile} {mode}: {len(notes)} notes, {elapsed:.1f}s, actual threads {ready[-1]["threads"]}',flush=True)
+            if mode in ['fallback','auto-fallback']:context.unroute('**/onnx-worker.mjs',break_gpu)
         # Enough notes to verify DOM work is bounded independently of corpus size.
         page.evaluate("()=>{const v=app_hotpot.vpp;for(let i=4;i<121;i++){const a=v.add_sample_txt_as_ann('Fictional note.');a._filename='pagination-'+i+'.txt.xml';}v.set_ann_idx(0);}")
         page.get_by_test_id('assist-select-all').click()

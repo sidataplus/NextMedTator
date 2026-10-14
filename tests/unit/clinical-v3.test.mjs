@@ -44,7 +44,7 @@ test('release prompts retain all 18 trained queries when the output scope select
 });
 
 
-test('WASM thread policy uses one thread without isolation and caps available hardware at four',()=>{
+test('WASM thread policy uses one thread without isolation and otherwise leaves one logical core available',()=>{
  assert.equal(wasmThreadCount({crossOriginIsolated:false,hardwareConcurrency:16}),1);
- for(const [hardwareConcurrency,expected] of [[0,1],[2,2],[32,4]])assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency}),expected);
+ for(const [hardwareConcurrency,expected] of [[0,1],[2,1],[32,31]])assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency}),expected);
 });

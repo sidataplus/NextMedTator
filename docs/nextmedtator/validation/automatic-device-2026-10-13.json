@@ -1,0 +1,355 @@
+{
+  "version": "0.1.0-preview.10",
+  "assetVersion": "6557c775f80251ed0a764ae7da8161dcd3c1769676f46069cbec99198fa5aa05",
+  "policy": "Automatic WebGPU first; WASM fallback uses max(1, navigator.hardwareConcurrency - 1). Explicit Low CPU = 1 and Balanced = up to 4 remain available. Non-isolated WASM uses 1.",
+  "hardware": {
+    "os": "Windows",
+    "logicalProcessors": 20,
+    "gpu": "NVIDIA RTX A4000"
+  },
+  "browser": "155.0.8059.40",
+  "localRuns": [
+    {
+      "profile": "p10",
+      "mode": "auto-gpu",
+      "seconds": 19.462715100031346,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 19
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 19,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        2,
+        2,
+        5,
+        3
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "p10",
+      "mode": "auto-fallback",
+      "seconds": 22.147519699996337,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 19
+        },
+        {
+          "type": "terminated"
+        },
+        {
+          "type": "load",
+          "maxThreads": 19
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 19,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        2,
+        2,
+        5,
+        3
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "bpsd",
+      "mode": "auto-gpu",
+      "seconds": 22.672456700121984,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 19
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 19,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "webgpu"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        0,
+        0,
+        5,
+        2
+      ],
+      "workerReleased": true
+    },
+    {
+      "profile": "bpsd",
+      "mode": "auto-fallback",
+      "seconds": 26.36637800000608,
+      "notes": 4,
+      "events": [
+        {
+          "type": "load",
+          "maxThreads": 19
+        },
+        {
+          "type": "terminated"
+        },
+        {
+          "type": "load",
+          "maxThreads": 19
+        },
+        {
+          "type": "result",
+          "ready": true,
+          "threads": 19,
+          "backend": null
+        },
+        {
+          "type": "fixtures",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "analyze",
+          "maxThreads": null
+        },
+        {
+          "type": "result",
+          "ready": null,
+          "threads": 19,
+          "backend": "wasm"
+        },
+        {
+          "type": "terminated"
+        }
+      ],
+      "records": [
+        0,
+        0,
+        5,
+        2
+      ],
+      "workerReleased": true
+    }
+  ],
+  "checks": {
+    "semanticSpansAndAttributesMatch": true,
+    "confidenceDifferenceBelow": 0.0001,
+    "workerReleasedAfterEveryRun": true,
+    "modelDownloadRequiresRequest": true,
+    "unitTests": {
+      "passed": 199,
+      "skipped": 1,
+      "failed": 0
+    }
+  },
+  "limitations": [
+    "Apple Metal was not tested on this Windows machine; browsers use WebGPU, not a native MPS execution provider.",
+    "Four source conformance notes per model per execution path; historical 100-note CPU/RAM benchmarks remain the explicit 1-thread and 4-thread measurements."
+  ],
+  "screenshots": "temp/browser-validation/bulk-resources/*-auto-*-complete.png"
+}

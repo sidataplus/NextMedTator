@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ConformanceWorker,modelRunProvenance,selectInferenceVariant,validateModelManifest } from '../../src/nextmedtator/model-package.mjs';
 import {readFileSync} from 'node:fs';
 import {supportsWebGPU,EXECUTION_POLICY,graphTransforms,prepareGraph,wasmFallbackIdentity} from '../../src/nextmedtator/execution-policy.mjs';
-import {wasmThreadCount} from '../../src/nextmedtator/inference-options.mjs';
+import {defaultCpuThreads,wasmThreadCount} from '../../src/nextmedtator/inference-options.mjs';
 import {batchStatus} from '../../src/nextmedtator/loading-progress.mjs';
 
 const packageData = { manifest: { variants: [{ id: 'wasm' }] }, manifestHash: 'fixture', files: new Map([['graph', new Uint8Array([1])]]) };
@@ -19,11 +19,30 @@ test('diagnostic WASM reports mismatches but qualified analysis refuses them',as
 });
 
 test('batch CPU limits respect isolation and available cores; ETA starts after the first note',()=>{
+    assert.equal(defaultCpuThreads(20),19);
+    for(const cores of [1,0,-1,NaN,Infinity,null])assert.equal(defaultCpuThreads(cores),1);
+    assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:20}),19);
+    assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:2}),1);
+    assert.equal(wasmThreadCount({crossOriginIsolated:true}),1);
+    assert.equal(wasmThreadCount({crossOriginIsolated:false,hardwareConcurrency:20}),1);
+    assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:20,maxThreads:4}),4);
     assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:20,maxThreads:1}),1);
     assert.equal(wasmThreadCount({crossOriginIsolated:true,hardwareConcurrency:2,maxThreads:4}),2);
     assert.equal(wasmThreadCount({crossOriginIsolated:false,hardwareConcurrency:20,maxThreads:4}),1);
     assert.match(batchStatus({completed:0,total:10,started:0,now:1000}).detail,/Estimating/);
     assert.deepEqual(batchStatus({completed:2,total:10,started:0,now:4000}),{percent:20,detail:'2 / 10 notes completed · About 16s remaining'});
+});
+
+test('single-note and batch sessions default to cores minus one and reject invalid limits',async t=>{
+    const original=Object.getOwnPropertyDescriptor(globalThis,'navigator');
+    Object.defineProperty(globalThis,'navigator',{configurable:true,value:{hardwareConcurrency:20}});
+    t.after(()=>{if(original)Object.defineProperty(globalThis,'navigator',original);else delete globalThis.navigator;});
+    const workers=fakeWorker(t,m=>m.task==='fixtures'?{pass:true}:m.task==='load'?{ready:true}:{text:m.text});
+    const runner=new ConformanceWorker();
+    await runner.analyze(packageData,'wasm',requests[0]);
+    await runner.analyzeBatch(packageData,'wasm',requests);
+    assert.ok(workers.every(w=>w.messages[0].maxThreads===19&&w.terminations===1));
+    for(const maxThreads of [0,-1,1.5,Infinity])await assert.rejects(runner.analyzeBatch(packageData,'wasm',requests,{maxThreads}),/positive integer/);
 });
 
 test('lazy streaming batch qualifies once in the analysis session and does not accumulate outputs',async t=>{
