@@ -1,6 +1,6 @@
 import {detectDevice,deviceRecommendation} from './device-profile.mjs';
 import {suggestionPage,validateUndoTags} from './review-queue.mjs';
-import {exportCollection,importCollectionBackup} from './collection-backup.mjs';
+import {exportCollection,exportCollectionBlob,importCollectionBackup} from './collection-backup.mjs';
 import {CollectionStore} from './collection-store.mjs';
 import {LONG_CONTEXT_SETTINGS} from './long-context.mjs';
 import {defaultCpuThreads} from './inference-options.mjs';
@@ -303,6 +303,22 @@ class LegacyAssist {
             if(this.collection&&this.current().ann?._diskKey&&this.collectionDirty&&!this.error){clearTimeout(this.collectionSaveTimer);this.collectionSaveTimer=setTimeout(()=>{if(!this.busy)this.perform(()=>this.saveCollectionCurrent());},1200);}
             this.render();
         }
+    }
+    async exportCollectionBackup({browserDownload=false}={}){
+        let handle;
+        if(!browserDownload&&typeof window.showSaveFilePicker==='function'){
+            try{handle=await window.showSaveFilePicker({suggestedName:'collection.nmt.jsonl',types:[{description:'NextMedTator collection',accept:{'application/x-ndjson':['.jsonl']}}]});}
+            catch(error){if(error?.name==='AbortError')return;/* Ordinary browser download needs no file-system grant. */}
+        }
+        await this.perform(async()=>{
+            this.installController=new AbortController();
+            try{
+                const started=performance.now();await this.saveCollectionCurrent();
+                const options={signal:this.installController.signal,onProgress:progress=>{this.loadingProgress={phase:'Exporting collection',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}};
+                if(handle){await exportCollection(this.collectionStore,this.collection,await handle.createWritable(),options);this.message='Portable collection backup saved with per-note integrity checks.';}
+                else{const blob=await exportCollectionBlob(this.collectionStore,this.collection,options);localDownload(blob,'collection.nmt.jsonl','application/x-ndjson');this.message='Collection backup download requested. Check your browser downloads and keep the file safely. Browser-download backups are limited to 64 MiB.';}
+            }finally{this.installController=null;}
+        });
     }
     setOpen(open) {
         this.open = open;
@@ -864,7 +880,11 @@ class LegacyAssist {
         for(const saved of this.savedCollections??[])collections.append(button(`Open collection: ${saved.name} (${saved.count} notes)`,()=>this.perform(()=>this.openCollection(saved.id)),{disabled:this.busy,id:'assist-collection-restore'}));
         if(this.collection){collections.append(node('p',`${this.collection.notes.length} notes stored · ${this.projects.size} note histories loaded`,{'data-testid':'assist-collection-memory'}),button('Save open note',()=>this.perform(()=>this.saveCollectionCurrent()),{disabled:this.busy,id:'assist-collection-save'}),button('Close collection',()=>this.perform(()=>this.closeCollection()),{disabled:this.busy,id:'assist-collection-close'}));}
         const backup=node('input',null,{type:'file',accept:'.jsonl','aria-label':'Restore collection backup','data-testid':'assist-collection-backup-import',disabled:this.busy});backup.addEventListener('change',()=>{const file=backup.files[0];if(file)this.perform(async()=>{const meta=await importCollectionBackup(this.collectionStore,file,{keyFor:documentKey});await this.openCollection(meta.id);});});collections.append(labeled('Restore portable collection backup',backup));
-        if(this.collection){collections.append(button('Export collection backup',async()=>{if(!window.showSaveFilePicker){this.error=true;this.message='Streaming collection export requires desktop Chrome or Edge. Individual notes can still be exported using the annotation controls.';this.render();return;}let handle;try{handle=await window.showSaveFilePicker({suggestedName:'collection.nmt.jsonl',types:[{description:'NextMedTator collection',accept:{'application/x-ndjson':['.jsonl']}}]});}catch{return;}this.perform(async()=>{const started=performance.now();await this.saveCollectionCurrent();await exportCollection(this.collectionStore,this.collection,await handle.createWritable(),{onProgress:progress=>{this.loadingProgress={phase:'Exporting collection',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}});this.message='Portable collection backup saved with per-note integrity checks.';});},{disabled:this.busy,id:'assist-collection-export'}));}
+        if(this.collection){
+            collections.append(button('Export collection backup',()=>this.exportCollectionBackup(),{disabled:this.busy,id:'assist-collection-export'}));
+            if(typeof window.showSaveFilePicker==='function')collections.append(button('Use browser download instead',()=>this.exportCollectionBackup({browserDownload:true}),{disabled:this.busy,id:'assist-collection-browser-export'}));
+            collections.append(node('p',typeof window.showSaveFilePicker==='function'?'Streaming export writes directly to disk. Browser download is also available for backups up to 64 MiB.':'This browser uses a standard download for backups up to 64 MiB. No file-system permission is needed.',{class:'muted'}));
+        }
         body.append(collections);
         const modelSettings=node('section',null,{class:'section','aria-label':'Model source'});body.append(modelSettings);
         modelSettings.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy}));

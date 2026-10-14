@@ -91,9 +91,14 @@ Balanced remain selectable.
 
 ## 5. Export and restore a portable collection
 
-1. Click **Export collection backup** and choose a `.jsonl` destination in desktop
-   Chrome or Edge. Notes and histories are written one at a time rather than
-   assembled into a large in-memory archive.
+1. Click **Export collection backup**. Browsers with a save-file picker stream
+   notes and histories directly to your chosen `.jsonl` destination. Other
+   browsers use a normal download, without file-system permission. You can also
+   choose **Use browser download instead** when the picker is available.
+   Normal downloads are limited to 64 MiB of backup data to bound buffering;
+   larger exports stop without downloading a partial file or changing the collection.
+   Use a streaming-capable browser for those larger backups. This is a payload
+   limit, not a measurement or guarantee of total browser RAM usage.
 2. Keep the resulting file separately from browser storage. Clearing site data
    also removes local collections.
 3. To restore, use **Restore portable collection backup** and select the file.
@@ -105,6 +110,12 @@ Balanced remain selectable.
 Only one tab should edit a collection. A revision check rejects stale concurrent
 saves instead of silently overwriting another tab's work. The collection remains
 local; collaborative server editing is not part of this workflow.
+
+![Collection restored from an ordinary browser download with the save-file picker unavailable](images/28-browser-backup.png)
+
+The fallback regression exports and restores three synthetic Unicode notes with
+the picker unavailable or denied, and verifies that cancelling the picker does
+not start a download. Unit tests cover exact byte limits and export cancellation.
 
 Collection screenshots use a five-note fictional example from the real browser regression.
 The same queue also passed with 100 notes per model; storage/backup checks used

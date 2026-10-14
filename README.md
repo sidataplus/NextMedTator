@@ -15,7 +15,7 @@
 - **Choose a review mode:** Assisted for individual decisions, Auto apply for unreviewed machine tags, or Blind for freezing independent annotations before revealing predictions.
 - **Work across a corpus:** run a resumable GPU-first queue with per-note status, progress/ETA, failed-note retries and a completion report; search text locally and inspect annotation statistics.
 - **Handle long notes:** GLiNER2.5 scans overlapping windows using the complete model prompt and exact original-text offsets.
-- **Keep large collections on disk:** explicitly store up to 10,000 text notes locally; load notes and histories on demand and stream portable collection backups.
+- **Keep large collections on disk:** explicitly store up to 10,000 text notes locally; load notes and histories on demand. Export backups through a standard browser download (up to 64 MiB), or stream larger backups directly to disk where supported. File System Access APIs are optional.
 - **Review efficiently:** filter by family or decision, page through suggestions, use keyboard shortcuts, and undo assistance actions.
 - **Keep the evidence:** export portable projects containing source text, annotations, model runs and review history. Browser recovery is separately opt-in.
 

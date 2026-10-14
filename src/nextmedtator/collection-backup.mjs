@@ -2,13 +2,29 @@ import {invariant,sha256,LIMITS,fingerprint,jsonParse} from './integrity.mjs';
 import {ReviewProject} from './project.mjs';
 import {restoreBatchQueue} from './batch-queue.mjs';
 
-export async function exportCollection(store,meta,writable,{onProgress}={}){
+export async function exportCollection(store,meta,writable,{onProgress,signal}={}){
     let chain=await fingerprint(meta),count=0;
     try{
+        invariant(!signal?.aborted,'Collection export cancelled');
         await writable.write(JSON.stringify({format:'nextmedtator-collection-jsonl-v1',meta,hash:chain})+'\n');
-        for(const item of meta.notes){const row=await store.note(meta.id,item._diskKey),hash=await fingerprint(row);chain=await sha256(chain+hash);await writable.write(JSON.stringify({row,hash})+'\n');count++;onProgress?.({completed:count,total:meta.notes.length});}
+        for(const item of meta.notes){invariant(!signal?.aborted,'Collection export cancelled');const row=await store.note(meta.id,item._diskKey),hash=await fingerprint(row);chain=await sha256(chain+hash);await writable.write(JSON.stringify({row,hash})+'\n');count++;onProgress?.({completed:count,total:meta.notes.length});}
+        invariant(!signal?.aborted,'Collection export cancelled');
         await writable.write(JSON.stringify({end:true,count,chain})+'\n');await writable.close();
     }catch(error){await writable.abort?.();throw error;}
+}
+
+export const BROWSER_BACKUP_LIMIT=64*1024*1024;
+/** Standard download fallback. Cap UTF-8 payload bytes, not JavaScript character count. */
+export async function exportCollectionBlob(store,meta,{maxBytes=BROWSER_BACKUP_LIMIT,...options}={}){
+    invariant(Number.isSafeInteger(maxBytes)&&maxBytes>0,'Invalid browser backup limit');
+    let parts=[],bytes=0,result=null;
+    const writer={
+        async write(text){const part=new Blob([text]);invariant(bytes+part.size<=maxBytes,`Browser backup exceeds ${(maxBytes/1048576).toFixed(0)} MiB. Use streaming export in a browser with a save-file picker, or export individual notes. Your collection is unchanged.`);bytes+=part.size;parts.push(part);},
+        async close(){result=new Blob(parts,{type:'application/x-ndjson'});parts=[];},
+        async abort(){parts=[];result=null;}
+    };
+    await exportCollection(store,meta,writer,options);
+    return result;
 }
 
 export async function importCollectionBackup(store,file,{keyFor,onProgress}={}){
