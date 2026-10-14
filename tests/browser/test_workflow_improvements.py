@@ -15,6 +15,13 @@ def idle(page):
     page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
     state=page.evaluate(STATE);assert not state['error'],state;return state
 
+def scroll_to(page,test_id):
+    for attempt in range(3):
+        try:page.get_by_test_id(test_id).scroll_into_view_if_needed();return
+        except Exception as error:
+            if 'not attached' not in str(error) or attempt==2:raise
+            page.wait_for_timeout(200)
+
 def section(page,label):
     page.get_by_text(label,exact=True).click()
 
@@ -38,7 +45,7 @@ with sync_playwright() as p:
         assert result['status']=='complete' and result['windows']>1 and result['offsetsExact'] and result['records']>0,result
         assert result['coverage']==[[0,result['length']]] and result['lastAnchor']>result['length']*.8,result
         assert page.get_by_test_id('assist-suggestion').count()<=20
-        page.get_by_test_id('assist-review-controls').scroll_into_view_if_needed()
+        scroll_to(page,'assist-review-controls')
         page.screenshot(path=str(OUT/f'{profile}-long-note.png'))
         print(profile+': long-note inference passed',flush=True)
         # Individual and group undo must preserve original predictions and native tags.
@@ -77,7 +84,7 @@ with sync_playwright() as p:
         files=[{'name':f'{profile}-collection-{i:03}.txt','mimeType':'text/plain','buffer':('Fictional note. The patient has fever. She was agitated and wandered at night. '+str(i)).encode()} for i in range(NOTE_COUNT)]
         page.get_by_test_id('assist-collection-import').set_input_files(files);idle(page)
         assert page.evaluate(STATE)['notes']==NOTE_COUNT
-        page.get_by_test_id('assist-collection-memory').scroll_into_view_if_needed()
+        scroll_to(page,'assist-collection-memory')
         page.screenshot(path=str(OUT/f'{profile}-collection-import.png'))
         section(page,'Batch analysis · 0 selected')
         page.get_by_test_id('assist-collection-open-note').first.click();idle(page)
@@ -106,7 +113,7 @@ with sync_playwright() as p:
         assert page.evaluate('app_hotpot.vpp.$data.anns.length')<=1
         page.get_by_test_id('assist-collection-open-note').first.click();idle(page)
         assert page.evaluate("()=>!!document.querySelector('nextmedtator-assist').assist.current().run")
-        page.get_by_test_id('assist-batch-resume').scroll_into_view_if_needed()
+        scroll_to(page,'assist-batch-resume')
         page.screenshot(path=str(OUT/f'{profile}-collection-complete.png'))
         page.wait_for_timeout(5000);after_complete=meter.mark()
         assert not errors,errors

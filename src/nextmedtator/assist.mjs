@@ -298,7 +298,7 @@ class LegacyAssist {
             this.busy = false;
             this.loadingProgress=null;
             this.progress = null;this.windowProgress=null;
-            if(this.collectionDirty&&!this.error){clearTimeout(this.collectionSaveTimer);this.collectionSaveTimer=setTimeout(()=>{if(!this.busy)this.perform(()=>this.saveCollectionCurrent());},1200);}
+            if(this.collection&&this.current().ann?._diskKey&&this.collectionDirty&&!this.error){clearTimeout(this.collectionSaveTimer);this.collectionSaveTimer=setTimeout(()=>{if(!this.busy)this.perform(()=>this.saveCollectionCurrent());},1200);}
             this.render();
         }
     }
@@ -475,7 +475,7 @@ class LegacyAssist {
         this.collectionDirty=(this.collectionEditRevision??0)!==editRevision;
     }
     async saveCollectionCurrent(){
-        const ann=this.current().ann;if(!this.collection||!ann?._diskKey)return;
+        const ann=this.current().ann;if(!this.collection||!ann?._diskKey){clearTimeout(this.collectionSaveTimer);this.collectionDirty=false;return;}
         const editRevision=this.collectionEditRevision??0,snapshot=jsonParse(JSON.stringify(ann,(key,value)=>key==='_fh'?null:value));
         await this.syncProject(snapshot);await this.saveCollectionNote(snapshot,{editRevision});
     }
