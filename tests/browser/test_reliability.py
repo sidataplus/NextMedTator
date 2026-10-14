@@ -14,7 +14,11 @@ URL='http://127.0.0.1:4188/'
 
 def workspace(page, mode='assisted'):
     page.evaluate('''async ({bytes,text,mode})=>{
-        const {EvidenceWorkspace}=await import('/app/nextmedtator/ui.mjs');
+        // Reuse the entry module the page already booted; builds content-hash its
+        // filename, and importing another URL would boot a second instance.
+        const entries=[...document.querySelectorAll('script[type=module]')].map(s=>s.src).filter(src=>/\\/app\\/nextmedtator\\/ui(-[0-9a-f]+)?\\.mjs$/.test(new URL(src).pathname));
+        if(entries.length!==1)throw Error('Expected one workspace entry module, found '+entries.length);
+        const {EvidenceWorkspace}=await import(entries[0]);
         const {ReviewProject}=await import('/app/nextmedtator/project.mjs');
         const {sourceDocument}=await import('/app/nextmedtator/integrity.mjs');
         const {importModelPackage}=await import('/app/nextmedtator/model-package.mjs');
