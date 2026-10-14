@@ -3,45 +3,36 @@ import {ASSIST_STYLES} from './assist-styles.mjs';
 import {conformanceMessage} from './conformance-report.mjs';
 import {detectDevice,deviceRecommendation} from './device-profile.mjs';
 import {suggestionPage,validateUndoTags} from './review-queue.mjs';
-import {exportCollection,exportCollectionBlob,importCollectionBackup} from './collection-backup.mjs';
+import {exportCollection,exportCollectionBlob} from './collection-backup.mjs';
 import {CollectionStore} from './collection-store.mjs';
 import {LONG_CONTEXT_SETTINGS} from './long-context.mjs';
 import {defaultCpuThreads} from './inference-options.mjs';
-import {CorpusCommitGate,createBatchQueue,restoreBatchQueue,checkpointBatchQueue,queueCounts,queueWork,batchReport} from './batch-queue.mjs';
+import {CorpusCommitGate,createBatchQueue,restoreBatchQueue,checkpointBatchQueue,queueCounts,queueWork} from './batch-queue.mjs';
 import {loadWasmFallback} from './model-fallback.mjs';
 import {renderLoadingProgress} from './loading-progress.mjs';
-import {PRACTICE_TASKS} from './practice-tasks.mjs';
 import {ENTITY_ATTRIBUTES_CODEC,entityContractSchema} from './entity-contract.mjs';
-import {suggestionThreshold,thresholdControl} from './threshold.mjs';
+import {suggestionThreshold} from './threshold.mjs';
 import {CLINICAL_V3_CODEC,clinicalV3Schema} from './clinical-v3.mjs';
 import {LegacyRecoverySession} from './backend/legacy-session.mjs';
 import {presetScope, compileScope, freezeScope, importScope, scopeIdentity, nativeScopeDTD, sameScope} from './scope.mjs';
-import {renderScopeEditor} from './scope-ui.mjs';
 import {ModelIntegrityError,ModelStore,downloadCatalogPackage,cacheModelForSession} from './model-store.mjs';
-import {createModelSelectionState,saveModelSelectionState,setModelSelection,selectionThresholdOverride,setSelectionThresholdOverride,restoreSelectionThresholdOverride,modelSelectionKey,modelSelectionControlValue,modelSelectionLabel,modelSelectionMatchesManifest,matchingInstalledModels,selectionFromManifest,localAdapterSelection,renderModelSelectionControls} from './model-selection.mjs';
+import {createModelSelectionState,saveModelSelectionState,setModelSelection,selectionThresholdOverride,setSelectionThresholdOverride,restoreSelectionThresholdOverride,modelSelectionKey,modelSelectionControlValue,modelSelectionMatchesManifest,matchingInstalledModels,selectionFromManifest} from './model-selection.mjs';
 import {ReviewProject,makeRun} from './project.mjs';
-import {exportBundle,localDownload} from './bundle.mjs';
+import {localDownload} from './bundle.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
-import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, activeVariantForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
-import {EXECUTION_POLICY,graphTransforms,supportsWebGPU} from './execution-policy.mjs';
+import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
+import {EXECUTION_POLICY,graphTransforms} from './execution-policy.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
-import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
+import { clone, freeze, sourceDocument, uuid, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
+import { node, button, icon, labeled, disclosure } from './assist-dom.mjs';
+import { documentKey, medtatorSpans, preferredTag, editableAttrs, legacySchema, legacyRecords } from './assist-legacy.mjs';
+import { firstManifestPrecision, renderModelSource, renderModelPanel } from './assist-model-panel.mjs';
+import { renderBatch } from './assist-batch.mjs';
+import { renderRun } from './assist-review.mjs';
+import { practiceActions, renderMoreTools } from './assist-more-tools.mjs';
 
-
-// Reuse the same local Font Awesome face as the original ribbon. Decorative
-// glyphs stay out of accessible names; every action retains its text label.
-const ICONS={assist:'f0d0',practice:'f15c',collections:'f07c',options:'f1de',recovery:'f0c7',packages:'f1b2','device-details':'f108','package-details':'f05a','local-packages':'f0a0',batch:'f03a',download:'f019',upload:'f093',play:'f04b',pause:'f04c',save:'f0c7',open:'f07c',check:'f00c',undo:'f0e2',remove:'f2ed',close:'f00d',list:'f03a',hide:'f054',search:'f002'};
-function firstManifestPrecision(manifest){
-    if(!Array.isArray(manifest?.variants)||manifest.variants.length===0)return null;
-    const precision=manifest.variants[0]?.precision;
-    return typeof precision==='string'&&precision.length?precision:null;
-}
-function icon(name){return node('span',null,{class:'icon','aria-hidden':'true','data-glyph':String.fromCodePoint(parseInt(ICONS[name]??ICONS.assist,16))});}
-function actionIcon(text){
-    for(const [pattern,name] of [[/^Analyze|^Resume/,'play'],[/^Pause/,'pause'],[/^Download|^Re-download|^Repair|^Export/,'download'],[/^Import|^Install/,'upload'],[/^Save|^Enable Recovery/,'save'],[/^Open|^Restore|^Use Installed|^Load Installed/,'open'],[/^Reject|^Cancel|^Close|^Unload|^Disable/,'close'],[/^Remove|^Delete/,'remove'],[/^Undo|^Retry|^Reset/,'undo'],[/^Check GPU|^Select|^Apply|^Accept|^Add Tag|^Use Recommended/,'check'],[/^List/,'list'],[/^Show approved/,'search'],[/^Hide/,'hide'],[/^Assistance$/,'assist'],[/^P10|^BPSD/,'practice']])if(pattern.test(text))return name;
-    return null;
-}
+export { utf16Offset, medtatorSpans, documentKey, spanTags, preferredTag, attributeDraft, legacySchema, legacyRecords } from './assist-legacy.mjs';
 
 export const DEFAULT_REVIEW_MODE = 'auto';
 export const REVIEW_MODES = [['auto', 'Auto Apply'], ['assisted', 'Assisted'], ['blind', 'Blind']];
@@ -53,103 +44,6 @@ const REVIEW_MODE_DESCRIPTIONS = {
 export function reviewModeDescription(mode) {
     return REVIEW_MODE_DESCRIPTIONS[mode];
 }
-export function utf16Offset(text, codePointOffset) {
-    if (!Number.isInteger(codePointOffset) || codePointOffset < 0)
-        throw new Error('Offset required');
-    let units = 0, seen = 0;
-    for (const ch of text) {
-        if (seen === codePointOffset)
-            return units;
-        units += ch.length;
-        seen += 1;
-    }
-    if (seen === codePointOffset)
-        return units;
-    throw new Error('Offset is outside the document');
-}
-export function medtatorSpans(text, anchor) {
-    return anchor.map(span => {
-        const start = utf16Offset(text, span.start);
-        const end = utf16Offset(text, span.end);
-        if (text.slice(start, end) !== span.text)
-            throw new Error('Span text does not match the document');
-        return `${start}~${end}`;
-    }).join(',');
-}
-export function documentKey(filename, text) {
-    let hash = 2166136261;
-    for (let i = 0; i < text.length; i++)
-        hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
-    return `${filename}\0${text.length}\0${hash >>> 0}`;
-}
-export function spanTags(tags) {
-    return (tags ?? []).filter(tag => !tag.is_non_consuming);
-}
-export function preferredTag(family, tags) {
-    const span = spanTags(tags);
-    const want = String(family ?? '').toLowerCase();
-    const named = span.find(tag => tag.name.toLowerCase() === want || tag.name.toLowerCase().replaceAll('_', '') === want.replaceAll('_', ''));
-    if (named)
-        return named.name;
-    return span.length === 1 ? span[0].name : '';
-}
-export function attributeDraft(attrs, fields) {
-    const values = {}, used = new Set();
-    for (const attr of attrs ?? []) {
-        if (['id', 'spans', 'text', 'tag'].includes(attr.name) || attr.vtype === 'idref' || attr.vtype === 'dfix')
-            continue;
-        values[attr.name] = attr.default_value ?? '';
-        const match = Object.keys(fields ?? {}).find(name => name.toLowerCase() === attr.name.toLowerCase());
-        if (!match || fields[match] == null)
-            continue;
-        const value = String(fields[match]);
-        if (attr.vtype === 'list' && Array.isArray(attr.values) && !attr.values.includes(value))
-            continue;
-        values[attr.name] = value;
-        used.add(match);
-    }
-    const unmatched = Object.keys(fields ?? {}).filter(name => name !== 'concept' && fields[name] != null && !used.has(name));
-    return { values, unmatched };
-}
-
-export function legacySchema(dtd) {
-    const families={};
-    for(const tag of dtd?.etags??[])families[tag.name]={label:tag.name,...(tag.is_non_consuming?{documentLevel:true}:{}),fields:{concept:{type:'text'},...Object.fromEntries(editableAttrs(tag).map(attr=>[attr.name,{type:attr.vtype==='list'?'enum':'text',...(attr.vtype==='list'?{values:attr.values}:{})}]))}};
-    invariant(Object.keys(families).length,'Load a span annotation schema');
-    const relations={};for(const tag of dtd?.rtags??[]){const refs=(tag.attrs??[]).filter(a=>a.vtype==='idref');if(refs.length===2)relations[tag.name]={head:Object.keys(families),tail:Object.keys(families),legacy:{head:refs[0].name,tail:refs[1].name}};}return {id:'medtator-schema',version:'1',families,...(Object.keys(relations).length?{relations}:{})};
-}
-export function legacyRecords(ann,doc,schema){
- const map=new OffsetMap(doc.text),records=(ann.tags??[]).filter(t=>t.spans&&schema.families[t.tag]).map(t=>({id:t.id,documentId:doc.id,family:t.tag,anchor:schema.families[t.tag].documentLevel?[]:t.spans.split(',').map(range=>{const [a,b]=range.split('~').map(Number);return map.selection(a,b);}),fields:Object.fromEntries(Object.entries(schema.families[t.tag].fields).map(([name,def])=>[name,name==='concept'?t.text:((def.type==='enum'&&t[name]===''&&!def.values.includes(''))?null:t[name]??null)])),origin:{kind:'imported',source:'medtator-working-copy',reviewStatus:'unknown'}}));
- for(const tag of ann.tags??[]){const rel=schema.relations?.[tag.tag];if(!rel)continue;const head=records.find(r=>r.id===tag[rel.legacy.head]),tail=records.find(r=>r.id===tag[rel.legacy.tail]);invariant(head&&tail,'Legacy relation endpoint is missing');head.relations??=[];head.relations.push({type:tag.tag,targetId:tail.id});}return records;
-}
-function disclosure(assist,key,title,defaultOpen=false) {
-    assist.sectionState ??= new Map();
-    const details=node('details',null,{class:'section','data-testid':`assist-${key}`});
-    details.open=assist.sectionState.get(key)??defaultOpen;
-    const summary=node('summary',title);
-    if(ICONS[key])summary.prepend(icon(key));
-    // The native toggle event is deferred. Preserve the user's intent before
-    // another control rerenders this panel in the same event cycle.
-    summary.addEventListener('click',()=>assist.sectionState.set(key,!details.open));
-    details.append(summary);
-    details.addEventListener('toggle',()=>{if(details.isConnected)assist.sectionState.set(key,details.open);});
-    return details;
-}
-function node(tag, text, attrs = {}) {
-    const n = document.createElement(tag);
-    if (text != null)
-        n.textContent = String(text);
-    for (const [key, value] of Object.entries(attrs))
-        if (value != null && value !== false)
-            n.setAttribute(key, String(value));
-    return n;
-}
-function button(text, fn, { disabled = false, primary = false, id, title } = {}) {
-    const n = node('button', text, { type: 'button', disabled, class: primary ? 'primary' : '', title, ...(id ? { 'data-testid': id } : {}) });
-    const guide=actionIcon(text);if(guide)n.prepend(icon(guide));
-    n.addEventListener('click', fn);
-    return n;
-}
 function legacy() {
     const app = window.app_hotpot;
     const vpp = app?.vpp;
@@ -158,9 +52,6 @@ function legacy() {
     const data = vpp.$data;
     const ann = data.ann_idx == null ? null : data.anns[data.ann_idx] ?? null;
     return { app, vpp, data, ann };
-}
-function editableAttrs(tagDef) {
-    return (tagDef?.attrs ?? []).filter(attr => !['id', 'spans', 'text', 'tag'].includes(attr.name) && attr.vtype !== 'idref' && attr.vtype !== 'dfix');
 }
 
 export function mountLegacyAssist(host, { openProject } = {}) {
@@ -847,7 +738,7 @@ class LegacyAssist {
         editor.scrollIntoView({ from: range.anchor, to: range.head }, 80);
     }
     render() {
-        const scrollTop=this.root.querySelector('.body')?.scrollTop??0;
+        const scrollTop = this.root.querySelector('.body')?.scrollTop ?? 0;
         // Entering blind mode protects each source even after the selector changes.
         if (this.mode === 'blind')
             for (const ann of legacy()?.data?.anns ?? [])
@@ -860,351 +751,109 @@ class LegacyAssist {
             this.root.lastChild.className = 'rail';
             return;
         }
+        const view = this.current();
         const dock = node('div', null, { class: 'dock' });
         this.root.append(dock);
-        const head = node('div', null, { class: 'head' });
-        const title = node('div', null, { class: 'row' });
-        title.append(icon('assist'),node('strong', 'Assistance'), node('span', null, { class: 'grow' }), button('Hide', () => this.setOpen(false), { id: 'assist-collapse', title: 'Hide the Assistance panel' }));
-        const mode = node('select', null, { 'aria-label': 'Review mode', 'aria-describedby': 'assist-mode-description', 'data-testid': 'assist-mode', disabled:this.busy });
-        for (const [value, label] of REVIEW_MODES)
-            mode.append(node('option', label, { value }));
-        mode.value = this.mode;
-        mode.addEventListener('change', () => { this.mode = mode.value; this.apply = null; this.render(); });
-        const view = this.current();
-        const schema = view?.data?.dtd?.name;
-        const status = node('div', null, { class: 'row' });
-        status.append(node('span', this.structured() ? 'Structured Model' : this.model ? 'Span Model' : 'Not Loaded', { class: `badge ${this.model?'ready':'pending'}`, 'data-testid': 'model-status' }));
-        head.append(title);
-        if(this.model)head.append(node('p',modelSelectionLabel(this.modelSelection),{class:'muted','data-testid':'assist-model-identity',title:this.model.manifest.id}));
-        if(this.model)head.append(node('p',this.executionStatus?`${this.executionStatus.backend==='webgpu'?'WebGPU':'WASM'} · ${this.executionStatus.precision?.toUpperCase()??'FP32'}${this.executionStatus.fallbackReason?' · automatic fallback':''}`:`${this.model.manifest.variants[0].precision.toUpperCase()} package · ${this.model.manifest.id}`,{class:'muted','data-testid':'assist-execution-status'}));
-
-
-        if (view?.run && this.mode !== 'blind' && (!this.blinded.has(view.key) || this.exposed.has(view.key)))
-            head.append(node('p', `${view.run.records.length} suggestions · ${view.ann.tags?.length ?? 0} tags`, { 'data-testid': 'assist-counts' }));
+        const head = renderHead(this, view);
         dock.append(head);
-        if(this.model&&this.modelStorageNotice)head.append(node('p',this.modelStorageNotice,{class:'muted',role:'status','data-testid':'assist-storage-notice'}));
-        if(this.executionStatus?.fallbackDetail){const details=disclosure(this,'execution-details','Why was CPU used?');details.append(node('p',this.executionStatus.fallbackDetail,{class:'muted wrap'}));head.append(details);}
         if (this.message)
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
-        renderLoadingProgress(this.root,this.busy?this.loadingProgress:null);
-        if(this.busy&&this.windowProgress?.total>1){const progress=node('progress',null,{max:this.windowProgress.total,value:this.windowProgress.completed,'aria-label':'Window progress'});progress.className='full';dock.append(progress);}
+        renderLoadingProgress(this.root, this.busy ? this.loadingProgress : null);
+        if (this.busy && this.windowProgress?.total > 1) {
+            const progress = node('progress', null, { max: this.windowProgress.total, value: this.windowProgress.completed, 'aria-label': 'Window progress' });
+            progress.className = 'full';
+            dock.append(progress);
+        }
         const body = node('div', null, { class: 'body' });
         dock.append(body);
-        const practice=disclosure(this,'practice','Try a Sample',!view?.ann);
-        practice.append(node('p','Loads fictional clinical text with its schema and model choice. Nothing is downloaded.',{class:'muted'}));
-        const practiceActions=node('div',null,{class:'row'});
-        for(const task of PRACTICE_TASKS)practiceActions.append(button(task.title,()=>this.perform(()=>this.loadPracticeTask(task)),{id:'assist-practice-'+task.id,disabled:this.busy||!view?.vpp}));
-        practice.append(practiceActions,node('a','Step-by-step tutorials',{href:'https://github.com/sidataplus/NextMedTator/tree/main/tutorial',target:'_blank',rel:'noopener noreferrer'}));
-        if(!view?.ann)body.append(practice);
-        const collections=disclosure(this,'collections','Large Collections');
-        collections.append(node('p','Store up to 10,000 .txt files in this browser and open them one at a time. Annotations are saved per file. Browser storage is not a backup; export one to keep a copy.',{class:'muted'}));
-        const collectionFiles=node('input',null,{type:'file',multiple:true,accept:'.txt','aria-label':'Store text files as a collection','data-testid':'assist-collection-import',disabled:this.busy||!view?.data.dtd});collectionFiles.addEventListener('change',()=>{const files=[...collectionFiles.files];if(files.length)this.perform(()=>this.importCollection(files));});collections.append(labeled('Store Text Files (.txt)',collectionFiles),button('List Collections',()=>this.perform(async()=>{this.savedCollections=await this.collectionStore.list();}),{disabled:this.busy,id:'assist-collection-list'}));
-        for(const saved of this.savedCollections??[])collections.append(button(`Open ${saved.name} (${saved.count} files)`,()=>this.perform(()=>this.openCollection(saved.id)),{disabled:this.busy,id:'assist-collection-restore'}));
-        if(this.collection){collections.append(node('p',`${this.collection.notes.length} files stored · ${this.projects.size} loaded`,{'data-testid':'assist-collection-memory'}),button('Save Current File',()=>this.perform(()=>this.saveCollectionCurrent()),{disabled:this.busy,id:'assist-collection-save'}),button('Close Collection',()=>this.perform(()=>this.closeCollection()),{disabled:this.busy,id:'assist-collection-close'}));}
-        const backup=node('input',null,{type:'file',accept:'.jsonl','aria-label':'Restore collection backup','data-testid':'assist-collection-backup-import',disabled:this.busy});backup.addEventListener('change',()=>{const file=backup.files[0];if(file)this.perform(async()=>{const meta=await importCollectionBackup(this.collectionStore,file,{keyFor:documentKey});await this.openCollection(meta.id);});});collections.append(labeled('Restore Backup (.jsonl)',backup));
-        if(this.collection){
-            collections.append(button('Export Backup',()=>this.exportCollectionBackup(),{disabled:this.busy,id:'assist-collection-export'}));
-            if(typeof window.showSaveFilePicker==='function')collections.append(button('Download Instead',()=>this.exportCollectionBackup({browserDownload:true}),{disabled:this.busy,id:'assist-collection-browser-export'}));
-            collections.append(node('p',typeof window.showSaveFilePicker==='function'?'Export Backup writes directly to disk. Download Instead works for backups up to 64 MiB.':'This browser downloads backups up to 64 MiB.',{class:'muted'}));
-        }
-        body.append(collections);
-        const modelSettings=node('section',null,{class:'section','aria-label':'Model source','data-testid':'assist-step-model'});body.append(modelSettings);
-        modelSettings.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy,compact:true}));
-        const actions = node('div', null, { class: 'row' });
-        const sourcePending=!!this.selectionDraft||this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection);
-        actions.append(button('Analyze File', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !this.model || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the current file on this device' }));
-        actions.append(button('Analyze Selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true),{batch:true})), { disabled: this.busy || !this.model || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the files checked below' }));
-        actions.append(button('Pause', () => {this.installController?.abort();this.modelRunner.cancel();}, { disabled: !this.busy, id: 'assist-pause', title: 'Stop the current download or analysis' }));
-        const options=disclosure(this,'options','Analysis Settings',this.scopeEditing);body.append(options);
-        options.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:activeVariantForSchema(this.model,view?.data?.dtd?legacySchema(view.data.dtd):null),disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
-        const actionBar=node('div',null,{class:'action-bar'});const prerequisite=!schema?'Load a schema, then open a file.':!view?.ann?'Open a file to begin.':!this.model?'Load the model in step 3 to continue.':null;actionBar.append(actions);if(prerequisite)actionBar.append(node('p',prerequisite));const analysisStep=node('section',null,{class:'section','data-testid':'assist-step-analyze'});analysisStep.append(node('h3','4. Analyze and Review'),labeled('Review Mode',mode),node('p',reviewModeDescription(this.mode),{class:'muted mode-description',id:'assist-mode-description','data-testid':'assist-mode-description'}),actionBar);body.append(analysisStep);
-        const longNotes=node('input',null,{type:'checkbox','aria-label':'Split long files into overlapping windows','data-testid':'assist-long-context',disabled:this.busy});longNotes.checked=this.longContext!==false;longNotes.addEventListener('change',()=>{this.longContext=longNotes.checked;});options.append(labeled('Split Long Files into Windows',longNotes),node('p','Long files are analyzed in overlapping windows and merged back. Attributes use each window\'s context. Turn this off to reject files that are too long.',{class:'muted'}));
-        options.append(renderScopeEditor(this));
-        const storage=disclosure(this,'recovery','Recovery & Backup');
-        const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
-        if(!this.recoverySession.enabled)recovery.append(button('Enable Recovery',()=>this.perform(async()=>{if(!confirm('Keep these files, annotations and prediction history in this browser? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann||!!this.collection,id:'assist-recovery-enable'}));
-        else recovery.append(button('Save Checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable Recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete Recovery Copy',()=>this.perform(async()=>{if(confirm('Delete this recovery copy? Annotations that are open now are kept.'))await this.recoverySession.forget();})),button('Export Backup (.sqlite3)',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
-        recovery.append(button('List Recovery Copies',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the open files with this recovery copy? Save your current work first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));storage.append(recovery);
-        const packages=disclosure(this,'packages',this.model?'3. Model Ready':'3. Load the Model',!this.model);packages.append(status);
-        const recommended=deviceRecommendation(this.deviceProfile,{execution:this.executionPreference});
-        let modelDetailsDevice;const deviceCard=node('section',null,{class:'setup-hint','data-testid':'assist-device'});
-        deviceCard.append(node('strong',recommended.title));
-        if(this.deviceProfile){const details=disclosure(this,'device-details','Device Details');details.append(node('p',`${this.deviceProfile.gpu?'WebGPU available':'CPU / WASM'} · ${this.deviceProfile.cores??'Unknown'} logical cores${this.deviceProfile.memory!==null?` · browser memory hint ${this.deviceProfile.memory} GiB`:''}. RAM and GPU memory are not measured.`,{class:'muted'}));details.append(node('p',recommended.reason,{class:'muted'}));modelDetailsDevice=details;}
-        if(recommended.caution)deviceCard.append(node('p',recommended.caution));
-        packages.append(deviceCard);
-
-        const execution=node('select',null,{'aria-label':'Run on','data-testid':'assist-execution',disabled:this.busy});
-        for(const [value,label]of [['auto','Automatic (GPU, CPU fallback)'],['wasm','CPU Only']])execution.append(node('option',label,{value}));
-        execution.value=this.executionPreference??'auto';execution.addEventListener('change',()=>{this.executionPreference=execution.value;this.executionStatus=null;this.qualifiedManifest=null;this.render();});
-        const modelDetails=disclosure(this,'package-details','Package Details');
-        modelDetails.append(node('p', this.structured()
-            ? (this.model.manifest.variants.some(v=>isRecordsCodec(v.codec))?recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec):'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
-            : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
-        const file = node('input', null, { type: 'file', accept: '.zip', disabled:this.busy, 'aria-label': 'Import model package into the annotation assistance panel' });
-        file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        const localPackages=disclosure(this,'local-packages','Installed Models');
-        localPackages.append(labeled('Import Model Package (.zip)', file),button('List Installed Models',()=>this.perform(()=>this.inspectStorage())));
-        const precisionValue=this.downloadPrecision??recommended.precision??'fp32';
-        const matchingInstalled=matchingInstalledModels(this.modelSelection,this.installedModels??[]);
-        const installedCandidates=matchingInstalled.filter(item=>firstManifestPrecision(item.manifest)===precisionValue);
-        const installed=installedCandidates.find(item=>!this.unavailableInstalledModels.has(item.manifestHash))??installedCandidates[0];
-        const malformedInstalled=installedCandidates.length?null:matchingInstalled.find(item=>firstManifestPrecision(item.manifest)===null);
-        const actionableInstalled=installed??malformedInstalled;
-        if(!this.model&&['clinical-p10','bpsd-base'].includes(this.modelSelection.id)){
-            const modelName=this.modelSelection.id==='clinical-p10'?'P10':'BPSD';
-            const unavailableReason=actionableInstalled&&(this.unavailableInstalledModels.get(actionableInstalled.manifestHash)??(malformedInstalled?'corrupt':undefined));
-            const loadLabel=unavailableReason==='corrupt'?`Repair ${modelName} (${precisionValue.toUpperCase()})`:
-                unavailableReason==='missing'?`Re-download ${modelName} (${precisionValue.toUpperCase()})`:
-                installed?`Load Installed ${modelName}`:malformedInstalled?`Repair ${modelName} (${precisionValue.toUpperCase()})`:`Download ${modelName} (${precisionValue.toUpperCase()})`;
-            packages.append(button(loadLabel,()=>this.perform(()=>this.loadSelectedPackage()),{id:'assist-load-model',primary:true,disabled:this.busy||!this.deviceProfile}));
-            const loadHint=unavailableReason==='corrupt'?`The installed ${modelName} ${precisionValue.toUpperCase()} failed local integrity checks. Repair downloads a replacement and verifies it before installation.`:
-                unavailableReason==='missing'?`The installed ${modelName} ${precisionValue.toUpperCase()} is missing from local storage. Download it again to continue.`:
-                installed?'Saved on this device. No download needed.':malformedInstalled?`The installed ${modelName} package metadata is incomplete. Repair downloads the matching catalog package and verifies it before installation.`:'Runs on this device; your files are not uploaded. Nothing downloads until you click, and a short verification check may open in a new tab.';
-            packages.append(node('p',loadHint,{class:'muted'}));
-        }
-        const downloadOptions=disclosure(this,'download-options','Model Options');
-        const precision=node('select',null,{'aria-label':'Download format','data-testid':'assist-precision',disabled:this.busy});
-        for(const [value,label]of [['fp32','FP32 (CPU compatible)'],['fp16','FP16 (smaller, for GPU)']])precision.append(node('option',label,{value}));
-        precision.value=precisionValue;precision.addEventListener('change',()=>{this.downloadPrecision=precision.value;this.render();});
-        downloadOptions.append(labeled('Download Format',precision),labeled('Run On',execution));
-        if(recommended.precision)downloadOptions.append(button('Use Recommended '+recommended.precision.toUpperCase(),()=>{this.downloadPrecision=undefined;this.render();},{disabled:this.busy}));
-        if(precisionValue==='fp16')packages.append(node('p','About 370 MiB. If the GPU cannot run it, Analyze downloads the FP32 model (about 725 MiB) as a fallback.',{class:'muted'}));
-        if(precisionValue==='fp32')packages.append(node('p','About 725 MiB. Runs on CPU or GPU.',{class:'muted'}));
-        packages.append(downloadOptions);
-        for(const item of this.installedModels??[]){
-            const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
-            const unavailableReason=this.unavailableInstalledModels.get(item.manifestHash);
-            const sizeLabel=Number.isSafeInteger(item.bytes)?`${(item.bytes/1048576).toFixed(1)} MiB`:'size unavailable';
-            localPackages.append(node('p',`${item.manifest.id} · ${sizeLabel} · ${matches?'matches selected source':'different source'}${unavailableReason==='corrupt'?' · failed local integrity checks':unavailableReason==='missing'?' · missing from local storage':''}`,{class:'muted'}));
-            if(unavailableReason)localPackages.append(node('p','Use the main download button to replace it. This copy has not been removed.',{class:'muted'}));
-            else localPackages.append(button('Use Installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
-        }
-        downloadOptions.append(node('p',this.model?`Model in memory: ${(this.model.manifest.files.reduce((n,f)=>n+f.bytes,0)/1048576).toFixed(0)} MiB, plus runtime memory.`:'No model in memory.',{class:'muted','data-testid':'assist-model-memory'}));
-        if(this.storageEstimate)downloadOptions.append(node('p',`Browser storage: ${(this.storageEstimate.usage/1048576).toFixed(0)} MiB used of about ${(this.storageEstimate.quota/1048576).toFixed(0)} MiB.`,{class:'muted'}));
-        for(const item of this.installedModels??[])localPackages.append(button('Remove Installed '+item.manifest.id,()=>this.perform(async()=>{if(!confirm('Remove this cached model from this browser? You can download or import it again.'))return;if(this.model?.manifestHash===item.manifestHash)this.unloadModel();await this.modelStore.remove(item.manifestHash);await this.inspectStorage();}),{disabled:this.busy,id:'assist-remove-model'}));
-        if(this.model&&supportsWebGPU(this.model.manifest,this.model.manifest.variants[0]))downloadOptions.append(button('Check GPU Compatibility',()=>this.perform(()=>this.checkGPU()),{disabled:this.busy,id:'assist-check-gpu',title:'Check the loaded model on this GPU with public examples; nothing is downloaded'}));
-        if(this.gpuCheck){
-            downloadOptions.append(node('p',conformanceMessage(this.gpuCheck),{class:'muted','data-testid':'assist-gpu-check-result'}),
-                button('Save GPU Report',()=>localDownload(new TextEncoder().encode(JSON.stringify(this.gpuCheck,null,2)+'\n'),'nextmedtator-gpu-check.json','application/json'),{id:'assist-save-gpu-check'}),
-                node('p','Report includes public reference-check measurements, model identity and browser version. It excludes your files and annotations.',{class:'muted'}));
-        }
-        if(this.model)downloadOptions.append(button('Unload Model',()=>this.unloadModel(),{disabled:this.busy,id:'assist-unload-model'}));
-        if(this.model)downloadOptions.append(button('Install for Offline Use',()=>this.perform(async()=>{
-            const installed=await this.modelStore.install(this.model);
-            this.unavailableInstalledModels.delete(installed.manifestHash);
-            this.adoptModel(installed);this.modelStorageNotice=null;await this.inspectStorage();this.message='Model package installed and read-back verified';
-        })));
+        // Steps 1-4, then More Tools; the browser tests pin this order. renderRun
+        // goes last because displaying suggestions records their exposure.
+        const modelSource = renderModelSource(this);
+        const analysis = renderAnalysisStep(this, view);
+        const more = renderMoreTools(this, view);
+        const packages = renderModelPanel(this);
         const anns = this.allDocuments();
-        if (anns.length) {
-            const docs = disclosure(this,'batch',`Batch Analysis (${this.selected.size} selected)`);docs.setAttribute('aria-label','Files to analyze');
-            docs.append(node('p', 'Check files, then click Analyze Selected. Files run one at a time; finished results stay available.', { class: 'muted' }));
-            const cpu=node('select',null,{'aria-label':'Batch CPU usage','data-testid':'assist-batch-cpu',disabled:this.busy});
-            for(const [value,label]of [['auto',`Automatic (${defaultCpuThreads()} threads)`],['low','Low (1 thread)'],['balanced','Balanced (up to 4 threads)']])cpu.append(node('option',label,{value}));
-            cpu.value=this.batchCpu??'auto';cpu.addEventListener('change',()=>{this.batchCpu=cpu.value;});docs.append(labeled('CPU Usage',cpu),node('p','Automatic uses the GPU when available, otherwise all but one CPU core. Low and Balanced leave more CPU free.',{class:'muted'}));
-            const queuedByKey=new Map((this.batchQueue?.notes??[]).map(n=>[n.key,n]));
-            const selections=node('div',null,{class:'row'});
-            selections.append(button('Select All',()=>{for(const ann of anns)if(ann._diskKey||typeof ann?.text==='string')this.selected.add(ann._diskKey??documentKey(ann._filename??'document',ann.text));this.render();},{disabled:this.busy,id:'assist-select-all'}),button('Clear Selection',()=>{this.selected.clear();this.render();},{disabled:this.busy,id:'assist-select-none'}));docs.append(selections);
-            selections.append(button('Select Unfinished',()=>{this.selected.clear();for(const ann of anns){const key=ann._diskKey??documentKey(ann._filename??'document',ann.text??'');if(queuedByKey.get(key)?.status!=='completed')this.selected.add(key);}this.render();},{disabled:this.busy,id:'assist-select-unfinished'}));
-            if(this.batchQueue){
-                const counts=queueCounts(this.batchQueue),controls=node('div',null,{class:'row'});
-                docs.append(node('p',`${counts.completed} completed · ${counts.failed} failed · ${counts.pending+counts.cancelled} unfinished`,{'data-testid':'assist-batch-summary'}));
-                const bar=node('progress',null,{max:counts.total,value:counts.completed+counts.failed,'aria-label':'Overall queue progress'});bar.className='full';docs.append(bar);
-                controls.append(button('Resume',()=>this.perform(()=>this.analyzeDocuments(this.allDocuments(),{batch:true,resume:true})),{disabled:this.busy||!this.model||counts.pending+counts.cancelled===0,id:'assist-batch-resume'}),button('Retry Failed',()=>this.perform(()=>this.analyzeDocuments(this.allDocuments(),{batch:true,resume:true,retryFailed:true})),{disabled:this.busy||!this.model||counts.failed===0,id:'assist-batch-retry'}),button('Export Report',()=>localDownload(new TextEncoder().encode(JSON.stringify(batchReport(this.batchQueue,{blind:this.mode==='blind'}),null,2)),`batch-${this.batchQueue.id}.json`,'application/json'),{disabled:this.busy,id:'assist-batch-report'}));
-                docs.append(controls,node('p',this.collection?'Each finished file and the queue status are saved together on this device. Resume skips finished files and checks the model, schema, threshold and review mode. Export a backup to keep a copy.':'Resume skips finished files and checks the model, schema, threshold and review mode. Enable recovery to keep the queue across reloads (saved every 10 files and when stopping). The report lists file names and statuses.',{class:'muted'}));
-            }
-            // Bound DOM size even when the corpus contains thousands of files.
-            const pages=Math.ceil(anns.length/50),page=Math.min(this.batchPage??0,pages-1);
-            if(pages>1){const navigation=node('div',null,{class:'row'});navigation.append(labelButton(button('Previous',()=>{this.batchPage=page-1;this.render();},{disabled:page===0}),'Previous files'),node('span',`${page*50+1}–${Math.min((page+1)*50,anns.length)} of ${anns.length}`),labelButton(button('Next',()=>{this.batchPage=page+1;this.render();},{disabled:page===pages-1}),'Next files'));docs.append(navigation);}
-            for (const ann of anns.slice(page*50,(page+1)*50)) {
-                if (!ann?._diskKey && !ann?.text && ann?.text !== '')
-                    continue;
-                const key = ann._diskKey??documentKey(ann._filename ?? 'document', ann.text ?? '');
-                const input = node('input', null, { type: 'checkbox',disabled:this.busy,'aria-label':ann._filename??'document' });
-                input.checked = this.selected.has(key);
-                input.addEventListener('change', () => { if (input.checked) this.selected.add(key); else this.selected.delete(key); this.render(); });
-                const row = node('label', null, { class: 'check' });
-                const queued=queuedByKey.get(key);
-                row.append(input, node('span', ann._filename ?? 'document'));
-                if(this.collection)row.append(button('Open',()=>this.perform(()=>this.openCollectionNote(key)),{disabled:this.busy,title:'Load this file from disk',id:'assist-collection-open-note'}));
-                if(queued)row.append(node('span',queued.status,{class:'badge','data-testid':'assist-note-status',title:queued.error??`${queued.attempts} attempts`}));
-                docs.append(row);
-            }
-            docs.prepend(actions.querySelector('[data-testid=assist-analyze-selected]'));analysisStep.append(docs);
-        }
-        this.renderRun(analysisStep, view);
-        localPackages.append(modelDetails);packages.append(localPackages);if(modelDetailsDevice)downloadOptions.append(modelDetailsDevice);
-        const noteStep=node('section',null,{class:'section','data-testid':'assist-step-note'});noteStep.append(node('h3','1. Open a File'));
-        if(view?.ann){noteStep.append(node('p',view.ann._filename??'document',{'data-testid':'assist-document'}));}
-        else noteStep.append(node('p','Load a schema and annotation files with the toolbar above, or try a sample:',{class:'muted'}));
-        if(!view?.ann)noteStep.append(practiceActions);
-        if(this.busy)for(const control of packages.querySelectorAll('button,input,select'))control.disabled=true;
-        const more=disclosure(this,'more','More Tools');more.append(options,storage,collections);if(view?.ann)more.append(practice);
-        noteStep.querySelector('h3').prepend(icon('practice'));
-        modelSettings.querySelector('h3').prepend(icon('packages'));
-        analysisStep.querySelector('h3').prepend(icon('play'));
-        more.querySelector('summary').prepend(icon('options'));
-        body.replaceChildren(noteStep,modelSettings,packages,analysisStep,more);
-        actions.querySelector('[data-testid=assist-analyze-selected]')?.remove();
-        for(const detail of head.querySelectorAll('[data-testid=assist-model-identity],[data-testid=assist-execution-status]'))downloadOptions.append(detail);
-        if(this.busy)head.append(actions.querySelector('[data-testid=assist-pause]'));else actions.querySelector('[data-testid=assist-pause]')?.remove();
-        more.append(button('Open Evidence Project', () => this.perform(async()=>this.openProject(await this.syncProject(view.ann))), { id: 'open-workspace', disabled:!view?.ann||this.busy, title: 'Open the portable evidence project for snapshots and comparison' }));
-        body.scrollTop=scrollTop;
-    }
-    renderRun(body, view) {
-        const run = view?.run;
-        if(this.mode==='blind'&&!this.blindSnapshots.has(view.key)&&!this.exposed.has(view.key)){body.append(button('Freeze Annotation',()=>this.perform(()=>this.freezeNote(view)),{id:'assist-freeze',disabled:this.busy}));}
-        const project=this.projects.get(view.key);if(project)body.append(button('Export Evidence Project',()=>this.perform(async()=>localDownload(await exportBundle(await this.syncProject(view.ann)),`${project.current.id}.nmt.zip`))));
-        if (!run) return;
-        if (this.mode === 'blind' || (this.blinded.has(view.key) && !this.exposed.has(view.key))) {
-            body.append(node('h2', 'Blind Annotation'), node('p', 'Suggestions, scores and counts stay hidden. Revealing applies to this file only.', { class: 'muted' }));
-            if (!this.exposed.has(view.key)) {
-                const frozen = this.blindSnapshots.has(view.key);
-                body.append(button('Reveal Suggestions', this.forCurrentNote(view.key, () => {
-                    this.recordExposure(view, run, 'explicit-reveal');
-                    run.revealedAt = new Date().toISOString();
-                    this.mode = 'assisted';
-                    this.message = 'Suggestions revealed for this file. Its frozen blind annotation is kept in this session.';
-                    this.render();
-                }), { id: 'assist-reveal', disabled: !frozen || this.busy }));
-            }
-            else
-                body.append(node('p', 'Suggestions were already shown for this file. Its current annotation cannot be frozen as independent blind labels. Choose Assisted to show suggestions again.', { class: 'muted', 'data-testid': 'assist-exposure' }));
-            return;
-        }
-        if (view.data.section === 'annotation' && !document.hidden && this.host.getClientRects().length)
-            this.recordExposure(view, run, 'assisted-display');
-        const unresolved = run.records.filter(record => !run.decisions[record.id]).length;
-        const settings=run.project.current.runs.find(r=>r.id===run.nativeRunId)?.settings;
-        if(settings?.threshold!=null)body.append(node('p',`Run threshold: ${settings.threshold}`,{class:'muted','data-testid':'assist-run-threshold'}));
-        const runScope=settings?.scope;
-        if(runScope)body.append(node('p',`Run scope: ${runScope.profile.semanticSchema.name} · ${runScope.profile.semanticSchema.version}`,{class:'muted','data-testid':'assist-run-scope'}));
-        body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
-        const applied = Object.values(run.decisions).filter(d=>d.status==='applied').length;
-        if (applied) body.append(node('p', `${applied} machine-applied tags · unreviewed`, {'data-testid':'assist-auto-status'}));
-        body.append(button('Apply All Suggestions', this.forCurrentNote(view.key, () => this.perform(() => this.applyAllSuggestions(view.ann))), {id:'assist-apply-all',disabled:this.busy||!unresolved||run.status!=='complete',title:'Add all remaining suggestions to this file without review; existing and rejected tags are kept'}));
-        if (!run.records.length)
-            body.append(node('p', run.status === 'complete' ? 'No suggestions in this run. Still check the file for missed tags.' : 'Incomplete run. An empty result is not a negative label.', { class: 'muted' }));
-        const display = node('select', null, { 'aria-label': 'Suggestion view', 'data-testid': 'assist-suggestion-view' });
-        for (const [value, label] of [['cards', 'Cards'], ['compact', 'Compact List']])
-            display.append(node('option', label, { value }));
-        display.value = this.suggestionView;
-        display.addEventListener('change', () => { this.suggestionView = display.value; this.detail = null; this.apply = null; this.render(); });
-        body.append(labeled('Suggestion View', display));
-        const reviewControls=node('div',null,{class:'section',tabindex:0,'data-testid':'assist-review-controls','aria-label':'Suggestion review controls'});
-        const filter=(name,values)=>{const select=node('select',null,{'aria-label':'Filter suggestions by '+name});for(const [value,label]of values)select.append(node('option',label,{value}));select.value=this.reviewFilter?.[name]??'all';select.addEventListener('change',()=>{this.reviewFilter={...this.reviewFilter,[name]:select.value};this.reviewPage=0;this.reviewFocus=null;this.render();});return labeled(name[0].toUpperCase()+name.slice(1),select);};
-        reviewControls.append(filter('family',[['all','All Families'],...[...new Set(run.records.map(r=>r.family))].map(f=>[f,f])]),filter('status',[['all','All Decisions'],['unreviewed','Unreviewed'],['accepted','Accepted'],['rejected','Rejected'],['applied','Machine-applied']]));
-        const reviewPage=suggestionPage(run.records,run.decisions,{...this.reviewFilter,page:this.reviewPage??0});
-        reviewControls.append(node('p',`${reviewPage.total} matching suggestions · page ${reviewPage.page+1} / ${reviewPage.pages}`,{'data-testid':'assist-review-page'}),labelButton(button('Previous',()=>{this.reviewPage=reviewPage.page-1;this.render();},{disabled:reviewPage.page===0}),'Previous suggestions'),labelButton(button('Next',()=>{this.reviewPage=reviewPage.page+1;this.render();},{disabled:reviewPage.page+1===reviewPage.pages}),'Next suggestions'),button('Undo',()=>this.perform(()=>this.undoReview()),{disabled:this.busy||this.reviewUndo?.at(-1)?.key!==view.key,id:'assist-review-undo'}),node('p','Focus this panel: Alt+J/K next/previous, Alt+A review/add, Alt+Enter write, Alt+R reject, Alt+U undo. Twenty suggestions per page.',{class:'muted'}));body.append(reviewControls);
-        const runReceipt=run.project.current.runs.find(r=>r.id===run.nativeRunId);
-        if(runReceipt?.windows?.length>1)body.append(node('p',`Long file: ${runReceipt.windows.length} windows · ${run.status}. Attributes use local window context; cross-window mentions are not stitched.`,{'data-testid':'assist-window-coverage'}));
-        if (this.suggestionView === 'compact') {
-            const table = node('table', null, { class: 'compact', 'aria-label': 'Machine suggestions' });
-            const caption = node('caption', `${run.records.length} original machine suggestions`);
-            const rows = node('tbody');
-            for (const record of reviewPage.records) {
-                const row = node('tr', null, { 'data-testid': 'assist-compact-suggestion' });
-                const cell = node('td');
-                const anchor = record.anchor.map(span => span.text).join(' … ');
-                const summary = [record.family.replaceAll('_occurrence', '').replaceAll('_', ' '), record.fields.assertion,
-                    record.fields.time_frame, record.fields.experiencer, Number(record.score).toFixed(3)].filter(value => value != null).join(' · ');
-                cell.append(node('strong', anchor, { title: anchor }), node('small', summary, { title: summary }));
-                if(record.conceptId)cell.append(node('small',`Concept: ${record.conceptId}`));
-                const decision = run.decisions[record.id];
-                if (decision) cell.append(node('small', decision.status==='applied'?`Auto-applied ${decision.tagId} · unreviewed`:decision.status==='rejected'?'Rejected':`Added ${decision.tagId}`));
-                const actions = node('td');
-                actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-compact-locate' }),
-                    button('Review', this.forCurrentNote(view.key, () => { this.detail = record.id; this.apply = null; this.render(); this.root.querySelector('[data-testid="assist-suggestion"]')?.scrollIntoView({block:'nearest'}); }), { id: 'assist-details' }));
-                row.append(cell, actions); rows.append(row);
-            }
-            table.append(caption, rows); body.append(table);
-            const detail = run.records.find(record => record.id === this.detail);
-            if (detail) body.append(this.card(view, run, detail));
-        } else {
-            for (const record of reviewPage.records) body.append(this.card(view, run, record));
-        }
-    }
-    card(view, run, record) {
-        const card = node('article', null, { class: 'card', tabindex:0, 'data-testid': 'assist-suggestion' });card.addEventListener('focusin',()=>{this.reviewFocus=record.id;});if(this.reviewFocus===record.id)card.classList.add('focused');
-        const decision = run.decisions[record.id];
-        card.append(node('div', 'Machine suggestion', { class: 'tag' }), node('p', record.anchor.map(span => span.text).join(' … '), { class: 'anchor' }), node('p', `${record.family.replaceAll('_', ' ')} · score ${Number(record.score).toFixed(3)}`, { class: 'muted' }));
-        if(record.conceptId)card.append(node('p',`Concept: ${record.conceptId}`,{class:'muted'}));
-        for (const [name, value] of Object.entries(record.fields))
-            card.append(node('p', `${name}: ${value == null ? 'Unknown' : value}`, { class: 'muted' }));
-        if (decision)
-            card.append(node('p', decision.status === 'rejected' ? 'Rejected. The annotation file was not changed.' : decision.status === 'applied' ? `Auto-applied as ${decision.tagId} · unreviewed. The suggestion stays here.` : `Added as ${decision.tagId}. The suggestion stays here.`, { 'data-testid': 'assist-decision' }));
-        const actions = node('div', null, { class: 'row' });
-        actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-locate' }));
-        if (!decision) {
-            actions.append(button('Accept', this.forCurrentNote(view.key, () => { this.apply = { id: record.id, tag: preferredTag(record.family, view?.data?.dtd?.etags) }; this.render(); }), { id: 'assist-accept' }), button('Reject', this.forCurrentNote(view.key, () => { this.perform(()=>this.rejectSuggestion(view,run,record)); }), { id: 'assist-reject' }));
-        }
-        card.append(actions);
-        if (this.apply?.id === record.id)
-            card.append(this.applyForm(view, run, record));
-        return card;
-    }
-    applyForm(view, run, record) {
-        const tags = spanTags(view?.data?.dtd?.etags);
-        const form = node('div');
-        if (!tags.length) {
-            form.append(node('p', 'Load a schema with a span entity tag before accepting this suggestion.', { class: 'unmatched' }));
-            return form;
-        }
-        const picker = node('select', null, { 'aria-label': 'Entity tag', 'data-testid': 'assist-target-tag' });
-        picker.append(node('option', 'Choose an entity tag', { value: '' }));
-        for (const tag of tags)
-            picker.append(node('option', tag.name, { value: tag.name }));
-        picker.value = tags.some(tag => tag.name === this.apply.tag) ? this.apply.tag : '';
-        form.append(labeled('Annotation tag', picker));
-        const tagDef = view.data.dtd.tag_dict[picker.value];
-        const draft = attributeDraft(editableAttrs(tagDef), record.fields);
-        if (draft.unmatched.length)
-            form.append(node('p', `Model fields without a same-named schema attribute: ${draft.unmatched.map(name => `${name} = ${record.fields[name]}`).join(', ')}.`, { class: 'unmatched' }));
-        const inputs = new Map();
-        for (const attr of editableAttrs(tagDef)) {
-            let input;
-            if (attr.vtype === 'list' && Array.isArray(attr.values)) {
-                input = node('select', null, { 'aria-label': attr.name });
-                for (const value of attr.values)
-                    input.append(node('option', value, { value }));
-                if (draft.values[attr.name] != null && ![...attr.values].includes(draft.values[attr.name]))
-                    input.append(node('option', draft.values[attr.name], { value: draft.values[attr.name] }));
-                input.value = draft.values[attr.name] ?? '';
-            }
-            else {
-                input = node('input', null, { type: 'text', value: draft.values[attr.name] ?? '', 'aria-label': attr.name });
-            }
-            inputs.set(attr.name, input);
-            const field=labeled(attr.name,input);input.addEventListener('input',()=>{field.classList.toggle('changed',input.value!==(draft.values[attr.name]??''));field.title=input.value!==(draft.values[attr.name]??'')?'Changed from model suggestion':'';});form.append(field);
-        }
-        form.append(node('p', 'Link attributes stay empty. Add Tag creates a new tag; the suggestion stays here.', { class: 'muted' }));
-        form.append(button('Add Tag', this.forCurrentNote(view.key, () => {
-            const values = {};
-            for (const [name, input] of inputs)
-                values[name] = input.value;
-            this.perform(() => {
-                const before={[record.id]:run.decisions[record.id]??null};
-                const tagId = this.writeAnnotation(record, picker.value, values);
-                run.decisions[record.id] = { status: 'accepted', tagId };
-                const copy={...clone(record),documentId:run.project.current.documents[0].id};for(const [name,value] of Object.entries(values))if(run.project.current.schema.families[copy.family].fields[name])copy.fields[name]=value;
-                run.project.review(run.nativeRunId,record.id,'modified',copy);this.rememberReviewUndo(run,before,[view.ann.tags.find(t=>t.id===tagId)]);
-                this.apply = null;
-                this.message = `Added ${tagId} to the current file. The suggestion stays in this panel.`;
-            });
-        }), { primary: true, id: 'assist-add' }));
-        picker.addEventListener('change', () => { this.apply = { id: record.id, tag: picker.value }; this.render(); });
-        return form;
+        if (anns.length)
+            analysis.step.append(renderBatch(this, anns, analysis.analyzeSelected));
+        renderRun(this, analysis.step, view);
+        body.append(renderNoteStep(this, view), modelSource, packages, analysis.step, more);
+        // While working, Pause stays visible in the header instead of inside a scrolled step.
+        if (this.busy)
+            head.append(analysis.pause);
+        body.scrollTop = scrollTop;
     }
 }
-// Short visible captions keep MedTator's style; the accessible name says which list moves.
-function labelButton(element, label) {
-    element.setAttribute('aria-label', label);
-    return element;
+
+function renderHead(assist, view) {
+    const head = node('div', null, { class: 'head' });
+    const title = node('div', null, { class: 'row' });
+    title.append(icon('assist'), node('strong', 'Assistance'), node('span', null, { class: 'grow' }),
+        button('Hide', () => assist.setOpen(false), { id: 'assist-collapse', title: 'Hide the Assistance panel' }));
+    head.append(title);
+    if (view?.run && assist.mode !== 'blind' && (!assist.blinded.has(view.key) || assist.exposed.has(view.key)))
+        head.append(node('p', `${view.run.records.length} suggestions · ${view.ann.tags?.length ?? 0} tags`, { 'data-testid': 'assist-counts' }));
+    if (assist.model && assist.modelStorageNotice)
+        head.append(node('p', assist.modelStorageNotice, { class: 'muted', role: 'status', 'data-testid': 'assist-storage-notice' }));
+    if (assist.executionStatus?.fallbackDetail) {
+        const details = disclosure(assist, 'execution-details', 'Why was CPU used?');
+        details.append(node('p', assist.executionStatus.fallbackDetail, { class: 'muted wrap' }));
+        head.append(details);
+    }
+    return head;
 }
-function labeled(text, input) {
-    // Checkboxes sit before their caption, as in MedTator's toggles and file list.
-    const checkbox = input.type === 'checkbox';
-    const label = node('label', null, checkbox ? { class: 'check' } : {});
-    if (checkbox) label.append(input, node('span', text));
-    else label.append(node('span', text), input);
-    return label;
+
+function renderNoteStep(assist, view) {
+    const step = node('section', null, { class: 'section', 'data-testid': 'assist-step-note' });
+    const heading = node('h3', '1. Open a File');
+    heading.prepend(icon('practice'));
+    step.append(heading);
+    if (view?.ann) {
+        step.append(node('p', view.ann._filename ?? 'document', { 'data-testid': 'assist-document' }));
+    }
+    else {
+        step.append(node('p', 'Load a schema and annotation files with the toolbar above, or try a sample:', { class: 'muted' }));
+        step.append(practiceActions(assist, view));
+    }
+    return step;
+}
+
+/** Step 4 shell. Analyze Selected and Pause are returned for placement by render(). */
+function renderAnalysisStep(assist, view) {
+    const mode = node('select', null, { 'aria-label': 'Review mode', 'aria-describedby': 'assist-mode-description', 'data-testid': 'assist-mode', disabled: assist.busy });
+    for (const [value, label] of REVIEW_MODES)
+        mode.append(node('option', label, { value }));
+    mode.value = assist.mode;
+    mode.addEventListener('change', () => { assist.mode = mode.value; assist.apply = null; assist.render(); });
+    const sourcePending = !!assist.selectionDraft || assist.selectionDraftMode !== modelSelectionControlValue(assist.modelSelection);
+    const analyzeFile = button('Analyze File', () => assist.perform(() => assist.analyzeDocuments(assist.chosenDocuments(false))), {
+        primary: true,
+        disabled: assist.busy || !assist.model || !view?.ann || sourcePending,
+        id: 'assist-analyze',
+        title: 'Analyze the current file on this device',
+    });
+    const analyzeSelected = button('Analyze Selected', () => assist.perform(() => assist.analyzeDocuments(assist.chosenDocuments(true), { batch: true })), {
+        disabled: assist.busy || !assist.model || assist.selected.size === 0 || sourcePending,
+        id: 'assist-analyze-selected',
+        title: 'Analyze the files checked below',
+    });
+    const pause = button('Pause', () => { assist.installController?.abort(); assist.modelRunner.cancel(); }, {
+        disabled: !assist.busy,
+        id: 'assist-pause',
+        title: 'Stop the current download or analysis',
+    });
+    const actions = node('div', null, { class: 'row' });
+    actions.append(analyzeFile);
+    const actionBar = node('div', null, { class: 'action-bar' });
+    actionBar.append(actions);
+    const schema = view?.data?.dtd?.name;
+    const prerequisite = !schema ? 'Load a schema, then open a file.' : !view?.ann ? 'Open a file to begin.' : !assist.model ? 'Load the model in step 3 to continue.' : null;
+    if (prerequisite)
+        actionBar.append(node('p', prerequisite));
+    const step = node('section', null, { class: 'section', 'data-testid': 'assist-step-analyze' });
+    const heading = node('h3', '4. Analyze and Review');
+    heading.prepend(icon('play'));
+    step.append(heading, labeled('Review Mode', mode),
+        node('p', reviewModeDescription(assist.mode), { class: 'muted mode-description', id: 'assist-mode-description', 'data-testid': 'assist-mode-description' }),
+        actionBar);
+    return { step, analyzeSelected, pause };
 }
