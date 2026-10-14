@@ -2,7 +2,6 @@
   "browser": "155.0.8059.40",
   "crossOriginIsolated": true,
   "errors": [],
-  "requests": 198,
   "noNetworkModels": true,
   "p10AssistedReviewExportReopen": true,
   "bpsdExactAutoApply": true,
@@ -11,11 +10,11 @@
   "shots": [
     {
       "file": "01-start.png",
-      "caption": "1. Open NextMedTator — model downloads are opt-in"
+      "caption": "1. Open NextMedTator \u2014 model downloads are opt-in"
     },
     {
       "file": "02-p10-practice.png",
-      "caption": "2. Choose P10 clinical evidence — fictional note and schema included"
+      "caption": "2. Choose P10 clinical evidence \u2014 fictional note and schema included"
     },
     {
       "file": "03-model-options.png",
@@ -27,7 +26,7 @@
     },
     {
       "file": "05-suggestions.png",
-      "caption": "5. Inspect suggestions — the source annotation is unchanged"
+      "caption": "5. Inspect suggestions \u2014 the source annotation is unchanged"
     },
     {
       "file": "06-review-fields.png",
@@ -55,35 +54,8 @@
     },
     {
       "file": "12-bpsd.png",
-      "caption": "12. Try BPSD — auto-applied predictions remain unreviewed"
+      "caption": "12. Try BPSD \u2014 auto-applied predictions remain unreviewed"
     }
   ],
-  "release": "0.1.0-preview.4",
-  "manualAnnotationViaDesktopComputerUse": true,
-  "responsiveDesktopSizes": [
-    [
-      1920,
-      1080
-    ],
-    [
-      1440,
-      1000
-    ],
-    [
-      1366,
-      768
-    ],
-    [
-      1280,
-      768
-    ],
-    [
-      1024,
-      768
-    ],
-    [
-      1440,
-      600
-    ]
-  ]
+  "date": "2026-10-14"
 }

@@ -6,17 +6,22 @@ inference and receives no notes, annotations, or device capability profile.
 
 ## User flow
 
-1. Model source is followed immediately by the package controls. Browser capability
-   detection requests a GPU adapter but creates no GPU device or model session.
+1. Follow the four steps: open a note, choose a model, load it, analyze and review.
+   P10 is first and selected by default. Browser detection requests an adapter
+   but creates no GPU device or model session.
 2. FP16 is recommended when WebGPU exposes `shader-f16`; otherwise FP32 is
-   recommended. Explicit CPU selection recommends FP32. CPU count and the browser's
-   approximate memory hint are shown; these are not RAM or VRAM measurements.
-3. The user explicitly opens the catalog and selects a package. This downloads
-   metadata only. INT8 remains experimental and is never the default recommendation.
-4. **Download and install** opens an on-demand Turnstile check. A credentialless
-   frame isolates its external scripts from the annotation app. Current Chrome/Edge
-   are supported; browsers without credentialless frames receive an actionable
-   message and can still import local packages. WASM cross-origin isolation remains enabled.
+   recommended. Explicit CPU selection recommends FP32. Overrides and device
+   details are in **Model options**. INT8 is experimental and never recommended.
+3. Click **Download P10/BPSD** to request catalog metadata and the selected package.
+   Matching installed packages instead offer **Load installed**, with no transfer.
+4. Download opens an on-demand Turnstile check. Chrome uses a credentialless
+   frame. Firefox/Safari offer **Open verification tab**. This same-origin page
+   embeds the existing protected model-host check without app COEP isolation.
+   A random per-request BroadcastChannel carries the token back in memory;
+   matching origin, source and nonce are required. The app acknowledges receipt,
+   the verification tab closes, and download continues. Cancellation works from
+   either tab. The annotation app retains cross-origin isolation for WASM.
+
 5. Download bytes and measured ETA are followed by integrity verification and
    IndexedDB installation/read-back verification. **Analyze note** then prepares
    the worker, checks files, builds the tokenizer, compiles each graph, and runs
@@ -59,13 +64,20 @@ secret bindings; preserve them during updates. The public sitekey is committed.
 The initial grant key is domain-separated from the newly created widget secret;
 rotate both when rotating that credential. Never put secrets in source or logs.
 
-Preserve the generated Pages CSP and isolation headers. The app permits a frame
+Preserve the generated Pages CSP and isolation headers. Only
+`/download-verification.html` detaches COEP; it loads no notes or application code. The app permits a frame
 and connections only to the model host; Turnstile scripts execute within that frame.
 For rollback, keep the protected Worker while restoring a compatible app build.
 An older app without authorization support cannot download through the gate;
 installed packages and local import continue working.
 
 ## Validation (2026-10-13)
+
+Current four-step UI and verification-tab regression: installed Chrome 155,
+installed Firefox 155, and WebKit 26. Transport tests use an inert check and a
+rejected synthetic token; they do not solve a live CAPTCHA. See
+[guided workflow validation](GUIDED-ASSISTANCE.md). The earlier live check below
+validated the unchanged Worker and embedded Chrome path.
 
 - Real, user-approved Turnstile flow → protected P10 FP16 R2 download (369 MiB) →
   local installation/read-back hashes → two synthetic-note WebGPU suggestions.

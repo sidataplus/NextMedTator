@@ -1,9 +1,9 @@
 # Model precision choices
 
-Preview.7 provides three explicit downloads for each model. Open **Assistance →
-Model packages → Show approved public model → Model precision to download**.
+Three explicit download formats are available for each model. Open **Assistance →
+Load the model → Model options → Download format**.
 Changing the choice starts no download and does not replace the active model.
-Click **Download and install** to use it. Installed packages can be selected again
+Unload an active model, then click **Download** to use a different format. Installed packages can be selected again
 without a network transfer.
 
 | Choice | Intended benefit | Execution and limitations |
@@ -18,14 +18,13 @@ without a network transfer.
 | BPSD | 724.9 MiB | 372.2 MiB | 201.6 MiB |
 
 The app shows the **actual backend and precision**, including after fallback.
-FP32 remains the default. Precision variants keep the same complete model prompt,
+The device recommendation chooses FP16 for compatible WebGPU or FP32 otherwise. Precision variants keep the same complete model prompt,
 threshold, tokenizer, applicability rules, and token budget.
 
 ## Downloads and automatic recovery
 
 Website load, opening a practice note, and changing precision never fetch weights.
-**Show approved public model** requests metadata only. **Download and install**
-requests the selected package.
+**Download** requests metadata and the selected package.
 
 For an installed FP16 package, an explicit **Analyze** request may load the
 original FP32 WASM fallback if the GPU is missing, lacks FP16, fails initialization

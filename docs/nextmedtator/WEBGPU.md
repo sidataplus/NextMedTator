@@ -7,7 +7,7 @@ Analyze request if it is not already installed. Install FP32 first for offline r
 
 NextMedTator preview.6 runs both pinned P10 and BPSD packages through WebGPU,
 including entity extraction, attribute scoring and final decoding. **Automatic**
-is the default. Under **Assistance → Model packages → Inference device**, select
+is the default. Under **Assistance → Load the model → Model options → Run on**, select
 **CPU · WASM** to use the CPU explicitly. The panel and exported run record the
 backend actually used.
 

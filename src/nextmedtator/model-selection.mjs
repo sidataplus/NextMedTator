@@ -1,6 +1,12 @@
 import {canonical, sha256} from './integrity.mjs';
 
 export const MODEL_PRESETS = Object.freeze([
+    Object.freeze({id:'clinical-p10', label:'ClinicalEvidence P10 GLM base', kind:'hub-adapter',
+        repository:'na399/clinical-evidence-gliner2.5-base-lora-p10-glm', revision:'ffd6e47bd55de93dcc3fcabbb65533ad7ba32991',
+        baseModel:'fastino/gliner2.5-base-v1', baseRevision:'54785d51df8d86a0d8f2eb212fec15871aad2c4d', exportSelection:'clinical-p10'}),
+    Object.freeze({id:'bpsd-base', label:'BPSD GLiNER2.5 base', kind:'hub-adapter',
+        repository:'na399/bpsd-gliner2.5-base-lora-20261012', revision:'5cb60383b4b8dd361841e307e54f6e17b68b6fa7',
+        baseModel:'fastino/gliner2.5-base-v1', baseRevision:'ca906247640776a07753514055be9726f9080ead', exportSelection:'bpsd-base'}),
     Object.freeze({
         id: 'clinical-v3-small',
         label: 'ClinicalEvidence GLiNER2.5 small LoRA v3 ACT/Sol',
@@ -36,16 +42,10 @@ export const MODEL_PRESETS = Object.freeze([
         model: 'fastino/gliner2.5-base-v1',
         revision: 'ca906247640776a07753514055be9726f9080ead',
         exportSelection: 'original-base'
-    }),
-    Object.freeze({id:'clinical-p10', label:'ClinicalEvidence P10 GLM base', kind:'hub-adapter',
-        repository:'na399/clinical-evidence-gliner2.5-base-lora-p10-glm', revision:'ffd6e47bd55de93dcc3fcabbb65533ad7ba32991',
-        baseModel:'fastino/gliner2.5-base-v1', baseRevision:'54785d51df8d86a0d8f2eb212fec15871aad2c4d', exportSelection:'clinical-p10'}),
-    Object.freeze({id:'bpsd-base', label:'BPSD GLiNER2.5 base', kind:'hub-adapter',
-        repository:'na399/bpsd-gliner2.5-base-lora-20261012', revision:'5cb60383b4b8dd361841e307e54f6e17b68b6fa7',
-        baseModel:'fastino/gliner2.5-base-v1', baseRevision:'ca906247640776a07753514055be9726f9080ead', exportSelection:'bpsd-base'})
+    })
 ]);
 
-export const DEFAULT_MODEL_SELECTION = MODEL_PRESETS.find(item=>item.id==='clinical-v3-small');
+export const DEFAULT_MODEL_SELECTION = MODEL_PRESETS.find(item=>item.id==='clinical-p10');
 export const MODEL_SELECTION_STORAGE_KEY = 'nextmedtator-model-selection-v1';
 
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -310,11 +310,11 @@ export function adapterExportCommands(selection, {adapterPath = '/path/to/adapte
     return [args];
 }
 
-export function renderModelSelectionControls({selection, draftMode, draft = null, activeModel, onSelect, onDraftMode, onDraftChange, onUseHub, onUseLocal, prefix = 'model-selection', disabled = false}) {
+export function renderModelSelectionControls({selection, draftMode, draft = null, activeModel, onSelect, onDraftMode, onDraftChange, onUseHub, onUseLocal, prefix = 'model-selection', disabled = false, compact = false}) {
     const root = document.createElement('section');
     root.className = 'model-selection';
     const heading = document.createElement('h3');
-    heading.textContent = 'Auto annotation model';
+    heading.textContent = compact?'2. Choose a model':'Auto annotation model';
     root.append(heading);
 
     const label = document.createElement('label');
@@ -324,8 +324,12 @@ export function renderModelSelectionControls({selection, draftMode, draft = null
     select.id = `${prefix}-source`;
     select.dataset.testid = `${prefix}-source`;
     select.disabled = disabled;
-    for (const preset of MODEL_PRESETS)
-        select.append(new Option(preset.label, preset.id));
+    const advanced=document.createElement('optgroup');advanced.label='Advanced · local export required';
+    for (const preset of MODEL_PRESETS){
+        const target=compact&&!['clinical-p10','bpsd-base'].includes(preset.id)?advanced:select;
+        target.append(new Option(preset.label, preset.id));
+    }
+    if(compact)select.append(advanced);
     const imported = new Option('Imported ONNX package', 'imported-package');
     imported.disabled = true;
     select.append(imported);
@@ -353,6 +357,7 @@ export function renderModelSelectionControls({selection, draftMode, draft = null
         : activeMatches
         ? `Active package: ${activeModel.manifest.id}. Package hashes were verified; public conformance runs before analysis.`
         : `Selected: ${modelSelectionLabel(selection)}. ${activeModel ? 'The loaded package does not match this source and cannot run.' : 'No matching ONNX package is active.'} ${selection.kind === 'imported-package' ? 'Import or install a matching package.' : 'Convert or install a matching package to analyze.'}`;
+    if(compact&&!sourcePending&&['clinical-p10','bpsd-base'].includes(selection.id))status.textContent=selection.id==='clinical-p10'?'Clinical evidence: conditions, treatments, findings and events.':'Behavioral and psychological symptoms in dementia.';
     root.append(status);
     const changed = values => {
         draft = values;
@@ -444,7 +449,7 @@ export function renderModelSelectionControls({selection, draftMode, draft = null
         command.dataset.testid = `${prefix}-export-command`;
         command.textContent = commands.join('\n');
         details.append(title, command);
-        root.append(details);
+        if(!compact||!['clinical-p10','bpsd-base'].includes(selection.id))root.append(details);
     } catch {
         // Incomplete custom selections do not have a valid export command yet.
     }

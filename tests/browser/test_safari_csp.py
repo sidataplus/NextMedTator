@@ -40,6 +40,7 @@ with sync_playwright() as p:
         for target in ('#section-1-5','#section-1-4','#section-1-6','#section-1-1'):
             page.locator(f'.tabs-holder a[href="{target}"]').click()
         page.get_by_test_id('assist-mode').select_option('auto')
+        page.get_by_test_id('assist-more').locator(':scope > summary').click()
         page.get_by_test_id('assist-options').locator('summary').first.click()
         page.get_by_test_id('assist-options').locator('summary').first.press('Enter')
         expect(page.get_by_test_id('assist-options')).not_to_have_attribute('open','')

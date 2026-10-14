@@ -5,33 +5,35 @@ Start with [the P10 practice task](01-quickstart.md).
 
 The Assistance panel uses the same compact controls as the annotation toolbar.
 Labeled icons guide analysis, downloads, installed packages, settings, and
-backups. Section headers expand by click or keyboard; the analysis controls stay
-visible while the panel scrolls.
+backups. Follow the four numbered steps from top to bottom. Precision, device
+and storage controls are collapsed until needed. Section headers expand by click
+or keyboard; scroll the panel to reach later steps.
 
-![Assistance controls in WebKit with the original annotation workspace](images/29-assistance-toolbar.png)
+![Four-step Assistance workflow in Chrome](images/02-p10-practice.png)
 
 The default device setting is **Automatic · WebGPU with WASM fallback**. Both
-models run locally. The Assistance header shows the actual backend after you
-analyze. To force CPU execution, choose **Model packages → Inference device →
-CPU · WASM**. GPU can be faster, but the measured BPSD examples with many
+models run locally. **Model options** shows the actual backend after you
+analyze. To force CPU execution, choose **Load the model → Model options →
+Run on → CPU · WASM**. GPU can be faster, but the measured BPSD examples with many
 attributes ran faster on CPU; see [the speed comparison](../docs/nextmedtator/WEBGPU.md).
 
 ## Step 1 — Request a model
 
-Expand **Get a model package** and click **Show approved public model**.
-Choose **Download and install clinical-evidence-p10-base-r2** for P10, or
-**Download and install bpsd-gliner25-base-r2** for BPSD. Browsing the catalog
-loads metadata only. The download button first opens a Cloudflare verification check, then starts the weight transfer.
+P10 is first and selected by default in **2. Choose a model**. In
+**3. Load the model**, click **Download P10** (or **Download BPSD**).
+If the recommended package is installed, use **Load installed** instead.
+Firefox and Safari offer **Open verification tab**: complete the check there and
+return to the app. The download continues automatically. Cancel from either tab.
+No download starts until you click the button.
 
 The panel recommends FP16 when the browser exposes compatible WebGPU support, or FP32 otherwise. CPU selection recommends FP32. These hints stay on your device and never trigger a download.
 
-![Device recommendation and model controls](images/25-device-recommendation.png)
+![Recommended model download and optional local import](images/03-model-options.png)
 
-Use **Model precision to download** to choose FP32 (original), FP16 (smaller
+Use **Model options → Download format** to choose FP32 (original), FP16 (smaller
 WebGPU package), or experimental INT8 weights (FP32 WASM computation).
 Changing this selection starts no download and does not replace the active model.
-Click the matching **Download and install** button, then check the Assistance
-header for the active package and the actual precision after analysis.
+Unload an active model before choosing another format. Click **Download**, then check **Model options** for the active package and the actual precision after analysis.
 
 Downloads show bytes and an ETA; verification and installation are separate stages. On **Analyze note**, the panel identifies worker preparation, file checks, tokenizer setup, graph initialization and compatibility checks. **Pause** cancels a download or initialization.
 
@@ -60,12 +62,12 @@ uses a stage indicator because it does not have a reliable ETA.
 You can instead choose a local `.nmt-model.zip` under **Local model package**.
 The screenshots in this guide use local package import. Imported packages can
 be retained with **Install package for offline use**. Public downloads are
-installed automatically, and a matching installed package is restored locally
-on a later visit. Clearing browser site data removes those stored packages.
+installed automatically, and a matching installed package offers **Load installed**
+on a later visit. Model weights are never loaded automatically at startup. Clearing browser site data removes those stored packages.
 
 ## Step 2 — Analyze in Assisted mode
 
-Keep **Mode → Assisted**, then click **Analyze note**. The progress area shows
+In **4. Analyze and review**, keep **Review mode → Assisted**, then click **Analyze note**. The progress area shows
 loading and analysis stages. The note stays on your device.
 
 ![Real model initialization and local analysis](images/04-analyzing.png)
@@ -79,7 +81,7 @@ still has zero tags until you choose to write one.
 
 ![P10 machine suggestions ready for review](images/05-suggestions.png)
 
-Expand **Analysis settings** to adjust the suggestion threshold. Lower values
+Expand **More tools → Analysis settings** to adjust the suggestion threshold. Lower values
 include more spans; higher values are stricter. The change applies to the next
 analysis, and old runs retain their original settings. Use **Use default** to
 restore the package's threshold. P10 and BPSD use their complete trained
@@ -87,7 +89,7 @@ contracts; custom clinical scope filtering is not supported for these codecs.
 
 ## Step 4 — Try BPSD or a batch
 
-Export your work before switching tasks. Expand **Try a fictional note** and
+Export your work before switching tasks. Expand **More tools → Try a fictional note** and
 choose **BPSD behaviors**, then load the matching BPSD package. With the default
 threshold, the included note produces five suggestions in the pinned package.
 

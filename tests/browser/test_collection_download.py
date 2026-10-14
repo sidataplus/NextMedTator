@@ -19,6 +19,7 @@ with sync_playwright() as p:
         errors=[];downloads=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('download',lambda d:downloads.append(d))
         page.goto(URL);expect(page.locator('#start-screen')).to_be_hidden()
         page.get_by_test_id('assist-practice-p10').click()
+        page.get_by_test_id('assist-more').locator(':scope > summary').click()
         page.get_by_text('Large collections · local disk',exact=True).click()
         page.get_by_test_id('assist-collection-import').set_input_files([
             {'name':f'fictional-{i}.txt','mimeType':'text/plain','buffer':f'Fictional synthetic note {i}. Unicode 😀.'.encode()} for i in range(3)])

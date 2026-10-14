@@ -12,6 +12,10 @@ HEADERS = """/*
   Referrer-Policy: no-referrer
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
+/download-verification.html
+  ! Cross-Origin-Embedder-Policy
+/download-verification
+  ! Cross-Origin-Embedder-Policy
 """
 if __package__:
     from .model_delivery import connect_origins

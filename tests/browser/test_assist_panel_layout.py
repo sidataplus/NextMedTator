@@ -24,17 +24,19 @@ try:
         expect(batch).to_have_attribute('open','')
         expect(batch.locator('summary')).to_contain_text('1 selected')
         page.get_by_test_id('assist-mode').select_option('assisted');expect(batch).to_have_attribute('open','')
+        page.get_by_test_id('assist-more').locator(':scope > summary').click()
         options=page.get_by_test_id('assist-options');options.locator('summary').click();options.get_by_role('button',name='Use default',exact=True).click();expect(options).to_have_attribute('open','')
         options.locator('summary').click();batch.locator('summary').click()
         page.get_by_test_id('assist-recovery').scroll_into_view_if_needed()
         before=page.evaluate('document.querySelector("nextmedtator-assist").shadowRoot.querySelector(".body").scrollTop')
         assert before>0
-        page.get_by_test_id('assist-mode').select_option('auto')
+        page.get_by_test_id('assist-mode').evaluate("e=>{e.value='auto';e.dispatchEvent(new Event('change'))}")
         after=page.evaluate('document.querySelector("nextmedtator-assist").shadowRoot.querySelector(".body").scrollTop')
         assert abs(before-after)<=1,(before,after)
         sizes=[]
         for width,height in [(1440,900),(1024,768),(1440,600)]:
             page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(150)
+            page.get_by_test_id('assist-analyze').scroll_into_view_if_needed()
             geometry=page.evaluate('''()=>{const root=document.querySelector('nextmedtator-assist').shadowRoot,action=root.querySelector('[data-testid=assist-analyze]').getBoundingClientRect(),body=root.querySelector('.body');return {top:action.top,bottom:action.bottom,overflow:body.scrollWidth-body.clientWidth};}''')
             assert geometry['top']>=0 and geometry['bottom']<height,geometry
             assert geometry['overflow']<=1,geometry

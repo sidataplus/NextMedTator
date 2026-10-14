@@ -2,6 +2,7 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import argparse
+from urllib.parse import urlsplit
 from functools import partial
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -18,11 +19,14 @@ class Handler(SimpleHTTPRequestHandler):
     def end_headers(self):
         header_file=Path(self.directory)/'_headers'
         if header_file.exists():
-            section=None
+            section=None;headers={}
             for line in header_file.read_text().splitlines():
                 if line and not line[0].isspace():section=line.strip()
-                elif section=='/*' and ':' in line:
-                    name,value=line.strip().split(':',1);self.send_header(name,value.strip())
+                elif section in ('/*',urlsplit(self.path).path):
+                    if line.strip().startswith('! '):headers.pop(line.strip()[2:].lower(),None)
+                    elif ':' in line:
+                        name,value=line.strip().split(':',1);headers[name.lower()]=value.strip()
+            for name,value in headers.items():self.send_header(name,value)
         super().end_headers()
     def log_message(self,*args):
         pass

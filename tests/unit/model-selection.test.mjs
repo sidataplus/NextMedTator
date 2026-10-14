@@ -14,11 +14,11 @@ const smallBase = {model: 'fastino/gliner2.5-small-v1', revision: '7132dc4561c3f
 const baseBase = {model: 'fastino/gliner2.5-base-v1', revision: 'ca906247640776a07753514055be9726f9080ead'};
 const manifest = (base, adapter) => ({lineage: {base, ...(adapter ? {adapter} : {})}});
 
-test('clinical small LoRA v3 is the default and source matching requires pinned lineage', () => {
-    assert.equal(DEFAULT_MODEL_SELECTION.id, 'clinical-v3-small');
-    assert.equal(DEFAULT_MODEL_SELECTION.repository, 'na399/clinical-evidence-gliner2.5-small-lora-v3-act-sol');
-    assert.equal(DEFAULT_MODEL_SELECTION.revision, '82386c7a9776d3c14ed73d6310273a1c9d354d55');
-    const small = manifest(smallBase, {repository: DEFAULT_MODEL_SELECTION.repository, revision: DEFAULT_MODEL_SELECTION.revision});
+test('P10 is first and default; source matching requires pinned lineage', () => {
+    assert.equal(DEFAULT_MODEL_SELECTION.id, 'clinical-p10');assert.equal(MODEL_PRESETS[0].id,'clinical-p10');assert.equal(MODEL_PRESETS[1].id,'bpsd-base');
+    assert.equal(DEFAULT_MODEL_SELECTION.repository, 'na399/clinical-evidence-gliner2.5-base-lora-p10-glm');
+    assert.equal(DEFAULT_MODEL_SELECTION.revision, 'ffd6e47bd55de93dcc3fcabbb65533ad7ba32991');
+    const small = manifest({model:DEFAULT_MODEL_SELECTION.baseModel,revision:DEFAULT_MODEL_SELECTION.baseRevision}, {repository: DEFAULT_MODEL_SELECTION.repository, revision: DEFAULT_MODEL_SELECTION.revision});
     const wrongBase = manifest(baseBase, {...small.lineage.adapter});
     assert.equal(modelSelectionMatchesManifest(DEFAULT_MODEL_SELECTION, small), true);
     assert.equal(modelSelectionMatchesManifest(DEFAULT_MODEL_SELECTION, wrongBase), false);
@@ -36,7 +36,7 @@ test('original checkpoints and adapter sources match only their exact base or ad
     const installed = [
         {manifest: manifest(smallBase)},
         {manifest: manifest(baseBase)},
-        {manifest: manifest(smallBase, {repository: DEFAULT_MODEL_SELECTION.repository, revision: DEFAULT_MODEL_SELECTION.revision})}
+        {manifest: manifest({model:DEFAULT_MODEL_SELECTION.baseModel,revision:DEFAULT_MODEL_SELECTION.baseRevision}, {repository: DEFAULT_MODEL_SELECTION.repository, revision: DEFAULT_MODEL_SELECTION.revision})}
     ];
     assert.deepEqual(matchingInstalledModels(originalSmall, installed), [installed[0]]);
     const inferred = selectionFromManifest(installed[2].manifest);
@@ -67,7 +67,7 @@ test('selection thresholds persist by exact source and startup restoration is re
         setItem(key, value) { writes.push([key, value]); }
     };
     const state = createModelSelectionState(storage);
-    assert.equal(state.selection.id, 'clinical-v3-small');
+    assert.equal(state.selection.id, 'clinical-p10');
     assert.deepEqual(writes, []);
     assert.equal(selectionThresholdOverride(state), null);
     setSelectionThresholdOverride(state, 0.73);

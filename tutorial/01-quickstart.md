@@ -4,7 +4,7 @@
 
 ## Step 1 — Open the app
 
-Open [NextMedTator](https://nmt.sidata.plus) in desktop Chrome or Edge. The
+Open [NextMedTator](https://nmt.sidata.plus) in a current desktop browser. The
 ribbon stays at the top, files are on the left, note text is in the center,
 and Assistance is on the right. The annotation table appears below the note.
 
@@ -15,7 +15,7 @@ a note and a compatible loaded model are available.
 
 ## Step 2 — Load a practice task
 
-In **Assistance → Try a fictional note**, choose **P10 clinical evidence**.
+In **Assistance → 1. Open a note**, choose **P10 clinical evidence**.
 The button loads the note, seven-family DTD, model selection and Assisted mode.
 It does not download weights. If notes are already open, the app asks before
 replacing them; cancel to keep working or export them first.
