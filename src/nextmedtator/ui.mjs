@@ -1,3 +1,4 @@
+import {themeColors} from './theme-colors.mjs';
 import {LONG_CONTEXT_SETTINGS} from './long-context.mjs';
 import {CollectionStore} from './collection-store.mjs';
 import {loadWasmFallback} from './model-fallback.mjs';
@@ -261,7 +262,7 @@ export class EvidenceWorkspace {
         const focused = this.root.activeElement?.dataset?.focusKey;
         const source = this.root.querySelector('[data-testid=source]');
         const sourceState = source ? { start: source.selectionStart, end: source.selectionEnd, scroll: source.scrollTop } : null;
-        this.root.replaceChildren(node('style', styles));
+        this.root.replaceChildren(node('style', themeColors(styles)));
         const docked = !!document.querySelector('nextmedtator-assist');
         this.host.hidden = !this.open && !this.standalone && docked;
         if (!this.open) {

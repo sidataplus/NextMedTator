@@ -10,6 +10,12 @@ and Assistance is on the right. The annotation table appears below the note.
 
 ![Empty workspace and fictional-task buttons](images/01-start.png)
 
+**Appearance:** open **Settings → Appearance** to choose System, Light or Dark.
+System is the default and follows changes on your device. Explicit choices persist
+in this browser.
+
+![Dark mode in Firefox](images/30-dark-mode.png)
+
 Manual annotation needs no model. **Analyze note** remains disabled until both
 a note and a compatible loaded model are available.
 

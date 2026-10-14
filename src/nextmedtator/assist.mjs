@@ -1,3 +1,4 @@
+import {themeColors} from './theme-colors.mjs';
 import {detectDevice,deviceRecommendation} from './device-profile.mjs';
 import {suggestionPage,validateUndoTags} from './review-queue.mjs';
 import {exportCollection,exportCollectionBlob,importCollectionBackup} from './collection-backup.mjs';
@@ -884,7 +885,7 @@ class LegacyAssist {
                 this.blinded.add(documentKey(ann._filename ?? 'document', ann.text ?? ''));
         this.signature = this.viewSignature();
         this.host.dataset.open = String(this.open);
-        this.root.replaceChildren(node('style', styles));
+        this.root.replaceChildren(node('style', themeColors(styles)));
         if (!this.open) {
             this.root.append(button('Show assistance', () => this.setOpen(true), { id: 'assist-expand', title: 'Show the local assistance panel' }));
             this.root.lastChild.className = 'rail';

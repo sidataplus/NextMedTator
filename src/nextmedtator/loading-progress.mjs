@@ -1,3 +1,4 @@
+import {themeColors} from './theme-colors.mjs';
 export function downloadStatus({received,total,started,now=performance.now()}){
     const elapsed=(now-started)/1000;
     const speed=elapsed>0?received/elapsed:0;
@@ -19,7 +20,7 @@ export function renderLoadingProgress(root,state){
     if(!state){box?.remove();return;}
     if(!box){
         box=document.createElement('section');box.dataset.testid='loading-progress';box.className='loading-progress';box.setAttribute('role','status');box.setAttribute('aria-live','polite');
-        const style=document.createElement('style');style.textContent='.loading-progress{margin:0 8px 8px;padding:10px;border:1px solid #d7e1e7;border-radius:6px;background:#fff;flex-shrink:0;font:12px/1.5 system-ui,sans-serif;color:#1a3041}.loading-progress progress{display:block;width:100%;height:12px;margin:6px 0;accent-color:#076b74}.loading-progress strong,.loading-progress small{display:block}.loading-progress small{color:#536976;font-variant-numeric:tabular-nums}';
+        const style=document.createElement('style');style.textContent=themeColors('.loading-progress{margin:0 8px 8px;padding:10px;border:1px solid #d7e1e7;border-radius:6px;background:#fff;flex-shrink:0;font:12px/1.5 system-ui,sans-serif;color:#1a3041}.loading-progress progress{display:block;width:100%;height:12px;margin:6px 0;accent-color:#076b74}.loading-progress strong,.loading-progress small{display:block}.loading-progress small{color:#536976;font-variant-numeric:tabular-nums}');
         const label=document.createElement('strong'),bar=document.createElement('progress'),detail=document.createElement('small');
         label.dataset.part='label';bar.max=100;bar.setAttribute('aria-label','Model loading progress');detail.dataset.part='detail';
         box.append(style,label,bar,detail);

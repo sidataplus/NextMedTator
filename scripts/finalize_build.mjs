@@ -6,6 +6,7 @@ import { parse } from 'acorn';
 import compiler from 'vue-template-compiler';
 import { transform } from 'esbuild';
 import {createHash} from 'node:crypto';
+import {themeColors} from '../src/nextmedtator/theme-colors.mjs';
 const out = 'dist';
 // Metro's detached-document HTML parser adds a redundant <base> element.
 // WebKit enforces the inherited base-uri CSP even in this detached document.
@@ -19,6 +20,10 @@ await writeFile(metroFile,metro.replace(detachedBase,'s=document.implementation.
 // This also covers strings compiled into Vue templates below.
 const sourceHtml=(await readFile(`${out}/index.html`, 'utf8')).replace(/href=(["'])javascript:void\(0\);?\1/gi,'href="#" data-nmt-action-link="true"');
 const { document } = parseHTML(sourceHtml);
+document.querySelector('#app_style').textContent=themeColors(document.querySelector('#app_style').textContent);
+const themeScript=document.createElement('script');themeScript.setAttribute('src','./app/nextmedtator/theme.js');
+document.head.prepend(themeScript);
+const themeLink=document.createElement('link');themeLink.setAttribute('rel','stylesheet');themeLink.setAttribute('href','./app/nextmedtator/theme.css');document.head.append(themeLink);
 const app = document.querySelector('#app_hotpot');
 if (!app)
     throw Error('Upstream mount point changed');

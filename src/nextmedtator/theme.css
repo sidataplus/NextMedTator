@@ -1,0 +1,37 @@
+:root {color-scheme:light}
+:root[data-theme=dark] {
+  color-scheme:dark;
+  --nmt-paper:#191d23;--nmt-surface:#242a32;--nmt-ink:#e5eaf0;
+  --nmt-muted:#b5c0cd;--nmt-line:#4b5665;--nmt-hint:#213b50;
+  --nmt-good:#193e30;--nmt-goodInk:#a1e1b9;
+  --nmt-warning:#453a20;--nmt-warningInk:#f2d798;--nmt-error:#4b2929;--nmt-link:#86c5ff;
+}
+html[data-theme=dark] body {background:var(--nmt-paper);color:var(--nmt-ink)}
+html[data-theme=dark] :is(#start-screen,#app_hotpot,#main_ui,#annotation_core,#mui_filelist,#mui_filelist_pager,#mui_texteditor,#mui_annlist,#mui_dtdlist,.CodeMirror,.CodeMirror-dialog,.box,.dialog,.ui-dialog,.ui-widget-content,.dropdown-menu,.d-menu,.t-menu,.ribbon-menu,.ribbon-menu .content-holder,.ribbon-menu .section) {background-color:var(--nmt-paper);color:var(--nmt-ink);border-color:var(--nmt-line)}
+html[data-theme=dark] :is(.ribbon-menu .tabs-holder,.ribbon-menu .group,.ribbon-menu .title,.ribbon-menu .section,.CodeMirror-gutters,.box-header,.box-footer,.ui-dialog-titlebar,.ui-widget-header,thead,th,.setting-tab,.code) {background-color:var(--nmt-surface);color:var(--nmt-ink);border-color:var(--nmt-line)}
+html[data-theme=dark] :is(button,input,select,textarea,.button,.input,.select,.ribbon-button,.ribbon-tool-button,.ribbon-split-button,.ribbon-dropdown) {background-color:var(--nmt-surface);color:var(--nmt-ink);border-color:var(--nmt-line)}
+html[data-theme=dark] :is(a,#app_info a,.link-btn) {color:var(--nmt-link)}
+html[data-theme=dark] :is(.ribbon-menu a,.ribbon-button,.ribbon-tool-button,.ribbon-button .caption) {color:var(--nmt-ink)}
+html[data-theme=dark] :is(button:hover,.button:hover,.ribbon-button:hover,.ribbon-tool-button:hover,.d-menu li a:hover,.tabs-holder li.active,.active-setting-tab,.file-list-item:hover,.file-list-item.selected) {background-color:var(--nmt-hint);color:var(--nmt-ink)}
+html[data-theme=dark] :is(td,th,.group,.box-body-item,.ribbon-menu .group,.file-list-item,.dtd-list-item) {border-color:var(--nmt-line)}
+html[data-theme=dark] :is(.h-splitter,.v-splitter,.h-splitter-menu) {background:var(--nmt-line)}
+html[data-theme=dark] .CodeMirror-cursor {border-left-color:var(--nmt-ink)}
+html[data-theme=dark] .CodeMirror-linenumber {color:var(--nmt-muted)}
+html[data-theme=dark] .CodeMirror-selected {background:#354a64}
+html[data-theme=dark] .CodeMirror-focused .CodeMirror-selected {background:#3b5878}
+html[data-theme=dark] :is(.CodeMirror-activeline-background,.CodeMirror-activeline-gutter) {background:#242e3c}
+html[data-theme=dark] #main_ui>nextmedtator-assist {background:var(--nmt-paper);border-color:var(--nmt-line)}
+html[data-theme=dark] dialog {background:var(--nmt-paper)!important;color:var(--nmt-ink)!important;border-color:var(--nmt-line)!important}
+html[data-theme=dark] dialog::backdrop {background:#0009}
+html[data-theme=dark] :focus-visible {outline-color:#86c5ff}
+html[data-theme=dark] input::placeholder {color:var(--nmt-muted)}
+html[data-theme=dark] .ribbon-menu .tabs-holder li {background:var(--nmt-surface);border-color:var(--nmt-line)}
+html[data-theme=dark] .ribbon-menu .tabs-holder li.active {background:var(--nmt-hint)}
+html[data-theme=dark] :is(.tag-list-row-actived,.tag-list-row-all-tags) {background:var(--nmt-hint);color:var(--nmt-ink)}
+html[data-theme=dark] :is(.ribbon-menu .group,.ribbon-menu .group .title) {border-color:var(--nmt-line)}
+html[data-theme=dark] :is(.doctag-table tr:first-child,.doctag-table .td-summary,.doctag-table .td-filename) {background:var(--nmt-surface);color:var(--nmt-ink)}
+html[data-theme=dark] .doctag-table .td-count-0 {background:var(--nmt-paper)!important;color:var(--nmt-muted)!important}
+html[data-theme=dark] .tag-list-row-count-0 {color:var(--nmt-muted)}
+/* Annotation colors encode tag identity. Keep their original pastel fills and dark text. */
+html[data-theme=dark] .CodeMirror :is([style*="background-color"],.cm-searching,.mark-tag,.mark-tag-info) {color:#111}
+@media print {html[data-theme=dark] body {background:white;color:black}}

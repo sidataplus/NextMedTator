@@ -31,6 +31,10 @@ The annotation application is a static site; a small Cloudflare Worker verifies 
 
 No model is required for manual annotation. Use the ribbon's **Sample** button for a small manual task, or load your own schema and text files.
 
+**Appearance:** dark mode follows your system setting by default. Choose
+**Settings → Appearance → System / Light / Dark** to override it. Your choice
+is saved in this browser and applies to the editor, ribbon, Assistance and dialogs.
+
 Safari opens the annotation workspace directly and uses ordinary file inputs and
 downloads. File System Access APIs are optional. The four-step Assistance panel
 shares the workspace's toolbar styling and labeled icons. Startup, XML/schema
