@@ -2,7 +2,7 @@
 import json,os
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
-from browser_support import chromium_path
+from browser_support import chromium_path,open_assist_sections
 
 ROOT=Path(__file__).resolve().parents[2];OUT=Path(os.environ.get('NMT_QUEUE_OUTPUT',ROOT/'temp/browser-validation/resumable-queue'));OUT.mkdir(parents=True,exist_ok=True)
 URL=os.environ.get('NMT_QUEUE_URL','http://127.0.0.1:4299/')
@@ -21,9 +21,9 @@ with sync_playwright() as p:
         page.evaluate("notes=>{const v=app_hotpot.vpp;v.$data.anns=[];for(const [i,n] of notes.entries()){const a=v.add_sample_txt_as_ann(n.text);a._filename='queue-'+i+'.txt.xml';}v.set_ann_idx(0);}",notes)
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work/p10.nmt-model.zip'))
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
-        page.get_by_text('Batch analysis · 0 selected',exact=True).click();page.get_by_test_id('assist-select-all').click()
+        page.get_by_text('Batch Analysis (0 selected)',exact=True).click();page.get_by_test_id('assist-select-all').click()
         page.get_by_test_id('assist-execution').select_option('wasm')
-        page.get_by_text('Local recovery & backups',exact=True).click();page.get_by_test_id('assist-recovery-enable').click()
+        open_assist_sections(page,'more','recovery');page.get_by_test_id('assist-recovery-enable').click()
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
         page.get_by_test_id('assist-analyze-selected').click()
         page.wait_for_function("()=>document.querySelector('nextmedtator-assist').assist.batchQueue?.notes.some(n=>n.status==='completed')",timeout=600000)
@@ -39,8 +39,8 @@ with sync_playwright() as p:
         page.screenshot(path=str(OUT/'01-paused.png'))
         print('Paused and checkpointed',saved_id,flush=True)
         page.reload();expect(page.locator('#start-screen')).to_be_hidden()
-        page.get_by_text('Local recovery & backups',exact=True).click();page.get_by_role('button',name='List saved corpora',exact=True).click()
-        page.get_by_role('button',name='Restore corpus '+saved_id,exact=True).click()
+        open_assist_sections(page,'more','recovery');page.get_by_role('button',name='List Recovery Copies',exact=True).click()
+        page.get_by_role('button',name='Restore '+saved_id,exact=True).click()
         print('Restore requested',flush=True)
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
         recovered=page.evaluate("document.querySelector('nextmedtator-assist').assist.batchQueue")
@@ -49,7 +49,7 @@ with sync_playwright() as p:
         # Recovery restores corpus and queue, not large model buffers.
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work/p10.nmt-model.zip'))
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
-        page.get_by_text('Batch analysis · 0 selected',exact=True).click()
+        page.get_by_text('Batch Analysis (0 selected)',exact=True).click()
         # A settings change must refuse resume without touching completed runs.
         page.get_by_test_id('assist-mode').select_option('auto');page.get_by_test_id('assist-batch-resume').click()
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)

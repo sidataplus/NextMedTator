@@ -55,7 +55,8 @@ export function validateModelManifest(m) {
     uniqueIds(m.variants);
     for (const v of m.variants) {
         invariant(['wasm', 'webgpu'].includes(v.backend), 'Unsupported execution provider');
-        invariant(typeof v.precision === 'string', 'Precision required');
+        invariant(v.precision !== 'int8', 'INT8 packages are no longer supported. Use the FP16 or FP32 package.');
+        invariant(['fp32', 'fp16'].includes(v.precision), 'Unsupported model precision');
         invariant(CODECS[v.codec], 'Unsupported tokenizer/decoder contract; needs an application release');
         invariant(m.files.some(f => f.path === v.graph && f.role === 'graph'), 'Variant graph missing');
         if (v.threshold != null)

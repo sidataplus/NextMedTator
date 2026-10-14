@@ -1,4 +1,4 @@
-"""Real download, GPU inference, FP32 fallback, INT8, review/export/reopen.
+"""Real download, GPU inference, FP32 fallback, review/export/reopen.
 
 Local mode serves immutable R2 bytes via Playwright routes (no output mocks).
 --live downloads the same packages from the deployed R2 catalog.
@@ -47,24 +47,19 @@ try:
             if args.choices_only:context.close();continue
             if args.reuse_installed:
                 page.get_by_test_id('assist-local-packages').locator(':scope > summary').click()
-                page.get_by_role('button',name='List installed models',exact=True).click()
-                page.get_by_role('button',name='Use installed '+profile+'-fp16-r2',exact=True).click()
+                page.get_by_role('button',name='List Installed Models',exact=True).click()
+                page.get_by_role('button',name='Use Installed '+profile+'-fp16-r2',exact=True).click()
             else:page.get_by_role('button',name='Download and install '+profile+'-fp16-r2',exact=True).click()
             page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy')
             assert page.evaluate('document.querySelector("nextmedtator-assist").assist.model?.manifest.variants[0].precision')=='fp16'
             reports=[]
-            for mode in ['fp16','fallback','int8']:
+            for mode in ['fp16','fallback']:
                 page.get_by_test_id('assist-practice-'+profile).click()
+                page.get_by_test_id('assist-mode').select_option('assisted')
                 if mode=='fallback':
                     def break_adapter(route):
                         response=route.fetch();route.fulfill(response=response,body="Object.defineProperty(navigator,'gpu',{value:{requestAdapter:async()=>null}});\n"+response.text())
                     context.route('**/onnx-worker.mjs',break_adapter)
-                elif mode=='int8':
-                    context.unroute('**/onnx-worker.mjs')
-                    page.get_by_test_id('assist-precision').select_option('int8')
-                    page.get_by_role('button',name='Download and install '+profile+'-int8-r2',exact=True).click()
-                    page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy')
-                    expect(page.get_by_test_id('assist-int8-notice')).to_be_visible()
                 began=time.perf_counter();page.get_by_test_id('assist-analyze').click()
                 page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy')
                 elapsed=time.perf_counter()-began
@@ -79,7 +74,7 @@ try:
                 page.get_by_test_id('assist-suggestion').first.evaluate("element=>element.scrollIntoView({block:'center'})")
                 page.screenshot(path=str(OUT/(profile+'-'+mode+'-suggestions.png')))
                 page.get_by_test_id('assist-accept').first.click();page.get_by_test_id('assist-add').click()
-                with page.expect_download() as download:page.get_by_role('button',name='Export evidence project',exact=True).click()
+                with page.expect_download() as download:page.get_by_role('button',name='Export Evidence Project',exact=True).click()
                 archive=OUT/(profile+'-'+mode+'.nmt.zip');download.value.save_as(str(archive))
                 page.get_by_test_id('open-workspace').click();page.get_by_label('Open project/files',exact=True).set_input_files(str(archive))
                 expect(page.get_by_test_id('human-record')).to_have_count(1)

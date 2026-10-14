@@ -127,7 +127,7 @@ covers selection, progress/ETA, per-note status, pause/resume, failed-note retry
 and the JSON completion report. Processing stays sequential and reuses one
 inference session. Queue metadata does not copy source text or predictions.
 
-Reload recovery is opt-in through **Local recovery & backups**. Checkpoints are
+Reload recovery is opt-in through **Recovery & Backup**. Checkpoints are
 requested every ten processed notes and on pause/completion. Wait for the
 verified checkpoint status before closing. A crash can require repeating work
 since the last checkpoint. Recovery never starts a model download or inference

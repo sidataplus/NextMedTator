@@ -15,7 +15,7 @@ export function thresholdControl({override, scope, variant, disabled, id, onChan
     const heading = document.createElement('div');
     heading.className = 'threshold-title';
     const label = document.createElement('label');
-    label.textContent = 'Suggestion threshold'; label.htmlFor = id;
+    label.textContent = 'Suggestion Threshold'; label.htmlFor = id;
     const input = document.createElement('input');
     input.id = id; input.type = 'range'; input.min = '0'; input.max = '1';
     // Preserve exact existing defaults; user movements select hundredths.
@@ -36,7 +36,7 @@ export function thresholdControl({override, scope, variant, disabled, id, onChan
     });
     heading.append(label, output);
     const reset = document.createElement('button');
-    reset.type = 'button'; reset.textContent = 'Use default'; reset.disabled = disabled || !!(variant?.clinicalRelease||variant?.fixedThreshold);
+    reset.type = 'button'; reset.textContent = 'Use Default'; reset.disabled = disabled || !!(variant?.clinicalRelease||variant?.fixedThreshold);
     reset.dataset.testid = id + '-reset';
     reset.addEventListener('click', () => onChange(null, true));
     const help = document.createElement('p');

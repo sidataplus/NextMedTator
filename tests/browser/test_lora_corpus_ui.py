@@ -158,7 +158,7 @@ def run():
             for index, reason in selections:
                 note, result = fixture['notes'][index], batch[index]
                 page.locator('.file-list-item-name', has_text=names[index]).click()
-                expect(page.get_by_test_id('assist-counts')).to_contain_text(f'{len(result["records"])} machine suggestions · 0 annotation tags')
+                expect(page.get_by_test_id('assist-counts')).to_contain_text(f'{len(result["records"])} suggestions · 0 tags')
                 page.get_by_test_id('assist-suggestion-view').select_option('compact')
                 expect(page.get_by_test_id('assist-compact-suggestion')).to_have_count(len(result['records']))
                 assert page.get_by_test_id('assist-suggestion').count() == 0
@@ -190,7 +190,7 @@ def run():
                 screenshot = f'{manifest["id"]}-{note["id"]}-suggestions.png'
                 page.screenshot(path=str(out/screenshot), full_page=True)
                 with page.expect_download() as download:
-                    page.get_by_role('button',name='Export evidence project',exact=True).click()
+                    page.get_by_role('button',name='Export Evidence Project',exact=True).click()
                 bundle = out/(note['id']+'-machine-evidence.nmt.zip')
                 download.value.save_as(str(bundle))
                 with zipfile.ZipFile(bundle) as archive:
@@ -210,13 +210,13 @@ def run():
                     # Real adapter inference in Auto mode must write without any
                     # individual acceptance or Apply-all click.
                     page.get_by_test_id('assist-analyze').click()
-                    expect(page.get_by_test_id('assist-message')).to_contain_text('Auto apply finished for 1 notes')
-                    application = 'Analyze note in Auto apply mode'
+                    expect(page.get_by_test_id('assist-message')).to_contain_text('Auto Apply finished for 1 files')
+                    application = 'Analyze File in Auto Apply mode'
                 else:
                     page.get_by_test_id('assist-apply-all').click()
                     expect(page.get_by_test_id('assist-message')).to_contain_text(f'Auto-applied {len(result["records"])} suggestions')
                     application = 'Apply all suggestions from existing run'
-                expect(page.get_by_test_id('assist-counts')).to_have_text(f'{len(result["records"])} machine suggestions · {len(result["records"])} annotation tags')
+                expect(page.get_by_test_id('assist-counts')).to_have_text(f'{len(result["records"])} suggestions · {len(result["records"])} tags')
                 expect(page.get_by_test_id('assist-auto-status')).to_have_text(f'{len(result["records"])} machine-applied tags · unreviewed')
                 expect(page.get_by_test_id('assist-apply-all')).to_be_disabled()
                 expect(page.locator('.tag-table tbody tr')).to_have_count(len(result['records']))
@@ -241,7 +241,7 @@ def run():
                 auto_screenshot = f'{manifest["id"]}-{note["id"]}-auto-applied.png'
                 page.screenshot(path=str(out/auto_screenshot),full_page=True)
                 with page.expect_download() as download:
-                    page.get_by_role('button',name='Export evidence project',exact=True).click()
+                    page.get_by_role('button',name='Export Evidence Project',exact=True).click()
                 auto_bundle = out/(note['id']+'-auto-applied.nmt.zip')
                 download.value.save_as(str(auto_bundle))
                 with zipfile.ZipFile(auto_bundle) as archive:

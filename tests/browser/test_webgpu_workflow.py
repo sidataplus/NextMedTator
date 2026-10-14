@@ -43,6 +43,7 @@ try:
                         route.fulfill(response=response,body="Object.defineProperty(navigator,'gpu',{value:{requestAdapter:async()=>null}});\n"+response.text())
                     context.route('**/onnx-worker.mjs',break_adapter)
                     page.get_by_test_id('assist-practice-'+profile).click()
+                page.get_by_test_id('assist-mode').select_option('assisted')
                 started=time.perf_counter();page.get_by_test_id('assist-analyze').click()
                 page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy')
                 duration=time.perf_counter()-started
@@ -59,7 +60,7 @@ try:
                 page.screenshot(path=str(OUT/(profile+'-'+mode+'-suggestions.png')))
                 page.get_by_test_id('assist-accept').first.click();page.get_by_test_id('assist-add').click()
                 assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length')==1
-                with page.expect_download() as download:page.get_by_role('button',name='Export evidence project',exact=True).click()
+                with page.expect_download() as download:page.get_by_role('button',name='Export Evidence Project',exact=True).click()
                 archive=OUT/(profile+'-'+mode+'.nmt.zip');download.value.save_as(str(archive))
                 page.get_by_test_id('open-workspace').click();page.get_by_label('Open project/files',exact=True).set_input_files(str(archive))
                 expect(page.get_by_test_id('human-record')).to_have_count(1)

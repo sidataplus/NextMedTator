@@ -44,8 +44,8 @@ with sync_playwright() as p:
             route.fulfill(status=403,content_type='application/json',headers={'Access-Control-Allow-Origin':'*'},body='{"error":"Test token rejected as expected"}')
         context.route('https://nmt-models.sidata.plus/grant',grant)
         page.get_by_test_id('assist-load-model').click()
-        expect(page.get_by_role('dialog',name='Verify model download')).to_be_visible()
-        with context.expect_page() as opened:page.get_by_role('button',name='Open verification tab').click()
+        expect(page.get_by_role('dialog',name='Verify Model Download')).to_be_visible()
+        with context.expect_page() as opened:page.get_by_role('button',name='Open Verification Tab').click()
         verification=opened.value;verification.wait_for_load_state()
         popup_errors=[];popup_console=[]
         verification.on('pageerror',lambda e:popup_errors.append(str(e)))
@@ -78,11 +78,11 @@ with sync_playwright() as p:
         assert len(grants)==1 and grants[0]==payload,grants
         expect(page.get_by_role('dialog')).to_have_count(0)
         # Retry and cancel are ordinary UI paths, with no retained worker/download.
-        page.get_by_test_id('assist-load-model').click();page.get_by_role('button',name='Cancel download').click()
+        page.get_by_test_id('assist-load-model').click();page.get_by_role('button',name='Cancel Download').click()
         expect(page.get_by_role('dialog')).to_have_count(0)
         assert len(grants)==1
         page.get_by_test_id('assist-load-model').click()
-        with context.expect_page() as opened:page.get_by_role('button',name='Open verification tab').click()
+        with context.expect_page() as opened:page.get_by_role('button',name='Open Verification Tab').click()
         verification=opened.value;verification.wait_for_load_state()
         verification.get_by_role('button',name='Close this tab').click()
         expect(page.get_by_role('dialog')).to_have_count(0)

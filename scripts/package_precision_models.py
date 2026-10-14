@@ -19,7 +19,7 @@ def main():
         base=original[index]
         source=ROOT/'work'/('final-r2-'+profile)/base['revision']
         native=json.loads((ROOT/'work'/(profile+'-export.json')).read_text(encoding='utf-8'))['native']
-        for precision in ['fp16','int8']:
+        for precision in ['fp16']:
             receipts=json.loads((ROOT/'temp/browser-validation/webgpu'/(profile+'-'+precision+'.json')).read_text())
             run=receipts['runs'][0]
             assert not run.get('error') and run['conformance']['pass']
@@ -28,16 +28,14 @@ def main():
             if 'modelSha256' in receipts:assert receipts['modelSha256']==metadata['sha256']
             cases=run['cases'][:len(native)]
             assert len(cases)==len(native)
-            if precision=='fp16':assert all(case['labels']['pass'] for case in run['cases'])
+            assert all(case['labels']['pass'] for case in run['cases'])
             manifest=copy.deepcopy(base['manifest']);manifest['id']=profile+'-'+precision+'-r2'
             variant=manifest['variants'][0]
-            variant.update(id=('webgpu-' if precision=='fp16' else 'wasm-')+precision,
-                           backend='webgpu' if precision=='fp16' else 'wasm',precision=precision,
+            variant.update(id='webgpu-'+precision,backend='webgpu',precision=precision,
                            conformanceScope='synthetic-precision-v1')
             manifest['lineage']['precisionConversion']={
                 'sourceManifestHash':base['revision'],'tool':'onnxruntime 1.23.2',
-                'method':'float16-keep-io-fp32' if precision=='fp16' else 'weight-only-int8-encoder-matmul-and-embeddings-fp32-activations',
-                'attributesPrecision':'fp32','experimental':precision=='int8'}
+                'method':'float16-keep-io-fp32','attributesPrecision':'fp32','experimental':False}
             staging=ROOT/'work/precision'/profile/('package-'+precision);staging.mkdir(exist_ok=True)
             for file in manifest['files']:
                 target=staging/file['path'];target.parent.mkdir(parents=True,exist_ok=True)

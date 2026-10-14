@@ -39,6 +39,7 @@ with sync_playwright() as p:
         long_text=('Fictional note 😀.\n\n'+''.join(f'Observation {i}. She is pacing, shouting and resisting morning care. No hallucinations.\n' for i in range(60))+'\nShe is pacing, shouting and resisting morning care. No hallucinations.  ')
         page.evaluate("text=>{const v=app_hotpot.vpp;v.$data.anns=[];const n=v.add_sample_txt_as_ann(text);n._filename='long-synthetic.txt.xml';v.set_ann_idx(0);}",long_text)
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}.nmt-model.zip'));idle(page)
+        page.get_by_test_id('assist-mode').select_option('assisted')
         start=time.perf_counter();page.get_by_test_id('assist-analyze').click();idle(page)
         result=page.evaluate("""()=>{const a=document.querySelector('nextmedtator-assist').assist,r=a.current().run,p=r.project.current.runs.find(x=>x.id===r.nativeRunId),text=Array.from(a.current().ann.text);return {status:r.status,backend:r.backend,records:r.records.length,windows:p.windows.length,coverage:p.coverage,offsetsExact:r.records.every(x=>x.anchor.every(s=>text.slice(s.start,s.end).join('')===s.text)),lastAnchor:Math.max(...r.records.map(r=>r.anchor[0].end)),length:text.length};}""")
         print(profile+' long result: '+json.dumps(result),flush=True)
@@ -69,7 +70,7 @@ with sync_playwright() as p:
         page.get_by_label('Filter suggestions by status').select_option('all')
         if not page.get_by_test_id('assist-unload-model').is_visible():section(page,'Model packages')
         # One package readback test also checks installed-on-disk versus loaded-in-RAM.
-        if profile=='p10':page.get_by_role('button',name='Install package for offline use',exact=True).click();idle(page)
+        if profile=='p10':page.get_by_role('button',name='Install for Offline Use',exact=True).click();idle(page)
         page.screenshot(path=str(OUT/f'{profile}-model-manager.png'))
         before_unload=meter.mark()
         page.get_by_test_id('assist-unload-model').click();assert not page.evaluate(STATE)['model']
@@ -77,17 +78,17 @@ with sync_playwright() as p:
         page.wait_for_timeout(30000);after_unload=meter.mark()
         if profile=='p10':
             page.get_by_test_id('assist-local-packages').locator(':scope > summary').click()
-            page.get_by_role('button',name='List installed models',exact=True).click();idle(page)
-            page.get_by_role('button',name='Use installed ',exact=False).click();idle(page)
+            page.get_by_role('button',name='List Installed Models',exact=True).click();idle(page)
+            page.get_by_role('button',name='Use Installed ',exact=False).click();idle(page)
         else:
             page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}.nmt-model.zip'));idle(page)
-        section(page,'Large collections · local disk')
+        section(page,'Large Collections')
         files=[{'name':f'{profile}-collection-{i:03}.txt','mimeType':'text/plain','buffer':('Fictional note. The patient has fever. She was agitated and wandered at night. '+str(i)).encode()} for i in range(NOTE_COUNT)]
         page.get_by_test_id('assist-collection-import').set_input_files(files);idle(page)
         assert page.evaluate(STATE)['notes']==NOTE_COUNT
         scroll_to(page,'assist-collection-memory')
         page.screenshot(path=str(OUT/f'{profile}-collection-import.png'))
-        section(page,'Batch analysis · 0 selected')
+        section(page,'Batch Analysis (0 selected)')
         page.get_by_test_id('assist-collection-open-note').first.click();idle(page)
         page.get_by_test_id('assist-select-all').click()
         page.get_by_test_id('assist-analyze-selected').click()
@@ -98,14 +99,14 @@ with sync_playwright() as p:
         page.reload();expect(page.locator('#start-screen')).to_be_hidden()
         # Reload must not materialize cached weights or start any inference.
         assert not page.evaluate(STATE)['model']
-        section(page,'Large collections · local disk');page.get_by_test_id('assist-collection-list').click();idle(page)
+        section(page,'Large Collections');page.get_by_test_id('assist-collection-list').click();idle(page)
         page.get_by_test_id('assist-collection-restore').click();idle(page)
         assert page.evaluate(STATE)['collection']==collection_id
         if not page.get_by_label('Import model package into the annotation assistance panel').is_visible():section(page,'Get a model package')
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}.nmt-model.zip'));idle(page)
         # Restore the queue's explicit review mode before resuming.
-        page.get_by_label('Workspace mode').select_option('assisted')
-        section(page,'Batch analysis · 0 selected')
+        page.get_by_label('Review mode').select_option('assisted')
+        section(page,'Batch Analysis (0 selected)')
         page.get_by_test_id('assist-batch-resume').click();idle(page)
         final=page.evaluate(STATE)
         assert all(n['status']=='completed' for n in final['queue']['notes']),final

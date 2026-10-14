@@ -1,7 +1,7 @@
 # Static distribution
 
 The public app is [nmt.sidata.plus](https://nmt.sidata.plus), served by Cloudflare
-Pages project `nextmedtator`. The two models' FP32, FP16, and experimental INT8 packages are delivered from
+Pages project `nextmedtator`. The two models' FP32 and FP16 packages are delivered from
 `nmt-models.sidata.plus` on R2. This deployment was exercised in desktop Chrome:
 explicit download, integrity verification, installed-package reload, WebGPU
 inference with automatic WASM fallback, export and reopen. Notes are processed

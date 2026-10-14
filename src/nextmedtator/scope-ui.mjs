@@ -13,8 +13,8 @@ function input(text,value,update,{id,area=false,type='text',...attrs}={}){
 }
 export function renderScopeEditor(assist){
     const section=node('section',null,{'aria-label':'Clinical suggestion scope',class:'scope'}),row=node('div',null,{class:'row'});
-    if(assist.model?.manifest.variants.some(v=>v.codec===ENTITY_ATTRIBUTES_CODEC)){section.append(node('p','This model retains its complete declared entity/attribute prompt. Clinical scope prompts and custom concept queries require another model.',{class:'muted'}));if(assist.scope)section.append(button('Clear clinical scope for this model',()=>assist.disableScope(),'scope-disable',assist.busy));return section;}
-    row.append(node('strong','Suggestion scope'),button(assist.scopeEditing?'Close editor':'Build / edit scope',()=>{assist.scopeEditing=!assist.scopeEditing;assist.render();},'scope-edit',assist.busy));
+    if(assist.model?.manifest.variants.some(v=>v.codec===ENTITY_ATTRIBUTES_CODEC)){section.append(node('p','This model retains its complete declared entity/attribute prompt. Clinical scope prompts and custom concept queries require another model.',{class:'muted'}));if(assist.scope)section.append(button('Clear Scope',()=>assist.disableScope(),'scope-disable',assist.busy));return section;}
+    row.append(node('strong','Suggestion Scope'),button(assist.scopeEditing?'Close Editor':'Edit Scope',()=>{assist.scopeEditing=!assist.scopeEditing;assist.render();},'scope-edit',assist.busy));
     section.append(row,node('p',assist.scope?`${assist.scope.semanticSchema.name} · ${assist.scope.semanticSchema.families.length} families · ${assist.scope.semanticSchema.concepts.length} custom concepts`:'Using the loaded annotation schema. Build a clinical scope to customize targets within the training grammar.',{class:'muted','data-testid':'scope-active'}));
     if(!assist.scopeEditing)return section;
     const draft=assist.scopeDraft,s=draft.semanticSchema,codec=assist.model?.manifest.variants[0]?.codec;
@@ -22,31 +22,31 @@ export function renderScopeEditor(assist){
     section.append(node('p','Load or generate a compatible annotation schema, define your scope, then Apply scope and analyze. Custom targets can reduce recall; compare a broad run when checking for omissions.',{class:'muted'}));
     const presets=node('select',null,{'aria-label':'Broad starting preset','data-testid':'scope-preset',disabled:assist.busy});
     presets.append(node('option','Choose a broad starting preset',{value:''}));for(const p of SCOPE_PRESETS)presets.append(node('option',p.name,{value:p.id}));
-    presets.onchange=()=>{if(!presets.value)return;assist.scopeDraft=presetScope(presets.value,codec,assist.model?.manifest.variants[0]?.clinicalRelease?assist.model.manifest.variants[0].threshold:null);assist.render();};section.append(label('Broad starting preset',presets));
-    section.append(input('Scope name',s.name,v=>s.name=v,{id:'scope-name',maxlength:100}),input('Scope version',s.version,v=>s.version=v,{id:'scope-version',maxlength:40}));
+    presets.onchange=()=>{if(!presets.value)return;assist.scopeDraft=presetScope(presets.value,codec,assist.model?.manifest.variants[0]?.clinicalRelease?assist.model.manifest.variants[0].threshold:null);assist.render();};section.append(label('Starting Preset',presets));
+    section.append(input('Scope Name',s.name,v=>s.name=v,{id:'scope-name',maxlength:100}),input('Scope Version',s.version,v=>s.version=v,{id:'scope-version',maxlength:40}));
     for(const [index,task]of s.tasks.entries())section.append(input(index?'Additional scope definition':'Scope definition',task.definition,v=>task.definition=v,{id:index?'scope-additional-definition':'scope-definition',area:true,rows:3,maxlength:1000}));
     section.append(node('p','Descriptions can state included concepts and exclusions. They guide the model; relevance still needs review.',{class:'muted'}));
     section.append(thresholdControl({override:draft.threshold,variant:assist.model?.manifest.variants[0],disabled:assist.busy,id:'scope-threshold',onChange:(value,render)=>{draft.threshold=value==null?suggestionThreshold(null,null,assist.model?.manifest.variants[0]).threshold:Number(value);if(render)assist.render();}}));
-    const families=node('fieldset');families.append(node('legend','Training record families'));
+    const families=node('fieldset');families.append(node('legend','Record Families'));
     for(const [family,title]of Object.entries(FAMILY_TITLES)){
         const check=node('input',null,{type:'checkbox','aria-label':title,'data-testid':'scope-family-'+family});check.checked=s.families.includes(family);
         check.onchange=()=>{s.families=check.checked?[...s.families,family]:s.families.filter(f=>f!==family);assist.render();};
         const row=node('label',null,{class:'check'});row.append(check,node('span',title));families.append(row);
     }section.append(families);
-    const concepts=node('div');concepts.append(node('h3','Your concepts'),node('p','Each concept uses an existing family. A family with concepts searches those concepts; a family without concepts uses its broad clinical category.',{class:'muted'}));
+    const concepts=node('div');concepts.append(node('h3','Your Concepts'),node('p','Each concept uses an existing family. A family with concepts searches those concepts; a family without concepts uses its broad clinical category.',{class:'muted'}));
     for(const [index,concept]of s.concepts.entries()){
         const card=node('div',null,{class:'card','data-testid':'scope-concept'});
-        card.append(input('Concept identifier',concept.concept_id,v=>concept.concept_id=v,{id:'scope-concept-id',maxlength:96}));
+        card.append(input('Concept ID',concept.concept_id,v=>concept.concept_id=v,{id:'scope-concept-id',maxlength:96}));
         const family=node('select',null,{'aria-label':'Concept record family','data-testid':'scope-concept-family'});
         for(const f of s.families)family.append(node('option',FAMILY_TITLES[f],{value:f}));family.value=concept.family;
-        family.onchange=()=>concept.family=family.value;card.append(label('Record family',family));
-        card.append(input('Concept description',concept.description,v=>concept.description=v,{id:'scope-concept-description',area:true,rows:3,maxlength:1000}),
-            input('Aliases / examples (one per line)',concept.aliases.join('\n'),v=>concept.aliases=v.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),{id:'scope-concept-aliases',area:true,rows:2}),
-            button('Remove concept',()=>{s.concepts.splice(index,1);assist.render();},'scope-remove-concept'));
+        family.onchange=()=>concept.family=family.value;card.append(label('Record Family',family));
+        card.append(input('Concept Description',concept.description,v=>concept.description=v,{id:'scope-concept-description',area:true,rows:3,maxlength:1000}),
+            input('Aliases / Examples (one per line)',concept.aliases.join('\n'),v=>concept.aliases=v.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),{id:'scope-concept-aliases',area:true,rows:2}),
+            button('Remove Concept',()=>{s.concepts.splice(index,1);assist.render();},'scope-remove-concept'));
         concepts.append(card);
     }
-    concepts.append(button('Add concept',()=>{let n=1;while(s.concepts.some(c=>c.concept_id===`concept_${n}`))n++;s.concepts.push({concept_id:`concept_${n}`,family:s.families[0]??'condition_occurrence',description:'',aliases:[]});assist.render();},'scope-add-concept',s.concepts.length>=48));section.append(concepts);
-    const fields=node('details');fields.append(node('summary','Training fields and decoder support'));
+    concepts.append(button('Add Concept',()=>{let n=1;while(s.concepts.some(c=>c.concept_id===`concept_${n}`))n++;s.concepts.push({concept_id:`concept_${n}`,family:s.families[0]??'condition_occurrence',description:'',aliases:[]});assist.render();},'scope-add-concept',s.concepts.length>=48));section.append(concepts);
+    const fields=node('details');fields.append(node('summary','Fields and Decoder Support'));
     for(const family of s.families){
         const box=node('fieldset');box.append(node('legend',FAMILY_TITLES[family]),node('p',`Anchor: ${CLINICAL_CONTRACT.families[family].anchor} (always retained as the exact native span).`,{class:'muted'}));
         for(const [name,definition]of Object.entries(CLINICAL_CONTRACT.families[family].fields)){
@@ -59,18 +59,18 @@ export function renderScopeEditor(assist){
         }fields.append(box);
     }section.append(fields);
     const actions=node('div',null,{class:'row'});
-    actions.append(button('Apply scope',()=>assist.perform(()=>assist.applyScope()),'scope-apply',assist.busy),
-        button('Use loaded schema',()=>assist.disableScope(),'scope-disable',assist.busy));section.append(actions);
+    actions.append(button('Apply Scope',()=>assist.perform(()=>assist.applyScope()),'scope-apply',assist.busy),
+        button('Use Loaded Schema',()=>assist.disableScope(),'scope-disable',assist.busy));section.append(actions);
     section.append(node('p','Applying a scope affects the next analysis. Existing predictions retain their original scope.',{class:'muted'}));
     const schemaActions=node('div',null,{class:'row'});
-    schemaActions.append(button('Use clinical annotation schema',()=>assist.perform(()=>assist.useScopeSchema()),'scope-use-schema',assist.busy),
-        button('Download annotation schema',()=>assist.perform(()=>localDownload(new TextEncoder().encode(nativeScopeDTD(draft)),'clinical-evidence.dtd','text/plain')),'scope-download-dtd',assist.busy));section.append(schemaActions);
-    section.append(node('p','Use the generated schema on unannotated notes. For an existing annotation task, download it and use the usual schema controls or a reviewed migration.',{class:'muted'}));
+    schemaActions.append(button('Use Clinical Schema',()=>assist.perform(()=>assist.useScopeSchema()),'scope-use-schema',assist.busy),
+        button('Download Schema',()=>assist.perform(()=>localDownload(new TextEncoder().encode(nativeScopeDTD(draft)),'clinical-evidence.dtd','text/plain')),'scope-download-dtd',assist.busy));section.append(schemaActions);
+    section.append(node('p','Use the generated schema on unannotated files. For an existing annotation task, download it and use the usual schema controls or a reviewed migration.',{class:'muted'}));
     const share=node('div',null,{class:'row'});
-    share.append(button('Export scope',()=>assist.perform(()=>assist.exportScope(false)),'scope-export',!assist.scope||assist.busy),
-        button('Export training semantic schema',()=>assist.perform(()=>assist.exportScope(true)),'scope-export-semantic',!assist.scope||assist.busy));section.append(share);
+    share.append(button('Export Scope',()=>assist.perform(()=>assist.exportScope(false)),'scope-export',!assist.scope||assist.busy),
+        button('Export Semantic Schema',()=>assist.perform(()=>assist.exportScope(true)),'scope-export-semantic',!assist.scope||assist.busy));section.append(share);
     const upload=node('input',null,{type:'file',accept:'.json','aria-label':'Import scope or training semantic schema','data-testid':'scope-import'});
-    upload.onchange=()=>{const file=upload.files?.[0];if(file)assist.perform(async()=>assist.importScope(jsonParse(await file.text())));};section.append(label('Import scope or training semantic schema',upload));
+    upload.onchange=()=>{const file=upload.files?.[0];if(file)assist.perform(async()=>assist.importScope(jsonParse(await file.text())));};section.append(label('Import Scope (.json)',upload));
     section.append(node('a','Pinned training grammar',{href:`https://github.com/${CLINICAL_CONTRACT.repository}/blob/${CLINICAL_CONTRACT.revision}/docs/GRAMMAR.md`,target:'_blank',rel:'noopener noreferrer'}));
     return section;
 }

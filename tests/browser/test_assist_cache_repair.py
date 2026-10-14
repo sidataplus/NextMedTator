@@ -68,13 +68,13 @@ def run():
             )
 
             load = page.get_by_test_id("assist-load-model")
-            expect(load).to_have_text("Load installed " + ("P10" if profile == "p10" else "BPSD"))
+            expect(load).to_have_text("Load Installed " + ("P10" if profile == "p10" else "BPSD"))
             load.click()
             page.wait_for_function(
                 "() => !document.querySelector('nextmedtator-assist').assist.busy"
             )
 
-            repair_label = "Repair download " + ("P10" if profile == "p10" else "BPSD") + " · FP32"
+            repair_label = "Repair " + ("P10" if profile == "p10" else "BPSD") + " (FP32)"
             expect(page.get_by_test_id("assist-load-model")).to_have_text(repair_label)
             expect(page.get_by_test_id("assist-message")).to_contain_text("Injected installed-cache corruption")
             assert page.evaluate("window.__repairReadAttempts") == 1
@@ -90,11 +90,11 @@ def run():
             # The repair action must enter the real verification gate. The test
             # cancels there, before any grant or model artifact request.
             page.get_by_test_id("assist-load-model").click()
-            dialog = page.get_by_role("dialog", name="Verify model download")
+            dialog = page.get_by_role("dialog", name="Verify Model Download")
             expect(dialog).to_be_visible()
-            expect(dialog.get_by_role("button", name="Cancel download")).to_be_visible()
-            expect(dialog.get_by_role("button", name="Open verification tab")).to_be_visible()
-            dialog.get_by_role("button", name="Cancel download").click()
+            expect(dialog.get_by_role("button", name="Cancel Download")).to_be_visible()
+            expect(dialog.get_by_role("button", name="Open Verification Tab")).to_be_visible()
+            dialog.get_by_role("button", name="Cancel Download").click()
             page.wait_for_function(
                 "() => !document.querySelector('nextmedtator-assist').assist.busy"
             )
@@ -109,14 +109,14 @@ def run():
                 assist.render();
             }""")
             expect(page.get_by_test_id("assist-load-model")).to_have_text(
-                "Load installed " + ("P10" if profile == "p10" else "BPSD")
+                "Load Installed " + ("P10" if profile == "p10" else "BPSD")
             )
             page.get_by_test_id("assist-load-model").click()
             page.wait_for_function(
                 "() => !document.querySelector('nextmedtator-assist').assist.busy"
             )
             expect(page.get_by_test_id("assist-load-model")).to_have_text(
-                "Download again " + ("P10" if profile == "p10" else "BPSD") + " · FP32"
+                "Re-download " + ("P10" if profile == "p10" else "BPSD") + " (FP32)"
             )
             expect(page.get_by_test_id("assist-message")).to_contain_text(
                 "missing from local storage"
@@ -134,7 +134,7 @@ def run():
                 "() => !document.querySelector('nextmedtator-assist').assist.busy"
             )
             expect(page.get_by_test_id("assist-load-model")).to_have_text(
-                "Load installed " + ("P10" if profile == "p10" else "BPSD")
+                "Load Installed " + ("P10" if profile == "p10" else "BPSD")
             )
             expect(page.get_by_test_id("assist-message")).to_contain_text(
                 "Browser could not save the model (UnknownError)"
@@ -153,7 +153,7 @@ def run():
             )
             page.evaluate("document.querySelector('nextmedtator-assist').assist.unloadModel()")
             expect(page.get_by_test_id("assist-load-model")).to_have_text(
-                "Load installed " + ("P10" if profile == "p10" else "BPSD")
+                "Load Installed " + ("P10" if profile == "p10" else "BPSD")
             )
 
             # A valid in-memory package can replace a corrupt installation
@@ -172,13 +172,13 @@ def run():
             options=page.get_by_test_id("assist-download-options")
             if options.get_attribute("open") is None:
                 options.locator(":scope > summary").click()
-            page.get_by_role("button", name="Install package for offline use").click()
+            page.get_by_role("button", name="Install for Offline Use").click()
             page.wait_for_function(
                 "() => !document.querySelector('nextmedtator-assist').assist.busy"
             )
             page.get_by_test_id("assist-unload-model").click()
             expect(page.get_by_test_id("assist-load-model")).to_have_text(
-                "Load installed " + ("P10" if profile == "p10" else "BPSD")
+                "Load Installed " + ("P10" if profile == "p10" else "BPSD")
             )
             assert page.evaluate(
                 "JSON.stringify(app_hotpot.vpp.$data.anns[app_hotpot.vpp.$data.ann_idx].tags)"
@@ -206,10 +206,10 @@ def run():
                 }""",
                 profile,
             )
-            repair_label = "Repair download " + ("P10" if profile == "p10" else "BPSD") + " · FP32"
+            repair_label = "Repair " + ("P10" if profile == "p10" else "BPSD") + " (FP32)"
             expect(page.get_by_test_id("assist-load-model")).to_have_text(repair_label)
             page.get_by_test_id("assist-load-model").click()
-            malformed_dialog = page.get_by_role("dialog", name="Verify model download")
+            malformed_dialog = page.get_by_role("dialog", name="Verify Model Download")
             expect(malformed_dialog).to_be_visible()
             assert page.evaluate("window.__malformedVariantReads") == 0
             assert page.evaluate(
@@ -218,7 +218,7 @@ def run():
             assert page.evaluate(
                 "JSON.stringify(app_hotpot.vpp.$data.anns[app_hotpot.vpp.$data.ann_idx].tags)"
             ) == page.evaluate("window.__repairTagsBefore")
-            malformed_dialog.get_by_role("button", name="Cancel download").click()
+            malformed_dialog.get_by_role("button", name="Cancel Download").click()
             page.wait_for_function(
                 "() => !document.querySelector('nextmedtator-assist').assist.busy"
             )

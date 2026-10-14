@@ -314,11 +314,11 @@ export function renderModelSelectionControls({selection, draftMode, draft = null
     const root = document.createElement('section');
     root.className = 'model-selection';
     const heading = document.createElement('h3');
-    heading.textContent = compact?'2. Choose a model':'Auto annotation model';
+    heading.textContent = compact?'2. Choose a Model':'Auto Annotation Model';
     root.append(heading);
 
     const label = document.createElement('label');
-    label.textContent = 'Model source';
+    label.textContent = 'Model Source';
     label.htmlFor = `${prefix}-source`;
     const select = document.createElement('select');
     select.id = `${prefix}-source`;

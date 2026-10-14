@@ -41,7 +41,7 @@ test('batch CPU limits respect isolation and available cores; ETA starts after t
     assert.equal(wasmThreadCount({...device,...bpsd,userAgent:firefox}),7,'Firefox keeps its default limit');
     assert.equal(wasmThreadCount({...device,codec:'gliner25-records-v1',fixedWords:1024,userAgent:safari}),7,'other codecs keep their default limit');
     assert.match(batchStatus({completed:0,total:10,started:0,now:1000}).detail,/Estimating/);
-    assert.deepEqual(batchStatus({completed:2,total:10,started:0,now:4000}),{percent:20,detail:'2 / 10 notes completed · About 16s remaining'});
+    assert.deepEqual(batchStatus({completed:2,total:10,started:0,now:4000}),{percent:20,detail:'2 / 10 files completed · About 16s remaining'});
 });
 
 test('single-note and batch sessions default to cores minus one and reject invalid limits',async t=>{

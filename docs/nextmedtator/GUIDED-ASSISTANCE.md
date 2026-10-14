@@ -23,6 +23,8 @@ in [BULK-RESOURCES.md](BULK-RESOURCES.md).
 
 - P10 is the first model and the initial default; saved explicit choices persist.
 - Four steps appear in order: open a note, choose a model, load it, analyze/review.
+- Review Mode defaults to Auto Apply, including after a sample loads. The
+  selected mode's description sits directly under the dropdown.
 - Model options and More tools start collapsed. Tests cover 1440- and 1024-pixel
   windows, no horizontal panel overflow, keyboard disclosure controls and scrolling.
 - Startup and model/precision selection start no model transfer. Loading is explicit.

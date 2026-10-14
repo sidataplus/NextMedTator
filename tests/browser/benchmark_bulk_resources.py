@@ -40,7 +40,7 @@ with sync_playwright() as p:
                 page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}.nmt-model.zip'))
                 page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy")
                 page.wait_for_timeout(10000);model_ready=meter.mark()
-                page.get_by_text('Batch analysis · 0 selected',exact=True).click();page.get_by_test_id('assist-select-all').click()
+                page.get_by_text('Batch Analysis (0 selected)',exact=True).click();page.get_by_test_id('assist-select-all').click()
                 page.get_by_test_id('assist-batch-cpu').select_option('balanced' if mode=='balanced' else 'low')
                 page.get_by_test_id('assist-execution').select_option('auto' if mode=='gpu' else 'wasm')
                 start=meter.mark();page.get_by_test_id('assist-analyze-selected').click();last=-1;deadline=time.monotonic()+1800

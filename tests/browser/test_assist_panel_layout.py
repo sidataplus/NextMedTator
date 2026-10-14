@@ -23,9 +23,20 @@ try:
         batch=page.get_by_test_id('assist-batch');batch.locator('summary').click();batch.locator('input[type=checkbox]').first.check()
         expect(batch).to_have_attribute('open','')
         expect(batch.locator('summary')).to_contain_text('1 selected')
-        page.get_by_test_id('assist-mode').select_option('assisted');expect(batch).to_have_attribute('open','')
+        mode=page.get_by_test_id('assist-mode');description=page.get_by_test_id('assist-mode-description')
+        expect(mode).to_have_value('auto')
+        assert mode.locator('option').evaluate_all('o=>o.map(x=>x.value)')==['auto','assisted','blind']
+        expect(description).to_have_text('Adds model predictions as unreviewed tags.')
+        placement=mode.evaluate('''m=>{const label=m.closest('label'),next=label.nextElementSibling,bar=label.parentElement.querySelector('.action-bar');return {next:next?.dataset.testid,described:m.getAttribute('aria-describedby')===next?.id,barText:bar.textContent,gap:next.getBoundingClientRect().top-m.getBoundingClientRect().bottom};}''')
+        assert placement['next']=='assist-mode-description' and placement['described'],placement
+        assert 'unreviewed' not in placement['barText'] and 'Review each suggestion' not in placement['barText'],placement
+        assert 0<=placement['gap']<=8,placement
+        mode.select_option('assisted');expect(batch).to_have_attribute('open','')
+        expect(description).to_have_text('Review each suggestion before adding it as a tag.')
+        mode.select_option('blind');expect(description).to_have_text('Freeze your own annotation before revealing suggestions.')
+        mode.select_option('assisted')
         page.get_by_test_id('assist-more').locator(':scope > summary').click()
-        options=page.get_by_test_id('assist-options');options.locator('summary').click();options.get_by_role('button',name='Use default',exact=True).click();expect(options).to_have_attribute('open','')
+        options=page.get_by_test_id('assist-options');options.locator('summary').click();options.get_by_role('button',name='Use Default',exact=True).click();expect(options).to_have_attribute('open','')
         options.locator('summary').click();batch.locator('summary').click()
         page.get_by_test_id('assist-recovery').scroll_into_view_if_needed()
         before=page.evaluate('document.querySelector("nextmedtator-assist").shadowRoot.querySelector(".body").scrollTop')
@@ -46,12 +57,12 @@ try:
         if practice.get_attribute('open') is None:practice.locator('summary').click()
         page.once('dialog',lambda d:d.accept());page.get_by_test_id('assist-practice-p10').click()
         expect(page.get_by_test_id('assist-document')).to_have_text('p10-practice.txt.xml')
-        expect(page.get_by_test_id('assist-mode')).to_have_value('assisted')
+        expect(page.get_by_test_id('assist-mode')).to_have_value('auto')
         page.once('dialog',lambda d:d.dismiss());page.get_by_test_id('assist-practice-bpsd').click()
         expect(page.get_by_test_id('assist-document')).to_have_text('p10-practice.txt.xml')
         assert page.evaluate('app_hotpot.vpp.$data.anns.length')==1
         assert not errors,errors
         assert not any('nmt-models.sidata.plus' in u or 'huggingface.co' in u for u in requests),requests
-        (out/'report.json').write_text(json.dumps({'sizes':sizes,'disclosureStateRetained':True,'preconditionsDisableAnalyze':True,'modelDownloads':0,'errors':errors},indent=2),encoding='utf-8')
+        (out/'report.json').write_text(json.dumps({'sizes':sizes,'disclosureStateRetained':True,'preconditionsDisableAnalyze':True,'defaultMode':'auto','modeDescriptionUnderSelect':True,'modelDownloads':0,'errors':errors},indent=2),encoding='utf-8')
         print('Assistance layout, disclosure state, action preconditions and no-download startup passed',flush=True);browser.close()
 finally:server.terminate();server.wait(timeout=5)

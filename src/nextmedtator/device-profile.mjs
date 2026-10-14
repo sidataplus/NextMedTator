@@ -16,5 +16,5 @@ export function deviceRecommendation(device,{execution='auto'}={}){
     const constrained=device.memory!==null&&device.memory<=4;
     return {precision,title:`Recommended: ${precision.toUpperCase()} ${precision==='fp16'?'for WebGPU':'for compatibility'}`,
         reason:precision==='fp16'?'Your browser exposes WebGPU with FP16 support. About half the FP32 download; actual speed depends on the device.':'Original precision supports WASM CPU inference'+(device.gpu&&execution!=='wasm'?' and WebGPU.':'.'),
-        caution:constrained?'This browser reports limited memory. Try one short note first; smaller downloads do not guarantee lower runtime RAM.':null};
+        caution:constrained?'This browser reports limited memory. Try one short file first; smaller downloads do not guarantee lower runtime RAM.':null};
 }

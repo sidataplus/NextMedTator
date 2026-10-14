@@ -54,9 +54,9 @@ with sync_playwright() as p:
   hit=next(t for t in actual if t['tag']==row['family'] and t['text']==row['anchor'][0]['text'])
   for field,value in row['fields'].items():assert hit[field]==value
  page.screenshot(path=str(out/'02-original-ui-inference.png'))
- with page.expect_download() as download:page.get_by_role('button',name='Export evidence project',exact=True).click()
+ with page.expect_download() as download:page.get_by_role('button',name='Export Evidence Project',exact=True).click()
  downloaded=out/'reviewed.nmt.zip';download.value.save_as(str(downloaded))
- page.get_by_role('button',name='Open evidence project',exact=True).click()
+ page.get_by_role('button',name='Open Evidence Project',exact=True).click()
  page.get_by_label('Open project/files',exact=True).set_input_files(str(downloaded));expect(page.get_by_test_id('human-record')).to_have_count(len(actual))
  page.screenshot(path=str(out/'03-export-reopened.png'))
  assert not errors,errors

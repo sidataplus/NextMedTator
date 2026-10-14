@@ -1,7 +1,7 @@
 # Current model packages and static release
 
-Preview.7 adds explicit FP16 and experimental INT8 weight downloads for both
-models. Original FP32 remains the default and the automatic WASM fallback.
+Preview.7 added explicit FP16 and experimental INT8 weight downloads for both
+models. INT8 was removed on 2026-10-14; FP16 remains. Original FP32 remains the default and the automatic WASM fallback.
 See [precision choices, download behavior, and measured output differences](PRECISION.md).
 
 The compiled site's `index.html` opens the original MedTator annotation UI.

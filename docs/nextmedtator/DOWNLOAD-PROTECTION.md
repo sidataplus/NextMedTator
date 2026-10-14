@@ -11,11 +11,11 @@ inference and receives no notes, annotations, or device capability profile.
    but creates no GPU device or model session.
 2. FP16 is recommended when WebGPU exposes `shader-f16`; otherwise FP32 is
    recommended. Explicit CPU selection recommends FP32. Overrides and device
-   details are in **Model options**. INT8 is experimental and never recommended.
+   details are in **Model Options**, which offers FP32 and FP16.
 3. Click **Download P10/BPSD** to request catalog metadata and the selected package.
-   Matching installed packages instead offer **Load installed**, with no transfer.
+   Matching installed packages instead offer **Load Installed**, with no transfer.
 4. Download opens an on-demand Turnstile check. Chrome uses a credentialless
-   frame. Firefox/Safari offer **Open verification tab**. This same-origin page
+   frame. Firefox/Safari offer **Open Verification Tab**. This same-origin page
    embeds the existing protected model-host check without app COEP isolation.
    A random per-request BroadcastChannel carries the token back in memory;
    matching origin, source and nonce are required. The app acknowledges receipt,
@@ -23,7 +23,7 @@ inference and receives no notes, annotations, or device capability profile.
    either tab. The annotation app retains cross-origin isolation for WASM.
 
 5. Download bytes and measured ETA are followed by integrity verification and
-   IndexedDB installation/read-back verification. **Analyze note** then prepares
+   IndexedDB installation/read-back verification. **Analyze File** then prepares
    the worker, checks files, builds the tokenizer, compiles each graph, and runs
    reference checks. Initialization is indeterminate; no invented ETA is shown.
 
@@ -83,7 +83,7 @@ validated the unchanged Worker and embedded Chrome path.
   local installation/read-back hashes → two synthetic-note WebGPU suggestions.
 - Real BPSD FP32 local import → initialization cancellation → retry → five
   synthetic-note WASM suggestions. The worker is released after both stop and finish.
-- Browser tests cover CPU recommendations, INT8 disclosure, no downloads on
+- Browser tests cover CPU recommendations, the FP32/FP16 choices, no downloads on
   startup/selection, an inert verification-frame cancellation, and named loading stages.
 - Worker unit tests reject bad signatures, expired grants, wrong IP/revision,
   wrong Turnstile action/hostname/success, malformed responses, and oversized ranges.

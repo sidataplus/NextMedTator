@@ -257,6 +257,7 @@ def run_profile(playwright, browser, profile, precision, models_dir, url, entry,
             "()=>{const a=document.querySelector('nextmedtator-assist').assist;"
             "a.executionPreference='webgpu';a.render();}"
         )
+        page.get_by_test_id("assist-mode").select_option("assisted")
         phase = time.perf_counter()
         page.get_by_test_id("assist-analyze").click()
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy")
@@ -334,14 +335,14 @@ def run_profile(playwright, browser, profile, precision, models_dir, url, entry,
 
         phase = time.perf_counter()
         with page.expect_download() as download:
-            page.get_by_role("button", name="Export evidence project", exact=True).click()
+            page.get_by_role("button", name="Export Evidence Project", exact=True).click()
         archive = OUTPUT_DIR / f"{prefix}-accepted-evidence.nmt.zip"
         download.value.save_as(str(archive))
         result["export"] = {"path": str(archive), "bytes": archive.stat().st_size}
         more_tools = page.get_by_test_id("assist-more")
         if more_tools.get_attribute("open") is None:
             more_tools.locator(":scope > summary").click()
-        page.get_by_role("button", name="Open evidence project", exact=True).click()
+        page.get_by_role("button", name="Open Evidence Project", exact=True).click()
         page.get_by_label("Open project/files", exact=True).set_input_files(str(archive))
         expect(page.get_by_test_id("human-record")).to_have_count(2)
         reopened = page.evaluate(

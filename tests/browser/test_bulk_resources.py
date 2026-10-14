@@ -42,7 +42,7 @@ with sync_playwright() as p:
         page.evaluate("notes=>{const v=app_hotpot.vpp;v.$data.anns=[];for(const [i,n] of notes.entries()){const a=v.add_sample_txt_as_ann(n.text);a._filename='synthetic-'+i+'.txt.xml';}v.set_ann_idx(0);}",notes)
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}.nmt-model.zip'))
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy")
-        page.get_by_text('Batch analysis · 0 selected',exact=True).click()
+        page.get_by_text('Batch Analysis (0 selected)',exact=True).click()
         expect(page.get_by_test_id('assist-batch-cpu')).to_have_value('auto')
         page.get_by_test_id('assist-select-all').click()
         baseline=None
@@ -88,11 +88,11 @@ with sync_playwright() as p:
         # Enough notes to verify DOM work is bounded independently of corpus size.
         page.evaluate("()=>{const v=app_hotpot.vpp;for(let i=4;i<121;i++){const a=v.add_sample_txt_as_ann('Fictional note.');a._filename='pagination-'+i+'.txt.xml';}v.set_ann_idx(0);}")
         page.get_by_test_id('assist-select-all').click()
-        docs=page.get_by_label('Documents to analyze',exact=True)
+        docs=page.get_by_label('Files to analyze',exact=True)
         expect(docs.get_by_role('checkbox')).to_have_count(50)
-        page.get_by_role('button',name='Next notes',exact=True).click()
+        page.get_by_role('button',name='Next files',exact=True).click()
         expect(docs.get_by_role('checkbox')).to_have_count(50)
-        page.get_by_role('button',name='Next notes',exact=True).click()
+        page.get_by_role('button',name='Next files',exact=True).click()
         expect(docs.get_by_role('checkbox')).to_have_count(21)
         expect(docs).to_contain_text('121 selected')
         page.get_by_test_id('assist-select-none').click()

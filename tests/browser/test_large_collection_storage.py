@@ -42,10 +42,10 @@ with sync_playwright() as p:
       return {notes:10000,bytes:files.reduce((n,f)=>n+f.size,0),backupBytes:backup.size,interruptedQueueRecovered:true,concurrentSaveRejected:conflict,backupRoundTrip:true,truncatedBackupRejected:true,editDuringSavePreserved:true,noteHistoriesLoaded:a.projects.size,editorNotes:app_hotpot.vpp.$data.anns.length};
     }""")
     end=meter.mark();result['resources']=meter.summarize(start,end)
-    page.get_by_text('Batch analysis · 0 selected',exact=True).click();expect(page.get_by_label('Documents to analyze').get_by_role('checkbox')).to_have_count(50)
+    page.get_by_text('Batch Analysis (0 selected)',exact=True).click();expect(page.get_by_label('Files to analyze').get_by_role('checkbox')).to_have_count(50)
     page.get_by_test_id('assist-batch-report').scroll_into_view_if_needed()
     page.screenshot(path=str(OUT/'10000-notes.png'))
-    page.get_by_text('Large collections · local disk',exact=True).click();page.get_by_test_id('assist-collection-memory').scroll_into_view_if_needed()
+    page.get_by_text('Large Collections',exact=True).click();page.get_by_test_id('assist-collection-memory').scroll_into_view_if_needed()
     page.screenshot(path=str(OUT/'10000-note-storage.png'))
     meter.stop();result['measurementErrors']=meter.errors;result['browser']=browser.version
     (OUT/'results.json').write_text(json.dumps(result,indent=2),encoding='utf-8');print(json.dumps(result),flush=True);browser.close()

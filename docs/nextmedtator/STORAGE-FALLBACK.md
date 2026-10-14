@@ -27,7 +27,7 @@ or browser-storage failure. The original Mac's GPU error has not been captured.
 - After fallback, the active model becomes FP32. Repeat analysis reuses it without
   downloading again or immediately retrying the failed GPU. Unload releases the
   model reference, and completed/cancelled inference terminates its worker.
-- **Why CPU was used** preserves the actual GPU error in the panel. WebGPU uses
+- **Why was CPU used?** preserves the actual GPU error in the panel. WebGPU uses
   the same high-performance adapter that passed its FP16 capability check.
 - Hash validation, reference checks and cancellation remain mandatory. A storage
   failure is not permission to execute a corrupt package.

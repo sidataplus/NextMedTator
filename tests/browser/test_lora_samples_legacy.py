@@ -106,7 +106,7 @@ def run():
             behavior_card('pacing').scroll_into_view_if_needed()
             page.screenshot(path=str(out/'lora-samples-original-ui.png'), full_page=True)
             with page.expect_download() as download:
-                page.get_by_role('button', name='Export evidence project', exact=True).click()
+                page.get_by_role('button', name='Export Evidence Project', exact=True).click()
             download.value.save_as(str(out/'lora-samples-original-ui.nmt.zip'))
             verify_export(out/'lora-samples-original-ui.nmt.zip', fixture)
             assert not errors, errors

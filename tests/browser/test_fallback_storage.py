@@ -71,7 +71,7 @@ with sync_playwright() as p:
         assert downloads>0
         expect(page.get_by_test_id('assist-storage-notice')).to_be_visible()
         page.screenshot(path=str(OUT/f'{args.engine}-{profile}-fallback.png'))
-        page.get_by_text('Why CPU was used',exact=True).click();page.screenshot(path=str(OUT/f'{args.engine}-{profile}-reason.png'))
+        page.get_by_text('Why was CPU used?',exact=True).click();page.screenshot(path=str(OUT/f'{args.engine}-{profile}-reason.png'))
         first_seconds=time.monotonic()-started
         page.get_by_test_id('assist-analyze').click();page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=360000)
         again=page.evaluate("()=>{const a=document.querySelector('nextmedtator-assist').assist;return {error:a.error,message:a.message,run:a.current().run,worker:!!a.modelRunner.worker};}")

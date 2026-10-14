@@ -111,7 +111,7 @@ def check_worker_regressions(page):
     expect(page.get_by_test_id('assist-compact-suggestion')).to_have_count(0)
     expect(page.get_by_test_id('assist-apply-all')).to_have_count(0)
     expect(page.get_by_test_id('assist-reveal')).to_be_enabled()
-    # Switching the selector cannot reveal a protected note.
+    # Switching the selector cannot reveal a protected (blind) file.
     page.get_by_test_id('assist-mode').select_option('assisted')
     with page.expect_download() as blind_download:
         page.get_by_test_id('assist-batch-report').click()
@@ -128,14 +128,14 @@ def check_worker_regressions(page):
         try{await a.analyzeDocuments(a.chosenDocuments(true));throw Error('Expected protection');}
         catch(e){return {message:e.message,unchanged:before===JSON.stringify(app_hotpot.vpp.$data.anns.map(n=>n.tags))};}
     }''')
-    assert blocked['unchanged'] and 'Reveal each protected note' in blocked['message'], blocked
+    assert blocked['unchanged'] and 'Reveal each blind file' in blocked['message'], blocked
     page.get_by_test_id('assist-mode').select_option('blind')
     page.locator('.file-list-item-name', has_text=names[0]).click()
     expect(page.get_by_test_id('assist-document')).to_have_text(names[0])
     frozen = page.evaluate('JSON.stringify([...document.querySelector("nextmedtator-assist").assist.blindSnapshots.values()])')
     page.get_by_test_id('assist-reveal').click()
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(2)
-    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 machine suggestions')
+    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 suggestions')
     page.get_by_test_id('assist-suggestion-view').select_option('compact')
     expect(page.get_by_test_id('assist-compact-suggestion')).to_have_count(2)
     expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
@@ -166,7 +166,7 @@ def check_worker_regressions(page):
     page.get_by_test_id('assist-suggestion').first.get_by_test_id('assist-accept').click()
     page.get_by_test_id('assist-add').click()
     expect(page.locator('.tag-table')).to_contain_text('diabetes')
-    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 machine suggestions · 1 annotation tags')
+    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 suggestions · 1 tags')
     expect(page.get_by_test_id('assist-compact-suggestion')).to_have_count(2)
     page.get_by_test_id('assist-suggestion-view').select_option('cards')
     assert page.evaluate('JSON.stringify([...document.querySelector("nextmedtator-assist").assist.blindSnapshots.values()])') == frozen
@@ -220,7 +220,7 @@ def check_worker_regressions(page):
     machine_before = page.evaluate('JSON.stringify(document.querySelector("nextmedtator-assist").assist.current().run.project.current.runs)')
     page.get_by_test_id('assist-mode').select_option('auto')
     page.get_by_test_id('assist-apply-all').click()
-    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 machine suggestions · 2 annotation tags')
+    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 suggestions · 2 tags')
     expect(page.get_by_test_id('assist-auto-status')).to_have_text('2 machine-applied tags · unreviewed')
     expect(page.get_by_test_id('assist-apply-all')).to_be_disabled()
     assert page.evaluate('JSON.stringify(document.querySelector("nextmedtator-assist").assist.current().run.project.current.runs)') == machine_before
@@ -237,7 +237,7 @@ def check_worker_regressions(page):
     assert page.evaluate('app_hotpot.vpp.$data.anns[app_hotpot.vpp.$data.ann_idx].tags.length') == 2
     # A new analysis retains the earlier automatic copies and their lineage.
     page.get_by_test_id('assist-analyze').click()
-    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 machine suggestions · 4 annotation tags')
+    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 suggestions · 4 tags')
     assert page.evaluate('''async()=>{
         const a=document.querySelector('nextmedtator-assist').assist,p=await a.syncProject(a.current().ann);
         return p.current.draft.records.length===4&&p.current.draft.records.every(r=>r.origin.kind==='machine-applied'&&r.origin.legacyTagId)&&new Set(p.current.draft.records.map(r=>r.origin.runId)).size===2;
@@ -252,7 +252,7 @@ def check_worker_regressions(page):
     assert page.evaluate('document.querySelector("nextmedtator-assist").assist.chosenDocuments(true).length') == 2
     page.get_by_test_id('assist-analyze-selected').click()
     page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy',timeout=30000)
-    expect(page.get_by_test_id('assist-message')).to_contain_text('Auto apply finished for 2 notes')
+    expect(page.get_by_test_id('assist-message')).to_contain_text('Auto Apply finished for 2 files')
     assert page.evaluate('''names=>{
         const a=document.querySelector('nextmedtator-assist').assist;
         return names.every(name=>{

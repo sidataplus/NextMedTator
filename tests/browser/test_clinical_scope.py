@@ -95,7 +95,7 @@ def run():
             page.get_by_test_id('assist-mode').select_option('auto')
             page.get_by_test_id('assist-analyze-selected').click()
             page.wait_for_function('''()=>{const a=document.querySelector('nextmedtator-assist').assist;return a.runHistory.length===4&&!a.busy;}''', timeout=300000)
-            expect(page.get_by_test_id('assist-message')).to_contain_text('Auto apply finished for 2 notes')
+            expect(page.get_by_test_id('assist-message')).to_contain_text('Auto Apply finished for 2 files')
             result = page.evaluate('''()=>{
                 const a=document.querySelector('nextmedtator-assist').assist;
                 return {scope:a.scope,runs:a.runHistory.map(r=>JSON.parse(JSON.stringify(r))),projects:[...a.projects.values()].map(p=>p.current),tags:app_hotpot.vpp.$data.anns.map(n=>n.tags)};
@@ -119,7 +119,7 @@ def run():
             for i, name in enumerate(names):
                 page.locator('.file-list-item-name', has_text=name).click()
                 page.get_by_test_id('assist-suggestion-view').select_option('compact')
-                expect(page.get_by_test_id('assist-counts')).to_contain_text(f'{len(scoped[i]["records"])} annotation tags')
+                expect(page.get_by_test_id('assist-counts')).to_contain_text(f'{len(scoped[i]["records"])} tags')
                 if scoped[i]['records']:
                     page.get_by_test_id('assist-compact-suggestion').first.scroll_into_view_if_needed()
                 else:
@@ -136,7 +136,7 @@ def run():
             assert tags_before==page.evaluate('JSON.stringify(app_hotpot.vpp.$data.anns.map(n=>n.tags))')
             page.get_by_test_id('scope-edit').click()
             with page.expect_download() as d:
-                page.get_by_role('button',name='Export evidence project',exact=True).click()
+                page.get_by_role('button',name='Export Evidence Project',exact=True).click()
             bundle=out/'clinical-scope-evidence.nmt.zip'
             d.value.save_as(str(bundle))
             with zipfile.ZipFile(bundle) as z:

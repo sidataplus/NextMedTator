@@ -3,7 +3,7 @@
 Successful inference uses the existing tiny synthetic ONNX fixture. Only delivery
 is delayed; failure/cancellation cases explicitly inject worker errors.
 """
-from browser_support import chromium_path
+from browser_support import chromium_path,open_assist_sections
 from pathlib import Path
 import json, os, subprocess, sys, time, traceback, urllib.request
 from playwright.sync_api import sync_playwright, expect
@@ -136,8 +136,8 @@ def imports(page):
     saved_id=page.evaluate('a.recoverySession.projectId')
     page.evaluate('async()=>await a.recoverySession.disable()')
     page.reload();page.wait_for_function('()=>!!window.app_hotpot?.vpp');page.evaluate('jarvis.ssclose()')
-    page.get_by_role('button',name='List saved corpora',exact=True).click()
-    page.get_by_role('button',name='Restore corpus '+saved_id,exact=True).click()
+    open_assist_sections(page,'more','recovery');page.get_by_role('button',name='List Recovery Copies',exact=True).click()
+    page.get_by_role('button',name='Restore '+saved_id,exact=True).click()
     page.wait_for_function('()=>app_hotpot.vpp.$data.anns.some(a=>a._filename==="renamed.txt"&&a.text==="editedfixture updated note")')
     page.evaluate('async()=>await document.querySelector("nextmedtator-assist").assist.recoverySession.disable()')
 

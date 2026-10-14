@@ -16,6 +16,11 @@ test('model manifests reject executable plugins, missing graphs and unknown code
     edit(m);
     assert.throws(() => validateModelManifest(m));
 } });
+test('model manifests accept only FP32 and FP16 precision', async () => {
+    for (const precision of ['fp32', 'fp16']) { const m = await fixture(); m.variants[0].precision = precision; validateModelManifest(m); }
+    for (const precision of ['int8', 'q4', undefined]) { const m = await fixture(); m.variants[0].precision = precision; assert.throws(() => validateModelManifest(m), /no longer supported|Unsupported model precision/); }
+    const m = await fixture(); m.variants[0].precision = 'int8'; assert.throws(() => validateModelManifest(m), /INT8 packages are no longer supported/);
+});
 test('model files require exact non-placeholder hashes', async () => { const m = await fixture(); m.files[0].sha256 = '...'; assert.throws(() => validateModelManifest(m)); });
 test('model licenses can be retained as inert hashed notice files',async()=>{
     const m=await fixture();m.files.push({path:'LICENSES/Apache-2.0.txt',bytes:10,sha256:'d'.repeat(64),role:'notice'});validateModelManifest(m);

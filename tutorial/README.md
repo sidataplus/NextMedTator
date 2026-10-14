@@ -23,7 +23,7 @@ clinical validation. Screenshots are stored here in Git, alongside the guides.
 | ClinicalEvidence P10 | [p10.dtd](examples/p10.dtd) | [p10.txt](examples/p10.txt) |
 | BPSD | [bpsd.dtd](examples/bpsd.dtd) | [bpsd.txt](examples/bpsd.txt) |
 
-The **Try a fictional note** buttons load these same contents. To use the
+The **Try a Sample** buttons load these same contents. To use the
 downloaded files instead, open the schema first and then the note. These DTDs
 retain the complete vocabularies for the pinned public model contracts.
 
@@ -46,7 +46,7 @@ report under gitignored `temp/browser-validation/tutorial/`. The final command e
 those captured frames, adds step captions, and writes the GIF. No predictions
 or UI screenshots are fabricated. The recording covers opt-in loading,
 Assisted review, export/reopen, corpus search, statistics, recovery and BPSD
-Auto apply. Local package imports avoid a repeated 1.4 GiB public download.
+Auto Apply. Local package imports avoid a repeated 1.4 GiB public download.
 
 [Back to the project README](../README.md)
 

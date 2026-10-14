@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { utf16Offset, medtatorSpans, documentKey, preferredTag, attributeDraft } from '../../src/nextmedtator/assist.mjs';
+import { utf16Offset, medtatorSpans, documentKey, preferredTag, attributeDraft, DEFAULT_REVIEW_MODE, REVIEW_MODES, reviewModeDescription } from '../../src/nextmedtator/assist.mjs';
 test('code-point spans become MedTator UTF-16 spans', () => {
     const text = 'A👩‍⚕️B diabetes';
     const chars = [...text];
@@ -33,4 +33,15 @@ test('attribute copy matches names and leaves unrelated schema defaults', () => 
     assert.equal(draft.values.comment, 'family history');
     assert.equal(draft.values.from, undefined);
     assert.deepEqual(draft.unmatched.sort(), ['assertion', 'experiencer']);
+});
+test('review mode defaults to Auto apply and lists it first', () => {
+    assert.equal(DEFAULT_REVIEW_MODE, 'auto');
+    assert.deepEqual(REVIEW_MODES.map(([value]) => value), ['auto', 'assisted', 'blind']);
+    assert.equal(REVIEW_MODES[0][0], DEFAULT_REVIEW_MODE);
+});
+test('each review mode has its own description', () => {
+    const descriptions = REVIEW_MODES.map(([value]) => reviewModeDescription(value));
+    for (const text of descriptions) assert.ok(typeof text === 'string' && text.length > 0);
+    assert.equal(new Set(descriptions).size, REVIEW_MODES.length);
+    assert.match(reviewModeDescription('auto'), /unreviewed/);
 });

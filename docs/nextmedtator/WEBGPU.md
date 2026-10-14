@@ -1,13 +1,13 @@
 # WebGPU and automatic WASM fallback
 
 This page records the original FP32 qualification. Preview.7 adds selectable
-FP16 and experimental INT8 packages; see [precision choices and fresh benchmarks](PRECISION.md).
+FP16 packages; see [precision choices and fresh benchmarks](PRECISION.md).
 FP16 falls back to the original FP32 WASM package, downloading it on an explicit
 Analyze request if it is not already installed. Install FP32 first for offline recovery.
 
 NextMedTator preview.6 runs both pinned P10 and BPSD packages through WebGPU,
 including entity extraction, attribute scoring and final decoding. **Automatic**
-is the default. Under **Assistance → Load the model → Model options → Run on**, select
+is the default. Under **Assistance → Load the Model → Model Options → Run On**, select
 **CPU · WASM** to use the CPU explicitly. The panel and exported run record the
 backend actually used.
 
@@ -90,7 +90,7 @@ disabled for that package in the current runner. Reloading the app permits a new
 attempt. Cancellation stops work without triggering a fallback.
 
 The UI reports **WASM · automatic fallback**, and portable exports retain the
-fallback reason. Changing **Inference device** to CPU bypasses GPU attempts.
+fallback reason. Changing **Run On** to CPU bypasses GPU attempts.
 
 ## Reproduce
 

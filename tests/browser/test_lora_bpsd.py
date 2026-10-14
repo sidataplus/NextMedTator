@@ -104,7 +104,7 @@ try:
             timeout=300000,
         )
         expect(page.get_by_test_id("assist-message")).to_contain_text(
-            "Auto apply finished for 4 notes"
+            "Auto Apply finished for 4 files"
         )
         result = page.evaluate(
             """()=>{const a=document.querySelector('nextmedtator-assist').assist;return {scope:a.scope,runs:a.runHistory,projects:[...a.projects.values()].map(p=>p.current),annotations:app_hotpot.vpp.$data.anns.map(n=>({filename:n._filename,text:n.text,tags:n.tags}))};}"""
@@ -132,7 +132,7 @@ try:
             page.get_by_test_id("assist-suggestion-view").select_option("compact")
             count = len(run["records"])
             expect(page.get_by_test_id("assist-counts")).to_have_text(
-                f"{count} machine suggestions · {count} annotation tags"
+                f"{count} suggestions · {count} tags"
             )
             expect(page.locator(".tag-table tbody tr")).to_have_count(count)
             if count:
@@ -171,7 +171,7 @@ try:
             page.screenshot(path=str(OUT / screenshot), clip={"x":0,"y":0,"width":1600,"height":bottom})
             with page.expect_download() as d:
                 page.get_by_role(
-                    "button", name="Export evidence project", exact=True
+                    "button", name="Export Evidence Project", exact=True
                 ).click()
             bundle = OUT / f"{MODEL_TAG}-bpsd-{note['id']}.nmt.zip"
             d.value.save_as(str(bundle))

@@ -16,3 +16,11 @@ def chromium_path():
     if Path('/usr/bin/chromium').is_file():
         return '/usr/bin/chromium'
     return None
+
+
+def open_assist_sections(page, *keys):
+    """Expand Assistance disclosures in order, e.g. ('more', 'recovery'); open ones stay open."""
+    for key in keys:
+        section = page.get_by_test_id('assist-' + key)
+        if section.get_attribute('open') is None:
+            section.locator(':scope > summary').click()

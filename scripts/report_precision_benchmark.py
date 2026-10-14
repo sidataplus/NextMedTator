@@ -15,11 +15,11 @@ def agreement(reference,actual):
 def main():
     report={'date':'2026-10-13','method':'Four synthetic notes per model, three passes per backend. Warm timings use passes 2 and 3. No concurrent inference workloads.',
             'hardware':'Intel Xeon Silver 4210R, NVIDIA RTX A4000, Windows; WASM four threads',
-            'scope':'Functional regression only, not a clinical accuracy evaluation. INT8 is experimental and never automatic fallback.', 'models':{}}
+            'scope':'Functional regression only, not a clinical accuracy evaluation.', 'models':{}}
     catalog=json.loads((ROOT/'deployment/production-model-catalog.json').read_text())['entries']
     for profile in ['p10','bpsd']:
         path=ROOT/'temp/browser-validation/webgpu'
-        data={precision:json.loads((path/(profile+('' if precision=='fp32' else '-'+precision)+'.json')).read_text()) for precision in ['fp32','fp16','int8']}
+        data={precision:json.loads((path/(profile+('' if precision=='fp32' else '-'+precision)+'.json')).read_text()) for precision in ['fp32','fp16']}
         baseline=next(run for run in data['fp32']['runs'] if run['backend']=='wasm')['cases'][:4]
         notes=json.loads((ROOT/'work'/(profile+'-export.json')).read_text(encoding='utf-8'))['native']
         model={'notes':[note['text'] for note in notes],'browser':data['fp16']['browser'],'gpu':data['fp16']['gpu'],'variants':[]}

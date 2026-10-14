@@ -16,20 +16,20 @@ in this browser.
 
 ![Dark mode in Firefox](images/30-dark-mode.png)
 
-Manual annotation needs no model. **Analyze note** remains disabled until both
+Manual annotation needs no model. **Analyze File** remains disabled until both
 a note and a compatible loaded model are available.
 
 ## Step 2 — Load a practice task
 
-In **Assistance → 1. Open a note**, choose **P10 clinical evidence**.
-The button loads the note, seven-family DTD, model selection and Assisted mode.
+In **Assistance → 1. Open a File**, choose **P10 Clinical Evidence**.
+The button loads the note, seven-family DTD, model selection and Auto Apply mode.
 It does not download weights. If notes are already open, the app asks before
 replacing them; cancel to keep working or export them first.
 
 ![P10 practice note and matching schema](images/02-p10-practice.png)
 
 The note is: “The patient has fever. Aspirin is planned for tomorrow.”
-The initial annotation count is zero. **BPSD behaviors** loads a different
+The initial annotation count is zero. **BPSD Behaviors** loads a different
 fictional note and the BPSD schema.
 
 ## Step 3 — Bring your own files
@@ -54,7 +54,7 @@ for practicing this workflow without any model.
 ![Manual fever annotation created without loading a model](images/13-manual-annotation.jpg)
 
 This desktop Chrome capture shows the new span and empty attributes, ready for
-human entry. The **Model needed** badge confirms that no model was loaded.
+human entry. The **Not Loaded** badge confirms that no model was loaded.
 
 For assistance, continue to [Local model assistance](02-local-models.md).
 Use **Hide** to collapse Assistance when you want more room for the text.

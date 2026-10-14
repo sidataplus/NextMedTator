@@ -89,8 +89,8 @@ def run():
             page.get_by_role('button', name='Export & assignments', exact=True).click()
             page.get_by_label('Start new project with schema JSON').set_input_files({'name': 'schema.json', 'mimeType': 'application/json', 'buffer': json.dumps(case['schema']).encode()})
             page.get_by_role('button', name='Models', exact=True).click()
-            page.get_by_role('button', name='List installed models', exact=True).click()
-            page.get_by_role('button', name='Use installed '+manifest['id'], exact=True).click()
+            page.get_by_role('button', name='List Installed Models', exact=True).click()
+            page.get_by_role('button', name='Use Installed '+manifest['id'], exact=True).click()
             page.get_by_role('button', name='Close panel', exact=True).click()
             page.get_by_test_id('analysis-mode').select_option('assisted')
             if manifest['variants'][0].get('clinicalRelease'):
@@ -188,7 +188,7 @@ def run():
             page.get_by_test_id('assist-add').click()
             assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length') == 1
             with page.expect_download() as downloaded:
-                page.get_by_role('button', name='Export evidence project', exact=True).click()
+                page.get_by_role('button', name='Export Evidence Project', exact=True).click()
             legacy_bundle = out/'lora-legacy-project.nmt.zip'
             downloaded.value.save_as(str(legacy_bundle))
             data = read_project(legacy_bundle)

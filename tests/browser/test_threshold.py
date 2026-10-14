@@ -47,7 +47,7 @@ def set_strict_threshold(page, id):
 def capture_auto(page, filename, count, screenshot):
     page.locator('.file-list-item-name',has_text=filename).click()
     expect(page.get_by_test_id('assist-mode')).to_have_value('auto')
-    expect(page.get_by_test_id('assist-counts')).to_have_text(f'{count} machine suggestions · {count} annotation tags')
+    expect(page.get_by_test_id('assist-counts')).to_have_text(f'{count} suggestions · {count} tags')
     expect(page.get_by_test_id('assist-auto-status')).to_have_text(f'{count} machine-applied tags · unreviewed')
     page.get_by_test_id('assist-suggestion-view').select_option('compact')
     expect(page.locator('.tag-table tbody tr')).to_have_count(count)
@@ -139,7 +139,7 @@ for directory, port in [('dist',4198),('preview',4199)]:
                 assert recovered['override']=='0.9'
                 assert {r['id']:r for r in recovered['runs']}=={r['id']:r for r in second['runs']}
                 with page.expect_download() as d:
-                    page.get_by_role('button',name='Export evidence project',exact=True).click()
+                    page.get_by_role('button',name='Export Evidence Project',exact=True).click()
                 d.value.save_as(str(OUT/'threshold.nmt.zip'))
                 with zipfile.ZipFile(OUT/'threshold.nmt.zip') as z:
                     exported=json.loads(z.read('machine-runs/index.json'))
@@ -154,7 +154,7 @@ for directory, port in [('dist',4198),('preview',4199)]:
                 projects=page.evaluate("[...document.querySelector('nextmedtator-assist').assist.projects.values()].map(p=>p.current)")
                 assert all(r['origin']['kind']=='machine-applied' and r['origin']['reviewStatus']=='unreviewed' for p in projects for r in p['draft']['records'])
                 with page.expect_download() as d:
-                    page.get_by_role('button',name='Export evidence project',exact=True).click()
+                    page.get_by_role('button',name='Export Evidence Project',exact=True).click()
                 d.value.save_as(str(OUT/'threshold09-auto.nmt.zip'))
                 with zipfile.ZipFile(OUT/'threshold09-auto.nmt.zip') as z:
                     portable=json.loads(z.read('project.json'));machine=json.loads(z.read('machine-runs/index.json'))

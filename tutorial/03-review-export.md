@@ -5,9 +5,9 @@ Start after [P10 analysis in Assisted mode](02-local-models.md).
 
 ## Step 1 — Review the fields
 
-On the **fever** suggestion, click **Add to annotation**. Check the entity tag
+On the **fever** suggestion, click **Accept**. Check the entity tag
 and attributes. Correct any fields that need human judgment, then click
-**Write annotation**. Choosing **Reject** instead records a rejection without
+**Add Tag**. Choosing **Reject** instead records a rejection without
 adding a tag to the note.
 
 ![Review the suggested entity and attributes](images/06-review-fields.png)
@@ -23,8 +23,8 @@ accepting one suggestion does not complete review of the note.
 
 ## Step 3 — Export and reopen
 
-Click **Export evidence project** in Assistance to download a `.nmt.zip`.
-Then click **Open evidence project**, choose the downloaded file under
+Click **Export Evidence Project** in Assistance to download a `.nmt.zip`.
+Then click **Open Evidence Project**, choose the downloaded file under
 **Open project/files**, and verify the source text, human evidence and machine
 run. Use **Save project** after making changes in this workspace.
 
@@ -52,15 +52,15 @@ out of date. Return with **Annotation**.
 
 ## Step 5 — Enable recovery when you want it
 
-Expand **Local recovery & backups**, click **Enable local corpus recovery**,
+Expand **Recovery & Backup**, click **Enable Recovery**,
 and confirm storing the corpus in this browser profile. Wait for the verified
 checkpoint status. Subsequent annotation edits are checkpointed locally.
 
 ![Opt-in corpus recovery and backup controls](images/11-recovery.png)
 
-On a later visit, expand this section, choose **List saved corpora**, and click
+On a later visit, expand this section, choose **List Recovery Copies**, and click
 the intended **Restore corpus** entry. Restoring replaces current in-memory
-notes after confirmation. **Disable recovery** stops checkpointing; **Delete
+notes after confirmation. **Disable Recovery** stops checkpointing; **Delete
 corpus recovery** removes the stored copy. Loading a practice task disables
 recovery for the previous corpus and preserves its already saved copy.
 

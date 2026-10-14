@@ -45,7 +45,7 @@ server=ThreadingHTTPServer(('127.0.0.1',4296),Handler)
 threading.Thread(target=server.serve_forever,daemon=True).start()
 parser=argparse.ArgumentParser();parser.add_argument('--profile',choices=['p10','bpsd']);parser.add_argument('--repeats',type=int,default=3);parser.add_argument('--debug',action='store_true')
 parser.add_argument('--backend',choices=['webgpu','wasm'])
-parser.add_argument('--precision',choices=['fp32','fp16','int8'],default='fp32')
+parser.add_argument('--precision',choices=['fp32','fp16'],default='fp32')
 parser.add_argument('--output-suffix',default='')
 args=parser.parse_args()
 try:

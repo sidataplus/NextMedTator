@@ -60,7 +60,7 @@ def run():
             page.get_by_title('Load a minimal task').click()
             page.locator('.file-list-item-name', has_text='doc_01.txt.xml').wait_for()
             expect(page.get_by_test_id('assist-analyze')).to_be_disabled()
-            expect(page.get_by_test_id('model-status')).to_have_text('Model needed')
+            expect(page.get_by_test_id('model-status')).to_have_text('Not Loaded')
             page.get_by_test_id('assist-collapse').click()
             page.get_by_test_id('assist-expand').wait_for()
             assert page.locator('nextmedtator-assist').get_attribute('data-open')=='false'

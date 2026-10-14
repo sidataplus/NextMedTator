@@ -20,7 +20,7 @@ with sync_playwright() as p:
         page.goto(URL);expect(page.locator('#start-screen')).to_be_hidden()
         page.get_by_test_id('assist-practice-p10').click()
         page.get_by_test_id('assist-more').locator(':scope > summary').click()
-        page.get_by_text('Large collections · local disk',exact=True).click()
+        page.get_by_text('Large Collections',exact=True).click()
         page.get_by_test_id('assist-collection-import').set_input_files([
             {'name':f'fictional-{i}.txt','mimeType':'text/plain','buffer':f'Fictional synthetic note {i}. Unicode 😀.'.encode()} for i in range(3)])
         expect(page.get_by_test_id('assist-collection-memory')).to_contain_text('3 notes stored')

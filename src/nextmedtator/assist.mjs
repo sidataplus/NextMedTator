@@ -1,4 +1,5 @@
 import {themeColors} from './theme-colors.mjs';
+import {ASSIST_STYLES} from './assist-styles.mjs';
 import {conformanceMessage} from './conformance-report.mjs';
 import {detectDevice,deviceRecommendation} from './device-profile.mjs';
 import {suggestionPage,validateUndoTags} from './review-queue.mjs';
@@ -27,75 +28,6 @@ import {EXECUTION_POLICY,graphTransforms,supportsWebGPU} from './execution-polic
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
-const styles = `
-:host{--assist-accent:#0078d7;display:block;height:100%;color:#222;font:12px/1.45 "Segoe UI",Arial,sans-serif}
-*{box-sizing:border-box}
-button,input,select{font:inherit;color:inherit}
-button,select{border:1px solid #bdbdbd;border-radius:0;background:#fafafa;padding:4px 7px;cursor:pointer;max-width:100%}
-button{min-height:28px;text-align:left;overflow-wrap:anywhere}
-button:hover{background:#e5f3ff;border-color:#0078d7}
-button:disabled{opacity:.5;cursor:not-allowed}
-button.primary{background:#0078d7;color:#fff;border-color:#0078d7}
-button.primary:hover{background:#005a9e}
-:focus-visible{outline:3px solid #137aab;outline-offset:2px}
-button:focus:not(:focus-visible){outline:none}
-.dock{height:100%;display:flex;flex-direction:column;background:#fff}
-.rail{height:100%;width:100%;border:0;border-radius:0;background:#f7f9fa;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:.04em}
-.head{flex-shrink:0;min-height:0;padding:12px;border-bottom:1px solid #d7e1e7;display:flex;flex-direction:column;gap:4px}
-.head p{margin:0;overflow-wrap:anywhere}.head strong{font-size:15px}.head .document-name{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.action-bar{padding:10px 12px;border-bottom:1px solid #d7e1e7;flex-shrink:0;background:#fff}.action-bar .row{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}.action-bar button{min-height:34px}.action-bar p{margin:6px 0 0;font-size:11px;color:#536976}.section{margin:0 0 12px;padding:10px;background:#fff;border:1px solid #d7e1e7;border-radius:8px}.section summary{font-weight:650;cursor:pointer;padding:2px 0}.section summary:focus-visible{outline:2px solid #137aab}.section[open]>summary{margin-bottom:10px}.section>h3{margin:0 0 8px;font-size:13px}.section .row{margin:6px 0}.section .model-selection h3{margin:0 0 8px;font-size:13px}.section .model-selection [role=status]{font-size:11px;color:#536976}.section .model-selection pre{font-size:10px}.body>.card{box-shadow:0 1px 2px #1a304108}.setup-hint{padding:8px;background:#edf4f6;border-radius:5px;margin:8px 0;font-size:12px}.body>.muted{margin:8px 0}.badge.pending{background:#fff2db;color:#78571c}.badge.ready{background:#e8f5ef;color:#176444}
-.head label{flex-direction:row;align-items:center}
-.head select{flex:1;min-width:0}
-.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.grow{flex:1}
-.badge{border-radius:2px;padding:1px 5px;background:#eef5f0;font-size:10px;border:1px solid #d5e3da}
-.muted{color:#536976;font-size:12px}
-.body{overflow:auto;padding:8px;flex:1;min-height:80px;scrollbar-gutter:stable}
-.card{background:#fff;border:1px solid #d7e1e7;border-radius:8px;padding:8px;margin:0 0 8px}
-.card p{margin:3px 0;overflow-wrap:anywhere}
-.anchor{font-weight:650}
-.tag{font-size:10px;letter-spacing:.04em;text-transform:uppercase}
-.message{margin:0 8px 8px;padding:8px;border-radius:6px;background:#edf4f6;overflow-wrap:anywhere;max-height:25%;overflow:auto;flex-shrink:0}
-.message.error{background:#fff0ec;border:1px solid #db927f}
-.docs{max-height:112px;overflow:auto;border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:4px 6px}
-.check{display:flex;gap:6px;align-items:center;flex-direction:row}
-label{display:flex;flex-direction:column;gap:3px;font-size:12px}
-input[type=file]{max-width:100%;font-size:11px}
-.threshold{margin:0 0 8px}.threshold-title{display:flex;align-items:center;justify-content:space-between;gap:8px}.threshold output{font-weight:650;font-variant-numeric:tabular-nums}.threshold input[type=range]{width:100%;margin:6px 0;padding:0;accent-color:#076b74;cursor:pointer}.threshold p{margin:4px 0}.threshold button{margin-top:4px}
-.model-selection{min-width:0;max-width:100%;overflow-wrap:anywhere}.model-selection label,.model-selection details{min-width:0;max-width:100%}.model-selection input[type=text],.model-selection select{width:100%;min-width:0}.model-selection select{text-overflow:ellipsis}.model-selection pre{max-width:100%;overflow:auto;white-space:pre;font-size:11px}
-.scope{border:1px solid #d7e1e7;border-radius:6px;background:#fff;padding:8px;margin:8px 0}
-.scope p{margin:5px 0}.scope label{margin:5px 0}.scope textarea{width:100%;font:inherit;color:inherit;border:1px solid #d7e1e7;border-radius:5px;resize:vertical}
-.scope fieldset{border:1px solid #d7e1e7;margin:8px 0;padding:6px}.scope h3{margin:10px 0 5px}
-.unmatched{color:#8a3b16}
-.compact{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
-.compact td{border-bottom:1px solid #d7e1e7;padding:3px 2px;vertical-align:middle}
-.compact td:last-child{width:110px;text-align:right}
-.compact button{font-size:10px;padding:3px 4px;margin-left:2px}
-.compact strong,.compact small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.compact small{font-size:10px;color:#536976}
-.icon{font-family:"Font Awesome 5 Free";font-weight:900;font-style:normal;display:inline-block;width:1.15em;text-align:center;margin-right:6px;line-height:1;flex-shrink:0;speak:none}
-.icon::before{content:attr(data-glyph)}
-.head{padding:8px 10px;background:#f5f5f5;border-color:#d9d9d9;gap:5px}
-.head strong{font-size:13px;font-weight:600}.head .row>.icon{font-size:16px;margin-right:0}
-.head select{background:#fff}.head .document-name{font-size:11px}
-.action-bar{padding:8px;background:#f5f5f5;border-color:#d9d9d9}.action-bar .row{gap:4px}.action-bar button{min-height:42px;padding:5px 3px;text-align:center;line-height:1.25;font-size:11px}.action-bar button .icon{display:block;margin:0 auto 4px;font-size:16px}
-.section{padding:8px;margin-bottom:8px;border:1px solid #d9d9d9;border-radius:0;background:#fff}
-.section>summary{margin:-8px;padding:7px 8px;background:#f5f5f5;font-weight:600;font-size:12px;user-select:none}
-.section>summary:hover{background:#e5f3ff}.section[open]>summary{margin-bottom:8px;border-bottom:1px solid #ddd}
-.section>summary .icon{color:#444}.section .section{margin-top:8px;margin-bottom:0}.section .section>summary{font-size:11px;background:#fafafa}
-.section>button{margin:3px 3px 3px 0}.section>label{margin:7px 0}.section>h3,.section .model-selection h3{font-size:12px;font-weight:600}
-.setup-hint{border-radius:0;border-left:3px solid #0078d7;background:#eff6fc;padding:7px 8px;margin:7px 0;font-size:11px}.setup-hint p{margin:4px 0}.setup-hint .section{border:0;padding-bottom:0}.setup-hint .section>summary{background:transparent}
-.message{border-radius:0;background:#eff6fc;border-left:3px solid #0078d7;margin:0 8px 6px;font-size:11px;padding:6px 8px}
-.card,.docs,.scope,.scope textarea{border-radius:0;border-color:#d9d9d9}.body>.card{box-shadow:none}
-.muted,.section .model-selection [role=status]{color:#595959;font-size:11px}.threshold input[type=range]{accent-color:#0078d7}
-input[type=text],textarea{border:1px solid #bdbdbd;padding:4px;max-width:100%}input[type=checkbox]{accent-color:#0078d7}
-input[type=file]{width:100%;padding:4px 0}input::file-selector-button{font:inherit;border:1px solid #bdbdbd;border-radius:0;background:#fafafa;padding:4px 7px;margin-right:6px;cursor:pointer}
-a{color:#0067b8}label{gap:4px;font-size:11px}.section label>span{font-weight:600}.check{font-weight:400}
-.model-download{border-top:1px solid #ddd;padding-top:6px;margin-top:8px}.model-download button{width:100%;padding:7px;text-align:left}.model-download p{margin:4px 0}
-.dock .loading-progress{border-color:#d9d9d9;border-radius:0;color:#222;font:12px/1.45 "Segoe UI",Arial,sans-serif;padding:8px}.dock .loading-progress progress{accent-color:#0078d7;height:10px}
-.rail{background:#f5f5f5;color:#333;font-size:12px}.rail .icon{margin:0 0 6px}
-.action-bar{background:#fff;border:0;padding:7px 0 0}.action-bar .row{grid-template-columns:1fr}.action-bar button{min-height:32px;font-size:12px}.action-bar button .icon{display:inline-block;font-size:12px;margin:0 6px 0 0}.section>h3{margin-bottom:7px}.section p{margin:5px 0}.head{padding:7px 8px}.head>[data-testid=assist-pause]{align-self:flex-end}.section>.primary{width:100%;padding:7px}.body>.section{margin-bottom:8px}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
-`;
 
 // Reuse the same local Font Awesome face as the original ribbon. Decorative
 // glyphs stay out of accessible names; every action retains its text label.
@@ -107,10 +39,20 @@ function firstManifestPrecision(manifest){
 }
 function icon(name){return node('span',null,{class:'icon','aria-hidden':'true','data-glyph':String.fromCodePoint(parseInt(ICONS[name]??ICONS.assist,16))});}
 function actionIcon(text){
-    for(const [pattern,name] of [[/^Analyze|^Resume/,'play'],[/^Pause/,'pause'],[/^Download|^Export|^Use browser download/,'download'],[/^Import|^Install/,'upload'],[/^Save|^Enable local/,'save'],[/^Open|^Restore|^Use installed/,'open'],[/^Reject|^Cancel|^Close|^Unload|^Disable/,'close'],[/^Remove|^Delete/,'remove'],[/^Undo|^Retry|^Reset/,'undo'],[/^Check GPU|^Select|^Apply|^Write|^Add to|^Use recommended/,'check'],[/^List/,'list'],[/^Show approved/,'search'],[/^Hide/,'hide'],[/^P10|^BPSD/,'practice']])if(pattern.test(text))return name;
+    for(const [pattern,name] of [[/^Analyze|^Resume/,'play'],[/^Pause/,'pause'],[/^Download|^Re-download|^Repair|^Export/,'download'],[/^Import|^Install/,'upload'],[/^Save|^Enable Recovery/,'save'],[/^Open|^Restore|^Use Installed|^Load Installed/,'open'],[/^Reject|^Cancel|^Close|^Unload|^Disable/,'close'],[/^Remove|^Delete/,'remove'],[/^Undo|^Retry|^Reset/,'undo'],[/^Check GPU|^Select|^Apply|^Accept|^Add Tag|^Use Recommended/,'check'],[/^List/,'list'],[/^Show approved/,'search'],[/^Hide/,'hide'],[/^Assistance$/,'assist'],[/^P10|^BPSD/,'practice']])if(pattern.test(text))return name;
     return null;
 }
 
+export const DEFAULT_REVIEW_MODE = 'auto';
+export const REVIEW_MODES = [['auto', 'Auto Apply'], ['assisted', 'Assisted'], ['blind', 'Blind']];
+const REVIEW_MODE_DESCRIPTIONS = {
+    auto: 'Adds model predictions as unreviewed tags.',
+    assisted: 'Review each suggestion before adding it as a tag.',
+    blind: 'Freeze your own annotation before revealing suggestions.',
+};
+export function reviewModeDescription(mode) {
+    return REVIEW_MODE_DESCRIPTIONS[mode];
+}
 export function utf16Offset(text, codePointOffset) {
     if (!Number.isInteger(codePointOffset) || codePointOffset < 0)
         throw new Error('Offset required');
@@ -232,7 +174,7 @@ class LegacyAssist {
         this.root = host.attachShadow({ mode: 'open' });
         this.openProject = openProject ?? (() => {});
         this.open = sessionStorage.getItem('nmt-assist-open') !== 'false';
-        this.mode = 'assisted';
+        this.mode = DEFAULT_REVIEW_MODE;
         this.modelSelectionState=createModelSelectionState();this.modelSelection=this.modelSelectionState.selection;this.selectionDraftMode=modelSelectionControlValue(this.modelSelection);this.selectionDraft=null;this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);
         this.modelSelectionEpoch=0;
         this.scope = null;this.scopeDraft=presetScope();this.scopeEditing=false;
@@ -326,7 +268,7 @@ class LegacyAssist {
         if (this.busy)
             return;
         this.busy = true;
-        this.loadingProgress={phase:'Loading model / working locally',started:performance.now()};
+        this.loadingProgress={phase:'Working on this device',started:performance.now()};
         this.error = false;
         this.render();
         try {
@@ -337,7 +279,7 @@ class LegacyAssist {
         catch (error) {
             const cancelled=/cancelled/i.test(error?.message??'')||error?.name==='AbortError';
             this.error = !cancelled;
-            this.message = cancelled&&this.batchQueue?.state==='paused'?'Batch paused. Completed results are retained. Choose Resume unfinished to continue.':error?.message ?? 'The annotation was left unchanged.';
+            this.message = cancelled&&this.batchQueue?.state==='paused'?'Batch paused. Finished results are kept; click Resume to continue.':error?.message ?? 'The annotation was left unchanged.';
         }
         finally {
             this.busy = false;
@@ -353,7 +295,7 @@ class LegacyAssist {
         const installedCandidates=matchingInstalledModels(selection,this.installedModels??[]).filter(item=>firstManifestPrecision(item.manifest)===precision);
         const installed=installedCandidates.find(item=>!this.unavailableInstalledModels.has(item.manifestHash))??installedCandidates[0];
         if(installed&&!this.unavailableInstalledModels.has(installed.manifestHash)){
-            await this.useInstalledModel(installed.manifestHash);this.message='Model ready. Continue to Analyze note.';return;
+            await this.useInstalledModel(installed.manifestHash);this.message='Model ready. Click Analyze File in step 4.';return;
         }
         if(!this.catalog){const response=await fetch(new URL('../../models/catalog.json',import.meta.url),{credentials:'omit'});invariant(response.ok,'Model list could not load. Check your connection and retry.');this.catalog=await response.json();}
         invariant(epoch===this.modelSelectionEpoch&&selectionKey===modelSelectionKey(this.modelSelection),'Model selection changed while loading. Select the model again and retry.');
@@ -362,12 +304,12 @@ class LegacyAssist {
         const total=entry.manifest.files.reduce((n,f)=>n+f.bytes,0);
                 this.installController=new AbortController();
                 try{
-                    this.loadingProgress={phase:'Downloading model',received:0,total:total,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onStage:stage=>{this.loadingProgress={...stage,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},onProgress:({received,total,file})=>{if(this.loadingProgress.phase!=='Downloading model')this.loadingProgress.started=performance.now();Object.assign(this.loadingProgress,{received,total,file,phase:received===total?'Verifying model integrity':'Downloading model'});renderLoadingProgress(this.root,this.loadingProgress);}});
+                    this.loadingProgress={phase:'Downloading model',received:0,total:total,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);const candidate=await downloadCatalogPackage(entry,{signal:this.installController.signal,onStage:stage=>{this.loadingProgress={...stage,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},onProgress:({received,total,file})=>{if(this.loadingProgress.phase!=='Downloading model')this.loadingProgress.started=performance.now();Object.assign(this.loadingProgress,{received,total,file,phase:received===total?'Verifying model':'Downloading model'});renderLoadingProgress(this.root,this.loadingProgress);}});
                     invariant(epoch===this.modelSelectionEpoch&&selectionKey===modelSelectionKey(this.modelSelection)&&modelSelectionMatchesManifest(selection,candidate.manifest),'Model selection changed during download');
-                    this.loadingProgress.phase='Installing and verifying local storage';renderLoadingProgress(this.root,this.loadingProgress);const installed=await cacheModelForSession(this,candidate,{signal:this.installController.signal});
+                    this.loadingProgress.phase='Installing model';renderLoadingProgress(this.root,this.loadingProgress);const installed=await cacheModelForSession(this,candidate,{signal:this.installController.signal});
                     invariant(epoch===this.modelSelectionEpoch,'Model selection changed during installation');
                     if(!this.modelStorageNotice)this.unavailableInstalledModels.delete(installed.manifestHash);
-                    this.adoptModel(installed);await this.inspectStorage();this.message='Model ready. Continue to Analyze note in step 4.';
+                    this.adoptModel(installed);await this.inspectStorage();this.message='Model ready. Click Analyze File in step 4.';
                 }finally{this.installController=null;}
 
     }
@@ -382,8 +324,8 @@ class LegacyAssist {
             try{
                 const started=performance.now();await this.saveCollectionCurrent();
                 const options={signal:this.installController.signal,onProgress:progress=>{this.loadingProgress={phase:'Exporting collection',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}};
-                if(handle){await exportCollection(this.collectionStore,this.collection,await handle.createWritable(),options);this.message='Portable collection backup saved with per-note integrity checks.';}
-                else{const blob=await exportCollectionBlob(this.collectionStore,this.collection,options);localDownload(blob,'collection.nmt.jsonl','application/x-ndjson');this.message='Collection backup download requested. Check your browser downloads and keep the file safely. Browser-download backups are limited to 64 MiB.';}
+                if(handle){await exportCollection(this.collectionStore,this.collection,await handle.createWritable(),options);this.message='Collection backup saved with an integrity check for each file.';}
+                else{const blob=await exportCollectionBlob(this.collectionStore,this.collection,options);localDownload(blob,'collection.nmt.jsonl','application/x-ndjson');this.message='Collection backup is downloading. Keep the file somewhere safe; browser downloads are limited to 64 MiB.';}
             }finally{this.installController=null;}
         });
     }
@@ -396,21 +338,21 @@ class LegacyAssist {
     async loadPracticeTask(task) {
         const view=legacy();
         invariant(view, 'The annotation workspace is still starting.');
-        if(view.data.anns.length&&!confirm('Replace the current notes with a fictional practice task? Export your current work first.'))return;
+        if(view.data.anns.length&&!confirm('Replace the current files with a sample? Save your current work first.'))return;
         const schema=window.dtd_parser.parse(task.dtd,'dtd');
         if(this.collection){await this.saveCollectionCurrent();this.collection=null;}
         await this.recoverySession.disable();
         this.runs.clear();this.projects.clear();this.runHistory=[];this.batchQueue=null;
         this.corpusIdentity=null;this.corpusCreatedAt=null;
         this.exposed.clear();this.exposure=[];this.blinded.clear();this.blindSnapshots.clear();this.selected.clear();
-        this.apply=null;this.detail=null;this.scope=null;this.scopeEditing=false;this.mode='assisted';
+        this.apply=null;this.detail=null;this.scope=null;this.scopeEditing=false;this.mode=DEFAULT_REVIEW_MODE;
         view.data.anns=[];view.data.ann_idx=0;
         view.app.set_dtd(schema);view.data.dtd=schema;
         const ann=view.vpp.add_sample_txt_as_ann(task.text);
         ann._filename=task.id+'-practice.txt.xml';
         view.data.mn4anns=1;view.vpp.set_ann_idx(0);
         this.setSelectedModel({id:task.model},{render:false});
-        this.message='Practice note ready. Next: load the model in step 3.';
+        this.message='Sample loaded. Next, load the model in step 3.';
     }
     structured() {
         return !!this.model?.manifest.variants.some(variant => variant.codec === GLINER_STRUCTURED || isRecordsCodec(variant.codec));
@@ -451,7 +393,7 @@ class LegacyAssist {
     }
     unloadModel(){
         this.beginModelSelectionAction();this.modelRunner.cancel();this.model=null;this.modelStorageNotice=null;this.scopeTokenizer=null;this.scopeTokenizerManifest=null;this.scopeTokenizerPath=null;this.qualifiedManifest=null;this.qualifiedVariant=null;this.executionStatus=null;
-        this.message='Model unloaded from memory. Installed files and annotations remain available.';this.render();
+        this.message='Model unloaded. Installed models and annotations are kept.';this.render();
     }
     async inspectStorage(){
         this.installedModels=await this.modelStore.listExisting().catch(()=>[]);this.storageEstimate=await navigator.storage?.estimate?.().catch(()=>null);
@@ -464,7 +406,7 @@ class LegacyAssist {
     }
     async checkGPU(){
         invariant(this.model,'Load a model first');this.gpuCheck=null;
-        this.message='Checking the loaded model on this GPU using public synthetic examples. No FP32 download will start.';
+        this.message='Checking the loaded model on this GPU with public examples. Nothing is downloaded.';
         await this.modelRunner.checkGPU(this.model,this.model.manifest.variants[0].id,{
             onConformance:summary=>this.rememberGPUCheck(summary),
             onInitialization:stage=>{this.loadingProgress={...stage,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);}});
@@ -529,26 +471,26 @@ class LegacyAssist {
         view.app.set_dtd(dtd);view.data.dtd=dtd;
         for(const ann of view.data.anns)ann._has_saved=false;
         view.vpp.refresh_v_anns();
-        view.vpp.$forceUpdate();this.message='Clinical annotation schema loaded. Apply scope, then analyze your notes.';
+        view.vpp.$forceUpdate();this.message='Clinical annotation schema loaded. Apply scope, then analyze your files.';
     }
     allDocuments(){return this.collection?.notes??legacy()?.data?.anns??[];}
     async openCollection(id,{replaceConfirmed=false}={}){
         if(this.collection)await this.saveCollectionCurrent();
-        else if(!replaceConfirmed&&legacy().data.anns.length&&!confirm('Open this disk-backed collection? Export the current ordinary workspace first.'))return;
+        else if(!replaceConfirmed&&legacy().data.anns.length&&!confirm('Open this stored collection? Save your current work first.'))return;
         await this.recoverySession.disable();
         const meta=await this.collectionStore.read(id);invariant(meta,'Collection no longer exists');
-        this.collection=meta;this.batchQueue=restoreBatchQueue(meta.queue);this.mode=meta.settings?.mode??meta.queue?.settings?.mode??'assisted';this.longContext=meta.settings?.longContext??true;this.selected.clear();this.batchPage=0;
+        this.collection=meta;this.batchQueue=restoreBatchQueue(meta.queue);this.mode=meta.settings?.mode??meta.queue?.settings?.mode??DEFAULT_REVIEW_MODE;this.longContext=meta.settings?.longContext??true;this.selected.clear();this.batchPage=0;
         this.projects.clear();this.runs.clear();this.runHistory=[];this.blindSnapshots.clear();this.blinded.clear();this.exposed.clear();this.exposure=[];this.reviewUndo=[];
         const view=legacy();view.data.anns=[];view.app.set_dtd(meta.dtd);view.data.dtd=meta.dtd;view.vpp.refresh_v_anns();
-        this.message=`${meta.notes.length} notes on disk. Open a note or select notes to analyze.`;
+        this.message=`${meta.notes.length} files in this collection. Open a file or select files to analyze.`;
     }
     async importCollection(files){
         invariant(legacy()?.data.dtd,'Load an annotation schema first');
         if(this.collection)await this.saveCollectionCurrent();
-        if(legacy().data.anns.length&&!this.collection&&!confirm('Store a new collection on this device? Export the current workspace before replacing it.'))return;
+        if(legacy().data.anns.length&&!this.collection&&!confirm('Store these files as a new collection on this device? Save your current work first.'))return;
         const meta=await this.collectionStore.create(legacy().data.dtd,files[0]?.name?'Collection · '+files[0].name:'Local collection');
         this.installController=new AbortController();const started=performance.now();
-        try{await this.collectionStore.importFiles(meta,files,{keyFor:documentKey,signal:this.installController.signal,onProgress:progress=>{this.loadingProgress={phase:'Storing collection locally',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}});}
+        try{await this.collectionStore.importFiles(meta,files,{keyFor:documentKey,signal:this.installController.signal,onProgress:progress=>{this.loadingProgress={phase:'Storing collection',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}});}
         finally{this.installController=null;await this.openCollection(meta.id,{replaceConfirmed:true});}
     }
     async hydrateCollectionNote(item){
@@ -567,7 +509,7 @@ class LegacyAssist {
     }
     async saveCollectionNote(ann,{editRevision=this.collectionEditRevision??0}={}){
         if(!this.collection||!ann?._diskKey)return;
-        const item=this.collection.notes.find(n=>n._diskKey===ann._diskKey);invariant(item&&documentKey(ann._filename,ann.text)===item._diskKey,'Collection source or filename changed. Export this note before reopening the collection.');
+        const item=this.collection.notes.find(n=>n._diskKey===ann._diskKey);invariant(item&&documentKey(ann._filename,ann.text)===item._diskKey,'Collection source or file name changed. Export this file before reopening the collection.');
         const project=this.projects.get(item._diskKey),run=this.runs.get(item._diskKey);
         this.collection.queue=this.batchQueue;this.collection.settings={mode:this.mode,longContext:this.longContext!==false};
         await this.collectionStore.commit(this.collection,{key:item._diskKey,sourceHash:item.sourceHash,ann:jsonParse(JSON.stringify(ann,(key,value)=>key==='_fh'?null:value)),project:project?.current??null,run:run?{...run,project:undefined,records:undefined}:null,blindSnapshot:this.blindSnapshots.get(item._diskKey)??null,blinded:this.blinded.has(item._diskKey),exposed:this.exposed.has(item._diskKey)});
@@ -580,14 +522,14 @@ class LegacyAssist {
     }
     async openCollectionNote(key){
         await this.saveCollectionCurrent();
-        invariant(!legacy().data.anns.some(a=>!a._diskKey),'Close the collection before importing ordinary workspace notes; export those notes first.');
-        const item=this.collection.notes.find(n=>n._diskKey===key);invariant(item,'Collection note missing');
+        invariant(!legacy().data.anns.some(a=>!a._diskKey),'Close the collection before opening other files; save those files first.');
+        const item=this.collection.notes.find(n=>n._diskKey===key);invariant(item,'Collection file missing');
         const ann=await this.hydrateCollectionNote(item),view=legacy();
         view.data.anns=[];const active=view.vpp.add_sample_txt_as_ann(ann.text);Object.assign(active,ann);view.vpp.set_ann_idx(0);view.vpp.refresh_v_anns();
-        this.apply=null;this.detail=null;this.evictCollectionNotes();this.refreshNativeHints();this.message='Note loaded from local storage. Other notes and histories remain on disk.';
+        this.apply=null;this.detail=null;this.evictCollectionNotes();this.refreshNativeHints();this.message='File loaded from the collection. Other files stay on disk.';
     }
     async closeCollection(){
-        await this.saveCollectionCurrent();this.collection=null;this.batchQueue=null;this.selected.clear();this.projects.clear();this.runs.clear();this.runHistory=[];this.reviewUndo=[];legacy().data.anns=legacy().data.anns.filter(a=>!a._diskKey);legacy().vpp.refresh_v_anns();this.message='Collection closed. Its local files remain available under List collections.';
+        await this.saveCollectionCurrent();this.collection=null;this.batchQueue=null;this.selected.clear();this.projects.clear();this.runs.clear();this.runHistory=[];this.reviewUndo=[];legacy().data.anns=legacy().data.anns.filter(a=>!a._diskKey);legacy().vpp.refresh_v_anns();this.message='Collection closed. Its files stay available under List Collections.';
     }
     async ensureProject(ann,schema=legacySchema(legacy().data.dtd)) {
         const key=documentKey(ann._filename??'document',ann.text??''),hash=await fingerprint(schema);
@@ -620,7 +562,7 @@ class LegacyAssist {
         const schema=legacySchema(workspace.dtd),documents=[],records=[],children=[];
         for(const [index,ann]of workspace.anns.entries()){
             const project=await this.syncProject(ann,schema),doc=await sourceDocument(`note-${index+1}`,new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});
-            invariant(!children.some(child=>child.key===documentKey(ann._filename??'document',ann.text)),'Duplicate document identity; rename duplicate notes before recovery');documents.push(doc);children.push({documentId:doc.id,key:documentKey(ann._filename??'document',ann.text),project:clone(project.current)});
+            invariant(!children.some(child=>child.key===documentKey(ann._filename??'document',ann.text)),'Duplicate files; rename them before enabling recovery');documents.push(doc);children.push({documentId:doc.id,key:documentKey(ann._filename??'document',ann.text),project:clone(project.current)});
             const current=legacyRecords(ann,doc,schema),ids=new Map();for(const record of current)ids.set(record.id,'record-'+await sha256(doc.id+'\0'+record.id));
             for(const record of current)records.push({...record,id:ids.get(record.id),relations:(record.relations??[]).map(rel=>({...rel,targetId:ids.get(rel.targetId)})),origin:{kind:'imported',source:'legacy-recovery',legacyProjectId:project.current.id,legacyRecordId:record.id,reviewStatus:'preserved-in-child-project'}});
         }
@@ -636,10 +578,10 @@ class LegacyAssist {
         const children=new Map();for(const child of saved.children??[])children.set(child.key,await ReviewProject.open(child.project));
         const view=legacy();invariant(view,'Original annotation workspace unavailable');
         view.app.set_vpp_data_json({dtd:clone(saved.dtd),anns:clone(saved.anns),ann_idx:saved.annIndex,mn4anns:1});
-        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??'auto';this.thresholdOverride=restoreSelectionThresholdOverride(this.modelSelectionState,saved.thresholdSelectionKey,saved.thresholdOverride);if(saved.thresholdSelectionKey===modelSelectionKey(this.modelSelection))saveModelSelectionState(this.modelSelectionState);this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.batchQueue=restoreBatchQueue(checkpointBatchQueue(saved.batchQueue,(key,id)=>children.get(key)?.current.runs.some(r=>r.id===id)));this.selected.clear();this.apply=null;this.render();
+        this.corpusIdentity=project.id;this.corpusCreatedAt=project.createdAt;this.projects=children;this.runHistory=[...children.values()].flatMap(child=>child.current.runs);this.runs=new Map((saved.runs??[]).map(([key,run])=>[key,{...run,project:children.get(key)}]));this.mode=saved.mode??DEFAULT_REVIEW_MODE;this.thresholdOverride=restoreSelectionThresholdOverride(this.modelSelectionState,saved.thresholdSelectionKey,saved.thresholdOverride);if(saved.thresholdSelectionKey===modelSelectionKey(this.modelSelection))saveModelSelectionState(this.modelSelectionState);this.scope=scope;this.scopeDraft=scope?clone(scope):presetScope();this.scopeEditing=false;this.exposed=new Set(saved.exposed??[]);this.exposure=clone(saved.exposure??[]);this.blinded=new Set(saved.blinded??[]);this.blindSnapshots=new Map(saved.blindSnapshots??[]);this.batchQueue=restoreBatchQueue(checkpointBatchQueue(saved.batchQueue,(key,id)=>children.get(key)?.current.runs.some(r=>r.id===id)));this.selected.clear();this.apply=null;this.render();
     }
     async freezeNote(view){
-        invariant(!this.exposed.has(view.key),'This note was already exposed');
+        invariant(!this.exposed.has(view.key),'Suggestions were already shown for this file');
         const project=await this.ensureProject(view.ann), data=clone(project.current);data.draft.records=legacyRecords(view.ann,data.documents[0],data.schema);this.projects.set(view.key,await ReviewProject.open(data));await this.projects.get(view.key).snapshot();
         this.blindSnapshots.set(view.key,freeze(clone({filename:view.ann._filename,text:view.ann.text,tags:view.ann.tags,frozenAt:new Date().toISOString()})));
         this.message='Independent annotation frozen in the portable evidence project. Analyze and reveal when ready.';
@@ -652,7 +594,7 @@ class LegacyAssist {
             invariant(this.batchQueue,'No batch to resume');
             const eligible=this.batchQueue.notes.filter(n=>retryFailed?n.status==='failed':['pending','cancelled'].includes(n.status));
             const available=new Map(anns.map(a=>[annKey(a),a]));
-            for(const note of eligible)if(!available.has(note.key)){note.status='failed';note.error='Source note was removed or changed; start a new batch for its current version.';}
+            for(const note of eligible)if(!available.has(note.key)){note.status='failed';note.error='Source file was removed or changed; start a new batch for its current version.';}
             anns=eligible.filter(n=>available.has(n.key)).map(n=>available.get(n.key));
         }
         invariant(!this.selectionDraft&&this.selectionDraftMode===modelSelectionControlValue(this.modelSelection),'Apply the pending model source before analysis.');
@@ -664,23 +606,22 @@ class LegacyAssist {
             throw new Error('Import a GLiNER2.5 boundary model package in this panel');
         invariant(modelSelectionMatchesManifest(this.modelSelection,this.model.manifest),'The active package does not match the selected model source. Load a matching package before analysis.');
         if (!anns.length)
-            throw new Error(resume?'No matching unfinished notes remain. Changed or removed notes need a new batch.':'Open a document first');
+            throw new Error(resume?'No matching unfinished files remain. Changed or removed files need a new batch.':'Open a file first');
         const nativeSchema=legacySchema(legacy().data.dtd),scope=this.scope?clone(this.scope):null;
         const activeVariant=selectInferenceVariant(model,qualifyForSchema(model,nativeSchema).level),activeCodec=activeVariant.codec;
         invariant(activeCodec!==ENTITY_ATTRIBUTES_CODEC||!scope,'Clear the clinical suggestion scope before using a fixed entity-contract model. Its complete native prompt must be retained.');
         const schema=activeCodec===ENTITY_ATTRIBUTES_CODEC?entityContractSchema(nativeSchema,model.entityContracts.get(activeVariant.id)):scope?compileScope(scope,nativeSchema,activeCodec):activeCodec===CLINICAL_V3_CODEC?clinicalV3Schema(nativeSchema):nativeSchema;
-        if(managed)invariant(this.mode!=='blind','For blind review, open and freeze each collection note and analyze it individually.');
+        if(managed)invariant(this.mode!=='blind','For blind review, open and freeze each collection file and analyze it individually.');
         if(this.mode==='blind')for(const ann of anns)invariant(this.blindSnapshots.has(documentKey(ann._filename??'document',ann.text)),'Freeze each independent annotation before analysis');
         const autoApply = this.mode === 'auto';
         if (autoApply) for (const ann of anns) {
             const key = annKey(ann);
-            invariant(!this.blinded.has(key) || this.exposed.has(key), 'Reveal each protected note explicitly before auto apply');
+            invariant(!this.blinded.has(key) || this.exposed.has(key), 'Reveal each blind file before Auto Apply');
         }
         const qualification = qualifyForSchema(model, schema);
         if (qualification.level !== 'entity-span' && qualification.level !== 'structured-span' && qualification.level !== 'occurrence-record')
             throw new Error('This package’s codec is not a local GLiNER2.5 decoder');
         const variant = selectInferenceVariant(model,qualification.level);
-        invariant(variant.precision!=='int8'||!autoApply,'Experimental INT8 requires suggestion review. Select Assist mode or use FP32 for auto apply.');
         const codec = variant.codec;
         const thresholdSettings=suggestionThreshold(this.thresholdOverride,scope,variant);
         if(scope)this.checkScopeBudget(schema,variant);
@@ -719,9 +660,9 @@ class LegacyAssist {
         const completed=new Set();let activeIndex=0,analysisStarted=null;
         const updateProgress=()=>{
             const counts=batch?queueCounts(this.batchQueue):{completed:completed.size,failed:0,total:anns.length};
-            this.loadingProgress={phase:'Analyzing notes',completed:counts.completed+counts.failed,failed:counts.failed,total:counts.total,started:analysisStarted-(batch?this.batchQueue.elapsedMs:0)};
+            this.loadingProgress={phase:'Analyzing files',completed:counts.completed+counts.failed,failed:counts.failed,total:counts.total,started:analysisStarted-(batch?this.batchQueue.elapsedMs:0)};
         };
-        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, collectResults:false, qualify:true, onWindowProgress: progress=>{this.windowProgress=progress;this.message=`${this.progress?.filename??'Note'} · window ${Math.min(progress.completed+1,progress.total)} / ${progress.total}`;this.render();}, onProgress: index => {
+        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, collectResults:false, qualify:true, onWindowProgress: progress=>{this.windowProgress=progress;this.message=`${this.progress?.filename??'File'} · window ${Math.min(progress.completed+1,progress.total)} / ${progress.total}`;this.render();}, onProgress: index => {
             analysisStarted??=performance.now();
             if(batch){const row=queueRows[index];row.status='running';row.attempts++;row.startedAt=new Date().toISOString();delete row.error;}
             updateProgress();
@@ -750,12 +691,12 @@ class LegacyAssist {
             if(managed){await this.saveCollectionNote(sourceAnns[index]);const item=this.collection.notes.find(n=>n._diskKey===key);anns[index]=item;sourceAnns[index]=item;this.evictCollectionNotes();}
             updateProgress();renderLoadingProgress(this.root,this.loadingProgress);
             if(batch&&completed.size%10===0&&this.recoverySession.enabled)this.recoverySession.touch();
-        }) });}catch(error){if(batch&&!completed.has(activeIndex)){const row=queueRows[activeIndex];row.status=/Cancelled|AbortError/.test(error.message+' '+error.name)?'cancelled':'failed';row.error=row.status==='cancelled'?'Stopped by user':'Local inference failed; retry this note';row.finishedAt=new Date().toISOString();}if(!completed.has(activeIndex)&&typeof anns[activeIndex]?.text==='string'){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
+        }) });}catch(error){if(batch&&!completed.has(activeIndex)){const row=queueRows[activeIndex];row.status=/Cancelled|AbortError/.test(error.message+' '+error.name)?'cancelled':'failed';row.error=row.status==='cancelled'?'Stopped by user':'Local analysis failed; retry this file';row.finishedAt=new Date().toISOString();}if(!completed.has(activeIndex)&&typeof anns[activeIndex]?.text==='string'){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
         finally{if(batch){if(analysisStarted!==null)this.batchQueue.elapsedMs+=performance.now()-analysisStarted;const counts=queueCounts(this.batchQueue);this.batchQueue.state=counts.pending+counts.cancelled?'paused':counts.failed?'needs-attention':'completed';if(managed){this.collection.queue=this.batchQueue;await this.collectionStore.commit(this.collection);this.evictCollectionNotes();}if(this.recoverySession.enabled)this.recoverySession.touch();}}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
-            : autoApply ? `Auto apply finished for ${anns.length} notes. Machine-applied tags are unreviewed; original predictions remain in the evidence project.` : `${batch?`Batch: ${queueCounts(this.batchQueue).completed} completed, ${queueCounts(this.batchQueue).failed} failed. Open each note to review its results. `:''}${notice}`;
+            : autoApply ? `Auto Apply finished for ${anns.length} files. Added tags are unreviewed; original predictions stay in the evidence project.` : `${batch?`Batch: ${queueCounts(this.batchQueue).completed} completed, ${queueCounts(this.batchQueue).failed} failed. Open each file to review its results. `:''}${notice}`;
     }
     chosenDocuments(onlySelected) {
         const view = legacy();
@@ -787,7 +728,7 @@ class LegacyAssist {
         const ann = view?.ann;
         const tagDef = view?.data?.dtd?.tag_dict?.[tagName];
         if (!ann)
-            throw new Error('Open a document first');
+            throw new Error('Open a file first');
         if (!tagDef || tagDef.is_non_consuming)
             throw new Error('Choose a span entity tag from the loaded schema');
         const spans = medtatorSpans(ann.text, record.anchor);
@@ -806,16 +747,15 @@ class LegacyAssist {
     }
     async applyAllSuggestions(ann = this.current().ann) {
         const view = legacy(), dtd = view?.data?.dtd;
-        invariant(ann && (view.data.anns.includes(ann)||this.collection&&ann._diskKey), 'Open a document first');
+        invariant(ann && (view.data.anns.includes(ann)||this.collection&&ann._diskKey), 'Open a file first');
         const key = documentKey(ann._filename ?? 'document', ann.text), run = this.runs.get(key);
-        invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this protected note explicitly before auto apply');
+        invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this blind file before Auto Apply');
         invariant(run?.status === 'complete', 'Auto apply requires a complete run');
-        invariant(run.precision!=='int8','Experimental INT8 requires individual suggestion review');
         const pending = run.records.filter(record => !run.decisions[record.id]);
         if (!pending.length) { this.message = 'No remaining suggestions to apply. Existing and rejected tags were preserved.'; return; }
         const project = await this.syncProject(ann);
-        invariant(project === run.project && legacy().data.dtd === dtd && project.current.documents[0].text === ann.text, 'Source or schema changed; analyze this note again');
-        invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this protected note explicitly before auto apply');
+        invariant(project === run.project && legacy().data.dtd === dtd && project.current.documents[0].text === ann.text, 'Source or schema changed; analyze this file again');
+        invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this blind file before Auto Apply');
         // Build and validate the complete batch before touching the native tags.
         // Staging also makes native IDs unique within a family.
         const staged = {...ann, tags:[...ann.tags]}, additions = [], replacements = [];
@@ -852,7 +792,7 @@ class LegacyAssist {
             view.vpp.set_ann_unsaved(ann);
         }
         view.vpp.$forceUpdate(); this.apply = null; this.detail = null;
-        this.message = `Auto-applied ${additions.length} suggestions as native annotation tags. Machine-applied tags are unreviewed; existing tags and original predictions were preserved.`;
+        this.message = `Auto-applied ${additions.length} suggestions as tags. They are unreviewed; existing tags and original predictions are kept.`;
     }
     rememberReviewUndo(run,decisions,added=[]){
         this.reviewUndo??=[];
@@ -864,7 +804,7 @@ class LegacyAssist {
     }
     undoReview(){
         const view=this.current(),run=view.run,entry=this.reviewUndo?.at(-1);
-        invariant(entry&&entry.key===view.key&&entry.runId===run?.nativeRunId,'Open the note and run for the last review action');
+        invariant(entry&&entry.key===view.key&&entry.runId===run?.nativeRunId,'Open the file for the last review action');
         const undone=new Set(run.project.current.events.filter(e=>e.action==='undo').map(e=>e.details.undoes));
         const event=[...run.project.current.events].reverse().find(e=>!undone.has(e.id)&&(e.details?.undo||e.details?.before));
         invariant(event?.id===entry.eventId,'Another annotation change follows this action; review it before undoing');
@@ -899,7 +839,7 @@ class LegacyAssist {
         const ann = view?.ann;
         const editor = view?.app?.codemirror;
         if (!ann || !editor)
-            throw new Error('Open the document in the source view first');
+            throw new Error('Open the file in the editor first');
         const spans = medtatorSpans(ann.text, record.anchor);
         const range = view.app.cm_spans2range(spans.split(',')[0], ann);
         editor.focus();
@@ -914,9 +854,9 @@ class LegacyAssist {
                 this.blinded.add(documentKey(ann._filename ?? 'document', ann.text ?? ''));
         this.signature = this.viewSignature();
         this.host.dataset.open = String(this.open);
-        this.root.replaceChildren(node('style', themeColors(styles)));
+        this.root.replaceChildren(node('style', themeColors(ASSIST_STYLES)));
         if (!this.open) {
-            this.root.append(button('Show assistance', () => this.setOpen(true), { id: 'assist-expand', title: 'Show the local assistance panel' }));
+            this.root.append(button('Assistance', () => this.setOpen(true), { id: 'assist-expand', title: 'Show the Assistance panel' }));
             this.root.lastChild.className = 'rail';
             return;
         }
@@ -924,86 +864,86 @@ class LegacyAssist {
         this.root.append(dock);
         const head = node('div', null, { class: 'head' });
         const title = node('div', null, { class: 'row' });
-        title.append(icon('assist'),node('strong', 'Assistance'), node('span', null, { class: 'grow' }), button('Hide', () => this.setOpen(false), { id: 'assist-collapse', title: 'Collapse the assistance panel' }));
-        const mode = node('select', null, { 'aria-label': 'Workspace mode', 'data-testid': 'assist-mode', disabled:this.busy });
-        for (const [value, label] of [['assisted', 'Assisted'], ['auto', 'Auto apply'], ['blind', 'Blind']])
+        title.append(icon('assist'),node('strong', 'Assistance'), node('span', null, { class: 'grow' }), button('Hide', () => this.setOpen(false), { id: 'assist-collapse', title: 'Hide the Assistance panel' }));
+        const mode = node('select', null, { 'aria-label': 'Review mode', 'aria-describedby': 'assist-mode-description', 'data-testid': 'assist-mode', disabled:this.busy });
+        for (const [value, label] of REVIEW_MODES)
             mode.append(node('option', label, { value }));
         mode.value = this.mode;
         mode.addEventListener('change', () => { this.mode = mode.value; this.apply = null; this.render(); });
         const view = this.current();
         const schema = view?.data?.dtd?.name;
         const status = node('div', null, { class: 'row' });
-        status.append(node('span', this.structured() ? 'Structured package' : this.model ? 'Span package' : 'Model needed', { class: `badge ${this.model?'ready':'pending'}`, 'data-testid': 'model-status' }), node('span', 'Runs on this device', { class: 'badge' }));
+        status.append(node('span', this.structured() ? 'Structured Model' : this.model ? 'Span Model' : 'Not Loaded', { class: `badge ${this.model?'ready':'pending'}`, 'data-testid': 'model-status' }));
         head.append(title);
         if(this.model)head.append(node('p',modelSelectionLabel(this.modelSelection),{class:'muted','data-testid':'assist-model-identity',title:this.model.manifest.id}));
         if(this.model)head.append(node('p',this.executionStatus?`${this.executionStatus.backend==='webgpu'?'WebGPU':'WASM'} · ${this.executionStatus.precision?.toUpperCase()??'FP32'}${this.executionStatus.fallbackReason?' · automatic fallback':''}`:`${this.model.manifest.variants[0].precision.toUpperCase()} package · ${this.model.manifest.id}`,{class:'muted','data-testid':'assist-execution-status'}));
 
 
         if (view?.run && this.mode !== 'blind' && (!this.blinded.has(view.key) || this.exposed.has(view.key)))
-            head.append(node('p', `${view.run.records.length} machine suggestions · ${view.ann.tags?.length ?? 0} annotation tags`, { 'data-testid': 'assist-counts' }));
+            head.append(node('p', `${view.run.records.length} suggestions · ${view.ann.tags?.length ?? 0} tags`, { 'data-testid': 'assist-counts' }));
         dock.append(head);
         if(this.model&&this.modelStorageNotice)head.append(node('p',this.modelStorageNotice,{class:'muted',role:'status','data-testid':'assist-storage-notice'}));
-        if(this.executionStatus?.fallbackDetail){const details=disclosure(this,'execution-details','Why CPU was used');details.append(node('p',this.executionStatus.fallbackDetail,{class:'muted',style:'overflow-wrap:anywhere'}));head.append(details);}
+        if(this.executionStatus?.fallbackDetail){const details=disclosure(this,'execution-details','Why was CPU used?');details.append(node('p',this.executionStatus.fallbackDetail,{class:'muted wrap'}));head.append(details);}
         if (this.message)
             dock.append(node('div', this.message, { class: `message${this.error ? ' error' : ''}`, role: this.error ? 'alert' : 'status', 'data-testid': 'assist-message' }));
         renderLoadingProgress(this.root,this.busy?this.loadingProgress:null);
-        if(this.busy&&this.windowProgress?.total>1){const progress=node('progress',null,{max:this.windowProgress.total,value:this.windowProgress.completed,'aria-label':'Note window progress'});progress.style.width='100%';dock.append(progress);}
+        if(this.busy&&this.windowProgress?.total>1){const progress=node('progress',null,{max:this.windowProgress.total,value:this.windowProgress.completed,'aria-label':'Window progress'});progress.className='full';dock.append(progress);}
         const body = node('div', null, { class: 'body' });
         dock.append(body);
-        const practice=disclosure(this,'practice','Try a fictional note',!view?.ann);
-        practice.append(node('p','Load a note, matching schema and model selection. Your choice starts no download.',{class:'muted'}));
+        const practice=disclosure(this,'practice','Try a Sample',!view?.ann);
+        practice.append(node('p','Loads fictional clinical text with its schema and model choice. Nothing is downloaded.',{class:'muted'}));
         const practiceActions=node('div',null,{class:'row'});
         for(const task of PRACTICE_TASKS)practiceActions.append(button(task.title,()=>this.perform(()=>this.loadPracticeTask(task)),{id:'assist-practice-'+task.id,disabled:this.busy||!view?.vpp}));
         practice.append(practiceActions,node('a','Step-by-step tutorials',{href:'https://github.com/sidataplus/NextMedTator/tree/main/tutorial',target:'_blank',rel:'noopener noreferrer'}));
         if(!view?.ann)body.append(practice);
-        const collections=disclosure(this,'collections','Large collections · local disk');
-        collections.append(node('p','Store up to 10,000 UTF-8 text notes on this device. Only the open note and the note being analyzed enter the editor / memory. Annotations and history are checkpointed per note. Browser storage is not a portable backup.',{class:'muted'}));
-        const collectionFiles=node('input',null,{type:'file',multiple:true,accept:'.txt','aria-label':'Store text files as a local collection','data-testid':'assist-collection-import',disabled:this.busy||!view?.data.dtd});collectionFiles.addEventListener('change',()=>{const files=[...collectionFiles.files];if(files.length)this.perform(()=>this.importCollection(files));});collections.append(labeled('Store text files on this device',collectionFiles),button('List collections',()=>this.perform(async()=>{this.savedCollections=await this.collectionStore.list();}),{disabled:this.busy,id:'assist-collection-list'}));
-        for(const saved of this.savedCollections??[])collections.append(button(`Open collection: ${saved.name} (${saved.count} notes)`,()=>this.perform(()=>this.openCollection(saved.id)),{disabled:this.busy,id:'assist-collection-restore'}));
-        if(this.collection){collections.append(node('p',`${this.collection.notes.length} notes stored · ${this.projects.size} note histories loaded`,{'data-testid':'assist-collection-memory'}),button('Save open note',()=>this.perform(()=>this.saveCollectionCurrent()),{disabled:this.busy,id:'assist-collection-save'}),button('Close collection',()=>this.perform(()=>this.closeCollection()),{disabled:this.busy,id:'assist-collection-close'}));}
-        const backup=node('input',null,{type:'file',accept:'.jsonl','aria-label':'Restore collection backup','data-testid':'assist-collection-backup-import',disabled:this.busy});backup.addEventListener('change',()=>{const file=backup.files[0];if(file)this.perform(async()=>{const meta=await importCollectionBackup(this.collectionStore,file,{keyFor:documentKey});await this.openCollection(meta.id);});});collections.append(labeled('Restore portable collection backup',backup));
+        const collections=disclosure(this,'collections','Large Collections');
+        collections.append(node('p','Store up to 10,000 .txt files in this browser and open them one at a time. Annotations are saved per file. Browser storage is not a backup; export one to keep a copy.',{class:'muted'}));
+        const collectionFiles=node('input',null,{type:'file',multiple:true,accept:'.txt','aria-label':'Store text files as a collection','data-testid':'assist-collection-import',disabled:this.busy||!view?.data.dtd});collectionFiles.addEventListener('change',()=>{const files=[...collectionFiles.files];if(files.length)this.perform(()=>this.importCollection(files));});collections.append(labeled('Store Text Files (.txt)',collectionFiles),button('List Collections',()=>this.perform(async()=>{this.savedCollections=await this.collectionStore.list();}),{disabled:this.busy,id:'assist-collection-list'}));
+        for(const saved of this.savedCollections??[])collections.append(button(`Open ${saved.name} (${saved.count} files)`,()=>this.perform(()=>this.openCollection(saved.id)),{disabled:this.busy,id:'assist-collection-restore'}));
+        if(this.collection){collections.append(node('p',`${this.collection.notes.length} files stored · ${this.projects.size} loaded`,{'data-testid':'assist-collection-memory'}),button('Save Current File',()=>this.perform(()=>this.saveCollectionCurrent()),{disabled:this.busy,id:'assist-collection-save'}),button('Close Collection',()=>this.perform(()=>this.closeCollection()),{disabled:this.busy,id:'assist-collection-close'}));}
+        const backup=node('input',null,{type:'file',accept:'.jsonl','aria-label':'Restore collection backup','data-testid':'assist-collection-backup-import',disabled:this.busy});backup.addEventListener('change',()=>{const file=backup.files[0];if(file)this.perform(async()=>{const meta=await importCollectionBackup(this.collectionStore,file,{keyFor:documentKey});await this.openCollection(meta.id);});});collections.append(labeled('Restore Backup (.jsonl)',backup));
         if(this.collection){
-            collections.append(button('Export collection backup',()=>this.exportCollectionBackup(),{disabled:this.busy,id:'assist-collection-export'}));
-            if(typeof window.showSaveFilePicker==='function')collections.append(button('Use browser download instead',()=>this.exportCollectionBackup({browserDownload:true}),{disabled:this.busy,id:'assist-collection-browser-export'}));
-            collections.append(node('p',typeof window.showSaveFilePicker==='function'?'Streaming export writes directly to disk. Browser download is also available for backups up to 64 MiB.':'This browser uses a standard download for backups up to 64 MiB. No file-system permission is needed.',{class:'muted'}));
+            collections.append(button('Export Backup',()=>this.exportCollectionBackup(),{disabled:this.busy,id:'assist-collection-export'}));
+            if(typeof window.showSaveFilePicker==='function')collections.append(button('Download Instead',()=>this.exportCollectionBackup({browserDownload:true}),{disabled:this.busy,id:'assist-collection-browser-export'}));
+            collections.append(node('p',typeof window.showSaveFilePicker==='function'?'Export Backup writes directly to disk. Download Instead works for backups up to 64 MiB.':'This browser downloads backups up to 64 MiB.',{class:'muted'}));
         }
         body.append(collections);
         const modelSettings=node('section',null,{class:'section','aria-label':'Model source','data-testid':'assist-step-model'});body.append(modelSettings);
         modelSettings.append(renderModelSelectionControls({selection:this.modelSelection,draftMode:this.selectionDraftMode,draft:this.selectionDraft,activeModel:this.model,onSelect:selection=>this.setSelectedModel(selection),onDraftMode:mode=>{this.beginModelSelectionAction();this.selectionDraftMode=mode;this.selectionDraft=null;this.render();},onDraftChange:draft=>{this.beginModelSelectionAction();this.selectionDraft=draft;for(const button of this.root.querySelectorAll('[data-testid=analyze],#analyze,#assist-analyze,#assist-analyze-selected'))button.disabled=true;},onUseHub:selection=>this.perform(async()=>{this.setSelectedModel({kind:'hub-adapter',...selection},{render:false});this.message=`Selected ${modelSelectionLabel(this.modelSelection)}. Export the pinned adapter locally, then import its verified ONNX package.`;}),onUseLocal:(files,base)=>this.perform(async()=>{const selection=await localAdapterSelection(files,base);this.setSelectedModel(selection,{render:false});this.message=`Selected local adapter ${selection.adapterSha256.slice(0,12)}. Export it locally, then import its verified ONNX package.`;}),prefix:'assist-model',disabled:this.busy,compact:true}));
         const actions = node('div', null, { class: 'row' });
         const sourcePending=!!this.selectionDraft||this.selectionDraftMode!==modelSelectionControlValue(this.modelSelection);
-        actions.append(button('Analyze note', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !this.model || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the open note on this device' }));
-        actions.append(button('Analyze selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true),{batch:true})), { disabled: this.busy || !this.model || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the notes checked in this panel' }));
-        actions.append(button('Pause', () => {this.installController?.abort();this.modelRunner.cancel();}, { disabled: !this.busy, id: 'assist-pause', title: 'Stop the local analysis or model download' }));
-        const options=disclosure(this,'options','Analysis settings',this.scopeEditing);body.append(options);
+        actions.append(button('Analyze File', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(false))), { primary: true, disabled: this.busy || !this.model || !view?.ann || sourcePending, id: 'assist-analyze', title: 'Analyze the current file on this device' }));
+        actions.append(button('Analyze Selected', () => this.perform(() => this.analyzeDocuments(this.chosenDocuments(true),{batch:true})), { disabled: this.busy || !this.model || this.selected.size === 0 || sourcePending, id: 'assist-analyze-selected', title: 'Analyze the files checked below' }));
+        actions.append(button('Pause', () => {this.installController?.abort();this.modelRunner.cancel();}, { disabled: !this.busy, id: 'assist-pause', title: 'Stop the current download or analysis' }));
+        const options=disclosure(this,'options','Analysis Settings',this.scopeEditing);body.append(options);
         options.append(thresholdControl({override:this.thresholdOverride,scope:this.scope,variant:activeVariantForSchema(this.model,view?.data?.dtd?legacySchema(view.data.dtd):null),disabled:this.busy,id:'assist-threshold',onChange:(value,render)=>{this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,value);saveModelSelectionState(this.modelSelectionState);if(render){if(this.recoverySession.enabled)this.recoverySession.touch();this.render();}}}));
-        const actionBar=node('div',null,{class:'action-bar'});actionBar.append(actions,node('p',!schema?'Load a schema, then open a note.':!view?.ann?'Open a note to begin.':!this.model?'Load the model in step 3 to continue.':this.mode==='auto'?'Predictions are added as unreviewed tags.':this.mode==='blind'?'Freeze your annotation before revealing predictions.':'Review suggestions before adding them to the note.'));const analysisStep=node('section',null,{class:'section','data-testid':'assist-step-analyze'});analysisStep.append(node('h3','4. Analyze and review'),labeled('Review mode',mode),actionBar);body.append(analysisStep);
-        const longNotes=node('input',null,{type:'checkbox','aria-label':'Analyze long notes with overlapping windows','data-testid':'assist-long-context',disabled:this.busy});longNotes.checked=this.longContext!==false;longNotes.addEventListener('change',()=>{this.longContext=longNotes.checked;});options.append(labeled('Analyze long notes with GLiNER2.5 windows',longNotes),node('p','Keeps the full prompt, maps spans back to the original note, and merges overlap duplicates. Attributes use window-local context. Turning this off rejects oversized notes.',{class:'muted'}));
+        const actionBar=node('div',null,{class:'action-bar'});const prerequisite=!schema?'Load a schema, then open a file.':!view?.ann?'Open a file to begin.':!this.model?'Load the model in step 3 to continue.':null;actionBar.append(actions);if(prerequisite)actionBar.append(node('p',prerequisite));const analysisStep=node('section',null,{class:'section','data-testid':'assist-step-analyze'});analysisStep.append(node('h3','4. Analyze and Review'),labeled('Review Mode',mode),node('p',reviewModeDescription(this.mode),{class:'muted mode-description',id:'assist-mode-description','data-testid':'assist-mode-description'}),actionBar);body.append(analysisStep);
+        const longNotes=node('input',null,{type:'checkbox','aria-label':'Split long files into overlapping windows','data-testid':'assist-long-context',disabled:this.busy});longNotes.checked=this.longContext!==false;longNotes.addEventListener('change',()=>{this.longContext=longNotes.checked;});options.append(labeled('Split Long Files into Windows',longNotes),node('p','Long files are analyzed in overlapping windows and merged back. Attributes use each window\'s context. Turn this off to reject files that are too long.',{class:'muted'}));
         options.append(renderScopeEditor(this));
-        const storage=disclosure(this,'recovery','Local recovery & backups');
+        const storage=disclosure(this,'recovery','Recovery & Backup');
         const recovery=node('div',null,{class:'row'});recovery.append(node('p',this.recoverySession.status,{class:'muted',role:'status','data-testid':'assist-recovery-status'}));
-        if(!this.recoverySession.enabled)recovery.append(button('Enable local corpus recovery',()=>this.perform(async()=>{if(!confirm('Store this corpus, annotations and prediction history in this browser profile? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann||!!this.collection,id:'assist-recovery-enable'}));
-        else recovery.append(button('Save corpus checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete corpus recovery',()=>this.perform(async()=>{if(confirm('Delete this corpus recovery copy? Current in-memory annotations remain.'))await this.recoverySession.forget();})),button('Export SQLite corpus backup',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
-        recovery.append(button('List saved corpora',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore corpus '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the current in-memory corpus with this recovery copy? Export unsaved files first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));storage.append(recovery);
-        const packages=disclosure(this,'packages',this.model?'3. Model ready':'3. Load the model',!this.model);packages.append(status);
+        if(!this.recoverySession.enabled)recovery.append(button('Enable Recovery',()=>this.perform(async()=>{if(!confirm('Keep these files, annotations and prediction history in this browser? Export files for a portable backup.'))return;await this.recoverySession.enable();}),{disabled:!view?.ann||!!this.collection,id:'assist-recovery-enable'}));
+        else recovery.append(button('Save Checkpoint',()=>this.perform(()=>this.recoverySession.save()),{id:'assist-checkpoint'}),button('Disable Recovery',()=>this.perform(()=>this.recoverySession.disable())),button('Delete Recovery Copy',()=>this.perform(async()=>{if(confirm('Delete this recovery copy? Annotations that are open now are kept.'))await this.recoverySession.forget();})),button('Export Backup (.sqlite3)',()=>this.perform(async()=>localDownload(await this.recoverySession.exportDatabase(),'corpus.nmt.sqlite3','application/vnd.sqlite3'))));
+        recovery.append(button('List Recovery Copies',()=>this.perform(async()=>{this.savedCorpora=(await this.recoverySession.list()).filter(saved=>saved.corpus);})));for(const saved of this.savedCorpora??[])recovery.append(button('Restore '+saved.id,()=>this.perform(async()=>{if(!confirm('Replace the open files with this recovery copy? Save your current work first.'))return;await this.recoverySession.recover(saved.id,saved.backend);})));storage.append(recovery);
+        const packages=disclosure(this,'packages',this.model?'3. Model Ready':'3. Load the Model',!this.model);packages.append(status);
         const recommended=deviceRecommendation(this.deviceProfile,{execution:this.executionPreference});
         let modelDetailsDevice;const deviceCard=node('section',null,{class:'setup-hint','data-testid':'assist-device'});
         deviceCard.append(node('strong',recommended.title));
-        if(this.deviceProfile){const details=disclosure(this,'device-details','Device details');details.append(node('p',`${this.deviceProfile.gpu?'WebGPU available':'CPU / WASM'} · ${this.deviceProfile.cores??'Unknown'} logical cores${this.deviceProfile.memory!==null?` · browser memory hint ${this.deviceProfile.memory} GiB`:''}. RAM and GPU memory are not measured.`,{class:'muted'}));details.append(node('p',recommended.reason,{class:'muted'}));modelDetailsDevice=details;}
+        if(this.deviceProfile){const details=disclosure(this,'device-details','Device Details');details.append(node('p',`${this.deviceProfile.gpu?'WebGPU available':'CPU / WASM'} · ${this.deviceProfile.cores??'Unknown'} logical cores${this.deviceProfile.memory!==null?` · browser memory hint ${this.deviceProfile.memory} GiB`:''}. RAM and GPU memory are not measured.`,{class:'muted'}));details.append(node('p',recommended.reason,{class:'muted'}));modelDetailsDevice=details;}
         if(recommended.caution)deviceCard.append(node('p',recommended.caution));
         packages.append(deviceCard);
 
-        const execution=node('select',null,{'aria-label':'Inference device','data-testid':'assist-execution',disabled:this.busy});
-        for(const [value,label]of [['auto','Automatic · WebGPU with WASM fallback'],['wasm','CPU · WASM']])execution.append(node('option',label,{value}));
+        const execution=node('select',null,{'aria-label':'Run on','data-testid':'assist-execution',disabled:this.busy});
+        for(const [value,label]of [['auto','Automatic (GPU, CPU fallback)'],['wasm','CPU Only']])execution.append(node('option',label,{value}));
         execution.value=this.executionPreference??'auto';execution.addEventListener('change',()=>{this.executionPreference=execution.value;this.executionStatus=null;this.qualifiedManifest=null;this.render();});
-        const modelDetails=disclosure(this,'package-details','Package details & limitations');
+        const modelDetails=disclosure(this,'package-details','Package Details');
         modelDetails.append(node('p', this.structured()
             ? (this.model.manifest.variants.some(v=>isRecordsCodec(v.codec))?recordsNotice(this.model.manifest.variants.find(v=>isRecordsCodec(v.codec)).codec):'Enum attributes come from the local span-attribute head. Value, unit, and relations stay empty.')
             : 'Import a local package to fill spans. Contextual fields stay empty until the package includes the span-attribute head.', { class: 'muted' }));
         const file = node('input', null, { type: 'file', accept: '.zip', disabled:this.busy, 'aria-label': 'Import model package into the annotation assistance panel' });
         file.addEventListener('change', () => { const picked = file.files?.[0]; if (picked) this.perform(() => this.importPackage(picked)); });
-        const localPackages=disclosure(this,'local-packages','Installed packages & local import');
-        localPackages.append(labeled('Local model package', file),button('List installed models',()=>this.perform(()=>this.inspectStorage())));
+        const localPackages=disclosure(this,'local-packages','Installed Models');
+        localPackages.append(labeled('Import Model Package (.zip)', file),button('List Installed Models',()=>this.perform(()=>this.inspectStorage())));
         const precisionValue=this.downloadPrecision??recommended.precision??'fp32';
         const matchingInstalled=matchingInstalledModels(this.modelSelection,this.installedModels??[]);
         const installedCandidates=matchingInstalled.filter(item=>firstManifestPrecision(item.manifest)===precisionValue);
@@ -1013,69 +953,68 @@ class LegacyAssist {
         if(!this.model&&['clinical-p10','bpsd-base'].includes(this.modelSelection.id)){
             const modelName=this.modelSelection.id==='clinical-p10'?'P10':'BPSD';
             const unavailableReason=actionableInstalled&&(this.unavailableInstalledModels.get(actionableInstalled.manifestHash)??(malformedInstalled?'corrupt':undefined));
-            const loadLabel=unavailableReason==='corrupt'?`Repair download ${modelName} · ${precisionValue.toUpperCase()}`:
-                unavailableReason==='missing'?`Download again ${modelName} · ${precisionValue.toUpperCase()}`:
-                installed?`Load installed ${modelName}`:malformedInstalled?`Repair download ${modelName} · ${precisionValue.toUpperCase()}`:`Download ${modelName} · ${precisionValue.toUpperCase()}`;
+            const loadLabel=unavailableReason==='corrupt'?`Repair ${modelName} (${precisionValue.toUpperCase()})`:
+                unavailableReason==='missing'?`Re-download ${modelName} (${precisionValue.toUpperCase()})`:
+                installed?`Load Installed ${modelName}`:malformedInstalled?`Repair ${modelName} (${precisionValue.toUpperCase()})`:`Download ${modelName} (${precisionValue.toUpperCase()})`;
             packages.append(button(loadLabel,()=>this.perform(()=>this.loadSelectedPackage()),{id:'assist-load-model',primary:true,disabled:this.busy||!this.deviceProfile}));
             const loadHint=unavailableReason==='corrupt'?`The installed ${modelName} ${precisionValue.toUpperCase()} failed local integrity checks. Repair downloads a replacement and verifies it before installation.`:
                 unavailableReason==='missing'?`The installed ${modelName} ${precisionValue.toUpperCase()} is missing from local storage. Download it again to continue.`:
-                installed?'Saved on this device. No download needed.':malformedInstalled?`The installed ${modelName} package metadata is incomplete. Repair downloads the matching catalog package and verifies it before installation.`:'Downloads only when you click. A short verification check may open in another tab.';
+                installed?'Saved on this device. No download needed.':malformedInstalled?`The installed ${modelName} package metadata is incomplete. Repair downloads the matching catalog package and verifies it before installation.`:'Runs on this device; your files are not uploaded. Nothing downloads until you click, and a short verification check may open in a new tab.';
             packages.append(node('p',loadHint,{class:'muted'}));
         }
-        const downloadOptions=disclosure(this,'download-options','Model options');
-        const precision=node('select',null,{'aria-label':'Model precision to download','data-testid':'assist-precision',disabled:this.busy});
-        for(const [value,label]of [['fp32','FP32 · CPU compatible'],['fp16','FP16 · smaller GPU download'],['int8','INT8 · experimental']])precision.append(node('option',label,{value}));
+        const downloadOptions=disclosure(this,'download-options','Model Options');
+        const precision=node('select',null,{'aria-label':'Download format','data-testid':'assist-precision',disabled:this.busy});
+        for(const [value,label]of [['fp32','FP32 (CPU compatible)'],['fp16','FP16 (smaller, for GPU)']])precision.append(node('option',label,{value}));
         precision.value=precisionValue;precision.addEventListener('change',()=>{this.downloadPrecision=precision.value;this.render();});
-        downloadOptions.append(labeled('Download format',precision),labeled('Run on',execution));
-        if(recommended.precision)downloadOptions.append(button('Use recommended '+recommended.precision.toUpperCase(),()=>{this.downloadPrecision=undefined;this.render();},{disabled:this.busy}));
-        if(precisionValue==='fp16')packages.append(node('p','About 370 MiB. If GPU inference fails, Analyze may download the FP32 CPU fallback (about 725 MiB).',{class:'muted'}));
-        if(precisionValue==='fp32')packages.append(node('p','About 725 MiB. Works with CPU inference.',{class:'muted'}));
-        if(precisionValue==='int8')packages.append(node('p','Experimental: smaller download, but slower inference and changed results. Review every suggestion.',{class:'setup-hint','data-testid':'assist-int8-notice'}));
+        downloadOptions.append(labeled('Download Format',precision),labeled('Run On',execution));
+        if(recommended.precision)downloadOptions.append(button('Use Recommended '+recommended.precision.toUpperCase(),()=>{this.downloadPrecision=undefined;this.render();},{disabled:this.busy}));
+        if(precisionValue==='fp16')packages.append(node('p','About 370 MiB. If the GPU cannot run it, Analyze downloads the FP32 model (about 725 MiB) as a fallback.',{class:'muted'}));
+        if(precisionValue==='fp32')packages.append(node('p','About 725 MiB. Runs on CPU or GPU.',{class:'muted'}));
         packages.append(downloadOptions);
         for(const item of this.installedModels??[]){
             const matches=modelSelectionMatchesManifest(this.modelSelection,item.manifest);
             const unavailableReason=this.unavailableInstalledModels.get(item.manifestHash);
-            const sizeLabel=Number.isSafeInteger(item.bytes)?`${item.bytes} bytes`:'size unavailable';
+            const sizeLabel=Number.isSafeInteger(item.bytes)?`${(item.bytes/1048576).toFixed(1)} MiB`:'size unavailable';
             localPackages.append(node('p',`${item.manifest.id} · ${sizeLabel} · ${matches?'matches selected source':'different source'}${unavailableReason==='corrupt'?' · failed local integrity checks':unavailableReason==='missing'?' · missing from local storage':''}`,{class:'muted'}));
-            if(unavailableReason)localPackages.append(node('p','Use the main model action to download and verify a replacement. This cached entry has not been removed.',{class:'muted'}));
-            else localPackages.append(button('Use installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
+            if(unavailableReason)localPackages.append(node('p','Use the main download button to replace it. This copy has not been removed.',{class:'muted'}));
+            else localPackages.append(button('Use Installed '+item.manifest.id,()=>this.perform(async()=>{await this.useInstalledModel(item.manifestHash);if(this.model)this.message=`Installed package loaded and hashes verified for ${modelSelectionLabel(this.modelSelection)}.`;})));
         }
-        downloadOptions.append(node('p',this.model?`Loaded model buffers: ${(this.model.manifest.files.reduce((n,f)=>n+f.bytes,0)/1048576).toFixed(0)} MiB. Runtime memory is additional.`:'No model weights loaded in memory.',{class:'muted','data-testid':'assist-model-memory'}));
-        if(this.storageEstimate)downloadOptions.append(node('p',`Browser storage: ${(this.storageEstimate.usage/1048576).toFixed(0)} MiB used of approximately ${(this.storageEstimate.quota/1048576).toFixed(0)} MiB available quota.`,{class:'muted'}));
-        for(const item of this.installedModels??[])localPackages.append(button('Remove installed '+item.manifest.id,()=>this.perform(async()=>{if(!confirm('Remove this cached model from this browser? You can download or import it again.'))return;if(this.model?.manifestHash===item.manifestHash)this.unloadModel();await this.modelStore.remove(item.manifestHash);await this.inspectStorage();}),{disabled:this.busy,id:'assist-remove-model'}));
-        if(this.model&&supportsWebGPU(this.model.manifest,this.model.manifest.variants[0]))downloadOptions.append(button('Check GPU compatibility',()=>this.perform(()=>this.checkGPU()),{disabled:this.busy,id:'assist-check-gpu',title:'Run public reference examples on the loaded model. No CPU fallback download.'}));
+        downloadOptions.append(node('p',this.model?`Model in memory: ${(this.model.manifest.files.reduce((n,f)=>n+f.bytes,0)/1048576).toFixed(0)} MiB, plus runtime memory.`:'No model in memory.',{class:'muted','data-testid':'assist-model-memory'}));
+        if(this.storageEstimate)downloadOptions.append(node('p',`Browser storage: ${(this.storageEstimate.usage/1048576).toFixed(0)} MiB used of about ${(this.storageEstimate.quota/1048576).toFixed(0)} MiB.`,{class:'muted'}));
+        for(const item of this.installedModels??[])localPackages.append(button('Remove Installed '+item.manifest.id,()=>this.perform(async()=>{if(!confirm('Remove this cached model from this browser? You can download or import it again.'))return;if(this.model?.manifestHash===item.manifestHash)this.unloadModel();await this.modelStore.remove(item.manifestHash);await this.inspectStorage();}),{disabled:this.busy,id:'assist-remove-model'}));
+        if(this.model&&supportsWebGPU(this.model.manifest,this.model.manifest.variants[0]))downloadOptions.append(button('Check GPU Compatibility',()=>this.perform(()=>this.checkGPU()),{disabled:this.busy,id:'assist-check-gpu',title:'Check the loaded model on this GPU with public examples; nothing is downloaded'}));
         if(this.gpuCheck){
             downloadOptions.append(node('p',conformanceMessage(this.gpuCheck),{class:'muted','data-testid':'assist-gpu-check-result'}),
-                button('Save GPU check report',()=>localDownload(new TextEncoder().encode(JSON.stringify(this.gpuCheck,null,2)+'\n'),'nextmedtator-gpu-check.json','application/json'),{id:'assist-save-gpu-check'}),
-                node('p','Report includes public reference-check measurements, model identity and browser version. It excludes your notes and annotations.',{class:'muted'}));
+                button('Save GPU Report',()=>localDownload(new TextEncoder().encode(JSON.stringify(this.gpuCheck,null,2)+'\n'),'nextmedtator-gpu-check.json','application/json'),{id:'assist-save-gpu-check'}),
+                node('p','Report includes public reference-check measurements, model identity and browser version. It excludes your files and annotations.',{class:'muted'}));
         }
-        if(this.model)downloadOptions.append(button('Unload model',()=>this.unloadModel(),{disabled:this.busy,id:'assist-unload-model'}));
-        if(this.model)downloadOptions.append(button('Install package for offline use',()=>this.perform(async()=>{
+        if(this.model)downloadOptions.append(button('Unload Model',()=>this.unloadModel(),{disabled:this.busy,id:'assist-unload-model'}));
+        if(this.model)downloadOptions.append(button('Install for Offline Use',()=>this.perform(async()=>{
             const installed=await this.modelStore.install(this.model);
             this.unavailableInstalledModels.delete(installed.manifestHash);
             this.adoptModel(installed);this.modelStorageNotice=null;await this.inspectStorage();this.message='Model package installed and read-back verified';
         })));
         const anns = this.allDocuments();
         if (anns.length) {
-            const docs = disclosure(this,'batch',`Batch analysis · ${this.selected.size} selected`);docs.setAttribute('aria-label','Documents to analyze');
-            docs.append(node('p', 'Check notes for Analyze selected. One note runs at a time; completed results stay available for review.', { class: 'muted' }));
+            const docs = disclosure(this,'batch',`Batch Analysis (${this.selected.size} selected)`);docs.setAttribute('aria-label','Files to analyze');
+            docs.append(node('p', 'Check files, then click Analyze Selected. Files run one at a time; finished results stay available.', { class: 'muted' }));
             const cpu=node('select',null,{'aria-label':'Batch CPU usage','data-testid':'assist-batch-cpu',disabled:this.busy});
-            for(const [value,label]of [['auto',`Automatic · ${defaultCpuThreads()} WASM threads (cores − 1)`],['low','Low CPU · 1 WASM thread'],['balanced','Balanced · up to 4 WASM threads']])cpu.append(node('option',label,{value}));
-            cpu.value=this.batchCpu??'auto';cpu.addEventListener('change',()=>{this.batchCpu=cpu.value;});docs.append(labeled('CPU usage',cpu),node('p','Automatic prefers WebGPU, including Metal on supported Apple browsers. CPU fallback uses browser-reported logical cores minus one (minimum one); without cross-origin isolation it uses one thread. Low CPU and Balanced reduce CPU use. Models load only on request.',{class:'muted'}));
+            for(const [value,label]of [['auto',`Automatic (${defaultCpuThreads()} threads)`],['low','Low (1 thread)'],['balanced','Balanced (up to 4 threads)']])cpu.append(node('option',label,{value}));
+            cpu.value=this.batchCpu??'auto';cpu.addEventListener('change',()=>{this.batchCpu=cpu.value;});docs.append(labeled('CPU Usage',cpu),node('p','Automatic uses the GPU when available, otherwise all but one CPU core. Low and Balanced leave more CPU free.',{class:'muted'}));
             const queuedByKey=new Map((this.batchQueue?.notes??[]).map(n=>[n.key,n]));
             const selections=node('div',null,{class:'row'});
-            selections.append(button('Select all',()=>{for(const ann of anns)if(ann._diskKey||typeof ann?.text==='string')this.selected.add(ann._diskKey??documentKey(ann._filename??'document',ann.text));this.render();},{disabled:this.busy,id:'assist-select-all'}),button('Clear selection',()=>{this.selected.clear();this.render();},{disabled:this.busy,id:'assist-select-none'}));docs.append(selections);
-            selections.append(button('Select unfinished',()=>{this.selected.clear();for(const ann of anns){const key=ann._diskKey??documentKey(ann._filename??'document',ann.text??'');if(queuedByKey.get(key)?.status!=='completed')this.selected.add(key);}this.render();},{disabled:this.busy,id:'assist-select-unfinished'}));
+            selections.append(button('Select All',()=>{for(const ann of anns)if(ann._diskKey||typeof ann?.text==='string')this.selected.add(ann._diskKey??documentKey(ann._filename??'document',ann.text));this.render();},{disabled:this.busy,id:'assist-select-all'}),button('Clear Selection',()=>{this.selected.clear();this.render();},{disabled:this.busy,id:'assist-select-none'}));docs.append(selections);
+            selections.append(button('Select Unfinished',()=>{this.selected.clear();for(const ann of anns){const key=ann._diskKey??documentKey(ann._filename??'document',ann.text??'');if(queuedByKey.get(key)?.status!=='completed')this.selected.add(key);}this.render();},{disabled:this.busy,id:'assist-select-unfinished'}));
             if(this.batchQueue){
                 const counts=queueCounts(this.batchQueue),controls=node('div',null,{class:'row'});
                 docs.append(node('p',`${counts.completed} completed · ${counts.failed} failed · ${counts.pending+counts.cancelled} unfinished`,{'data-testid':'assist-batch-summary'}));
-                const bar=node('progress',null,{max:counts.total,value:counts.completed+counts.failed,'aria-label':'Overall queue progress'});bar.style.width='100%';docs.append(bar);
-                controls.append(button('Resume unfinished',()=>this.perform(()=>this.analyzeDocuments(this.allDocuments(),{batch:true,resume:true})),{disabled:this.busy||!this.model||counts.pending+counts.cancelled===0,id:'assist-batch-resume'}),button('Retry failed',()=>this.perform(()=>this.analyzeDocuments(this.allDocuments(),{batch:true,resume:true,retryFailed:true})),{disabled:this.busy||!this.model||counts.failed===0,id:'assist-batch-retry'}),button('Export completion report',()=>localDownload(new TextEncoder().encode(JSON.stringify(batchReport(this.batchQueue,{blind:this.mode==='blind'}),null,2)),`batch-${this.batchQueue.id}.json`,'application/json'),{disabled:this.busy,id:'assist-batch-report'}));
-                docs.append(controls,node('p',this.collection?'Each completed note and queue status are saved together on this device. Resume skips finished notes and checks model, schema, threshold and review mode. Export a collection backup for portability.':'Resume skips finished notes and checks model, schema, threshold and review mode. Enable local corpus recovery to preserve the queue across reloads; checkpoints are requested every 10 processed notes and when stopping. The report contains filenames and statuses.',{class:'muted'}));
+                const bar=node('progress',null,{max:counts.total,value:counts.completed+counts.failed,'aria-label':'Overall queue progress'});bar.className='full';docs.append(bar);
+                controls.append(button('Resume',()=>this.perform(()=>this.analyzeDocuments(this.allDocuments(),{batch:true,resume:true})),{disabled:this.busy||!this.model||counts.pending+counts.cancelled===0,id:'assist-batch-resume'}),button('Retry Failed',()=>this.perform(()=>this.analyzeDocuments(this.allDocuments(),{batch:true,resume:true,retryFailed:true})),{disabled:this.busy||!this.model||counts.failed===0,id:'assist-batch-retry'}),button('Export Report',()=>localDownload(new TextEncoder().encode(JSON.stringify(batchReport(this.batchQueue,{blind:this.mode==='blind'}),null,2)),`batch-${this.batchQueue.id}.json`,'application/json'),{disabled:this.busy,id:'assist-batch-report'}));
+                docs.append(controls,node('p',this.collection?'Each finished file and the queue status are saved together on this device. Resume skips finished files and checks the model, schema, threshold and review mode. Export a backup to keep a copy.':'Resume skips finished files and checks the model, schema, threshold and review mode. Enable recovery to keep the queue across reloads (saved every 10 files and when stopping). The report lists file names and statuses.',{class:'muted'}));
             }
-            // Bound DOM size even when the corpus contains thousands of notes.
+            // Bound DOM size even when the corpus contains thousands of files.
             const pages=Math.ceil(anns.length/50),page=Math.min(this.batchPage??0,pages-1);
-            if(pages>1){const navigation=node('div',null,{class:'row'});navigation.append(button('Previous notes',()=>{this.batchPage=page-1;this.render();},{disabled:page===0}),node('span',`${page*50+1}–${Math.min((page+1)*50,anns.length)} of ${anns.length}`),button('Next notes',()=>{this.batchPage=page+1;this.render();},{disabled:page===pages-1}));docs.append(navigation);}
+            if(pages>1){const navigation=node('div',null,{class:'row'});navigation.append(labelButton(button('Previous',()=>{this.batchPage=page-1;this.render();},{disabled:page===0}),'Previous files'),node('span',`${page*50+1}–${Math.min((page+1)*50,anns.length)} of ${anns.length}`),labelButton(button('Next',()=>{this.batchPage=page+1;this.render();},{disabled:page===pages-1}),'Next files'));docs.append(navigation);}
             for (const ann of anns.slice(page*50,(page+1)*50)) {
                 if (!ann?._diskKey && !ann?.text && ann?.text !== '')
                     continue;
@@ -1086,22 +1025,20 @@ class LegacyAssist {
                 const row = node('label', null, { class: 'check' });
                 const queued=queuedByKey.get(key);
                 row.append(input, node('span', ann._filename ?? 'document'));
-                if(this.collection)row.append(button('Open',()=>this.perform(()=>this.openCollectionNote(key)),{disabled:this.busy,title:'Load this note from disk',id:'assist-collection-open-note'}));
+                if(this.collection)row.append(button('Open',()=>this.perform(()=>this.openCollectionNote(key)),{disabled:this.busy,title:'Load this file from disk',id:'assist-collection-open-note'}));
                 if(queued)row.append(node('span',queued.status,{class:'badge','data-testid':'assist-note-status',title:queued.error??`${queued.attempts} attempts`}));
                 docs.append(row);
             }
             docs.prepend(actions.querySelector('[data-testid=assist-analyze-selected]'));analysisStep.append(docs);
         }
-        else
-            body.append(node('p', 'Load a schema and a note with the usual Annotation controls. Assistance stays optional.', { class: 'muted' }));
         this.renderRun(analysisStep, view);
         localPackages.append(modelDetails);packages.append(localPackages);if(modelDetailsDevice)downloadOptions.append(modelDetailsDevice);
-        const noteStep=node('section',null,{class:'section','data-testid':'assist-step-note'});noteStep.append(node('h3','1. Open a note'));
+        const noteStep=node('section',null,{class:'section','data-testid':'assist-step-note'});noteStep.append(node('h3','1. Open a File'));
         if(view?.ann){noteStep.append(node('p',view.ann._filename??'document',{'data-testid':'assist-document'}));}
-        else noteStep.append(node('p','Open your schema and notes from the toolbar, or try a fictional note below.',{class:'muted'}));
+        else noteStep.append(node('p','Load a schema and annotation files with the toolbar above, or try a sample:',{class:'muted'}));
         if(!view?.ann)noteStep.append(practiceActions);
         if(this.busy)for(const control of packages.querySelectorAll('button,input,select'))control.disabled=true;
-        const more=disclosure(this,'more','More tools');more.append(options,storage,collections,practice);
+        const more=disclosure(this,'more','More Tools');more.append(options,storage,collections);if(view?.ann)more.append(practice);
         noteStep.querySelector('h3').prepend(icon('practice'));
         modelSettings.querySelector('h3').prepend(icon('packages'));
         analysisStep.querySelector('h3').prepend(icon('play'));
@@ -1110,28 +1047,28 @@ class LegacyAssist {
         actions.querySelector('[data-testid=assist-analyze-selected]')?.remove();
         for(const detail of head.querySelectorAll('[data-testid=assist-model-identity],[data-testid=assist-execution-status]'))downloadOptions.append(detail);
         if(this.busy)head.append(actions.querySelector('[data-testid=assist-pause]'));else actions.querySelector('[data-testid=assist-pause]')?.remove();
-        more.append(button('Open evidence project', () => this.perform(async()=>this.openProject(await this.syncProject(view.ann))), { id: 'open-workspace', disabled:!view?.ann||this.busy, title: 'Open the portable evidence project for snapshots and comparison' }));
+        more.append(button('Open Evidence Project', () => this.perform(async()=>this.openProject(await this.syncProject(view.ann))), { id: 'open-workspace', disabled:!view?.ann||this.busy, title: 'Open the portable evidence project for snapshots and comparison' }));
         body.scrollTop=scrollTop;
     }
     renderRun(body, view) {
         const run = view?.run;
-        if(this.mode==='blind'&&!this.blindSnapshots.has(view.key)&&!this.exposed.has(view.key)){body.append(button('Freeze blind annotation',()=>this.perform(()=>this.freezeNote(view)),{id:'assist-freeze',disabled:this.busy}));}
-        const project=this.projects.get(view.key);if(project)body.append(button('Export evidence project',()=>this.perform(async()=>localDownload(await exportBundle(await this.syncProject(view.ann)),`${project.current.id}.nmt.zip`))));
+        if(this.mode==='blind'&&!this.blindSnapshots.has(view.key)&&!this.exposed.has(view.key)){body.append(button('Freeze Annotation',()=>this.perform(()=>this.freezeNote(view)),{id:'assist-freeze',disabled:this.busy}));}
+        const project=this.projects.get(view.key);if(project)body.append(button('Export Evidence Project',()=>this.perform(async()=>localDownload(await exportBundle(await this.syncProject(view.ann)),`${project.current.id}.nmt.zip`))));
         if (!run) return;
         if (this.mode === 'blind' || (this.blinded.has(view.key) && !this.exposed.has(view.key))) {
-            body.append(node('h2', 'Blind annotation'), node('p', 'Suggestions, scores, and counts stay hidden. Reveal is explicit and applies to this note.', { class: 'muted' }));
+            body.append(node('h2', 'Blind Annotation'), node('p', 'Suggestions, scores and counts stay hidden. Revealing applies to this file only.', { class: 'muted' }));
             if (!this.exposed.has(view.key)) {
                 const frozen = this.blindSnapshots.has(view.key);
-                body.append(button('Reveal suggestions', this.forCurrentNote(view.key, () => {
+                body.append(button('Reveal Suggestions', this.forCurrentNote(view.key, () => {
                     this.recordExposure(view, run, 'explicit-reveal');
                     run.revealedAt = new Date().toISOString();
                     this.mode = 'assisted';
-                    this.message = 'Suggestions revealed for this note. Its frozen blind annotation is preserved in this session.';
+                    this.message = 'Suggestions revealed for this file. Its frozen blind annotation is kept in this session.';
                     this.render();
                 }), { id: 'assist-reveal', disabled: !frozen || this.busy }));
             }
             else
-                body.append(node('p', 'Machine assistance was already shown for this note. Its current annotation cannot be frozen as independent blind labels. Choose Assisted to show suggestions again.', { class: 'muted', 'data-testid': 'assist-exposure' }));
+                body.append(node('p', 'Suggestions were already shown for this file. Its current annotation cannot be frozen as independent blind labels. Choose Assisted to show suggestions again.', { class: 'muted', 'data-testid': 'assist-exposure' }));
             return;
         }
         if (view.data.section === 'annotation' && !document.hidden && this.host.getClientRects().length)
@@ -1144,22 +1081,22 @@ class LegacyAssist {
         body.append(node('h2', 'Suggestions'), node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }), node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }), node('p', run.notice, { class: 'muted' }));
         const applied = Object.values(run.decisions).filter(d=>d.status==='applied').length;
         if (applied) body.append(node('p', `${applied} machine-applied tags · unreviewed`, {'data-testid':'assist-auto-status'}));
-        body.append(button('Apply all suggestions', this.forCurrentNote(view.key, () => this.perform(() => this.applyAllSuggestions(view.ann))), {id:'assist-apply-all',disabled:this.busy||!unresolved||run.status!=='complete'||run.precision==='int8',title:'Add all remaining suggestions to this note without individual review; preserve existing and rejected tags'}));
+        body.append(button('Apply All Suggestions', this.forCurrentNote(view.key, () => this.perform(() => this.applyAllSuggestions(view.ann))), {id:'assist-apply-all',disabled:this.busy||!unresolved||run.status!=='complete',title:'Add all remaining suggestions to this file without review; existing and rejected tags are kept'}));
         if (!run.records.length)
-            body.append(node('p', run.status === 'complete' ? 'No suggestions in the completed run. Omission review is still required.' : 'Incomplete run. An empty result is not a negative label.', { class: 'muted' }));
+            body.append(node('p', run.status === 'complete' ? 'No suggestions in this run. Still check the file for missed tags.' : 'Incomplete run. An empty result is not a negative label.', { class: 'muted' }));
         const display = node('select', null, { 'aria-label': 'Suggestion view', 'data-testid': 'assist-suggestion-view' });
-        for (const [value, label] of [['cards', 'Detailed cards'], ['compact', 'Compact list']])
+        for (const [value, label] of [['cards', 'Cards'], ['compact', 'Compact List']])
             display.append(node('option', label, { value }));
         display.value = this.suggestionView;
         display.addEventListener('change', () => { this.suggestionView = display.value; this.detail = null; this.apply = null; this.render(); });
-        body.append(labeled('Suggestion view', display));
+        body.append(labeled('Suggestion View', display));
         const reviewControls=node('div',null,{class:'section',tabindex:0,'data-testid':'assist-review-controls','aria-label':'Suggestion review controls'});
-        const filter=(name,values)=>{const select=node('select',null,{'aria-label':'Filter suggestions by '+name});for(const [value,label]of values)select.append(node('option',label,{value}));select.value=this.reviewFilter?.[name]??'all';select.addEventListener('change',()=>{this.reviewFilter={...this.reviewFilter,[name]:select.value};this.reviewPage=0;this.reviewFocus=null;this.render();});return labeled(name,select);};
-        reviewControls.append(filter('family',[['all','All families'],...[...new Set(run.records.map(r=>r.family))].map(f=>[f,f])]),filter('status',[['all','All decisions'],['unreviewed','Unreviewed'],['accepted','Accepted'],['rejected','Rejected'],['applied','Machine-applied']]));
+        const filter=(name,values)=>{const select=node('select',null,{'aria-label':'Filter suggestions by '+name});for(const [value,label]of values)select.append(node('option',label,{value}));select.value=this.reviewFilter?.[name]??'all';select.addEventListener('change',()=>{this.reviewFilter={...this.reviewFilter,[name]:select.value};this.reviewPage=0;this.reviewFocus=null;this.render();});return labeled(name[0].toUpperCase()+name.slice(1),select);};
+        reviewControls.append(filter('family',[['all','All Families'],...[...new Set(run.records.map(r=>r.family))].map(f=>[f,f])]),filter('status',[['all','All Decisions'],['unreviewed','Unreviewed'],['accepted','Accepted'],['rejected','Rejected'],['applied','Machine-applied']]));
         const reviewPage=suggestionPage(run.records,run.decisions,{...this.reviewFilter,page:this.reviewPage??0});
-        reviewControls.append(node('p',`${reviewPage.total} matching suggestions · page ${reviewPage.page+1} / ${reviewPage.pages}`,{'data-testid':'assist-review-page'}),button('Previous suggestions',()=>{this.reviewPage=reviewPage.page-1;this.render();},{disabled:reviewPage.page===0}),button('Next suggestions',()=>{this.reviewPage=reviewPage.page+1;this.render();},{disabled:reviewPage.page+1===reviewPage.pages}),button('Undo assistance action',()=>this.perform(()=>this.undoReview()),{disabled:this.busy||this.reviewUndo?.at(-1)?.key!==view.key,id:'assist-review-undo'}),node('p','Focus this panel: Alt+J/K next/previous, Alt+A review/add, Alt+Enter write, Alt+R reject, Alt+U undo. Twenty suggestions per page.',{class:'muted'}));body.append(reviewControls);
+        reviewControls.append(node('p',`${reviewPage.total} matching suggestions · page ${reviewPage.page+1} / ${reviewPage.pages}`,{'data-testid':'assist-review-page'}),labelButton(button('Previous',()=>{this.reviewPage=reviewPage.page-1;this.render();},{disabled:reviewPage.page===0}),'Previous suggestions'),labelButton(button('Next',()=>{this.reviewPage=reviewPage.page+1;this.render();},{disabled:reviewPage.page+1===reviewPage.pages}),'Next suggestions'),button('Undo',()=>this.perform(()=>this.undoReview()),{disabled:this.busy||this.reviewUndo?.at(-1)?.key!==view.key,id:'assist-review-undo'}),node('p','Focus this panel: Alt+J/K next/previous, Alt+A review/add, Alt+Enter write, Alt+R reject, Alt+U undo. Twenty suggestions per page.',{class:'muted'}));body.append(reviewControls);
         const runReceipt=run.project.current.runs.find(r=>r.id===run.nativeRunId);
-        if(runReceipt?.windows?.length>1)body.append(node('p',`Long note: ${runReceipt.windows.length} windows · ${run.status}. Attributes use local window context; cross-window mentions are not stitched.`,{'data-testid':'assist-window-coverage'}));
+        if(runReceipt?.windows?.length>1)body.append(node('p',`Long file: ${runReceipt.windows.length} windows · ${run.status}. Attributes use local window context; cross-window mentions are not stitched.`,{'data-testid':'assist-window-coverage'}));
         if (this.suggestionView === 'compact') {
             const table = node('table', null, { class: 'compact', 'aria-label': 'Machine suggestions' });
             const caption = node('caption', `${run.records.length} original machine suggestions`);
@@ -1187,18 +1124,18 @@ class LegacyAssist {
         }
     }
     card(view, run, record) {
-        const card = node('article', null, { class: 'card', tabindex:0, 'data-testid': 'assist-suggestion' });card.addEventListener('focusin',()=>{this.reviewFocus=record.id;});if(this.reviewFocus===record.id)card.style.borderColor='#087e8b';
+        const card = node('article', null, { class: 'card', tabindex:0, 'data-testid': 'assist-suggestion' });card.addEventListener('focusin',()=>{this.reviewFocus=record.id;});if(this.reviewFocus===record.id)card.classList.add('focused');
         const decision = run.decisions[record.id];
         card.append(node('div', 'Machine suggestion', { class: 'tag' }), node('p', record.anchor.map(span => span.text).join(' … '), { class: 'anchor' }), node('p', `${record.family.replaceAll('_', ' ')} · score ${Number(record.score).toFixed(3)}`, { class: 'muted' }));
         if(record.conceptId)card.append(node('p',`Concept: ${record.conceptId}`,{class:'muted'}));
         for (const [name, value] of Object.entries(record.fields))
             card.append(node('p', `${name}: ${value == null ? 'Unknown' : value}`, { class: 'muted' }));
         if (decision)
-            card.append(node('p', decision.status === 'rejected' ? 'Rejected. The annotation file was not changed.' : decision.status === 'applied' ? `Auto-applied as ${decision.tagId} · unreviewed. The suggestion stays here.` : `Added to the annotation as ${decision.tagId}. The suggestion stays here.`, { 'data-testid': 'assist-decision' }));
+            card.append(node('p', decision.status === 'rejected' ? 'Rejected. The annotation file was not changed.' : decision.status === 'applied' ? `Auto-applied as ${decision.tagId} · unreviewed. The suggestion stays here.` : `Added as ${decision.tagId}. The suggestion stays here.`, { 'data-testid': 'assist-decision' }));
         const actions = node('div', null, { class: 'row' });
         actions.append(button('Locate', this.forCurrentNote(view.key, () => { try { this.locate(record); this.error = false; } catch (error) { this.error = true; this.message = error.message; this.render(); } }), { id: 'assist-locate' }));
         if (!decision) {
-            actions.append(button('Add to annotation', this.forCurrentNote(view.key, () => { this.apply = { id: record.id, tag: preferredTag(record.family, view?.data?.dtd?.etags) }; this.render(); }), { id: 'assist-accept' }), button('Reject', this.forCurrentNote(view.key, () => { this.perform(()=>this.rejectSuggestion(view,run,record)); }), { id: 'assist-reject' }));
+            actions.append(button('Accept', this.forCurrentNote(view.key, () => { this.apply = { id: record.id, tag: preferredTag(record.family, view?.data?.dtd?.etags) }; this.render(); }), { id: 'assist-accept' }), button('Reject', this.forCurrentNote(view.key, () => { this.perform(()=>this.rejectSuggestion(view,run,record)); }), { id: 'assist-reject' }));
         }
         card.append(actions);
         if (this.apply?.id === record.id)
@@ -1209,7 +1146,7 @@ class LegacyAssist {
         const tags = spanTags(view?.data?.dtd?.etags);
         const form = node('div');
         if (!tags.length) {
-            form.append(node('p', 'Load a schema with a span entity tag before adding this suggestion to the annotation.', { class: 'unmatched' }));
+            form.append(node('p', 'Load a schema with a span entity tag before accepting this suggestion.', { class: 'unmatched' }));
             return form;
         }
         const picker = node('select', null, { 'aria-label': 'Entity tag', 'data-testid': 'assist-target-tag' });
@@ -1237,10 +1174,10 @@ class LegacyAssist {
                 input = node('input', null, { type: 'text', value: draft.values[attr.name] ?? '', 'aria-label': attr.name });
             }
             inputs.set(attr.name, input);
-            const field=labeled(attr.name,input);input.addEventListener('input',()=>{field.style.background=input.value!==(draft.values[attr.name]??'')?'#fff3cd':'';field.title=input.value!==(draft.values[attr.name]??'')?'Changed from model suggestion':'';});form.append(field);
+            const field=labeled(attr.name,input);input.addEventListener('input',()=>{field.classList.toggle('changed',input.value!==(draft.values[attr.name]??''));field.title=input.value!==(draft.values[attr.name]??'')?'Changed from model suggestion':'';});form.append(field);
         }
-        form.append(node('p', 'Link attributes stay empty. Confirming writes a new annotation tag and leaves this suggestion unchanged.', { class: 'muted' }));
-        form.append(button('Write annotation', this.forCurrentNote(view.key, () => {
+        form.append(node('p', 'Link attributes stay empty. Add Tag creates a new tag; the suggestion stays here.', { class: 'muted' }));
+        form.append(button('Add Tag', this.forCurrentNote(view.key, () => {
             const values = {};
             for (const [name, input] of inputs)
                 values[name] = input.value;
@@ -1251,15 +1188,23 @@ class LegacyAssist {
                 const copy={...clone(record),documentId:run.project.current.documents[0].id};for(const [name,value] of Object.entries(values))if(run.project.current.schema.families[copy.family].fields[name])copy.fields[name]=value;
                 run.project.review(run.nativeRunId,record.id,'modified',copy);this.rememberReviewUndo(run,before,[view.ann.tags.find(t=>t.id===tagId)]);
                 this.apply = null;
-                this.message = `Added ${tagId} to the open annotation. The machine suggestion remains in this panel.`;
+                this.message = `Added ${tagId} to the current file. The suggestion stays in this panel.`;
             });
         }), { primary: true, id: 'assist-add' }));
         picker.addEventListener('change', () => { this.apply = { id: record.id, tag: picker.value }; this.render(); });
         return form;
     }
 }
+// Short visible captions keep MedTator's style; the accessible name says which list moves.
+function labelButton(element, label) {
+    element.setAttribute('aria-label', label);
+    return element;
+}
 function labeled(text, input) {
-    const label = node('label');
-    label.append(node('span', text), input);
+    // Checkboxes sit before their caption, as in MedTator's toggles and file list.
+    const checkbox = input.type === 'checkbox';
+    const label = node('label', null, checkbox ? { class: 'check' } : {});
+    if (checkbox) label.append(input, node('span', text));
+    else label.append(node('span', text), input);
     return label;
 }
