@@ -21,6 +21,35 @@ The app shows the **actual backend and precision**, including after fallback.
 The device recommendation chooses FP16 for compatible WebGPU or FP32 otherwise. Precision variants keep the same complete model prompt,
 threshold, tokenizer, applicability rules, and token budget.
 
+### Diagnosing a Mac GPU conformance failure
+
+Chrome on an M3 Pro / macOS 26 has been reported to initialize both FP16 models
+but fail their reference checks. That message alone does not establish whether
+the mismatch is numerical or changes predicted spans/attributes. The FP16
+synthetic references were recorded on the Windows/NVIDIA device described below;
+the record score tolerance is currently `0.0001`. It has not been widened based
+on the Mac report.
+
+Preview.17 adds **Model options → Check GPU compatibility**. Load the FP16 package
+first; if it is cached, no model download is needed. This checks only the model's
+reference fixtures, returns the actual mismatches, releases its worker, and never
+downloads a CPU fallback or analyzes the open note. **Save GPU check report**
+exports model/runtime identity, browser version, fixture pass/fail status and
+numeric differences. It excludes note text, annotations and predicted records.
+Reports from an ordinary Analyze failure are also available there.
+
+Confidence-only differences are distinguished from changed spans, changed
+attributes, token counts and tensor mismatches. A failed diagnostic does not
+authorize inference: Analyze still runs its mandatory checks and retains WASM
+fallback. Native Mac acceptance remains pending actual device measurements.
+
+On 2026-10-14, both real FP16 packages passed this diagnostic in Chrome 155 on
+the Windows/NVIDIA test machine. A separately injected confidence-only mismatch
+verified the failure report and export UI. Neither check downloaded model files,
+analyzed the open note, or retained its inference worker. The test is
+`tests/browser/test_gpu_check.py`; screenshots and reports are saved in ignored
+`temp/browser-validation/gpu-check/`.
+
 ## Downloads and automatic recovery
 
 Website load, opening a practice note, and changing precision never fetch weights.

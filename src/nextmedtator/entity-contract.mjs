@@ -79,8 +79,10 @@ async function analyzeEntityWindow(api,text,schema,contract,variant){
     return {...base,records,status:'complete',coverage:[[0,source.length]],windows:[{sourceRange:[0,source.length],encodedTokens:plan.encodedTokens}]};
 }
 export function compareEntityContractRecords(expected,actual,{tolerance=1e-4}={}){
+    invariant(Number.isFinite(tolerance)&&tolerance>=0,'Invalid score tolerance');
     const key=r=>canonical([r.family,r.anchor]),index=rows=>new Map(rows.map(r=>[key(r),r])),left=index(expected),right=index(actual);let maxScoreError=0;
-    if(left.size!==expected.length||right.size!==actual.length||canonical([...left.keys()].sort())!==canonical([...right.keys()].sort()))return {pass:false,reason:'entity-spans-differ'};
+    if(left.size!==expected.length||right.size!==actual.length||canonical([...left.keys()].sort())!==canonical([...right.keys()].sort()))return {pass:false,reason:'entity-spans-differ',expectedSpans:expected.length,actualSpans:actual.length};
     for(const [id,row]of left){const got=right.get(id);if(canonical(row.fields)!==canonical(got.fields)||canonical(Object.keys(row.attributeScores??{}).sort())!==canonical(Object.keys(got.attributeScores??{}).sort()))return {pass:false,reason:'attribute-values-or-presence-differ'};maxScoreError=Math.max(maxScoreError,Math.abs(row.score-got.score),...Object.entries(row.attributeScores??{}).map(([field,value])=>Math.abs(value-got.attributeScores[field])));}
-    return {pass:Number.isFinite(maxScoreError)&&maxScoreError<=tolerance,spans:expected.length,maxScoreError};
+    const pass=Number.isFinite(maxScoreError)&&maxScoreError<=tolerance;
+    return {pass,spans:expected.length,maxScoreError,tolerance,...(!pass?{reason:Number.isFinite(maxScoreError)?'confidence-scores-differ':'non-finite-score'}:{})};
 }

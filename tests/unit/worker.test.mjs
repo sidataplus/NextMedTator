@@ -248,3 +248,15 @@ test('fallback resolution holds the runner lock until its pending request finish
     resolve(gpuPackage);await pending;
     assert.equal((await runner.analyze(gpuPackage,variantId,requests[1])).backend,'wasm');
 });
+
+test('GPU diagnostics return failed fixtures without fallback downloads and cannot qualify analysis',async t=>{
+    gpuNavigator(t);const pkg=fp16Package(),seen=[];
+    const workers=fakeWorker(t,(m,w)=>m.task==='fixtures'?{pass:false,backend:'webgpu',precision:'fp16',results:[{fixture:'synthetic-0.json',pass:false,nativeChecks:{pass:false,reason:'confidence-scores-differ',maxScoreError:.003,tolerance:.0001}}]}:reply(m,w));
+    const runner=new ConformanceWorker();let downloads=0;
+    const result=await runner.checkGPU(pkg,'webgpu-fp16',{onConformance:r=>seen.push(r),resolveFallback:()=>{downloads++;}});
+    assert.equal(result.pass,false);assert.equal(seen[0].fixtures[0].records.reason,'confidence-scores-differ');
+    assert.equal(downloads,0);assert.equal(runner.worker,null);assert.equal(workers[0].terminations,1);
+    assert.equal(workers[0].messages.some(m=>m.task==='analyze'),false);
+    await assert.rejects(runner.analyze(pkg,'webgpu-fp16',requests[0],{backend:'webgpu'}),/maximum confidence difference/);
+    assert.equal(workers[1].messages.some(m=>m.task==='analyze'),false);
+});

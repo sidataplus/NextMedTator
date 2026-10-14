@@ -1,4 +1,5 @@
 import {themeColors} from './theme-colors.mjs';
+import {conformanceMessage} from './conformance-report.mjs';
 import {detectDevice,deviceRecommendation} from './device-profile.mjs';
 import {suggestionPage,validateUndoTags} from './review-queue.mjs';
 import {exportCollection,exportCollectionBlob,importCollectionBackup} from './collection-backup.mjs';
@@ -22,7 +23,7 @@ import {exportBundle,localDownload} from './bundle.mjs';
 import {isRecordsCodec,recordsNotice,validateSmallSchema,smallPromptCost} from './gliner-small.mjs';
 import { DEMO_SCHEMA } from './contracts.mjs';
 import { importModelPackage, ConformanceWorker, qualifyForSchema, selectInferenceVariant, activeVariantForSchema, modelRunProvenance, CODECS, MODEL_LIMITS } from './model-package.mjs';
-import {EXECUTION_POLICY,graphTransforms} from './execution-policy.mjs';
+import {EXECUTION_POLICY,graphTransforms,supportsWebGPU} from './execution-policy.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, OffsetMap, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 
@@ -101,7 +102,7 @@ a{color:#0067b8}label{gap:4px;font-size:11px}.section label>span{font-weight:600
 const ICONS={assist:'f0d0',practice:'f15c',collections:'f07c',options:'f1de',recovery:'f0c7',packages:'f1b2','device-details':'f108','package-details':'f05a','local-packages':'f0a0',batch:'f03a',download:'f019',upload:'f093',play:'f04b',pause:'f04c',save:'f0c7',open:'f07c',check:'f00c',undo:'f0e2',remove:'f2ed',close:'f00d',list:'f03a',hide:'f054',search:'f002'};
 function icon(name){return node('span',null,{class:'icon','aria-hidden':'true','data-glyph':String.fromCodePoint(parseInt(ICONS[name]??ICONS.assist,16))});}
 function actionIcon(text){
-    for(const [pattern,name] of [[/^Analyze|^Resume/,'play'],[/^Pause/,'pause'],[/^Download|^Export|^Use browser download/,'download'],[/^Import|^Install/,'upload'],[/^Save|^Enable local/,'save'],[/^Open|^Restore|^Use installed/,'open'],[/^Reject|^Cancel|^Close|^Unload|^Disable/,'close'],[/^Remove|^Delete/,'remove'],[/^Undo|^Retry|^Reset/,'undo'],[/^Select|^Apply|^Write|^Add to|^Use recommended/,'check'],[/^List/,'list'],[/^Show approved/,'search'],[/^Hide/,'hide'],[/^P10|^BPSD/,'practice']])if(pattern.test(text))return name;
+    for(const [pattern,name] of [[/^Analyze|^Resume/,'play'],[/^Pause/,'pause'],[/^Download|^Export|^Use browser download/,'download'],[/^Import|^Install/,'upload'],[/^Save|^Enable local/,'save'],[/^Open|^Restore|^Use installed/,'open'],[/^Reject|^Cancel|^Close|^Unload|^Disable/,'close'],[/^Remove|^Delete/,'remove'],[/^Undo|^Retry|^Reset/,'undo'],[/^Check GPU|^Select|^Apply|^Write|^Add to|^Use recommended/,'check'],[/^List/,'list'],[/^Show approved/,'search'],[/^Hide/,'hide'],[/^P10|^BPSD/,'practice']])if(pattern.test(text))return name;
     return null;
 }
 
@@ -411,13 +412,13 @@ class LegacyAssist {
         if(intent)this.beginModelSelectionAction();
         const epoch=this.modelSelectionEpoch;
         const next=setModelSelection(this.modelSelectionState,selection),changed=modelSelectionKey(next)!==modelSelectionKey(this.modelSelection);
-        if(changed){this.modelRunner.cancel();this.model=null;this.qualifiedManifest=null;this.qualifiedVariant=null;this.message='';}
+        if(changed){this.modelRunner.cancel();this.model=null;this.gpuCheck=null;this.qualifiedManifest=null;this.qualifiedVariant=null;this.message='';}
         this.modelSelection=next;this.selectionDraftMode=modelSelectionControlValue(next);this.selectionDraft=null;this.thresholdOverride=selectionThresholdOverride(this.modelSelectionState);saveModelSelectionState(this.modelSelectionState);
         if(restoreInstalled)void this.restoreSelectedModel({epoch});
         if(render)this.render();
     }
     adoptModel(candidate,{selectSource=false}={}){
-        this.executionStatus=null;
+        this.executionStatus=null;this.gpuCheck=null;
         if(candidate&&!modelSelectionMatchesManifest(this.modelSelection,candidate.manifest)){
             if(!selectSource)throw new Error('Installed model does not match the selected source. Choose the package lineage explicitly before loading it.');
             this.setSelectedModel(selectionFromManifest(candidate.manifest),{render:false,restoreInstalled:false,intent:false});
@@ -443,6 +444,20 @@ class LegacyAssist {
     }
     async inspectStorage(){
         this.installedModels=await this.modelStore.listExisting().catch(()=>[]);this.storageEstimate=await navigator.storage?.estimate?.().catch(()=>null);
+    }
+    rememberGPUCheck(summary){
+        if(summary.backend!=='webgpu')return;
+        this.gpuCheck={format:'nextmedtator-gpu-check-v1',createdAt:new Date().toISOString(),browser:navigator.userAgent,
+            modelId:this.model?.manifest.id,runtimeVersion:this.model?.manifest.runtimeVersion,
+            ...summary};
+    }
+    async checkGPU(){
+        invariant(this.model,'Load a model first');this.gpuCheck=null;
+        this.message='Checking the loaded model on this GPU using public synthetic examples. No FP32 download will start.';
+        await this.modelRunner.checkGPU(this.model,this.model.manifest.variants[0].id,{
+            onConformance:summary=>this.rememberGPUCheck(summary),
+            onInitialization:stage=>{this.loadingProgress={...stage,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);}});
+        this.message=conformanceMessage(this.gpuCheck);
     }
     async useInstalledModel(manifestHash) {
         const epoch=this.beginModelSelectionAction();
@@ -657,7 +672,7 @@ class LegacyAssist {
         if(scope)this.checkScopeBudget(schema,variant);
         const notice = isRecordsCodec(codec) ? recordsNotice(codec) : codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE;
         let executionModel=model;
-        const executionOptions={onInitialization:stage=>{this.loadingProgress={phase:stage.phase,detail:stage.detail,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},maxThreads:batch&&this.batchCpu==='low'?1:batch&&this.batchCpu==='balanced'?4:defaultCpuThreads(),backend:this.executionPreference??'auto',resolveFallback:(target,context)=>loadWasmFallback(this,target,context),onBackend:({backend,precision,packageData,fallbackReason,fallbackDetail})=>{executionModel=packageData;this.model=packageData;this.executionStatus={backend,precision,fallbackReason,fallbackDetail};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
+        const executionOptions={onConformance:summary=>this.rememberGPUCheck(summary),onInitialization:stage=>{this.loadingProgress={phase:stage.phase,detail:stage.detail,started:performance.now()};renderLoadingProgress(this.root,this.loadingProgress);},maxThreads:batch&&this.batchCpu==='low'?1:batch&&this.batchCpu==='balanced'?4:defaultCpuThreads(),backend:this.executionPreference??'auto',resolveFallback:(target,context)=>loadWasmFallback(this,target,context),onBackend:({backend,precision,packageData,fallbackReason,fallbackDetail})=>{executionModel=packageData;this.model=packageData;this.executionStatus={backend,precision,fallbackReason,fallbackDetail};this.message=fallbackReason?'WebGPU unavailable or interrupted. Continuing locally with FP32 WASM.':`Preparing ${backend==='webgpu'?'WebGPU':'WASM'} ${precision.toUpperCase()} inference on this device.`;this.render();}};
         // Validate and analyze in the same session, including CPU-only packages.
         const prompt = (codec === GLINER_STRUCTURED || isRecordsCodec(codec))
             ? schemaPrompt(schema)
@@ -999,6 +1014,12 @@ class LegacyAssist {
         downloadOptions.append(node('p',this.model?`Loaded model buffers: ${(this.model.manifest.files.reduce((n,f)=>n+f.bytes,0)/1048576).toFixed(0)} MiB. Runtime memory is additional.`:'No model weights loaded in memory.',{class:'muted','data-testid':'assist-model-memory'}));
         if(this.storageEstimate)downloadOptions.append(node('p',`Browser storage: ${(this.storageEstimate.usage/1048576).toFixed(0)} MiB used of approximately ${(this.storageEstimate.quota/1048576).toFixed(0)} MiB available quota.`,{class:'muted'}));
         for(const item of this.installedModels??[])localPackages.append(button('Remove installed '+item.manifest.id,()=>this.perform(async()=>{if(!confirm('Remove this cached model from this browser? You can download or import it again.'))return;if(this.model?.manifestHash===item.manifestHash)this.unloadModel();await this.modelStore.remove(item.manifestHash);await this.inspectStorage();}),{disabled:this.busy,id:'assist-remove-model'}));
+        if(this.model&&supportsWebGPU(this.model.manifest,this.model.manifest.variants[0]))downloadOptions.append(button('Check GPU compatibility',()=>this.perform(()=>this.checkGPU()),{disabled:this.busy,id:'assist-check-gpu',title:'Run public reference examples on the loaded model. No CPU fallback download.'}));
+        if(this.gpuCheck){
+            downloadOptions.append(node('p',conformanceMessage(this.gpuCheck),{class:'muted','data-testid':'assist-gpu-check-result'}),
+                button('Save GPU check report',()=>localDownload(new TextEncoder().encode(JSON.stringify(this.gpuCheck,null,2)+'\n'),'nextmedtator-gpu-check.json','application/json'),{id:'assist-save-gpu-check'}),
+                node('p','Report includes public reference-check measurements, model identity and browser version. It excludes your notes and annotations.',{class:'muted'}));
+        }
         if(this.model)downloadOptions.append(button('Unload model',()=>this.unloadModel(),{disabled:this.busy,id:'assist-unload-model'}));
         if(this.model)downloadOptions.append(button('Install package for offline use',()=>this.perform(async()=>{this.adoptModel(await this.modelStore.install(this.model));this.modelStorageNotice=null;await this.inspectStorage();this.message='Model package installed and read-back verified';})));
         const anns = this.allDocuments();

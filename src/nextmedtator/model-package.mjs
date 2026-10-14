@@ -1,4 +1,5 @@
 import {defaultCpuThreads} from './inference-options.mjs';
+import {conformanceSummary,conformanceMessage} from './conformance-report.mjs';
 import {ENTITY_ATTRIBUTES_CODEC,validateEntityContract,entityContractSchema} from './entity-contract.mjs';
 import {EXECUTION_POLICY,supportsWebGPU,graphTransforms,wasmFallbackIdentity} from './execution-policy.mjs';
 import {CLINICAL_V3_CODEC,CLINICAL_V3,validateClinicalV3Registry} from './clinical-v3.mjs';
@@ -201,6 +202,11 @@ export class ConformanceWorker {
         // still requires a passing report; qualified GPU checks retain fallback.
         return this.#withModel(packageData, variantId, context => this.#execute(context, {task:'fixtures'}, {allowFailedReport:!context.qualified}), {timeoutMs:120000,...options});
     }
+    async checkGPU(packageData,variantId,options={}){
+        // Diagnostic fixtures only: return mismatches without qualifying analysis
+        // or resolving/downloading a CPU fallback. A fresh worker is always used.
+        return this.#withModel(packageData,variantId,context=>this.#execute(context,{task:'fixtures'},{allowFailedReport:true}),{timeoutMs:120000,...options,backend:'webgpu'});
+    }
     async analyze(packageData, variantId, request, options) {
         const [result] = await this.analyzeBatch(packageData, variantId, [request], options);
         return result;
@@ -225,7 +231,7 @@ export class ConformanceWorker {
             return results;
         }, {timeoutMs:600000,...options});
     }
-    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, resolveFallback, onWindowProgress, onInitialization, maxThreads=defaultCpuThreads()} = {}) {
+    async #withModel(packageData, variantId, action, {timeoutMs, backend = 'auto', onBackend, onConformance, resolveFallback, onWindowProgress, onInitialization, maxThreads=defaultCpuThreads()} = {}) {
         invariant(!this.worker&&!this.active, 'One model worker at a time');
         const variant = packageData.manifest.variants.find(v => v.id === variantId);
         invariant(variant, 'Variant not found');
@@ -236,7 +242,7 @@ export class ConformanceWorker {
         const actual = backend === 'auto' ? (qualified ? (globalThis.navigator?.gpu && !failure ? 'webgpu' : 'wasm') : variant.backend) : backend;
         invariant(actual === variant.backend || qualified, 'Execution preference is not supported by this package');
         invariant(Number.isSafeInteger(maxThreads)&&maxThreads>=1,'CPU thread limit must be a positive integer');
-        const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,resolveFallback,maxThreads,
+        const context = {packageData,variantId,timeoutMs,qualified,backend:actual,automatic:backend==='auto',onBackend,onConformance,resolveFallback,maxThreads,
             fallbackReason: backend==='auto' && qualified ? (failure ?? (!globalThis.navigator?.gpu ? 'webgpu-unavailable' : null)) : null,
             fallbackDetail: backend==='auto'&&qualified ? (this.gpuFailureDetails.get(packageData.manifestHash)??(!globalThis.navigator?.gpu?'This browser does not expose WebGPU on this device.':null)) : null};
         this.cancelled = false;this.active=true;this.onWindowProgress=onWindowProgress;this.onInitialization=onInitialization;
@@ -301,7 +307,10 @@ export class ConformanceWorker {
         let result;
         try {
             result=await this.#request(message,context.backend==='webgpu'?Math.min(context.timeoutMs,60000):context.timeoutMs);
-            if(message.task==='fixtures'&&!allowFailedReport)invariant(result.pass!==false,'Selected backend failed its public conformance fixtures');
+            if(message.task==='fixtures'){
+                const summary=conformanceSummary(result);context.onConformance?.(summary);
+                if(!allowFailedReport)invariant(result.pass!==false,conformanceMessage(summary));
+            }
         } catch(error) {
             const report=await this.#fallback(context,error,message.task==='fixtures'?'webgpu-conformance-failed':'webgpu-inference-failed');
             result=message.task==='fixtures'?report:await this.#request(message,context.timeoutMs);
