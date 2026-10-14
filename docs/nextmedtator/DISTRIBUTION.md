@@ -58,8 +58,9 @@ model-cache policy separate from this app policy.
 ## R2 delivery
 
 The app fetches catalog metadata only when requested and weights only after an
-explicit **Download and install** action. An installed matching model is read
-from local browser storage. The downloader uses immutable object URLs,
+explicit **Download and install** action. In the annotation workspace, an installed matching model is read
+from local browser storage only after **Use installed** is requested; startup
+reads package metadata without loading weights. The downloader uses immutable object URLs,
 credential-free requests, byte ranges, length checks and SHA-256 verification.
 
 R2 CORS allows the configured app origins, `GET`/`HEAD`, and `Range`; response

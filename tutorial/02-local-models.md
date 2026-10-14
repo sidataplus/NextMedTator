@@ -141,7 +141,7 @@ models are downloaded merely by selecting notes or changing CPU usage.
 | Analyze note is disabled | Load a schema and note; finish loading the matching model package |
 | Public download fails on localhost | Import a local package; public R2 CORS allows the deployed app origins |
 | Hash or storage verification fails | Check available browser storage and retry the explicit download/import |
-| Note exceeds the model limit | Split it deliberately into smaller source documents; the app does not truncate silently |
+| Note exceeds a single-window limit | Enable **Analyze long notes with GLiNER2.5 windows**; see [long-note limits](04-large-collections.md). A token that cannot fit with the full prompt is rejected, never silently truncated |
 | No suggestions | Inspect the schema, model identity and threshold; an empty result can be valid |
 
 The public FP32 and FP16 packages support qualified WebGPU execution with

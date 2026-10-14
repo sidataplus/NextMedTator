@@ -1,0 +1,115 @@
+{
+  "browser": "155.0.8059.40",
+  "url": "https://nmt.sidata.plus/",
+  "runs": [
+    {
+      "model": "p10",
+      "longNote": {
+        "status": "complete",
+        "backend": "webgpu",
+        "records": 164,
+        "windows": 7,
+        "coverage": [
+          [
+            0,
+            5302
+          ]
+        ],
+        "offsetsExact": true,
+        "lastAnchor": 5299,
+        "length": 5302
+      },
+      "workflowSeconds": 151.4546656999737,
+      "memory": {
+        "beforeUnload": {
+          "t": 74.69282849994488,
+          "cpuSeconds": 308.328125,
+          "workingSetBytes": 3406487552,
+          "privateBytes": 3128815616,
+          "processes": 8
+        },
+        "afterUnload30s": {
+          "t": 104.79369230009615,
+          "cpuSeconds": 309.015625,
+          "workingSetBytes": 1631752192,
+          "privateBytes": 1417043968,
+          "processes": 8
+        },
+        "afterCompletion5s": {
+          "t": 183.99578660004772,
+          "cpuSeconds": 614.71875,
+          "workingSetBytes": 2559033344,
+          "privateBytes": 2338217984,
+          "processes": 8
+        }
+      },
+      "measurementErrors": [],
+      "collectionNotes": 5,
+      "pauseAndResume": true,
+      "completedRunIdsPreserved": true,
+      "noteHistoriesResident": 0,
+      "workerReleased": true,
+      "errors": []
+    },
+    {
+      "model": "bpsd",
+      "longNote": {
+        "status": "complete",
+        "backend": "webgpu",
+        "records": 35,
+        "windows": 3,
+        "coverage": [
+          [
+            0,
+            5302
+          ]
+        ],
+        "offsetsExact": true,
+        "lastAnchor": 4947,
+        "length": 5302
+      },
+      "workflowSeconds": 160.4220107998699,
+      "memory": {
+        "beforeUnload": {
+          "t": 256.98075089999475,
+          "cpuSeconds": 930.8125,
+          "workingSetBytes": 4189642752,
+          "privateBytes": 4171837440,
+          "processes": 8
+        },
+        "afterUnload30s": {
+          "t": 287.15157110011205,
+          "cpuSeconds": 931.46875,
+          "workingSetBytes": 1622724608,
+          "privateBytes": 1381191680,
+          "processes": 8
+        },
+        "afterCompletion5s": {
+          "t": 380.5251778999809,
+          "cpuSeconds": 1372.34375,
+          "workingSetBytes": 1740443648,
+          "privateBytes": 1510510592,
+          "processes": 8
+        }
+      },
+      "measurementErrors": [],
+      "collectionNotes": 5,
+      "pauseAndResume": true,
+      "completedRunIdsPreserved": true,
+      "noteHistoriesResident": 0,
+      "workerReleased": true,
+      "errors": []
+    }
+  ],
+  "assetVersion": "a03d015161191aca856212ca4626af7faec5e4cd808064b16ff26318aee0b4ce",
+  "deploymentId": "04bad79c-a27e-49d3-9dd6-3bced0bf6c5c",
+  "startup": {
+    "url": "https://nmt.sidata.plus/",
+    "browser": "155.0.8059.40",
+    "startupSplashCloses": true,
+    "modelDownloadRequiresRequest": true,
+    "startupModelRequests": 0,
+    "errors": []
+  },
+  "idleCollectionRegression": "passed"
+}

@@ -4,8 +4,16 @@ The `gliner25-entity-attributes-v1` codec uses a fixed complete prompt supplied
 as a verified JSON model artifact. The app supplies all executable code. This
 codec supports single-value softmax groups, explicit attribute applicability,
 `allow` or `flat` overlap, and a declared 512- or 1024-token limit including
-schema tokens. Oversized input returns `unsupported` with no predictions or
-coverage; it is never cropped, truncated or windowed. Empty input is rejected.
+schema tokens. The original single-window package contract returns `unsupported`
+with no predictions or coverage when an input exceeds that budget. Public
+conformance fixtures continue to use this path unchanged. Empty input is rejected.
+
+The application now enables overlapping GLiNER2.5 long-note windows by default.
+Each window must fit this same complete-prompt budget; the app maps offsets to
+the original source and merges duplicates without mixing their attributes.
+Run settings record `gliner25-overlapping-windows-v1` separately from the
+immutable package contract. Disabling the long-note option restores the original
+rejection behavior. See [implementation limits and checks](WORKFLOW-IMPROVEMENTS.md).
 
 Single-value groups retain native choice order when values tie and force one
 softmax choice for each applicable entity. Inapplicable fields remain absent;

@@ -92,9 +92,19 @@ clinical accuracy evaluation were outside this change's scope.
 
 ## Final local release gates
 
-The final app build is `415b760a1cf1bfce026168a573df302a84ede3acaa0194d49fc19111773e5a31`. Both models passed the full long-note/review/unload workflow again with five-note pause/reload/resume queues, including removal of stale visual hints after undo. [Final browser receipt](validation/workflow-final.json).
+The feature-validation build was `415b760a1cf1bfce026168a573df302a84ede3acaa0194d49fc19111773e5a31`. Both models passed the full long-note/review/unload workflow again with five-note pause/reload/resume queues, including removal of stale visual hints after undo. [Final browser receipt](validation/workflow-final.json).
 
 - JavaScript: 208 passed, one existing skip.
 - Python validation: 27 passed, one existing skip.
 - Original annotation workflow, assistance layout and fresh no-download startup: passed.
 - Maintained-source syntax and static asset inventory: passed.
+
+The release build is `a03d015161191aca856212ca4626af7faec5e4cd808064b16ff26318aee0b4ce`. It adds a two-line guard to stop autosave scheduling when no collection note is open. `test_collection_idle.py` passed locally and on the public site; startup again confirmed zero model/catalog requests and cross-origin isolation.
+
+Compiled ZIP: `NextMedTator-0.1.0-preview.11-static.zip` (26,095,447 bytes). SHA-256: `4db321b351b3b466bcdadcb2293e1aa677f6aa8bd3bae7529a9aadaff64a4fff`.
+
+## Public deployment verification
+
+Both models passed the long-note, review/undo, model unload and five-note collection pause/reload/resume workflow on [nmt.sidata.plus](https://nmt.sidata.plus/), with no page errors. The browser explicitly imported the existing verified FP32 packages; unchanged R2 weight files were not redownloaded for this regression. [Live receipt](validation/workflow-live.json). Screenshots are in gitignored `temp/browser-validation/workflow-live/`; the illustrated tutorial includes corresponding local captures.
+
+Cloudflare deployment: `04bad79c-a27e-49d3-9dd6-3bced0bf6c5c`, application commit `ef2bc89`, release build/hash above.
