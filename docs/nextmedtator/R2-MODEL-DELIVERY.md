@@ -57,7 +57,7 @@ accuracy, omission rates or safe clinical use.
 
 ## Destination and access prerequisites
 
-The repository's `wrangler.jsonc` names `nextmedtator` and a static `dist` asset
+The repository's `wrangler.jsonc` names `nextmedtator` and a Pages `dist` output
 directory. It does not identify a Cloudflare account, deployed site, R2 bucket,
 custom domain, or public-access setting. It is not evidence of a deployed Pages
 site. Verify the existing account, site hostname, bucket and model hostname

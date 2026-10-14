@@ -100,6 +100,11 @@ pnpm preview:legacy
 
 The production build writes `dist/` and selects the two public R2 model packages. Python is used at build time; the deployed site needs no Python service. Cloudflare Pages hosts [nmt.sidata.plus](https://nmt.sidata.plus), with public model downloads protected by a Worker on the separate R2 domain. Preserve the generated `_headers` when deploying. See [deployment details](docs/nextmedtator/DISTRIBUTION.md) and [build instructions](docs/nextmedtator/BUILD.md).
 
+For Cloudflare Pages Git builds, use `pnpm build:cloudflare`, output directory
+`dist`, and environment variable `SKIP_DEPENDENCY_INSTALL=1`. This command installs
+the pinned Rust/WASM and uv tooling before building; the Pages image alone cannot
+run `pnpm build:production`.
+
 ## Validation and development
 
 ```sh

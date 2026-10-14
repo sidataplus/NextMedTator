@@ -37,7 +37,14 @@ Legacy native export/open carries source, loaded schema, manual labels/binary li
 
 ## Release operations
 
-`wrangler.jsonc` targets `dist/` as Workers Static Assets without a Worker handler. Builds/tests do not modify production. The current public deployment is Cloudflare Pages at https://nmt.sidata.plus, with separately hosted R2 model files. See DISTRIBUTION.md for the production build and deployment settings.
+`wrangler.jsonc` targets `dist/` for Cloudflare Pages. Its Git integration uses
+`pnpm build:cloudflare` with `SKIP_DEPENDENCY_INSTALL=1`; the Linux build script
+installs Rust 1.90.0 and its WASM target plus uv 0.13.0 before the locked production
+build and asset audit. Local development and GitHub Actions with tools already
+installed continue to use `pnpm build:production`. The optional Workers Static
+Assets configuration is `deployment/workers-static/wrangler.jsonc`.
+The current public deployment is Cloudflare Pages at https://nmt.sidata.plus,
+with separately hosted R2 model files. See DISTRIBUTION.md for deployment settings.
 
 Retain prior immutable app and model artifacts. Upgrade at explicit release boundaries. The service worker does not call `skipWaiting`, and active review is not silently migrated. Keep previous installed model versions, select the old manifest and rerun its fixtures for rollback; the installed-package test exercises this. Rehearse production app rollback with retained `dist/` plus an exported native project before public release. Schema revisions use explicit preview/loss reports, retain the prior project, and refuse stale previews.
 

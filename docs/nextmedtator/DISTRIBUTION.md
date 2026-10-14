@@ -35,6 +35,21 @@ uv run --locked python scripts/serve_static.py --directory dist --port 4173
 
 ## Cloudflare Pages
 
+For automatic GitHub deployments, set the framework preset to **None**, production
+branch to `main`, build command to `pnpm build:cloudflare`, output directory to
+`dist`, and root directory to the repository root. Set the environment variable
+`SKIP_DEPENDENCY_INSTALL=1` for production and preview builds. Node is pinned by
+`.node-version`; pnpm is pinned by `package.json`.
+
+`scripts/build_cloudflare.sh` installs Rust 1.90.0 with
+`wasm32-unknown-unknown`, installs uv 0.13.0 in an isolated build-tools environment,
+installs locked pnpm dependencies, runs the production build, and audits assets.
+The Pages build image does not supply the pinned Rust toolchain. Running
+`pnpm build:production` directly there fails at `scripts/build_wasm.mjs` unless
+the tools have already been installed. Skipping automatic installation also
+avoids Pages' unnecessary `pip install .`; Python only renders build templates.
+See [Pages build image settings](https://developers.cloudflare.com/pages/configuration/build-image/).
+
 Upload the contents of `dist/` to project `nextmedtator` on its production
 branch `main`. Preserve `_headers` as a file: in a direct multipart API upload
 it must have a filename, rather than being submitted as an ordinary text field.
@@ -45,8 +60,10 @@ and `application/wasm` on the final hostname. Chrome should report
 `crossOriginIsolated === true`. Each static file must be under Pages' 25 MiB
 limit; the build audits this and records each asset's size and SHA-256.
 
-The repository's `wrangler.jsonc` describes an alternative Workers Static
-Assets deployment. It is not the configuration for the current Pages project.
+The repository's `wrangler.jsonc` configures the Pages output directory. An
+alternative Workers Static Assets deployment is described by
+`deployment/workers-static/wrangler.jsonc`; use that explicit configuration when
+deploying with Workers rather than Pages.
 Python renders templates at build time; production has no Python backend.
 
 Generated Vue scripts and the workspace entry use content-hashed filenames so
