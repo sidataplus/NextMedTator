@@ -345,11 +345,367 @@
       "passed": 199,
       "skipped": 1,
       "failed": 0
+    },
+    "layoutAndDisclosure": true,
+    "syntax": true,
+    "assetInventory": true,
+    "pythonValidationTests": {
+      "passed": 27,
+      "skipped": 1,
+      "failed": 0
     }
   },
   "limitations": [
     "Apple Metal was not tested on this Windows machine; browsers use WebGPU, not a native MPS execution provider.",
     "Four source conformance notes per model per execution path; historical 100-note CPU/RAM benchmarks remain the explicit 1-thread and 4-thread measurements."
   ],
-  "screenshots": "temp/browser-validation/bulk-resources/*-auto-*-complete.png"
+  "screenshots": "temp/browser-validation/bulk-resources/*-auto-*-complete.png",
+  "live": {
+    "url": "https://nmt.sidata.plus/",
+    "deployment": "df64da7a-e819-4e3b-8704-f3e43e3dec60",
+    "implementationCommit": "5418593",
+    "runs": [
+      {
+        "profile": "p10",
+        "mode": "auto-gpu",
+        "seconds": 35.787927200086415,
+        "notes": 4,
+        "events": [
+          {
+            "type": "load",
+            "maxThreads": 19
+          },
+          {
+            "type": "result",
+            "ready": true,
+            "threads": 19,
+            "backend": null
+          },
+          {
+            "type": "fixtures",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "terminated"
+          }
+        ],
+        "records": [
+          2,
+          2,
+          5,
+          3
+        ],
+        "workerReleased": true
+      },
+      {
+        "profile": "p10",
+        "mode": "auto-fallback",
+        "seconds": 38.26925279991701,
+        "notes": 4,
+        "events": [
+          {
+            "type": "load",
+            "maxThreads": 19
+          },
+          {
+            "type": "terminated"
+          },
+          {
+            "type": "load",
+            "maxThreads": 19
+          },
+          {
+            "type": "result",
+            "ready": true,
+            "threads": 19,
+            "backend": null
+          },
+          {
+            "type": "fixtures",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "terminated"
+          }
+        ],
+        "records": [
+          2,
+          2,
+          5,
+          3
+        ],
+        "workerReleased": true
+      },
+      {
+        "profile": "bpsd",
+        "mode": "auto-gpu",
+        "seconds": 52.52302399999462,
+        "notes": 4,
+        "events": [
+          {
+            "type": "load",
+            "maxThreads": 19
+          },
+          {
+            "type": "result",
+            "ready": true,
+            "threads": 19,
+            "backend": null
+          },
+          {
+            "type": "fixtures",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "webgpu"
+          },
+          {
+            "type": "terminated"
+          }
+        ],
+        "records": [
+          0,
+          0,
+          5,
+          2
+        ],
+        "workerReleased": true
+      },
+      {
+        "profile": "bpsd",
+        "mode": "auto-fallback",
+        "seconds": 41.222752399975434,
+        "notes": 4,
+        "events": [
+          {
+            "type": "load",
+            "maxThreads": 19
+          },
+          {
+            "type": "terminated"
+          },
+          {
+            "type": "load",
+            "maxThreads": 19
+          },
+          {
+            "type": "result",
+            "ready": true,
+            "threads": 19,
+            "backend": null
+          },
+          {
+            "type": "fixtures",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "analyze",
+            "maxThreads": null
+          },
+          {
+            "type": "result",
+            "ready": null,
+            "threads": 19,
+            "backend": "wasm"
+          },
+          {
+            "type": "terminated"
+          }
+        ],
+        "records": [
+          0,
+          0,
+          5,
+          2
+        ],
+        "workerReleased": true
+      }
+    ],
+    "startup": {
+      "url": "https://nmt.sidata.plus/",
+      "browser": "155.0.8059.40",
+      "startupSplashCloses": true,
+      "modelDownloadRequiresRequest": true,
+      "startupModelRequests": 0,
+      "errors": []
+    },
+    "screenshot": "temp/browser-validation/automatic-device-live.jpg"
+  },
+  "release": {
+    "tag": "v0.1.0-preview.10",
+    "file": "NextMedTator-0.1.0-preview.10-static.zip",
+    "bytes": 26082675,
+    "sha256": "8e3ff42cf94266e124769f212e019ae9452c60feea4370c061781bc02c949c1c"
+  }
 }
