@@ -4,6 +4,7 @@ import { spanTags, preferredTag, editableAttrs, attributeDraft } from './assist-
 import { suggestionPage } from './review-queue.mjs';
 import { exportBundle, localDownload } from './bundle.mjs';
 import { clone } from './integrity.mjs';
+import { autoApplyAdvice, adviceSummary } from './auto-apply-advice.mjs';
 
 export function renderRun(assist, body, view) {
     const run = view?.run;
@@ -45,6 +46,10 @@ export function renderRun(assist, body, view) {
         node('p', run.notice, { class: 'muted' }));
     const applied = Object.values(run.decisions).filter(d => d.status === 'applied').length;
     if (applied) body.append(node('p', `${applied} machine-applied tags · unreviewed`, { 'data-testid': 'assist-auto-status' }));
+    if (applied) {
+        const advice = denseRunAdvice(assist, view, run, settings);
+        if (advice) body.append(advice);
+    }
     body.append(button('Apply All Suggestions', assist.forCurrentNote(view.key, () => assist.perform(() => assist.applyAllSuggestions(view.ann))), {
         id: 'assist-apply-all',
         disabled: assist.busy || !unresolved || run.status !== 'complete',
@@ -75,6 +80,32 @@ export function renderRun(assist, body, view) {
     } else {
         for (const record of reviewPage.records) body.append(suggestionCard(assist, view, run, record));
     }
+}
+/** Many machine-applied tags, or many just above the threshold: offer a stricter run or per-suggestion review. */
+function denseRunAdvice(assist, view, run, settings) {
+    if (assist.denseAdviceHidden?.has(run.nativeRunId)) return null;
+    const variant = assist.model?.manifest.variants.find(v => v.id === run.runtime?.variantId);
+    const applied = run.records.filter(record => run.decisions[record.id]?.status === 'applied');
+    const advice = autoApplyAdvice(applied, { chars: view.ann.text?.length ?? 0, threshold: settings?.threshold, fixedThreshold: !!(variant?.clinicalRelease || variant?.fixedThreshold) });
+    if (!advice) return null;
+    const box = node('div', null, { class: 'setup-hint advice', role: 'note', 'data-testid': 'assist-dense-advice' });
+    box.append(node('strong', 'Many tags were added; some may be spurious'),
+        node('p', adviceSummary(advice), { 'data-testid': 'assist-dense-summary' }),
+        node('p', advice.suggestion
+            ? `Check a few. If many are wrong, raise the threshold to ${advice.suggestion.threshold} (keeps about ${advice.suggestion.kept} of ${advice.suggestion.total}) or review each suggestion in Assisted mode.`
+            : 'Check a few. If many are wrong, review each suggestion in Assisted mode before it becomes a tag.'));
+    const actions = node('div', null, { class: 'row' });
+    if (advice.suggestion)
+        actions.append(button(`Raise Threshold to ${advice.suggestion.threshold} and Re-analyze`, assist.forCurrentNote(view.key, () => assist.perform(() => assist.reanalyzeWithThreshold(advice.suggestion.threshold))), {
+            id: 'assist-dense-raise', disabled: assist.busy || !assist.model,
+            title: 'Undo this Auto Apply, then analyze this file again with the stricter threshold',
+        }));
+    actions.append(button('Review Each Instead', assist.forCurrentNote(view.key, () => assist.perform(() => assist.reviewDenseRunInstead())), {
+        id: 'assist-dense-review', disabled: assist.busy,
+        title: 'Undo this Auto Apply and switch to Assisted mode to accept or reject each suggestion',
+    }), button('Keep Tags', () => { (assist.denseAdviceHidden ??= new Set()).add(run.nativeRunId); assist.render(); }, { id: 'assist-dense-keep', title: 'Hide this notice for this run' }));
+    box.append(actions);
+    return box;
 }
 function reviewControls(assist, view, run, reviewPage) {
     const controls = node('div', null, { class: 'section', tabindex: 0, 'data-testid': 'assist-review-controls', 'aria-label': 'Suggestion review controls' });

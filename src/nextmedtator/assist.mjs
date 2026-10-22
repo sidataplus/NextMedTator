@@ -26,15 +26,18 @@ import {EXECUTION_POLICY,graphTransforms} from './execution-policy.mjs';
 import { schemaEntityLabels, schemaPrompt, spansToRecords, SPAN_NOTICE, STRUCTURED_NOTICE, GLINER_CODEC, GLINER_STRUCTURED, GlinerTokenizer, planWindows } from './gliner.mjs';
 import { clone, freeze, sourceDocument, uuid, fingerprint, invariant, jsonParse, sha256 } from './integrity.mjs';
 import { node, button, icon, labeled, disclosure } from './assist-dom.mjs';
-import { documentKey, medtatorSpans, preferredTag, editableAttrs, legacySchema, legacyRecords } from './assist-legacy.mjs';
+import { documentKey, medtatorSpans, preferredTag, editableAttrs, legacySchema, legacyRecords, streamingTags, workingCopyReplacer, anchorKey, nativeTagValues } from './assist-legacy.mjs';
+import { autoApplyAdvice } from './auto-apply-advice.mjs';
 import { firstManifestPrecision, renderModelSource, renderModelPanel } from './assist-model-panel.mjs';
-import { renderBatch } from './assist-batch.mjs';
+import { renderBatch, formatSize } from './assist-batch.mjs';
 import { renderRun } from './assist-review.mjs';
 import { practiceActions, renderMoreTools } from './assist-more-tools.mjs';
 
 export { utf16Offset, medtatorSpans, documentKey, spanTags, preferredTag, attributeDraft, legacySchema, legacyRecords } from './assist-legacy.mjs';
 
 export const DEFAULT_REVIEW_MODE = 'auto';
+// About 1 MB of text: many windows, so say how results arrive.
+const LARGE_FILE_CHARS = 1_000_000;
 export const REVIEW_MODES = [['auto', 'Auto Apply'], ['assisted', 'Assisted'], ['blind', 'Blind']];
 const REVIEW_MODE_DESCRIPTIONS = {
     auto: 'Adds model predictions as unreviewed tags.',
@@ -87,6 +90,7 @@ class LegacyAssist {
         this.busy = false;
         this.progress = null;
         this.apply = null;
+        this.streamed = new WeakMap();
         this.signature = '';
         this.recoverySession=new LegacyRecoverySession({capture:id=>this.captureCorpus(id),restore:project=>this.restoreCorpus(project),onStatus:()=>this.render()});
         this.unwatch=null;
@@ -171,6 +175,8 @@ class LegacyAssist {
             const cancelled=/cancelled/i.test(error?.message??'')||error?.name==='AbortError';
             this.error = !cancelled;
             this.message = cancelled&&this.batchQueue?.state==='paused'?'Batch paused. Finished results are kept; click Resume to continue.':error?.message ?? 'The annotation was left unchanged.';
+            if(this.removedStreamTags)this.message=this.message.replace(/\.?$/,'.')+` ${this.removedStreamTags} tags shown for the unfinished file were removed; analyze it again to apply them.`;
+            this.removedStreamTags=0;
         }
         finally {
             this.busy = false;
@@ -375,14 +381,39 @@ class LegacyAssist {
         const view=legacy();view.data.anns=[];view.app.set_dtd(meta.dtd);view.data.dtd=meta.dtd;view.vpp.refresh_v_anns();
         this.message=`${meta.notes.length} files in this collection. Open a file or select files to analyze.`;
     }
-    async importCollection(files){
+    async importCollection(files,{replaceConfirmed=false}={}){
         invariant(legacy()?.data.dtd,'Load an annotation schema first');
         if(this.collection)await this.saveCollectionCurrent();
-        if(legacy().data.anns.length&&!this.collection&&!confirm('Store these files as a new collection on this device? Save your current work first.'))return;
+        if(!replaceConfirmed&&legacy().data.anns.length&&!this.collection&&!confirm('Store these files as a new collection on this device? Save your current work first.'))return;
         const meta=await this.collectionStore.create(legacy().data.dtd,files[0]?.name?'Collection · '+files[0].name:'Local collection');
         this.installController=new AbortController();const started=performance.now();
         try{await this.collectionStore.importFiles(meta,files,{keyFor:documentKey,signal:this.installController.signal,onProgress:progress=>{this.loadingProgress={phase:'Storing collection',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}});}
         finally{this.installController=null;await this.openCollection(meta.id,{replaceConfirmed:true});}
+    }
+    /** Batch "Add Text Files": extend the open collection, or store a new one. */
+    async addCollectionFiles(files){
+        if(!this.collection)return this.importCollection(files);
+        await this.saveCollectionCurrent();
+        this.installController=new AbortController();const started=performance.now(),before=this.collection.notes.length;
+        try{await this.collectionStore.importFiles(this.collection,files,{keyFor:documentKey,signal:this.installController.signal,onProgress:progress=>{this.loadingProgress={phase:'Storing collection',...progress,started};renderLoadingProgress(this.root,this.loadingProgress);}});}
+        finally{this.installController=null;}
+        this.message=`${this.collection.notes.length-before} files added. ${this.collection.notes.length} files in this collection.`;
+    }
+    /** Keep large plain-text batches on disk instead of in the editor's memory. */
+    async moveOpenFilesToCollection(){
+        const view=legacy();invariant(view?.data.dtd,'Load an annotation schema first');
+        const anns=view.data.anns.filter(ann=>!ann._diskKey&&typeof ann.text==='string');
+        invariant(anns.length,'Open text files first');
+        invariant(!anns.some(ann=>ann.tags?.length)&&!this.runs.size,'Files with tags or results stay open. Save them first, then add the plain text files.');
+        if(!confirm(`Store ${anns.length} open files on this device and close them in the editor? Their text is kept in the new collection.`))return;
+        const files=anns.map(ann=>new File([ann.text],ann._filename??'document.txt',{type:'text/plain'}));
+        await this.importCollection(files,{replaceConfirmed:true});
+        this.message=`${files.length} files stored on this device. Select files below and click Analyze Selected; only the open file is kept in memory.`;
+    }
+    openOpenFile(ann){
+        const view=legacy(),index=view?.data.anns.indexOf(ann)??-1;
+        if(index<0)return;
+        view.vpp.set_ann_idx(index);this.apply=null;this.detail=null;this.render();
     }
     async hydrateCollectionNote(item){
         const row=await this.collectionStore.note(this.collection.id,item._diskKey);
@@ -403,12 +434,12 @@ class LegacyAssist {
         const item=this.collection.notes.find(n=>n._diskKey===ann._diskKey);invariant(item&&documentKey(ann._filename,ann.text)===item._diskKey,'Collection source or file name changed. Export this file before reopening the collection.');
         const project=this.projects.get(item._diskKey),run=this.runs.get(item._diskKey);
         this.collection.queue=this.batchQueue;this.collection.settings={mode:this.mode,longContext:this.longContext!==false};
-        await this.collectionStore.commit(this.collection,{key:item._diskKey,sourceHash:item.sourceHash,ann:jsonParse(JSON.stringify(ann,(key,value)=>key==='_fh'?null:value)),project:project?.current??null,run:run?{...run,project:undefined,records:undefined}:null,blindSnapshot:this.blindSnapshots.get(item._diskKey)??null,blinded:this.blinded.has(item._diskKey),exposed:this.exposed.has(item._diskKey)});
+        await this.collectionStore.commit(this.collection,{key:item._diskKey,sourceHash:item.sourceHash,ann:jsonParse(JSON.stringify(ann,workingCopyReplacer)),project:project?.current??null,run:run?{...run,project:undefined,records:undefined}:null,blindSnapshot:this.blindSnapshots.get(item._diskKey)??null,blinded:this.blinded.has(item._diskKey),exposed:this.exposed.has(item._diskKey)});
         this.collectionDirty=(this.collectionEditRevision??0)!==editRevision;
     }
     async saveCollectionCurrent(){
         const ann=this.current().ann;if(!this.collection||!ann?._diskKey){clearTimeout(this.collectionSaveTimer);this.collectionDirty=false;return;}
-        const editRevision=this.collectionEditRevision??0,snapshot=jsonParse(JSON.stringify(ann,(key,value)=>key==='_fh'?null:value));
+        const editRevision=this.collectionEditRevision??0,snapshot=jsonParse(JSON.stringify(ann,workingCopyReplacer));
         await this.syncProject(snapshot);await this.saveCollectionNote(snapshot,{editRevision});
     }
     async openCollectionNote(key){
@@ -449,7 +480,7 @@ class LegacyAssist {
     }
     async captureCorpusSnapshot(id){
         const view=legacy();invariant(view?.data.dtd&&view.data.anns.length,'Load a schema and documents before enabling recovery');
-        const workspace=jsonParse(JSON.stringify({dtd:view.data.dtd,anns:view.data.anns,annIndex:view.data.ann_idx},(key,value)=>key==='_fh'?null:value));
+        const workspace=jsonParse(JSON.stringify({dtd:view.data.dtd,anns:view.data.anns,annIndex:view.data.ann_idx},workingCopyReplacer));
         const schema=legacySchema(workspace.dtd),documents=[],records=[],children=[];
         for(const [index,ann]of workspace.anns.entries()){
             const project=await this.syncProject(ann,schema),doc=await sourceDocument(`note-${index+1}`,new TextEncoder().encode(ann.text),{provenance:{kind:'medtator-working-copy',filename:ann._filename}});
@@ -551,15 +582,25 @@ class LegacyAssist {
         const completed=new Set();let activeIndex=0,analysisStarted=null;
         const updateProgress=()=>{
             const counts=batch?queueCounts(this.batchQueue):{completed:completed.size,failed:0,total:anns.length};
-            this.loadingProgress={phase:'Analyzing files',completed:counts.completed+counts.failed,failed:counts.failed,total:counts.total,started:analysisStarted-(batch?this.batchQueue.elapsedMs:0)};
+            this.loadingProgress={phase:'Analyzing files',completed:counts.completed+counts.failed,failed:counts.failed,total:counts.total,started:analysisStarted-(batch?this.batchQueue.elapsedMs:0),...(anns.length>1&&this.progress?{file:this.progress.filename}:{})};
         };
-        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, collectResults:false, qualify:true, onWindowProgress: progress=>{this.windowProgress=progress;this.message=`${this.progress?.filename??'File'} · window ${Math.min(progress.completed+1,progress.total)} / ${progress.total}`;this.render();}, onProgress: index => {
+        const fixedThreshold=!!(variant.clinicalRelease||variant.fixedThreshold);let denseFiles=0,appliedMessage=null;
+        const windowRecords=progress=>{
+            if(progress.records)return progress.records;
+            try{return progress.spans?spansToRecords({id:'window',text:anns[activeIndex].text},schema,progress.spans):null;}catch{return null;}
+        };
+        try{await this.modelRunner.analyzeBatch(model, variant.id, requests, { ...executionOptions, collectResults:false, qualify:true, onWindowProgress: progress=>{
+            this.windowProgress={completed:progress.completed,total:progress.total};
+            // Only a started note receives tags; the worker never streams conformance fixtures.
+            const shown=autoApply&&this.progress?this.streamWindowTags(sourceAnns[activeIndex],anns[activeIndex],windowRecords(progress),sourceDtd):0;
+            this.message=`${this.progress?.filename??'File'} · window ${Math.min(progress.completed+1,progress.total)} / ${progress.total}${shown?` · ${shown} tags shown so far`:''}`;this.render();}, onProgress: index => {
             analysisStarted??=performance.now();
             if(batch){const row=queueRows[index];row.status='running';row.attempts++;row.startedAt=new Date().toISOString();delete row.error;}
             updateProgress();
             activeIndex=index;this.windowProgress=null;
             const ann = anns[index];
             this.progress = { index: index + 1, total: anns.length, filename: ann._filename ?? 'document' };
+            if(anns.length>1)this.loadingProgress.file=this.progress.filename;
             this.message = `Analyzing ${index + 1} of ${anns.length} on this device.`;
             this.render();
         }, onResult: (result, index) => this.withCorpusCommit(async()=>{
@@ -576,18 +617,21 @@ class LegacyAssist {
             // Project now owns the annotation snapshot; release this queue copy.
             ann.tags=[];
             this.runs.set(key, { nativeRunId:nativeRun.id, project, key, filename: ann._filename, records:storedRun.records, notice:result.notice??notice, ...provenance, status: result.status, backend: result.backend, precision: result.precision, decisions: {} });
-            if (autoApply && result.status==='complete' && legacy().data.dtd===sourceDtd && (managed||legacy().data.anns.includes(sourceAnns[index])) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) await this.applyAllSuggestions(sourceAnns[index]);
+            if (autoApply && result.status==='complete' && legacy().data.dtd===sourceDtd && (managed||legacy().data.anns.includes(sourceAnns[index])) && sourceAnns[index].text===ann.text && sourceAnns[index]._filename===ann._filename) { await this.applyAllSuggestions(sourceAnns[index]); appliedMessage=this.message; }
+            // Tags streamed for a run that was not applied must not outlive it.
+            this.discardStreamedTags(sourceAnns[index]);
+            if(autoApply){const run=this.runs.get(key),applied=run.records.filter(r=>run.decisions[r.id]?.status==='applied');if(autoApplyAdvice(applied,{chars:doc.text.length,threshold:thresholdSettings.threshold,fixedThreshold})){denseFiles++;if(batch)queueRows[index].manyTags=true;}}
             completed.add(index);
             if(batch){Object.assign(queueRows[index],{status:result.status==='complete'?'completed':'failed',runId:nativeRun.id,suggestions:records.length,backend:result.backend,precision:result.precision,wasmThreads:result.wasmThreads,finishedAt:new Date().toISOString()});if(result.status!=='complete')queueRows[index].error=result.reason??'Input is unsupported by this model';}
             if(managed){await this.saveCollectionNote(sourceAnns[index]);const item=this.collection.notes.find(n=>n._diskKey===key);anns[index]=item;sourceAnns[index]=item;this.evictCollectionNotes();}
             updateProgress();renderLoadingProgress(this.root,this.loadingProgress);
             if(batch&&completed.size%10===0&&this.recoverySession.enabled)this.recoverySession.touch();
-        }) });}catch(error){if(batch&&!completed.has(activeIndex)){const row=queueRows[activeIndex];row.status=/Cancelled|AbortError/.test(error.message+' '+error.name)?'cancelled':'failed';row.error=row.status==='cancelled'?'Stopped by user':'Local analysis failed; retry this file';row.finishedAt=new Date().toISOString();}if(!completed.has(activeIndex)&&typeof anns[activeIndex]?.text==='string'){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
+        }) });}catch(error){if(!completed.has(activeIndex))this.removedStreamTags=this.discardStreamedTags(sourceAnns[activeIndex]);if(batch&&!completed.has(activeIndex)){const row=queueRows[activeIndex];row.status=/Cancelled|AbortError/.test(error.message+' '+error.name)?'cancelled':'failed';row.error=row.status==='cancelled'?'Stopped by user':'Local analysis failed; retry this file';row.finishedAt=new Date().toISOString();}if(!completed.has(activeIndex)&&typeof anns[activeIndex]?.text==='string'){const project=await this.ensureProject(anns[activeIndex],nativeSchema),doc=project.current.documents[0],identity=modelRunProvenance(model,variant.id,{manifestHash:model.manifestHash,variantId:variant.id,kind:codec,backend:variant.backend,precision:variant.precision,...(variant.backend==='webgpu'?{executionPolicy:EXECUTION_POLICY,graphTransforms:graphTransforms(model.manifest,variant,'webgpu')}:{})});const failed=await makeRun(project,doc,[],{...identity,status:/Cancelled/.test(error.message)?'cancelled':'failed',coverage:[],settings:runSettings,failures:[{category:/Cancelled/.test(error.message)?'cancelled':'local-runtime-failure'}]});await project.addRun(failed);this.runHistory.push(failed);}throw error;}
         finally{if(batch){if(analysisStarted!==null)this.batchQueue.elapsedMs+=performance.now()-analysisStarted;const counts=queueCounts(this.batchQueue);this.batchQueue.state=counts.pending+counts.cancelled?'paused':counts.failed?'needs-attention':'completed';if(managed){this.collection.queue=this.batchQueue;await this.collectionStore.commit(this.collection);this.evictCollectionNotes();}if(this.recoverySession.enabled)this.recoverySession.touch();}}
         const hidden = this.mode === 'blind';
         this.message = hidden
             ? 'Local analysis finished. Suggestions stay hidden in blind mode until you reveal them.'
-            : autoApply ? `Auto Apply finished for ${anns.length} files. Added tags are unreviewed; original predictions stay in the evidence project.` : `${batch?`Batch: ${queueCounts(this.batchQueue).completed} completed, ${queueCounts(this.batchQueue).failed} failed. Open each file to review its results. `:''}${notice}`;
+            : autoApply ? `${anns.length===1&&appliedMessage?appliedMessage:`Auto Apply finished for ${anns.length} ${anns.length===1?'file':'files'}. Added tags are unreviewed; original predictions stay in the evidence project.`}${denseFiles?` ${anns.length===1?'This file has':`${denseFiles} ${denseFiles===1?'file has':'files have'}`} many tags that may include false positives. ${fixedThreshold?'Review them in Assisted mode':'Raise the threshold or review them in Assisted mode'}; see Suggestions${anns.length===1?' below':' when you open a flagged file'}.`:''}` :`${batch?`Batch: ${queueCounts(this.batchQueue).completed} completed, ${queueCounts(this.batchQueue).failed} failed. Open each file to review its results. `:''}${notice}`;
     }
     chosenDocuments(onlySelected) {
         const view = legacy();
@@ -643,47 +687,104 @@ class LegacyAssist {
         invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this blind file before Auto Apply');
         invariant(run?.status === 'complete', 'Auto apply requires a complete run');
         const pending = run.records.filter(record => !run.decisions[record.id]);
-        if (!pending.length) { this.message = 'No remaining suggestions to apply. Existing and rejected tags were preserved.'; return; }
+        if (!pending.length) { this.discardStreamedTags(ann); this.message = 'No remaining suggestions to apply. Existing and rejected tags were preserved.'; return; }
         const project = await this.syncProject(ann);
         invariant(project === run.project && legacy().data.dtd === dtd && project.current.documents[0].text === ann.text, 'Source or schema changed; analyze this file again');
         invariant(this.mode !== 'blind' && (!this.blinded.has(key) || this.exposed.has(key)), 'Reveal this blind file before Auto Apply');
         // Build and validate the complete batch before touching the native tags.
-        // Staging also makes native IDs unique within a family.
+        // Staging also makes native IDs unique within a family. A tag already
+        // streamed for the same anchor is kept in place rather than added twice.
+        const streamed = this.streamed.get(ann);
         const staged = {...ann, tags:[...ann.tags]}, additions = [], replacements = [];
+        let removedByAnnotator = 0;
         for (const record of pending) {
             const tagDef = dtd.tag_dict[record.family];
             invariant(tagDef && !tagDef.is_non_consuming && record.anchor.length, 'Auto apply requires an exact span-family schema mapping');
             invariant(!record.relations?.length, 'Automatic relation application is not supported');
-            const values = {};
             for (const attr of editableAttrs(tagDef)) {
                 const value = record.fields[attr.name];
                 invariant(value == null || typeof value === 'string', 'Review non-text attributes individually');
                 invariant(value == null || attr.vtype !== 'list' || attr.values.includes(value), 'Model attribute is outside the native schema');
-                values[attr.name] = value ?? ''; // Unknown predictions do not acquire schema defaults.
             }
-            const tag = view.app.make_etag({spans:medtatorSpans(ann.text,record.anchor),text:record.anchor.map(s=>s.text).join(' ... ')},tagDef,staged);
-            Object.assign(tag, values); staged.tags.push(tag); additions.push({record,tag});
+            const values = nativeTagValues(tagDef, record), shown = streamed?.get(anchorKey(record.family, record.anchor));
+            // The annotator deleted this streamed tag: leave the suggestion unresolved.
+            if (shown && !ann.tags.includes(shown.tag)) { removedByAnnotator++; continue; }            // Keep attribute edits made while the note was still running.
+            const edited = shown && Object.entries(shown.values).some(([name, value]) => shown.tag[name] !== value);
+            const tag = shown ? {...shown.tag, ...(edited ? {} : values)} : view.app.make_etag({spans:medtatorSpans(ann.text,record.anchor),text:record.anchor.map(s=>s.text).join(' ... ')},tagDef,staged);
+            if (!shown) { Object.assign(tag, values); staged.tags.push(tag); }
+            additions.push({record,tag,target:shown?.tag});
             const native = legacyRecords({text:ann.text,tags:[tag]},project.current.documents[0],project.current.schema)[0];
             replacements.push({...clone(record),documentId:native.documentId,fields:native.fields,origin:{legacyTagId:tag.id}});
+        }
+        if (!additions.length) {
+            this.discardStreamedTags(ann);
+            this.message = `No new tags to add: the ${removedByAnnotator} tags you removed while the file was running stay unresolved suggestions.`;
+            return;
         }
         const candidate = new ReviewProject(project.current);
         candidate.applyMachineGroup(run.nativeRunId, replacements);
         // Commit native tags and their evidence lineage together. No await can
         // interleave source navigation or human editing in this section.
-        ann.tags.push(...additions.map(({tag})=>tag));
+        for (const {tag,target} of additions) if (target) { Object.assign(target, tag); streamingTags.delete(target); }
+        // Streamed tags the complete run did not keep (window overlaps) go away.
+        const dropped = streamed ? ann.tags.filter(tag => streamingTags.has(tag)) : [];
+        if (dropped.length) ann.tags = ann.tags.filter(tag => !streamingTags.has(tag));
+        this.streamed.delete(ann);
+        const added = additions.map(({tag,target}) => target ?? tag);
+        ann.tags.push(...additions.filter(({target}) => !target).map(({tag}) => tag));
         const undoDecisions=Object.fromEntries(additions.map(({record})=>[record.id,run.decisions[record.id]??null]));
         run.project = candidate; this.projects.set(key,candidate);
-        for (const {record,tag} of additions) run.decisions[record.id] = {status:'applied',tagId:tag.id,reviewStatus:'unreviewed'};
-        this.rememberReviewUndo(run,undoDecisions,additions.map(({tag})=>tag));
+        for (const [i,{record}] of additions.entries()) run.decisions[record.id] = {status:'applied',tagId:added[i].id,reviewStatus:'unreviewed'};
+        this.rememberReviewUndo(run,undoDecisions,added);
         this.recordExposure({ann,key},run,'auto-apply');
         ann._has_saved = false; view.vpp.refresh_v_anns();
-        if(!this.collection||legacy().ann===ann)for (const {tag} of additions) view.app.update_hint_dict_by_tag(ann,tag);
+        if(!this.collection||legacy().ann===ann)for (const tag of added) view.app.update_hint_dict_by_tag(ann,tag);
         if (legacy().ann === ann) {
             view.data.display_tag_name = '__all__'; view.app.cm_update_marks?.();
             view.vpp.set_ann_unsaved(ann);
         }
         view.vpp.$forceUpdate(); this.apply = null; this.detail = null;
-        this.message = `Auto-applied ${additions.length} suggestions as tags. They are unreviewed; existing tags and original predictions are kept.`;
+        this.message = `Auto-applied ${additions.length} suggestions as tags. They are unreviewed; existing tags and original predictions are kept.${removedByAnnotator?` ${removedByAnnotator} tags you removed while the file was running stay unresolved suggestions.`:''}`;
+    }
+    /** Show one window's Auto Apply tags while the rest of the note is still running. */
+    streamWindowTags(ann, submitted, records, dtd) {
+        const view = legacy();
+        if (!records?.length || !ann || !view?.app?.make_etag || view.data.dtd !== dtd || !view.data.anns.includes(ann) || ann.text !== submitted?.text || ann._filename !== submitted?._filename)
+            return this.streamed.get(ann)?.size ?? 0;
+        let shown = this.streamed.get(ann);
+        if (!shown) this.streamed.set(ann, shown = new Map());
+        let added = 0;
+        for (const record of records) {
+            const tagDef = dtd.tag_dict[record.family];
+            if (!tagDef || tagDef.is_non_consuming || !record.anchor?.length || record.relations?.length) continue;
+            const key = anchorKey(record.family, record.anchor), values = nativeTagValues(tagDef, record);
+            if (shown.has(key) || !values) continue;
+            let spans;
+            try { spans = medtatorSpans(ann.text, record.anchor); } catch { continue; }            const tag = view.app.make_etag({spans,text:record.anchor.map(s=>s.text).join(' ... ')},tagDef,ann);
+            Object.assign(tag, values);
+            streamingTags.add(tag); ann.tags.push(tag); shown.set(key, {tag, values: {...values}}); added++;
+        }
+        if (added) {
+            if (view.ann === ann) { view.data.display_tag_name = '__all__'; view.app.cm_update_marks?.(); }
+            view.vpp.$forceUpdate();
+        }
+        return shown.size;
+    }
+    /** Remove streamed tags whose run was not applied. Returns how many were still shown. */
+    discardStreamedTags(ann) {
+        const shown = ann && this.streamed.get(ann);
+        if (!shown) return 0;
+        this.streamed.delete(ann);
+        const remaining = (ann.tags ?? []).filter(tag => streamingTags.has(tag));
+        for (const {tag} of shown.values()) streamingTags.delete(tag);
+        if (remaining.length) {
+            const drop = new Set(remaining);
+            ann.tags = ann.tags.filter(tag => !drop.has(tag));
+            const view = legacy();
+            if (view?.ann === ann) view.app.cm_update_marks?.();
+            view?.vpp?.$forceUpdate();
+        }
+        return remaining.length;
     }
     rememberReviewUndo(run,decisions,added=[]){
         this.reviewUndo??=[];
@@ -703,6 +804,26 @@ class LegacyAssist {
         run.project.undo();view.ann.tags=tags;
         for(const [id,decision]of Object.entries(entry.decisions)){if(decision)run.decisions[id]=decision;else delete run.decisions[id];}
         this.reviewUndo.pop();view.vpp.set_ann_unsaved(view.ann);view.vpp.refresh_v_anns();this.refreshNativeHints();view.vpp.$forceUpdate();this.apply=null;this.message='Last assistance action undone. Original model predictions are retained.';
+    }
+    canUndoAutoApply(view){
+        const entry=this.reviewUndo?.at(-1);
+        return !!entry&&entry.key===view.key&&entry.runId===view.run?.nativeRunId;
+    }
+    /** Dense-run advice: put this run's tags back into per-suggestion review. */
+    reviewDenseRunInstead(){
+        const view=this.current();invariant(view.run,'Open the analyzed file first');
+        const undone=this.canUndoAutoApply(view);
+        if(undone)this.undoReview();
+        this.mode='assisted';
+        this.message=undone?'Auto-applied tags were removed. Review each suggestion below: Add Tag keeps it, Reject drops it.':'Assisted mode is selected for the next analysis. Tags from this run were edited, so they stay; remove unwanted ones in the annotation list.';
+    }
+    /** Dense-run advice: undo this Auto Apply and analyze again with a stricter threshold. */
+    async reanalyzeWithThreshold(value){
+        const view=this.current();invariant(view.run,'Open the analyzed file first');
+        invariant(this.canUndoAutoApply(view),'Tags from this run were edited after Auto Apply. Remove unwanted tags, then raise the threshold under More Tools › Analysis Settings and analyze again.');
+        this.undoReview();
+        this.thresholdOverride=setSelectionThresholdOverride(this.modelSelectionState,String(value));saveModelSelectionState(this.modelSelectionState);
+        await this.analyzeDocuments(this.chosenDocuments(false));
     }
     rejectSuggestion(view,run,record){
         const before={[record.id]:run.decisions[record.id]??null};
@@ -739,6 +860,8 @@ class LegacyAssist {
     }
     render() {
         const scrollTop = this.root.querySelector('.body')?.scrollTop ?? 0;
+        // Typing in a filter re-renders the panel; keep the caret where it was.
+        const active = this.root.activeElement, focusKey = active?.dataset?.focusKey, caret = focusKey && active.selectionStart != null ? [active.selectionStart, active.selectionEnd] : null;
         // Entering blind mode protects each source even after the selector changes.
         if (this.mode === 'blind')
             for (const ann of legacy()?.data?.anns ?? [])
@@ -773,7 +896,7 @@ class LegacyAssist {
         const more = renderMoreTools(this, view);
         const packages = renderModelPanel(this);
         const anns = this.allDocuments();
-        if (anns.length)
+        if (anns.length || view?.data?.dtd)
             analysis.step.append(renderBatch(this, anns, analysis.analyzeSelected));
         renderRun(this, analysis.step, view);
         body.append(renderNoteStep(this, view), modelSource, packages, analysis.step, more);
@@ -781,6 +904,11 @@ class LegacyAssist {
         if (this.busy)
             head.append(analysis.pause);
         body.scrollTop = scrollTop;
+        if (focusKey) {
+            const target = [...this.root.querySelectorAll('[data-focus-key]')].find(n => n.dataset.focusKey === focusKey);
+            target?.focus({ preventScroll: true });
+            if (caret && target?.setSelectionRange) target.setSelectionRange(...caret);
+        }
     }
 }
 
@@ -831,7 +959,8 @@ function renderAnalysisStep(assist, view) {
         id: 'assist-analyze',
         title: 'Analyze the current file on this device',
     });
-    const analyzeSelected = button('Analyze Selected', () => assist.perform(() => assist.analyzeDocuments(assist.chosenDocuments(true), { batch: true })), {
+    const count = assist.selected.size;
+    const analyzeSelected = button(count ? `Analyze ${count} Selected ${count === 1 ? 'File' : 'Files'}` : 'Analyze Selected', () =>assist.perform(() => assist.analyzeDocuments(assist.chosenDocuments(true), { batch: true })), {
         disabled: assist.busy || !assist.model || assist.selected.size === 0 || sourcePending,
         id: 'assist-analyze-selected',
         title: 'Analyze the files checked below',
@@ -849,6 +978,9 @@ function renderAnalysisStep(assist, view) {
     const prerequisite = !schema ? 'Load a schema, then open a file.' : !view?.ann ? 'Open a file to begin.' : !assist.model ? 'Load the model in step 3 to continue.' : null;
     if (prerequisite)
         actionBar.append(node('p', prerequisite));
+    const size = view?.ann?.text?.length ?? 0;
+    if (size >= LARGE_FILE_CHARS)
+        actionBar.append(node('p', `Large file (${formatSize(size)}). It is analyzed in windows${assist.mode === 'auto' ? ', and Auto Apply shows tags as each window finishes' : ''}. ${Number.isFinite(assist.deviceProfile?.memory) && assist.deviceProfile.memory <= 4 ? 'This device reports limited memory: close other tabs and choose Low CPU usage under Batch Analysis if the browser slows down.' : 'You can keep annotating while it runs.'}`, { class: 'muted', 'data-testid': 'assist-large-file' }));
     const step = node('section', null, { class: 'section', 'data-testid': 'assist-step-analyze' });
     const heading = node('h3', '4. Analyze and Review');
     heading.prepend(icon('play'));

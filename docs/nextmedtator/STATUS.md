@@ -2,6 +2,30 @@
 
 PRD baseline validated on 2026-10-03; v3/job 17089 model replacement validated on 2026-10-06. The newer v3 small/base comparison and web changes are described below. This is an engineering preview; the full public/clinical release is not yet qualified.
 
+## Large inputs, streaming Auto Apply and batch input
+
+The 2026-10-22 follow-up lowers memory and CPU use for long notes. Offset
+maps store no table for BMP-only text and are reused across the spans of
+one note. Word splitting no longer copies the whole note into a code-point
+array, and record binding uses an index instead of a linear search. Every
+decoder now reports window progress, which also keeps long base-model runs
+inside the worker's inactivity timeout. Word, window and record outputs are
+unchanged; unit tests compare segmented and whole-note splitting.
+
+Auto Apply shows each window's tags while the rest of the note is still
+running. These streamed tags stay out of evidence sync, recovery checkpoints
+and collection saves until the complete run is applied. The applied run then
+keeps matching streamed tags in place and removes those it did not keep.
+Pausing or a failure removes them. A run with at least 25
+applied tags is flagged when it has 25 or more tags per 1,000 characters or
+when half of the scores fall within 0.1 of the threshold. The panel then
+offers Assisted review, plus a stricter threshold if the model allows one.
+Batch Analysis can add or drop .txt files into on-disk storage, filter files
+by name and status, show sizes and results, and move many open plain-text
+files to on-disk storage. The local BPSD package was validated end to end in
+Chromium-based BrowserOS: a 46 KB note streamed 619 tags across 30 windows,
+and every final tag matched one machine-applied lineage record.
+
 ## Selectable models: clinical small v3 default
 
 The 2026-10-08 follow-up defaults both annotation views to
