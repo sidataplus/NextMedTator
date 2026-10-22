@@ -55,10 +55,10 @@ try:
         page.get_by_test_id('assist-collapse').click();expect(page.get_by_test_id('assist-expand')).to_be_visible();page.get_by_test_id('assist-expand').click()
         practice=page.get_by_test_id('assist-practice')
         if practice.get_attribute('open') is None:practice.locator('summary').click()
-        page.once('dialog',lambda d:d.accept());page.get_by_test_id('assist-practice-p10').click()
+        page.get_by_test_id('assist-practice-p10').click();expect(page.get_by_test_id('assist-confirm')).to_contain_text('Replace the current files');page.get_by_test_id('assist-confirm-accept').click()
         expect(page.get_by_test_id('assist-document')).to_have_text('p10-practice.txt.xml')
         expect(page.get_by_test_id('assist-mode')).to_have_value('auto')
-        page.once('dialog',lambda d:d.dismiss());page.get_by_test_id('assist-practice-bpsd').click()
+        page.get_by_test_id('assist-practice-bpsd').click();page.get_by_test_id('assist-confirm-cancel').click();expect(page.get_by_test_id('assist-confirm')).to_have_count(0)
         expect(page.get_by_test_id('assist-document')).to_have_text('p10-practice.txt.xml')
         assert page.evaluate('app_hotpot.vpp.$data.anns.length')==1
         assert not errors,errors

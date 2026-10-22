@@ -1,0 +1,341 @@
+{
+  "format": "nextmedtator-auto-apply-advice-calibration-v1",
+  "date": "2026-10-22",
+  "corpus": "tests/fixtures/lora-clinical-samples.json (27 synthetic notes, 618 reference anchors)",
+  "matching": "exact family and code-point anchor; underestimates precision for boundary-only differences",
+  "rule": {
+    "minTags": 15,
+    "lowScore": 0.6,
+    "lowShare": 0.35,
+    "perThousand": 40
+  },
+  "result": {
+    "flaggedNotes": 7,
+    "flaggedPrecision": 0.487,
+    "flaggedPrecisionAtOrAbove06": 0.649,
+    "unflaggedPrecision": 0.56,
+    "allPrecision": 0.539,
+    "allPrecisionAtOrAbove06": 0.661,
+    "exactMatchesLostAtOrAbove06": 46,
+    "references": 618,
+    "maxReferencesPerThousand": 27.5,
+    "maxPredictionsPerThousand": 35.5
+  },
+  "limitations": [
+    "One synthetic corpus and one fixed-threshold package (P10); BPSD scores were mostly above 0.9 and were not reference-scored.",
+    "Not clinical validation."
+  ],
+  "package": "clinical-evidence-p10-base",
+  "manifestHash": "e15cfbecb435c23a7ff697cbc17c084e686c2ce846739098552ac12bfff8cc53",
+  "backend": {
+    "backend": "webgpu",
+    "precision": "fp32"
+  },
+  "threshold": 0.25,
+  "bands": {
+    "0.9": {
+      "predictions": 264,
+      "exactMatches": 218
+    },
+    "0.4": {
+      "predictions": 61,
+      "exactMatches": 19
+    },
+    "0.7": {
+      "predictions": 68,
+      "exactMatches": 31
+    },
+    "0.6": {
+      "predictions": 58,
+      "exactMatches": 20
+    },
+    "0.8": {
+      "predictions": 91,
+      "exactMatches": 49
+    },
+    "0.3": {
+      "predictions": 64,
+      "exactMatches": 14
+    },
+    "0.2": {
+      "predictions": 28,
+      "exactMatches": 6
+    },
+    "0.5": {
+      "predictions": 41,
+      "exactMatches": 7
+    }
+  },
+  "notes": [
+    {
+      "id": "syn7_00007",
+      "chars": 1223,
+      "references": 25,
+      "predictions": 28,
+      "exactMatches": 17,
+      "lowShare": 0.25,
+      "predictionsAtOrAbove06": 21,
+      "exactMatchesAtOrAbove06": 15
+    },
+    {
+      "id": "syn7_00005",
+      "chars": 1346,
+      "references": 23,
+      "predictions": 24,
+      "exactMatches": 11,
+      "lowShare": 0.375,
+      "predictionsAtOrAbove06": 15,
+      "exactMatchesAtOrAbove06": 10
+    },
+    {
+      "id": "syn7_00000",
+      "chars": 1692,
+      "references": 33,
+      "predictions": 33,
+      "exactMatches": 21,
+      "lowShare": 0.212,
+      "predictionsAtOrAbove06": 26,
+      "exactMatchesAtOrAbove06": 19
+    },
+    {
+      "id": "syn7_00002",
+      "chars": 1161,
+      "references": 26,
+      "predictions": 23,
+      "exactMatches": 9,
+      "lowShare": 0.348,
+      "predictionsAtOrAbove06": 15,
+      "exactMatchesAtOrAbove06": 8
+    },
+    {
+      "id": "syn7_00001",
+      "chars": 1348,
+      "references": 23,
+      "predictions": 25,
+      "exactMatches": 16,
+      "lowShare": 0.12,
+      "predictionsAtOrAbove06": 22,
+      "exactMatchesAtOrAbove06": 15
+    },
+    {
+      "id": "syn7_00003",
+      "chars": 888,
+      "references": 24,
+      "predictions": 22,
+      "exactMatches": 12,
+      "lowShare": 0.364,
+      "predictionsAtOrAbove06": 14,
+      "exactMatchesAtOrAbove06": 10
+    },
+    {
+      "id": "syn7_00004",
+      "chars": 619,
+      "references": 17,
+      "predictions": 22,
+      "exactMatches": 10,
+      "lowShare": 0.364,
+      "predictionsAtOrAbove06": 14,
+      "exactMatchesAtOrAbove06": 8
+    },
+    {
+      "id": "syn7_00008",
+      "chars": 990,
+      "references": 18,
+      "predictions": 18,
+      "exactMatches": 10,
+      "lowShare": 0.111,
+      "predictionsAtOrAbove06": 16,
+      "exactMatchesAtOrAbove06": 10
+    },
+    {
+      "id": "syn7_00009",
+      "chars": 999,
+      "references": 18,
+      "predictions": 21,
+      "exactMatches": 11,
+      "lowShare": 0.19,
+      "predictionsAtOrAbove06": 17,
+      "exactMatchesAtOrAbove06": 11
+    },
+    {
+      "id": "syn7_00013",
+      "chars": 1122,
+      "references": 21,
+      "predictions": 23,
+      "exactMatches": 13,
+      "lowShare": 0.261,
+      "predictionsAtOrAbove06": 17,
+      "exactMatchesAtOrAbove06": 11
+    },
+    {
+      "id": "syn7_00011",
+      "chars": 1048,
+      "references": 27,
+      "predictions": 26,
+      "exactMatches": 14,
+      "lowShare": 0.308,
+      "predictionsAtOrAbove06": 18,
+      "exactMatchesAtOrAbove06": 12
+    },
+    {
+      "id": "syn7_00006",
+      "chars": 1183,
+      "references": 20,
+      "predictions": 27,
+      "exactMatches": 13,
+      "lowShare": 0.407,
+      "predictionsAtOrAbove06": 16,
+      "exactMatchesAtOrAbove06": 9
+    },
+    {
+      "id": "syn7_00014",
+      "chars": 1511,
+      "references": 26,
+      "predictions": 29,
+      "exactMatches": 19,
+      "lowShare": 0.207,
+      "predictionsAtOrAbove06": 23,
+      "exactMatchesAtOrAbove06": 17
+    },
+    {
+      "id": "syn7_00010",
+      "chars": 947,
+      "references": 20,
+      "predictions": 21,
+      "exactMatches": 9,
+      "lowShare": 0.238,
+      "predictionsAtOrAbove06": 16,
+      "exactMatchesAtOrAbove06": 9
+    },
+    {
+      "id": "syn7_00015",
+      "chars": 1159,
+      "references": 22,
+      "predictions": 28,
+      "exactMatches": 15,
+      "lowShare": 0.25,
+      "predictionsAtOrAbove06": 21,
+      "exactMatchesAtOrAbove06": 13
+    },
+    {
+      "id": "syn7_00016",
+      "chars": 1360,
+      "references": 21,
+      "predictions": 24,
+      "exactMatches": 12,
+      "lowShare": 0.333,
+      "predictionsAtOrAbove06": 16,
+      "exactMatchesAtOrAbove06": 9
+    },
+    {
+      "id": "syn7_00017",
+      "chars": 1584,
+      "references": 26,
+      "predictions": 36,
+      "exactMatches": 19,
+      "lowShare": 0.5,
+      "predictionsAtOrAbove06": 18,
+      "exactMatchesAtOrAbove06": 14
+    },
+    {
+      "id": "syn7_00018",
+      "chars": 1426,
+      "references": 26,
+      "predictions": 28,
+      "exactMatches": 14,
+      "lowShare": 0.25,
+      "predictionsAtOrAbove06": 21,
+      "exactMatchesAtOrAbove06": 13
+    },
+    {
+      "id": "syn7_00012",
+      "chars": 696,
+      "references": 16,
+      "predictions": 19,
+      "exactMatches": 9,
+      "lowShare": 0.316,
+      "predictionsAtOrAbove06": 13,
+      "exactMatchesAtOrAbove06": 8
+    },
+    {
+      "id": "syn7_00019",
+      "chars": 1281,
+      "references": 24,
+      "predictions": 28,
+      "exactMatches": 13,
+      "lowShare": 0.25,
+      "predictionsAtOrAbove06": 21,
+      "exactMatchesAtOrAbove06": 12
+    },
+    {
+      "id": "syn7_00022",
+      "chars": 1061,
+      "references": 17,
+      "predictions": 16,
+      "exactMatches": 12,
+      "lowShare": 0.125,
+      "predictionsAtOrAbove06": 14,
+      "exactMatchesAtOrAbove06": 11
+    },
+    {
+      "id": "syn7_00020",
+      "chars": 1290,
+      "references": 28,
+      "predictions": 27,
+      "exactMatches": 17,
+      "lowShare": 0.333,
+      "predictionsAtOrAbove06": 18,
+      "exactMatchesAtOrAbove06": 14
+    },
+    {
+      "id": "syn7_00023",
+      "chars": 1169,
+      "references": 25,
+      "predictions": 21,
+      "exactMatches": 14,
+      "lowShare": 0.238,
+      "predictionsAtOrAbove06": 16,
+      "exactMatchesAtOrAbove06": 13
+    },
+    {
+      "id": "syn7_00021",
+      "chars": 1149,
+      "references": 29,
+      "predictions": 34,
+      "exactMatches": 16,
+      "lowShare": 0.382,
+      "predictionsAtOrAbove06": 21,
+      "exactMatchesAtOrAbove06": 13
+    },
+    {
+      "id": "syn7_00024",
+      "chars": 1024,
+      "references": 21,
+      "predictions": 21,
+      "exactMatches": 16,
+      "lowShare": 0.095,
+      "predictionsAtOrAbove06": 19,
+      "exactMatchesAtOrAbove06": 16
+    },
+    {
+      "id": "syn7_00026",
+      "chars": 1363,
+      "references": 26,
+      "predictions": 28,
+      "exactMatches": 13,
+      "lowShare": 0.429,
+      "predictionsAtOrAbove06": 16,
+      "exactMatchesAtOrAbove06": 10
+    },
+    {
+      "id": "syn7_00027",
+      "chars": 979,
+      "references": 16,
+      "predictions": 23,
+      "exactMatches": 9,
+      "lowShare": 0.261,
+      "predictionsAtOrAbove06": 17,
+      "exactMatchesAtOrAbove06": 8
+    }
+  ]
+}

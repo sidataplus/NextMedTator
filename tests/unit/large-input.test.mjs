@@ -6,6 +6,8 @@ import {utf16Offset, medtatorSpans, documentKey, legacyRecords, streamingTags, w
 import {scanLongContext} from '../../src/nextmedtator/long-context.mjs';
 import {autoApplyAdvice, raisedThreshold, adviceSummary} from '../../src/nextmedtator/auto-apply-advice.mjs';
 import {matchesFilter, formatSize} from '../../src/nextmedtator/assist-batch.mjs';
+import {suggestionPage, belowMinimum} from '../../src/nextmedtator/review-queue.mjs';
+import {batchStatus} from '../../src/nextmedtator/loading-progress.mjs';
 
 // Reference: the former per-call code-point scan.
 const referenceUtf16=(text,cp)=>{let units=0,seen=0;for(const ch of text){if(seen===cp)return units;units+=ch.length;seen++;}if(seen===cp)return units;throw new Error('outside');};
@@ -89,18 +91,19 @@ test('native Auto Apply values keep model abstention and refuse values outside t
     assert.equal(nativeTagValues(tagDef,{fields:{note:['span']}}),null);
 });
 
-test('dense Auto Apply runs suggest a stricter threshold or Assisted review',()=>{
+test('runs with many low-scoring tags suggest dropping the low-confidence band without rerunning',()=>{
     const rows=scores=>scores.map(score=>({score}));
-    assert.equal(autoApplyAdvice(rows(Array(10).fill(.9)),{chars:100,threshold:.5}),null,'few tags');
-    assert.equal(autoApplyAdvice(rows(Array(30).fill(.95)),{chars:10000,threshold:.5}),null,'sparse and confident');
-    const dense=autoApplyAdvice(rows([...Array(20).fill(.52),...Array(10).fill(.9)]),{chars:20000,threshold:.5});
-    assert.ok(dense);assert.equal(dense.count,30);assert.equal(dense.nearShare,20/30);
-    assert.deepEqual(dense.suggestion,{threshold:.55,kept:10,total:30});
-    assert.match(adviceSummary(dense),/30 tags · 1\.5 per 1,000 characters · 67% scored within 0\.1 of the 0\.5 threshold/);
-    const crowded=autoApplyAdvice(rows(Array(40).fill(.95)),{chars:1000,threshold:.5});
-    assert.ok(crowded);assert.equal(crowded.suggestion,null,'no step removes 30% of uniformly confident tags');
-    assert.equal(autoApplyAdvice(rows(Array(40).fill(.55)),{chars:1000,threshold:.5,fixedThreshold:true}).suggestion,null);
-    assert.equal(raisedThreshold([.61,.62,.63],.6),null,'never suggests a threshold that leaves nothing');
+    assert.equal(autoApplyAdvice(rows(Array(10).fill(.3)),{chars:100,threshold:.25}),null,'few tags');
+    assert.equal(autoApplyAdvice(rows([...Array(20).fill(.95),...Array(6).fill(.4)]),{chars:1000,threshold:.25}),null,'dense but mostly confident, like reference annotation');
+    const low=autoApplyAdvice(rows([...Array(12).fill(.95),...Array(8).fill(.4)]),{chars:1000,threshold:.25});
+    assert.ok(low);assert.equal(low.count,20);assert.equal(low.lowShare,.4);
+    assert.deepEqual(low.suggestion,{threshold:.6,kept:12,total:20});
+    assert.match(adviceSummary(low),/^20 tags · 20 per 1,000 characters · 40% scored below 0\.6$/);
+    const crowded=autoApplyAdvice(rows(Array(45).fill(.95)),{chars:1000,threshold:.25});
+    assert.ok(crowded,'over 40 per 1,000 characters');assert.equal(crowded.lowShare,0);assert.equal(crowded.suggestion,null);
+    // A run already filtered at 0.6 or above is judged on density alone.
+    assert.equal(autoApplyAdvice(rows([...Array(12).fill(.95),...Array(8).fill(.65)]),{chars:1000,threshold:.6}),null);
+    assert.equal(raisedThreshold([.61,.62,.63],.6),null,'never suggests a minimum that leaves nothing');
     assert.deepEqual(raisedThreshold([.61,.62,.9,.95],.6),{threshold:.65,kept:2,total:4});
 });
 
@@ -112,4 +115,26 @@ test('batch filters match names and queue status',()=>{
     assert.ok(matchesFilter(ann,{status:'completed',manyTags:true},{status:'many-tags'}));
     assert.ok(!matchesFilter(ann,{status:'failed'},{text:'other'}));
     assert.equal(formatSize(512),'512 B');assert.equal(formatSize(4096),'4 KB');assert.equal(formatSize(3*1048576),'3.0 MB');
+});
+
+test('a minimum score hides only undecided lower-scoring suggestions',()=>{
+    const records=[{id:'a',family:'x',score:.9},{id:'b',family:'x',score:.55},{id:'c',family:'x',score:.52},{id:'d',family:'x'}];
+    assert.deepEqual(suggestionPage(records,{},{minScore:.6}).records.map(r=>r.id),['a','d']);
+    assert.deepEqual(suggestionPage(records,{c:{status:'applied'}},{minScore:.6}).records.map(r=>r.id),['a','c','d']);
+    assert.equal(suggestionPage(records,{},{}).total,4);
+    assert.ok(belowMinimum({score:.5},.6));assert.ok(!belowMinimum({score:.5},null));assert.ok(!belowMinimum({},.6));
+});
+
+test('single-file progress counts windows and estimates time from them',()=>{
+    const status=batchStatus({completed:3,total:12,started:0,unit:'windows',now:6000});
+    assert.equal(status.percent,25);assert.match(status.detail,/^3 \/ 12 windows completed · About 18s remaining$/);
+    assert.match(batchStatus({completed:0,total:2,started:0,now:1}).detail,/0 \/ 2 files completed · Estimating/);
+});
+
+test('curated adapters start at a Minimum Score ending in 0 or 5; other sources have none',async()=>{
+    const {presetMinimumScore,MINIMUM_SCORE_PRESETS,MODEL_PRESETS}=await import('../../src/nextmedtator/model-selection.mjs');
+    for(const value of Object.values(MINIMUM_SCORE_PRESETS))assert.equal(Math.round(value*100)%5,0);
+    assert.equal(presetMinimumScore({id:'clinical-p10'}),MINIMUM_SCORE_PRESETS[MODEL_PRESETS.find(p=>p.id==='clinical-p10').repository]);
+    assert.equal(presetMinimumScore({id:'bpsd-base'}),MINIMUM_SCORE_PRESETS[MODEL_PRESETS.find(p=>p.id==='bpsd-base').repository]);
+    assert.equal(presetMinimumScore({id:'original-small'}),null);
 });

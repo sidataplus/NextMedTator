@@ -75,6 +75,12 @@ p{margin:5px 0}
 .drop-zone.active{border-color:#1ba1e2;background:#e5f3ff}
 .drop-zone label{margin:4px 0}
 .advice strong{display:block}
+.confirm{flex-shrink:0;margin:6px 8px 0;padding:6px 8px;border:1px solid #1ba1e2;border-left-width:3px;background:#eff6fc;font-size:11px}
+.confirm p{margin:0 0 4px;overflow-wrap:anywhere;font-weight:600}
+.confirm .row{margin:0}
+.min-score{display:flex;align-items:center;gap:6px;margin:6px 0}
+.min-score input[type=range]{flex:1;min-width:80px}
+.min-score output{min-width:2.5em;font-weight:600;font-variant-numeric:tabular-nums}
 .advice .row{margin:4px 0 2px}
 .setup-hint{margin:6px 0;padding:5px 8px;border-left:3px solid #1ba1e2;background:#eff6fc;font-size:11px}
 .setup-hint p{margin:3px 0}

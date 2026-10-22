@@ -26,7 +26,7 @@ def run():
   with sync_playwright() as p:
    browser=p.chromium.launch(executable_path=chromium_path(),args=['--no-sandbox'])
    context=browser.new_context(viewport={'width':1366,'height':768},accept_downloads=True);page=context.new_page();page.set_default_timeout(30000);errors=[];requests=[]
-   page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'post':r.post_data}));page.on('dialog',lambda d:d.accept())
+   page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'post':r.post_data}));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
    page.goto(URL);page.wait_for_function('() => !!window.app_hotpot?.vpp');page.evaluate('() => jarvis.ssclose()');page.get_by_title('Load a minimal task',exact=True).click();page.locator('.file-list-item-name',has_text='doc_01.txt.xml').wait_for();count=page.evaluate(FIXTURE)
    page.get_by_test_id('assist-collapse').click();page.get_by_test_id('corpus-search-open').click();search(page,'breast cancer','phrase');expect(page.get_by_test_id('corpus-search-hit')).to_have_count(1)
    page.get_by_test_id('corpus-search-hit').first.click();assert page.evaluate('() => app_hotpot.codemirror.getValue()')=='Metastatic breast cancer. MI HF DM AF RA. Café.'

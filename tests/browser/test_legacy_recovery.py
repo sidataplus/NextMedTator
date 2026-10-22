@@ -16,7 +16,7 @@ def run():
             executable=chromium_path()
             browser=p.chromium.launch(executable_path=executable if executable and Path(executable).exists() else None,args=['--no-sandbox'])
             context=browser.new_context();page=context.new_page();errors=[]
-            page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+            page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             page.goto(URL);page.wait_for_function('() => window.app_hotpot?.vpp != null');page.evaluate('jarvis.ssclose()')
             page.get_by_title('Load a minimal task').click();page.locator('.file-list-item-name',has_text='doc_01.txt.xml').wait_for()
             seeded=page.evaluate(r'''async()=>{

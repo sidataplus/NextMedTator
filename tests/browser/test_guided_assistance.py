@@ -94,7 +94,7 @@ with sync_playwright() as p:
         if os.environ.get('NMT_INFERENCE')=='1' and engine=='chromium':
             context.unroute('https://nmt-models.sidata.plus/verify?*');context.unroute('https://nmt-models.sidata.plus/grant')
             model_results=[]
-            page.on('dialog',lambda d:d.accept())
+            page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             for name in ('p10','bpsd'):
                 if name=='bpsd':
                     page.get_by_test_id('assist-more').locator(':scope > summary').click()

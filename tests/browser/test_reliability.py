@@ -169,7 +169,7 @@ def run():
                 context=browser.new_context(viewport={'width':1440,'height':1000});page=context.new_page();page.set_default_timeout(15000)
                 errors=[];requests=[];page.on('pageerror',lambda error:errors.append(str(error)))
                 page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'post':r.post_data}))
-                page.on('dialog',lambda d:d.accept())
+                page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
                 try:
                     page.goto(URL);page.wait_for_function('()=>!!window.app_hotpot?.vpp');page.evaluate('jarvis.ssclose()')
                     case(page)

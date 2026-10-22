@@ -26,7 +26,7 @@ try:
     with sync_playwright() as p:
         browser=p.chromium.launch(executable_path=chromium_path());page=browser.new_page(viewport={'width':1600,'height':1000},accept_downloads=True)
         page.set_default_timeout(600000);expect.set_options(timeout=600000);errors=[]
-        page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+        page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
         page.goto(url);page.wait_for_function('()=>!!window.app_hotpot?.vpp');page.evaluate('jarvis.ssclose()')
         page.get_by_title('Load a minimal task').click()
         page.evaluate('''({text,dtd})=>{

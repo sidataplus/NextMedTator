@@ -224,7 +224,8 @@ export class ConformanceWorker {
                 invariant(!this.cancelled, 'Cancelled: local model worker stopped');
                 await onProgress?.(index);
                 const request=typeof requests.at==='function'?await requests.at(index):requests[index];
-                const result = await this.#execute(context, { ...request, task: 'analyze' });
+                // A cached request reuses an earlier run of the same file and settings.
+                const result = request.cached ? request : await this.#execute(context, { ...request, task: 'analyze' });
                 await onResult?.(result, index);
                 if(collectResults)results.push(result);
             }

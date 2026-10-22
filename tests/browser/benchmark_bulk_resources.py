@@ -31,7 +31,7 @@ with sync_playwright() as p:
             gpu_devices=cdp.send('SystemInfo.getInfo')['gpu']['devices']
             meter=ProcessMeter(pid);context=browser.new_context(viewport={'width':1440,'height':1050},accept_downloads=True,service_workers='block')
             page=context.new_page();page.set_default_timeout(900000);expect.set_options(timeout=900000)
-            errors=[];network=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:network.append(r.url));page.on('dialog',lambda d:d.accept())
+            errors=[];network=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:network.append(r.url));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             try:
                 page.goto(URL);expect(page.locator('#start-screen')).to_be_hidden();page.get_by_test_id('assist-practice-'+profile).click()
                 page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy")

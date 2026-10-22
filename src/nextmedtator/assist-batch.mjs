@@ -58,15 +58,15 @@ export function renderBatch(assist, anns, analyzeSelected) {
         button(filtered ? `Select ${visible.length} Shown` : 'Select All', () => {
             for (const ann of visible)
                 assist.selected.add(noteKey(ann));
-            assist.render();
+            assist.rememberBatchView(); assist.render();
         }, { disabled: assist.busy || !visible.length, id: 'assist-select-all' }),
-        button('Clear Selection', () => { assist.selected.clear(); assist.render(); }, { disabled: assist.busy, id: 'assist-select-none' }),
+        button('Clear Selection', () => { assist.selected.clear(); assist.rememberBatchView(); assist.render(); }, { disabled: assist.busy, id: 'assist-select-none' }),
         button('Select Unfinished', () => {
             assist.selected.clear();
             for (const ann of available)
                 if (queuedByKey.get(noteKey(ann))?.status !== 'completed')
                     assist.selected.add(noteKey(ann));
-            assist.render();
+            assist.rememberBatchView(); assist.render();
         }, { disabled: assist.busy, id: 'assist-select-unfinished', title: 'Select every file that has not finished in the current batch' }));
     docs.append(selections, cpuUsage(assist));
     // Bound DOM size even when the corpus contains thousands of files.
@@ -93,12 +93,12 @@ function filters(assist, filter, shown, total) {
     const row = node('div', null, { class: 'row filters' });
     const search = node('input', null, { type: 'text', placeholder: 'Filter by file name', 'aria-label': 'Filter files by name', 'data-testid': 'assist-batch-filter', 'data-focus-key': 'assist-batch-filter' });
     search.value = filter.text;
-    search.addEventListener('input', () => { assist.batchFilter = { ...filter, text: search.value }; assist.batchPage = 0; assist.render(); });
+    search.addEventListener('input', () => { assist.batchFilter = { ...filter, text: search.value }; assist.batchPage = 0; assist.rememberBatchView(); assist.render(); });
     const status = node('select', null, { 'aria-label': 'Show files by status', 'data-testid': 'assist-batch-status-filter' });
     for (const [value, label] of STATUS_FILTERS)
         status.append(node('option', label, { value }));
     status.value = filter.status;
-    status.addEventListener('change', () => { assist.batchFilter = { ...filter, status: status.value }; assist.batchPage = 0; assist.render(); });
+    status.addEventListener('change', () => { assist.batchFilter = { ...filter, status: status.value }; assist.batchPage = 0; assist.rememberBatchView(); assist.render(); });
     row.append(search, status);
     if (shown !== total)
         row.append(node('span', `${shown} of ${total} shown`, { class: 'muted', 'data-testid': 'assist-batch-shown' }));
@@ -119,7 +119,7 @@ function cpuUsage(assist) {
 /** Text files go straight to on-disk storage, so adding hundreds of files does not fill this tab's memory. */
 function addFiles(assist) {
     const box = node('div', null, { class: 'drop-zone', 'data-testid': 'assist-batch-drop' });
-    const input = node('input', null, { type: 'file', multiple: true, accept: '.txt,text/plain', 'aria-label': 'Add text files to analyze', 'data-testid': 'assist-batch-add-files', disabled: assist.busy });
+    const input = node('input', null, { type: 'file', multiple: true, accept: '.txt,text/plain', 'aria-label': 'Add text files to analyze', 'data-testid': 'assist-collection-import', disabled: assist.busy });
     const add = files => {
         const text = files.filter(file => /\.txt$/i.test(file.name) || file.type === 'text/plain');
         if (!text.length) { assist.error = true; assist.message = 'Only .txt files can be added here. Open annotated XML files with the toolbar above.'; assist.render(); return; }
@@ -170,6 +170,11 @@ function queueStatus(assist) {
         button('Resume', resume(), { disabled: assist.busy || !assist.model || counts.pending + counts.cancelled === 0, id: 'assist-batch-resume' }),
         button('Retry Failed', resume({ retryFailed: true }), { disabled: assist.busy || !assist.model || counts.failed === 0, id: 'assist-batch-retry' }),
         button('Export Report', exportReport, { disabled: assist.busy, id: 'assist-batch-report' }));
+    if (assist.batchQueue.settings?.mode === 'auto' && counts.completed)
+        controls.append(button('Undo Auto Apply for This Batch', () => assist.perform(() => assist.undoBatchAutoApply()), {
+            disabled: assist.busy, id: 'assist-batch-undo',
+            title: 'Remove the tags Auto Apply added to finished files; their suggestions stay for review',
+        }));
     const note = assist.collection
         ? 'Each finished file and the queue status are saved together on this device. Resume skips finished files and checks the model, schema, threshold and review mode. Export a backup to keep a copy.'
         : 'Resume skips finished files and checks the model, schema, threshold and review mode. Enable recovery to keep the queue across reloads (saved every 10 files and when stopping). The report lists file names and statuses.';
@@ -184,13 +189,13 @@ function fileRow(assist, ann, queued, current) {
     const key = noteKey(ann);
     const input = node('input', null, { type: 'checkbox', disabled: assist.busy, 'aria-label': ann._filename ?? 'document' });
     input.checked = assist.selected.has(key);
-    input.addEventListener('change', () => { if (input.checked) assist.selected.add(key); else assist.selected.delete(key); assist.render(); });
+    input.addEventListener('change', () => { if (input.checked) assist.selected.add(key); else assist.selected.delete(key); assist.rememberBatchView(); assist.render(); });
     const row = node('div', null, { class: `file-row${current ? ' current' : ''}`, 'data-testid': 'assist-batch-file' });
     const label = node('label', null, { class: 'check grow' });
     label.append(input, node('span', ann._filename ?? 'document', { class: 'file-name', title: ann._filename ?? 'document' }));
     row.append(label, node('small', formatSize(noteSize(ann)), { class: 'muted' }));
     if (queued) {
-        const detail = queued.status === 'completed' && queued.suggestions != null ? ` · ${queued.suggestions}` : '';
+        const detail = queued.status === 'completed' && queued.suggestions != null ? ` · ${queued.suggestions}${queued.reused ? ' · reused' : ''}` : '';
         row.append(node('span', STATUS_LABELS[queued.status] + detail, { class: `badge ${queued.status}`, 'data-testid': 'assist-note-status', 'data-status': queued.status, title: queued.error ?? `${queued.attempts} ${queued.attempts === 1 ? 'attempt' : 'attempts'}${queued.suggestions != null ? ` · ${queued.suggestions} suggestions` : ''}` }));
         if (queued.manyTags)
             row.append(node('span', 'Many tags', { class: 'badge failed', title: 'Many tags were added; some may be spurious. Open this file to review them.' }));

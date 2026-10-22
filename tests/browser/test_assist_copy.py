@@ -51,7 +51,7 @@ try:
         except OSError:time.sleep(.1)
     with sync_playwright() as p:
         browser=p.chromium.launch(executable_path=chromium_path());page=browser.new_page(viewport={'width':1440,'height':900});errors=[]
-        page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+        page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
         expect.set_options(timeout=30000);page.goto(url);expect(page.locator('#start-screen')).to_be_hidden()
         host=page.locator('nextmedtator-assist')
         chrome=host.evaluate('''h=>{const s=getComputedStyle(h),dock=getComputedStyle(h.shadowRoot.querySelector('.dock'));

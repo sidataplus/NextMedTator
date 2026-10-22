@@ -48,7 +48,7 @@ def run():
             expect.set_options(timeout=180000)
             errors, requests = [], []
             page.on('pageerror', lambda e: errors.append(str(e)))
-            page.on('dialog', lambda dialog: dialog.accept())
+            page.on('dialog', lambda dialog: dialog.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             page.on('console', lambda message: print(message.text, flush=True) if message.text.startswith('Sample validation') else None)
             context.on('request', lambda r: requests.append({'url': r.url, 'method': r.method, 'body': r.post_data}))
             page.goto(URL)

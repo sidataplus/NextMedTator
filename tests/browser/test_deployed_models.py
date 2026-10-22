@@ -20,7 +20,7 @@ dtd='\n'.join(lines)
 with sync_playwright() as p:
  context=p.chromium.launch_persistent_context(user_data_dir=str(out/'chrome-profile'),executable_path=chromium_path(),headless=True,viewport={'width':1600,'height':1000},accept_downloads=True);browser=context.browser
  page=context.new_page();page.set_default_timeout(600000);expect.set_options(timeout=600000);errors=[];requests=[]
- page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept());page.on('request',lambda r:requests.append({'method':r.method,'url':r.url,'body':r.post_data}))
+ page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true');page.on('request',lambda r:requests.append({'method':r.method,'url':r.url,'body':r.post_data}))
  response=page.goto(url);page.wait_for_function('()=>!!window.app_hotpot?.vpp');expect(page.locator('#start-screen')).to_be_hidden();print(profile+': production app loaded',flush=True)
  assert response.headers.get('cross-origin-opener-policy')=='same-origin'
  assert response.headers.get('cross-origin-embedder-policy')=='require-corp'

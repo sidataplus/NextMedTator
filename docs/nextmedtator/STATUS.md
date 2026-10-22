@@ -13,18 +13,44 @@ inside the worker's inactivity timeout. Word, window and record outputs are
 unchanged; unit tests compare segmented and whole-note splitting.
 
 Auto Apply shows each window's tags while the rest of the note is still
-running. These streamed tags stay out of evidence sync, recovery checkpoints
-and collection saves until the complete run is applied. The applied run then
-keeps matching streamed tags in place and removes those it did not keep.
-Pausing or a failure removes them. A run with at least 25
-applied tags is flagged when it has 25 or more tags per 1,000 characters or
-when half of the scores fall within 0.1 of the threshold. The panel then
-offers Assisted review, plus a stricter threshold if the model allows one.
-Batch Analysis can add or drop .txt files into on-disk storage, filter files
-by name and status, show sizes and results, and move many open plain-text
-files to on-disk storage. The local BPSD package was validated end to end in
-Chromium-based BrowserOS: a 46 KB note streamed 619 tags across 30 windows,
-and every final tag matched one machine-applied lineage record.
+running, drawn dashed and faded until the complete run is applied. Streamed
+tags stay out of evidence sync, recovery checkpoints and collection saves
+until then; pausing or a failure removes them. A single long file reports
+progress and time left in windows.
+
+Analyzing a file again with the same model, schema and decoding settings
+reuses its stored run instead of running the model; a batch of such files
+never loads the model. Each run keeps its scores, so a Minimum Score control
+(and a stricter threshold on Analyze) re-applies only stored predictions at
+or above the new value, also for fixed-threshold packages. Each Auto Apply
+group can be undone later, per file or for a whole batch.
+
+Curated models start each run at a calibrated Minimum Score: 0.65 for P10
+and 0.50 for BPSD, at every precision; the decoding threshold is unchanged.
+On the 27 reference-annotated notes, P10's exact-span F1 peaked at 0.65
+(0.583; precision 0.69 versus 0.54 unfiltered, recall 0.51 versus 0.59).
+No BPSD reference annotation is available; 98-99% of BPSD spans overlapped a
+reference anchor at every score level, so BPSD keeps its 0.5 threshold. See
+the [preset receipt](qualification/minimum-score-presets.json).
+
+A run is flagged as likely to contain many false positives when it has at
+least 15 tags and either 35% or more score below 0.6, or 40 or more tags per
+1,000 characters. The rule was calibrated with the P10 package on the 27
+reference-annotated synthetic notes: exact-span precision was 17-34% below
+0.6 and 83% at 0.9 or more. The rule flagged 7 notes with precision 0.49,
+versus 0.56 for the others; keeping scores of 0.6 or more raised the flagged
+notes to 0.65. Density alone was not a useful signal, because the reference
+annotation reached 27.5 tags per 1,000 characters. See the
+[calibration receipt](qualification/auto-apply-advice-calibration.json).
+This is one synthetic corpus and one package, not clinical validation.
+
+Batch Analysis is the single place to add .txt files to on-disk storage. It
+filters files by name and status, remembers the filter and selection with
+the collection, and moves many open plain-text files to on-disk storage.
+Panel confirmations appear inside the panel instead of browser dialogs.
+The local BPSD package was validated end to end in Chromium-based BrowserOS:
+a 46 KB note streamed 619 tags across 30 windows, and every final tag
+matched one machine-applied lineage record.
 
 ## Selectable models: clinical small v3 default
 

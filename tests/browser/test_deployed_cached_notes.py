@@ -16,7 +16,7 @@ for entity in reference['contract']['entities']:
 with sync_playwright() as p:
     context=p.chromium.launch_persistent_context(user_data_dir=str(out/'chrome-profile'),executable_path=chromium_path(),headless=True,viewport={'width':1600,'height':1000})
     context.route('https://nmt-models.sidata.plus/**',lambda route:route.abort())
-    page=context.new_page();page.set_default_timeout(600000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+    page=context.new_page();page.set_default_timeout(600000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
     page.goto('https://nmt.sidata.plus/');expect(page.locator('#start-screen')).to_be_hidden()
     page.wait_for_function('()=>!!document.querySelector("nextmedtator-assist").assist.model')
     page.get_by_title('Load a minimal task').click();results=[]
