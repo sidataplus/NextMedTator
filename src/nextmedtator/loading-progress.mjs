@@ -8,10 +8,10 @@ export function downloadStatus({received,total,started,now=performance.now()}){
     return {percent:Math.min(100,Math.floor(received/total*100)),detail:`${size(received)} / ${size(total)} · ${eta}`};
 }
 
-export function batchStatus({completed,total,failed=0,started,now=performance.now()}){
+export function batchStatus({completed,total,failed=0,started,unit='files',now=performance.now()}){
     const seconds=completed>0?Math.ceil(Math.max(0,now-started)/1000/completed*(total-completed)):null;
     const eta=seconds===null?'Estimating time remaining…':seconds<60?`About ${seconds}s remaining`:`About ${Math.ceil(seconds/60)} min remaining`;
-    return {percent:Math.min(100,Math.floor(completed/total*100)),detail:`${completed} / ${total} files ${failed?'processed':'completed'}${failed?` · ${failed} failed`:''} · ${eta}`};
+    return {percent:Math.min(100,Math.floor(completed/total*100)),detail:`${completed} / ${total} ${unit} ${failed?'processed':'completed'}${failed?` · ${failed} failed`:''} · ${eta}`};
 }
 
 /** Visible in the original assistance dock and the portable evidence workspace. */
@@ -31,8 +31,8 @@ export function renderLoadingProgress(root,state){
     const downloading=state.phase.startsWith('Downloading');
     const batch=Number.isFinite(state.completed);
     const status=state.total?(batch?batchStatus(state):downloading?downloadStatus(state):null):null;
-    bar.setAttribute('aria-label',batch?(state.phase==='Analyzing files'?'Batch analysis progress':'Collection progress'):'Model loading progress');
+    bar.setAttribute('aria-label',batch?(state.unit==='windows'?'File analysis progress':state.phase==='Analyzing files'?'Batch analysis progress':'Collection progress'):'Model loading progress');
     box.querySelector('[data-part=label]').textContent=status?`${state.phase} · ${status.percent}%`:state.phase;
-    box.querySelector('[data-part=detail]').textContent=(status?.detail??state.detail??'Working on this device. Time depends on model size and available memory.')+(state.file?' · '+state.file:'');
+    box.querySelector('[data-part=detail]').textContent=(status?.detail??state.detail??'Working on this device. Time depends on model size and available memory.')+(state.file?' · '+state.file:'')+(state.window?' · '+state.window:'');
     if(status)bar.value=status.percent;else bar.removeAttribute('value');
 }

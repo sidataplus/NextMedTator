@@ -81,15 +81,31 @@ export function assertUnicode(text) {
             invariant(c < 0xdc00 || c > 0xdfff, 'Unpaired surrogate');
     }
 }
+// Each record and span maps offsets in the same note. Reuse a recent map instead
+// of rebuilding a whole-text table per call; weak references let closed notes go.
+const recentOffsetMaps = [];
 export class OffsetMap {
-    constructor(text) { assertUnicode(text); this.text = text; this.cpTo16 = [0]; let n = 0; for (const c of text) {
-        n += c.length;
-        this.cpTo16.push(n);
-    } }
-    get length() { return this.cpTo16.length - 1; }
-    toUTF16(cp) { invariant(Number.isInteger(cp) && cp >= 0 && cp <= this.length, 'Code-point offset out of bounds'); return this.cpTo16[cp]; }
+    constructor(text) {
+        for (const ref of recentOffsetMaps) { const map = ref.deref(); if (map?.text === text) return map; }
+        assertUnicode(text); this.text = text;
+        let pairs = 0;
+        for (let i = 0; i < text.length; i++) { const c = text.charCodeAt(i); if (c >= 0xd800 && c <= 0xdbff) { pairs++; i++; } }
+        this.size = text.length - pairs;
+        // BMP-only text maps code points to UTF-16 units one to one: store no table.
+        this.cpTo16 = null;
+        if (pairs) {
+            this.cpTo16 = new Uint32Array(this.size + 1);
+            let n = 0, cp = 0;
+            for (const c of text) { n += c.length; this.cpTo16[++cp] = n; }
+        }
+        recentOffsetMaps.unshift(new WeakRef(this));
+        if (recentOffsetMaps.length > 4) recentOffsetMaps.pop();
+    }
+    get length() { return this.size; }
+    toUTF16(cp) { invariant(Number.isInteger(cp) && cp >= 0 && cp <= this.length, 'Code-point offset out of bounds'); return this.cpTo16 ? this.cpTo16[cp] : cp; }
     toCodePoint(u16) {
         invariant(Number.isInteger(u16) && u16 >= 0 && u16 <= this.text.length, 'UTF-16 offset out of bounds');
+        if (!this.cpTo16) return u16;
         let lo = 0, hi = this.cpTo16.length - 1;
         while (lo <= hi) {
             const mid = (lo + hi) >> 1;

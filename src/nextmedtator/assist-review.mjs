@@ -1,9 +1,11 @@
 /** Step 4 suggestion review: blind gating, run summary, filters, cards and the Add Tag form. */
 import { node, button, labeled, labelButton } from './assist-dom.mjs';
 import { spanTags, preferredTag, editableAttrs, attributeDraft } from './assist-legacy.mjs';
-import { suggestionPage } from './review-queue.mjs';
+import { suggestionPage, belowMinimum } from './review-queue.mjs';
 import { exportBundle, localDownload } from './bundle.mjs';
 import { clone } from './integrity.mjs';
+import { autoApplyAdvice, adviceSummary } from './auto-apply-advice.mjs';
+import { runThreshold } from './assist.mjs';
 
 export function renderRun(assist, body, view) {
     const run = view?.run;
@@ -31,7 +33,8 @@ export function renderRun(assist, body, view) {
     }
     if (view.data.section === 'annotation' && !document.hidden && assist.host.getClientRects().length)
         assist.recordExposure(view, run, 'assisted-display');
-    const unresolved = run.records.filter(record => !run.decisions[record.id]).length;
+    const unresolved = run.records.filter(record => !run.decisions[record.id] && !belowMinimum(record, run.minScore)).length;
+    const hiddenBelow = run.records.filter(record => !run.decisions[record.id] && belowMinimum(record, run.minScore)).length;
     const settings = run.project.current.runs.find(r => r.id === run.nativeRunId)?.settings;
     if (settings?.threshold != null)
         body.append(node('p', `Run threshold: ${settings.threshold}`, { class: 'muted', 'data-testid': 'assist-run-threshold' }));
@@ -40,11 +43,17 @@ export function renderRun(assist, body, view) {
         body.append(node('p', `Run scope: ${runScope.profile.semanticSchema.name} · ${runScope.profile.semanticSchema.version}`, { class: 'muted', 'data-testid': 'assist-run-scope' }));
     body.append(
         node('h2', 'Suggestions'),
-        node('p', `${unresolved} suggestions unresolved · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }),
+        node('p', `${unresolved} suggestions unresolved${hiddenBelow ? ` (${hiddenBelow} more below the minimum score)` : ''} · ${run.status} · ${run.backend} / ${run.precision}`, { class: 'muted', 'data-testid': 'assist-summary' }),
         node('p', 'Suggestions use the loaded annotation schema. Machine runs and review decisions are retained in the portable evidence project.', { class: 'muted' }),
         node('p', run.notice, { class: 'muted' }));
+    if (run.status === 'complete' && run.records.some(record => Number.isFinite(Number(record.score))))
+        body.append(minimumScore(assist, view, run));
     const applied = Object.values(run.decisions).filter(d => d.status === 'applied').length;
     if (applied) body.append(node('p', `${applied} machine-applied tags · unreviewed`, { 'data-testid': 'assist-auto-status' }));
+    if (applied) {
+        const advice = denseRunAdvice(assist, view, run, settings);
+        if (advice) body.append(advice);
+    }
     body.append(button('Apply All Suggestions', assist.forCurrentNote(view.key, () => assist.perform(() => assist.applyAllSuggestions(view.ann))), {
         id: 'assist-apply-all',
         disabled: assist.busy || !unresolved || run.status !== 'complete',
@@ -58,7 +67,7 @@ export function renderRun(assist, body, view) {
     display.value = assist.suggestionView;
     display.addEventListener('change', () => { assist.suggestionView = display.value; assist.detail = null; assist.apply = null; assist.render(); });
     body.append(labeled('Suggestion View', display));
-    const reviewPage = suggestionPage(run.records, run.decisions, { ...assist.reviewFilter, page: assist.reviewPage ?? 0 });
+    const reviewPage = suggestionPage(run.records, run.decisions, { ...assist.reviewFilter, page: assist.reviewPage ?? 0, minScore: run.minScore });
     body.append(reviewControls(assist, view, run, reviewPage));
     const runReceipt = run.project.current.runs.find(r => r.id === run.nativeRunId);
     if (runReceipt?.windows?.length > 1)
@@ -76,8 +85,62 @@ export function renderRun(assist, body, view) {
         for (const record of reviewPage.records) body.append(suggestionCard(assist, view, run, record));
     }
 }
+/** Stored scores let the annotator apply fewer suggestions without running the model again. */
+function minimumScore(assist, view, run) {
+    const floor = runThreshold(run), value = run.minScore ?? floor, id = 'assist-min-score';
+    const box = node('div', null, { class: 'min-score', 'data-testid': 'assist-min-score-control' });
+    const input = node('input', null, { type: 'range', min: floor, max: 1, step: 0.01, id, 'data-testid': id, 'aria-describedby': id + '-help', disabled: assist.busy });
+    input.value = value;
+    const output = node('output', value, { for: id, 'data-testid': id + '-value' });
+    input.addEventListener('input', () => { output.value = input.value; });
+    // Auto Apply re-applies at the new minimum; Assisted only filters the list.
+    input.addEventListener('change', assist.forCurrentNote(view.key, () => {
+        const next = Math.round(Number(input.value) * 100) / 100;
+        if (assist.mode === 'auto' && Object.values(run.decisions).some(d => d.status === 'applied'))
+            assist.perform(() => assist.applyRunAtScore(view.ann, run, next));
+        else { run.minScore = next; assist.reviewPage = 0; assist.render(); }
+    }));
+    const label = node('label', 'Minimum Score', { for: id });
+    box.append(label, input, output);
+    const preset = run.presetMinScore;
+    if (preset != null && preset !== value)
+        box.append(button(`Use Preset ${preset.toFixed(2)}`, assist.forCurrentNote(view.key, () => {
+            if (assist.mode === 'auto' && Object.values(run.decisions).some(d => d.status === 'applied'))
+                assist.perform(() => assist.applyRunAtScore(view.ann, run, preset));
+            else { run.minScore = preset; assist.render(); }
+        }), { id: 'assist-min-score-preset', disabled: assist.busy }));
+    const wrap = node('div');
+    wrap.append(box, node('p', `Suggestions scoring below this are kept but not shown or applied. Changing it never reruns the model. The run kept scores from ${floor}${preset != null ? `; this model's calibrated preset is ${preset.toFixed(2)}` : ''}.`, { class: 'muted', id: id + '-help' }));
+    return wrap;
+}
+/** Many machine-applied tags, or many just above the threshold: offer a stricter minimum or per-suggestion review. */
+function denseRunAdvice(assist, view, run, settings) {
+    if (assist.denseAdviceHidden?.has(run.nativeRunId)) return null;
+    const applied = run.records.filter(record => run.decisions[record.id]?.status === 'applied');
+    const advice = autoApplyAdvice(applied, { chars: view.ann.text?.length ?? 0, threshold: run.minScore ?? settings?.threshold });
+    if (!advice) return null;
+    const undoable = assist.autoApplyUndoable(run);
+    const box = node('div', null, { class: 'setup-hint advice', role: 'note', 'data-testid': 'assist-dense-advice' });
+    box.append(node('strong', 'Many tags were added; some may be spurious'),
+        node('p', adviceSummary(advice), { 'data-testid': 'assist-dense-summary' }),
+        node('p', advice.suggestion
+            ? `Check a few. If many are wrong, keep only scores of ${advice.suggestion.threshold} or more (${advice.suggestion.kept} of ${advice.suggestion.total} tags) or review each suggestion in Assisted mode. Neither reruns the model.`
+            : 'Check a few. If many are wrong, review each suggestion in Assisted mode before it becomes a tag.'));
+    const actions = node('div', null, { class: 'row' });
+    if (advice.suggestion)
+        actions.append(button(`Keep Scores ≥ ${advice.suggestion.threshold}`, assist.forCurrentNote(view.key, () => assist.perform(() => assist.applyRunAtScore(view.ann, run, advice.suggestion.threshold))), {
+            id: 'assist-dense-raise', disabled: assist.busy || !undoable,
+            title: undoable ? 'Remove the lower-scoring tags from this Auto Apply; the stored predictions stay' : 'Tags from this Auto Apply were edited; remove unwanted ones by hand',
+        }));
+    actions.append(button('Review Each Instead', assist.forCurrentNote(view.key, () => assist.perform(() => assist.reviewDenseRunInstead())), {
+        id: 'assist-dense-review', disabled: assist.busy,
+        title: 'Undo this Auto Apply and switch to Assisted mode to accept or reject each suggestion',
+    }), button('Keep Tags', () => { (assist.denseAdviceHidden ??= new Set()).add(run.nativeRunId); assist.render(); }, { id: 'assist-dense-keep', title: 'Hide this notice for this run' }));
+    box.append(actions);
+    return box;
+}
 function reviewControls(assist, view, run, reviewPage) {
-    const controls = node('div', null, { class: 'section', tabindex: 0, 'data-testid': 'assist-review-controls', 'aria-label': 'Suggestion review controls' });
+    const controls = node('div', null, { class: 'section', tabindex: 0, 'data-testid': 'assist-review-controls', 'data-focus-key': 'assist-review-controls', 'aria-label': 'Suggestion review controls' });
     const filter = (name, values) => {
         const select = node('select', null, { 'aria-label': 'Filter suggestions by ' + name });
         for (const [value, label] of values)

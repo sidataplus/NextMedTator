@@ -42,14 +42,15 @@ export function mergeWindowRecords(records,overlapPolicy){
 
 export async function scanLongContext(text,windows,analyze,{overlapPolicy,onProgress}={}){
     const source=new OffsetMap(text),records=[],receipt=[];
+    onProgress?.({phase:'Analyzing note windows',completed:0,total:windows.length});
     for(const [index,window]of windows.entries()){
-        onProgress?.({phase:'Analyzing note windows',completed:index,total:windows.length});
         const part=await analyze(text.slice(window.start,window.end));
         invariant(part.status==='complete','A planned window did not complete');
-        const offset=source.toCodePoint(window.start);
+        const offset=source.toCodePoint(window.start),windowStart=records.length;
         for(const r of part.records)records.push({...r,anchor:r.anchor.map(s=>source.span(s.start+offset,s.end+offset)),origin:{...r.origin,windowIndex:index}});
         receipt.push({sourceRange:[offset,source.toCodePoint(window.end)],encodedTokens:window.encodedTokens});
+        // Unmerged window records let the panel show results before the note finishes.
+        onProgress?.({phase:'Analyzing note windows',completed:index+1,total:windows.length,records:records.slice(windowStart)});
     }
-    onProgress?.({phase:'Analyzing note windows',completed:windows.length,total:windows.length});
     return {records:mergeWindowRecords(records,overlapPolicy),status:'complete',coverage:[[0,source.length]],windows:receipt,...LONG_CONTEXT_SETTINGS,overlapPolicy,notice:'Long-note analysis uses overlapping GLiNER2.5 windows. Attributes use local window context; mentions whose endpoints never fit together cannot be joined.',limitations:['window-local-context','cross-window-relations','cross-window-mention-stitching','annotation-defaults-not-inferred','record-binding-unsupported','relations-unsupported']};
 }

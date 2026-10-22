@@ -89,7 +89,7 @@ def run():
             # No recovery keys before opt-in, including no implicit metadata persistence.
             assert page.evaluate('localStorage.length')==0
             assert page.evaluate('async()=> (await indexedDB.databases()).length')==0
-            page.on('dialog',lambda d:d.accept())
+            page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             page.get_by_test_id('recovery-enable').click()
             # Recovery writes SQLite in OPFS after the click. Locator expectations retry
             # without page-side eval, which the application CSP rejects.
@@ -176,7 +176,7 @@ def run():
             candidates.get_by_role('button',name='from C in adjudication draft',exact=False).click()
             copied=page.evaluate("document.querySelector('nextmedtator-workspace').workspace.project.current.draft.records[0].origin")
             assert copied['snapshotHash']==snapshots['C']['hash']
-            page.on('dialog',lambda d:d.accept('Reviewed selected inputs' if d.message.startswith('Rationale') else ''))
+            page.on('dialog',lambda d:d.accept('Reviewed selected inputs' if d.message.startswith('Rationale') else ''));page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             page.get_by_role('button',name='Adjudicate current human draft as third snapshot',exact=True).click()
             final=page.evaluate("document.querySelector('nextmedtator-workspace').workspace.project.current.snapshots.at(-1)")
             assert final['parents']==[snapshots['C']['hash'],snapshots['A']['hash']],final['parents']

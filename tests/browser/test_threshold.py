@@ -85,7 +85,7 @@ for directory, port in [('dist',4198),('preview',4199)]:
             errors, requests = [], []
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('request',lambda r:requests.append(r.url))
-            page.on('dialog',lambda d:d.accept())
+            page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             page.goto(url)
             if directory == 'dist':
                 page.wait_for_function('window.app_hotpot?.vpp!=null')

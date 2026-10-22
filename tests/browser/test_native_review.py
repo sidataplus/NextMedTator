@@ -18,7 +18,7 @@ try:
   page=context.new_page();errors=[];requests=[]
   page.on('pageerror',lambda e:errors.append(str(e)))
   page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'post':r.post_data}))
-  page.on('dialog',lambda d:d.accept());page.goto(URL)
+  page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true');page.goto(URL)
   page.get_by_label('Open local documents or project',exact=True).set_input_files(str(BUNDLE))
   page.get_by_test_id('source').wait_for()
   loaded=page.evaluate('document.querySelector("nextmedtator-workspace").workspace.project.current')

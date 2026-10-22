@@ -1,5 +1,7 @@
-export function suggestionPage(records,decisions,{family='all',status='all',page=0,size=20}={}){
-    const filtered=records.filter(r=>(family==='all'||r.family===family)&&(status==='all'||(decisions[r.id]?.status??'unreviewed')===status));
+/** A minimum score hides lower-scoring suggestions; decided ones always stay listed. */
+export function belowMinimum(record,minScore){return minScore!=null&&Number(record.score)<minScore;}
+export function suggestionPage(records,decisions,{family='all',status='all',page=0,size=20,minScore=null}={}){
+    const filtered=records.filter(r=>(family==='all'||r.family===family)&&(status==='all'||(decisions[r.id]?.status??'unreviewed')===status)&&(decisions[r.id]||!belowMinimum(r,minScore)));
     const pages=Math.max(1,Math.ceil(filtered.length/size)),index=Math.max(0,Math.min(page,pages-1));
     return {records:filtered.slice(index*size,(index+1)*size),total:filtered.length,page:index,pages,size};
 }

@@ -35,7 +35,10 @@ export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,auto
     const prefixTokens=smallPromptCost(schema,tokenizer,{automaticRelations,completeClinicalPrompt:api.rt.completeClinicalPrompt});
     const plan=planWindows(tokenizer,prompt.labels,words,{prefixTokens});
     const source=new OffsetMap(text), all=[], relations=[], windows=[];
+    // First record per family and anchor, as the former linear find returned.
+    const anchored=new Map(),anchorKey=(family,start,end)=>family+'\0'+start+'\0'+end;
     for(const [windowIndex,[from,to]] of plan.windows.entries()){
+        const windowStart=all.length;
         const start=source.toUTF16(words[from].start),end=source.toUTF16(words[to-1].end),chunk=text.slice(start,end);
         const marg=await api.rt.computeMarginals(chunk,prompt.labels,{maxWords:512,descriptions:prompt.descriptions});
         if(codec!==SMALL_CODEC)invariant(marg.nullLogits?.length===prompt.labels.length,'GLiNER source abstention output missing');
@@ -58,7 +61,8 @@ export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,auto
             for(const name of Object.keys(def.fields))fields[name]=name==='concept'?e.text:e.fields[name]??null;
             const anchor=[source.selection(start+e.start,start+e.end)];
             const target=schema.entityTargets?.find(t=>t.label===e.label);
-            all.push({id:uuid(),documentId:'pending',family,anchor,fields,evidence:[],score:e.score,...(target?.conceptId?{conceptId:target.conceptId}:{}),origin:{kind:'model',codec}});
+            const record={id:uuid(),documentId:'pending',family,anchor,fields,evidence:[],score:e.score,...(target?.conceptId?{conceptId:target.conceptId}:{}),origin:{kind:'model',codec}};
+            all.push(record);const key=anchorKey(family,anchor[0].start,anchor[0].end);if(!anchored.has(key))anchored.set(key,record);
         }
         // The record head binds text/span fields to retained anchors, never by nearest-text guessing.
         for(const [family,def] of Object.entries(schema.families)){
@@ -69,7 +73,7 @@ export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,auto
             const scored=await api.rt.scoreRecords(recordMarg,parsed,{threshold});if(!scored)continue;
             const rows=decodeAssignedRecords({parent:family,parsed,instSlots:scored.instSlots,assign:scored.assign,marg:recordMarg,anchor:0,toItem:e=>e})[family]??[];
             for(const row of rows){const anchor=row[labels[0]];if(!anchor)continue;
-                const record=all.find(r=>r.family===family&&r.anchor[0].start===source.toCodePoint(start+anchor.start)&&r.anchor[0].end===source.toCodePoint(start+anchor.end));
+                const record=anchored.get(anchorKey(family,source.toCodePoint(start+anchor.start),source.toCodePoint(start+anchor.end)));
                 if(!record)continue;
                 for(const name of fieldNames){const hit=row[name];if(!hit||hit.end>chunk.length)continue;const span=source.selection(start+hit.start,start+hit.end);record.fields[name]=def.fields[name].type==='span'?[span]:span.text;record.evidence.push(span);}
             }
@@ -79,7 +83,7 @@ export async function analyzeSmall(api,text,schema,{threshold=.5,onProgress,auto
             const output=await api.extract_relations(chunk,types,{threshold,labels:prompt.labels.slice(0,prompt.contentCount)});
             relations.push(...output.relations.map(r=>({...r,windowStart:start})));
         }
-        windows.push({from,to,sourceRange:[words[from].start,words[to-1].end]});onProgress?.({completed:windowIndex+1,total:plan.windows.length});
+        windows.push({from,to,sourceRange:[words[from].start,words[to-1].end]});onProgress?.({completed:windowIndex+1,total:plan.windows.length,records:all.slice(windowStart)});
     }
     const records=finalizeSmallRecords(all,text);
     for(const relation of relations){const locate=(mention,role)=>records.find(r=>schema.relations[relation.type][role].includes(r.family)&&r.anchor[0].start===source.toCodePoint(relation.windowStart+mention.start)&&r.anchor[0].end===source.toCodePoint(relation.windowStart+mention.end));const head=locate(relation.head,'head'),tail=locate(relation.tail,'tail');if(head&&tail){head.relations??=[];if(!head.relations.some(r=>r.type===relation.type&&r.targetId===tail.id))head.relations.push({type:relation.type,targetId:tail.id});}}

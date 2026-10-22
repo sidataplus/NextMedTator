@@ -28,7 +28,7 @@ try:
                 browser=p.chromium.launch(executable_path=chromium_path(),headless=True)
                 context=browser.new_context(viewport={'width':1440,'height':1000},accept_downloads=True,service_workers='block')
             page=context.new_page();page.set_default_timeout(180000);expect.set_options(timeout=180000)
-            errors=[];requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append((r.method,r.url)));page.on('dialog',lambda d:d.accept())
+            errors=[];requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append((r.method,r.url)));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             page.goto(url);expect(page.locator('#start-screen')).to_be_hidden()
             assert page.evaluate('crossOriginIsolated')
             page.get_by_test_id('assist-practice-'+profile).click()

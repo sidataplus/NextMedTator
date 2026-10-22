@@ -35,7 +35,7 @@ try:
             context=p.chromium.launch_persistent_context(str(OUT/(profile+'-chrome')),executable_path=chromium_path(),headless=True,viewport={'width':1440,'height':1050},accept_downloads=True,service_workers='block')
             if not args.live:context.route('https://nmt-models.sidata.plus/**',artifact)
             page=context.new_page();page.set_default_timeout(900000);expect.set_options(timeout=900000)
-            requests=[];errors=[];page.on('request',lambda r:requests.append((r.method,r.url)));page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+            requests=[];errors=[];page.on('request',lambda r:requests.append((r.method,r.url)));page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             page.goto(url);expect(page.locator('#start-screen')).to_be_hidden();page.wait_for_timeout(1500)
             assert not any('/nextmedtator-models/' in target or '/models/catalog.json' in target for _,target in requests),'Startup fetched models/catalog'
             page.get_by_test_id('assist-practice-'+profile).click()

@@ -101,6 +101,17 @@ export function modelSelectionControlValue(selection) {
     return 'custom-base';
 }
 
+/** Starting Minimum Score for a curated adapter, at every precision. Predictions
+ * below it are kept but not applied; the package's decoding threshold is unchanged.
+ * See docs/nextmedtator/qualification/minimum-score-presets.json. */
+export const MINIMUM_SCORE_PRESETS = Object.freeze({
+    'na399/clinical-evidence-gliner2.5-base-lora-p10-glm': 0.65,
+    'na399/bpsd-gliner2.5-base-lora-20261012': 0.5,
+});
+export function presetMinimumScore(selection) {
+    return MINIMUM_SCORE_PRESETS[normalizeModelSelection(selection).repository] ?? null;
+}
+
 export function modelSelectionKey(selection) {
     const source = normalizeModelSelection(selection);
     if (source.kind === 'hub-adapter')

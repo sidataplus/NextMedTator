@@ -35,7 +35,7 @@ def run():
                 if mode=='no-cross-origin-isolation':context.route(URL,no_isolation)
                 else:context.route('**/vendor/sqlite/sqlite3.wasm',lambda route:route.abort())
                 page=context.new_page();errors=[];requests=[]
-                page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
+                page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
                 page.on('request',lambda r:requests.append(r))
                 page.goto(URL);page.get_by_test_id('sample').wait_for()
                 assert page.evaluate('crossOriginIsolated')==(mode!='no-cross-origin-isolation')

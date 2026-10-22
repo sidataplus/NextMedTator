@@ -41,7 +41,7 @@ with sync_playwright() as p:
     assert not page.evaluate("document.querySelector('nextmedtator-assist').assist.error")
     assert not any('/grant' in u or '.onnx' in u for u in requests)
     page.unroute('https://nmt-models.sidata.plus/verify?*')
-    page.on('dialog',lambda d:d.accept())
+    page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
     page.get_by_test_id('assist-more').locator(':scope > summary').click()
     if page.get_by_test_id('assist-practice').get_attribute('open') is None:page.get_by_test_id('assist-practice').locator(':scope > summary').click()
     page.get_by_test_id('assist-practice-bpsd').click()

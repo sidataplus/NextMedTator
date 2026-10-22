@@ -9,7 +9,7 @@ URL=os.environ.get('NMT_QUEUE_URL','http://127.0.0.1:4299/')
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path=chromium_path(),headless=True)
     context=browser.new_context(viewport={'width':1440,'height':1050},accept_downloads=True,service_workers='block')
-    page=context.new_page();page.set_default_timeout(30000);expect.set_options(timeout=30000);page.on('dialog',lambda d:d.accept())
+    page=context.new_page();page.set_default_timeout(30000);expect.set_options(timeout=30000);page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
     errors=[];network=[];failed_requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:network.append(r.url))
     page.on('requestfailed',lambda r:failed_requests.append({'url':r.url,'failure':r.failure}))
     page.on('response',lambda r:failed_requests.append({'url':r.url,'status':r.status}) if r.status>=400 else None)
@@ -21,10 +21,12 @@ with sync_playwright() as p:
         page.evaluate("notes=>{const v=app_hotpot.vpp;v.$data.anns=[];for(const [i,n] of notes.entries()){const a=v.add_sample_txt_as_ann(n.text);a._filename='queue-'+i+'.txt.xml';}v.set_ann_idx(0);}",notes)
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work/p10.nmt-model.zip'))
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
-        page.get_by_text('Batch Analysis (0 selected)',exact=True).click();page.get_by_test_id('assist-select-all').click()
-        page.get_by_test_id('assist-execution').select_option('wasm')
+        open_assist_sections(page,'batch');page.get_by_test_id('assist-select-all').click()
+        open_assist_sections(page,'packages','download-options');page.get_by_test_id('assist-execution').select_option('wasm')
         open_assist_sections(page,'more','recovery');page.get_by_test_id('assist-recovery-enable').click()
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
+        # Run the queue in Assisted mode so switching to Auto Apply is a settings change.
+        page.get_by_test_id('assist-mode').select_option('assisted')
         page.get_by_test_id('assist-analyze-selected').click()
         page.wait_for_function("()=>document.querySelector('nextmedtator-assist').assist.batchQueue?.notes.some(n=>n.status==='completed')",timeout=600000)
         page.get_by_test_id('assist-pause').click();page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
@@ -49,7 +51,7 @@ with sync_playwright() as p:
         # Recovery restores corpus and queue, not large model buffers.
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work/p10.nmt-model.zip'))
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
-        page.get_by_text('Batch Analysis (0 selected)',exact=True).click()
+        open_assist_sections(page,'batch')
         # A settings change must refuse resume without touching completed runs.
         page.get_by_test_id('assist-mode').select_option('auto');page.get_by_test_id('assist-batch-resume').click()
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
@@ -67,6 +69,8 @@ with sync_playwright() as p:
             response=route.fetch()
             route.fulfill(response=response,body=response.text()+"\nconst real=self.onmessage;self.onmessage=e=>{if(e.data.task==='analyze')self.postMessage({error:'Synthetic transient failure'});else return real(e)};")
         context.route('**/onnx-worker.mjs',transient_failure)
+        # Unchanged files would reuse their stored runs without inference; start from fresh results.
+        page.evaluate("document.querySelector('nextmedtator-assist').assist.runs.clear()")
         page.get_by_test_id('assist-select-all').click();page.get_by_test_id('assist-analyze-selected').click()
         page.wait_for_function("()=>!document.querySelector('nextmedtator-assist').assist.busy",timeout=600000)
         failed=page.evaluate("document.querySelector('nextmedtator-assist').assist.batchQueue")
