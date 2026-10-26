@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[2];OUT=ROOT/'temp/browser-validation'/os.e
 with sync_playwright() as p:
     browser=p.chromium.launch(executable_path=chromium_path(),headless=True)
     cdp=browser.new_browser_cdp_session();pid=next(r['id'] for r in cdp.send('SystemInfo.getProcessInfo')['processInfo'] if r['type']=='browser');meter=ProcessMeter(pid)
-    page=browser.new_page(viewport={'width':1440,'height':1000});page.set_default_timeout(600000);page.on('dialog',lambda d:d.accept())
+    page=browser.new_page(viewport={'width':1440,'height':1000});page.set_default_timeout(600000);page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
     page.goto('http://127.0.0.1:4299/');expect(page.locator('#start-screen')).to_be_hidden();page.get_by_test_id('assist-practice-p10').click()
     page.wait_for_timeout(1000);start=meter.mark()
     result=page.evaluate("""async()=>{

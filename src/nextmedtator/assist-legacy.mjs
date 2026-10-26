@@ -4,16 +4,11 @@ import { OffsetMap, invariant } from './integrity.mjs';
 export function utf16Offset(text, codePointOffset) {
     if (!Number.isInteger(codePointOffset) || codePointOffset < 0)
         throw new Error('Offset required');
-    let units = 0, seen = 0;
-    for (const ch of text) {
-        if (seen === codePointOffset)
-            return units;
-        units += ch.length;
-        seen += 1;
-    }
-    if (seen === codePointOffset)
-        return units;
-    throw new Error('Offset is outside the document');
+    // One shared map per note: rescanning the text for every span is quadratic.
+    const map = new OffsetMap(text);
+    if (codePointOffset > map.length)
+        throw new Error('Offset is outside the document');
+    return map.toUTF16(codePointOffset);
 }
 export function medtatorSpans(text, anchor) {
     return anchor.map(span => {
@@ -24,11 +19,47 @@ export function medtatorSpans(text, anchor) {
         return `${start}~${end}`;
     }).join(',');
 }
+// The panel derives this key on every 500 ms sync. Remember the last few notes
+// so a large file is hashed once, not twice a second.
+const recentKeys = [];
 export function documentKey(filename, text) {
+    for (const entry of recentKeys)
+        if (entry.text === text && entry.filename === filename)
+            return entry.key;
     let hash = 2166136261;
     for (let i = 0; i < text.length; i++)
         hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
-    return `${filename}\0${text.length}\0${hash >>> 0}`;
+    const key = `${filename}\0${text.length}\0${hash >>> 0}`;
+    recentKeys.unshift({ filename, text, key });
+    if (recentKeys.length > 4)
+        recentKeys.pop();
+    return key;
+}
+/** Auto Apply tags shown while their note is still being analyzed. They become
+ * annotations only when the complete run is applied, so evidence sync,
+ * recovery checkpoints and collection saves leave them out until then. */
+export const streamingTags = new WeakSet();
+/** JSON replacer for working-copy snapshots: no file handles, no streaming tags. */
+export function workingCopyReplacer(key, value) {
+    if (key === '_fh')
+        return null;
+    return key === 'tags' && Array.isArray(value) ? value.filter(tag => !streamingTags.has(tag)) : value;
+}
+export function anchorKey(family, anchor) {
+    return family + '\0' + anchor.map(span => span.start + '~' + span.end).join(',');
+}
+/** Native attribute values for an Auto Apply tag, or null when a field needs individual review. */
+export function nativeTagValues(tagDef, record) {
+    const values = {};
+    for (const attr of editableAttrs(tagDef)) {
+        const value = record.fields?.[attr.name];
+        if (value != null && typeof value !== 'string')
+            return null;
+        if (value != null && attr.vtype === 'list' && !attr.values.includes(value))
+            return null;
+        values[attr.name] = value ?? ''; // Unknown predictions do not acquire schema defaults.
+    }
+    return values;
 }
 export function spanTags(tags) {
     return (tags ?? []).filter(tag => !tag.is_non_consuming);
@@ -95,7 +126,7 @@ export function legacyRecords(ann, doc, schema) {
             return null;
         return tag[name] ?? null;
     };
-    const records = (ann.tags ?? []).filter(t => t.spans && schema.families[t.tag]).map(t => {
+    const records = (ann.tags ?? []).filter(t => t.spans && schema.families[t.tag] && !streamingTags.has(t)).map(t => {
         const family = schema.families[t.tag];
         return {
             id: t.id,

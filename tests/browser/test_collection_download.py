@@ -15,7 +15,7 @@ with sync_playwright() as p:
         context=browser.new_context(viewport={'width':1440,'height':1000})
         picker='undefined' if mode=='unsupported' else "async()=>{throw new DOMException('Test picker outcome','"+('AbortError' if mode=='cancelled' else 'NotAllowedError')+"');}"
         context.add_init_script("Object.defineProperty(window,'showSaveFilePicker',{configurable:true,value:"+picker+"});")
-        page=context.new_page();page.set_default_timeout(60000);page.on('dialog',lambda d:d.accept())
+        page=context.new_page();page.set_default_timeout(60000);page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
         errors=[];downloads=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('download',lambda d:downloads.append(d))
         page.goto(URL);expect(page.locator('#start-screen')).to_be_hidden()
         page.get_by_test_id('assist-practice-p10').click()

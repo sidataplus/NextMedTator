@@ -235,12 +235,15 @@ def check_worker_regressions(page):
         if(canonical(reopened)!==canonical(p.current))throw Error('Auto export changed project');
     }''')
     assert page.evaluate('app_hotpot.vpp.$data.anns[app_hotpot.vpp.$data.ann_idx].tags.length') == 2
-    # A new analysis retains the earlier automatic copies and their lineage.
+    # Analyzing an unchanged file with the same model and settings reuses the stored
+    # run: no second model run and no duplicate tags.
     page.get_by_test_id('assist-analyze').click()
-    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 suggestions · 4 tags')
+    page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy',timeout=30000)
+    expect(page.get_by_test_id('assist-counts')).to_contain_text('2 suggestions · 2 tags')
+    expect(page.get_by_test_id('assist-message')).to_contain_text('stored results were used')
     assert page.evaluate('''async()=>{
         const a=document.querySelector('nextmedtator-assist').assist,p=await a.syncProject(a.current().ann);
-        return p.current.draft.records.length===4&&p.current.draft.records.every(r=>r.origin.kind==='machine-applied'&&r.origin.legacyTagId)&&new Set(p.current.draft.records.map(r=>r.origin.runId)).size===2;
+        return p.current.runs.length===1&&p.current.draft.records.length===2&&p.current.draft.records.every(r=>r.origin.kind==='machine-applied'&&r.origin.legacyTagId);
     }''')
     # Auto mode applies each selected note, including notes not currently open.
     page.wait_for_function('()=>!document.querySelector("nextmedtator-assist").assist.busy',timeout=30000)

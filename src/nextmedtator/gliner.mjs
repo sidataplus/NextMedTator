@@ -10,6 +10,7 @@ const encoder = new TextEncoder();
 const META = '\u2581';
 const EXTRA_SPACE = new Set([0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x1c, 0x1d, 0x1e, 0x1f, 0x85]);
 const cps = text => [...text];
+const SPLIT_SEGMENT = 65536;
 export function isPythonSpace(ch) {
     const cp = ch.codePointAt(0);
     return EXTRA_SPACE.has(cp) || /\p{Z}/u.test(ch);
@@ -17,17 +18,28 @@ export function isPythonSpace(ch) {
 function isWordChar(ch) { return ch === '_' || /[\p{L}\p{N}]/u.test(ch); }
 function isAsciiClass(ch, pattern) { return pattern.test(ch); }
 /** GLiNER2 whitespace splitter. Offsets are Unicode code points into the original string. */
-export function splitWords(text) {
+export function splitWords(text, { segment = SPLIT_SEGMENT } = {}) {
     invariant(typeof text === 'string', 'Text required');
-    const chars = cps(text), words = [];
-    for (let i = 0; i < chars.length;) {
-        if (isPythonSpace(chars[i])) {
-            i++;
-            continue;
+    const words = [];
+    // No word crosses whitespace, so splitting a long note into whitespace-ended
+    // segments yields the same words without a code-point array of the whole note.
+    let from = 0, base = 0;
+    while (from < text.length) {
+        let to = Math.min(text.length, from + segment);
+        while (to < text.length && !isPythonSpace(text[to - 1]))
+            to++;
+        const chars = cps(text.slice(from, to));
+        for (let i = 0; i < chars.length;) {
+            if (isPythonSpace(chars[i])) {
+                i++;
+                continue;
+            }
+            const size = matchUrl(chars, i) || matchEmail(chars, i) || matchMention(chars, i) || matchWord(chars, i) || 1;
+            words.push({ text: chars.slice(i, i + size).join('').toLowerCase(), start: base + i, end: base + i + size });
+            i += size;
         }
-        const size = matchUrl(chars, i) || matchEmail(chars, i) || matchMention(chars, i) || matchWord(chars, i) || 1;
-        words.push({ text: chars.slice(i, i + size).join('').toLowerCase(), start: i, end: i + size });
-        i += size;
+        base += chars.length;
+        from = to;
     }
     return words;
 }
@@ -465,15 +477,16 @@ function compareSelections(left, right, rows) {
     return 0;
 }
 export function locateSpans(text, words, localSpans, wordOffset) {
+    const source = new OffsetMap(text);
     return localSpans.map(span => {
         const startWord = span.start + wordOffset, endWord = span.end + wordOffset;
         invariant(startWord >= 0 && endWord <= words.length, 'Model span is outside the encoded words');
         const start = words[startWord].start, end = words[endWord - 1].end;
-        return { ...span, label: span.label, start, end, text: cps(text).slice(start, end).join(''), score: span.score };
+        return { ...span, label: span.label, start, end, text: source.slice(start, end), score: span.score };
     });
 }
 export function documentCoverage(text, words, uncovered) {
-    const length = cps(text).length;
+    const length = new OffsetMap(text).length;
     if (!uncovered.length)
         return { status: 'complete', coverage: [[0, length]] };
     const skip = new Set(uncovered), ranges = [];

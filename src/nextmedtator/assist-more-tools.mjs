@@ -63,7 +63,7 @@ function recoveryAndBackup(assist, view) {
     recovery.append(node('p', session.status, { class: 'muted', role: 'status', 'data-testid': 'assist-recovery-status' }));
     if (!session.enabled) {
         recovery.append(button('Enable Recovery', () => assist.perform(async () => {
-            if (!confirm('Keep these files, annotations and prediction history in this browser? Export files for a portable backup.')) return;
+            if (!await assist.ask('Keep these files, annotations and prediction history in this browser? Export files for a portable backup.', { confirm: 'Enable Recovery' })) return;
             await session.enable();
         }), { disabled: !view?.ann || !!assist.collection, id: 'assist-recovery-enable' }));
     }
@@ -72,7 +72,7 @@ function recoveryAndBackup(assist, view) {
             button('Save Checkpoint', () => assist.perform(() => session.save()), { id: 'assist-checkpoint' }),
             button('Disable Recovery', () => assist.perform(() => session.disable())),
             button('Delete Recovery Copy', () => assist.perform(async () => {
-                if (confirm('Delete this recovery copy? Annotations that are open now are kept.')) await session.forget();
+                if (await assist.ask('Delete this recovery copy? Annotations that are open now are kept.', { confirm: 'Delete Copy' })) await session.forget();
             })),
             button('Export Backup (.sqlite3)', () => assist.perform(async () => localDownload(await session.exportDatabase(), 'corpus.nmt.sqlite3', 'application/vnd.sqlite3'))));
     }
@@ -81,7 +81,7 @@ function recoveryAndBackup(assist, view) {
     })));
     for (const saved of assist.savedCorpora ?? [])
         recovery.append(button('Restore ' + saved.id, () => assist.perform(async () => {
-            if (!confirm('Replace the open files with this recovery copy? Save your current work first.')) return;
+            if (!await assist.ask('Replace the open files with this recovery copy? Save your current work first.', { confirm: 'Restore Copy' })) return;
             await session.recover(saved.id, saved.backend);
         })));
     storage.append(recovery);
@@ -90,13 +90,7 @@ function recoveryAndBackup(assist, view) {
 
 function largeCollections(assist, view) {
     const collections = disclosure(assist, 'collections', 'Large Collections');
-    collections.append(node('p', 'Store up to 10,000 .txt files in this browser and open them one at a time. Annotations are saved per file. Browser storage is not a backup; export one to keep a copy.', { class: 'muted' }));
-    const collectionFiles = node('input', null, { type: 'file', multiple: true, accept: '.txt', 'aria-label': 'Store text files as a collection', 'data-testid': 'assist-collection-import', disabled: assist.busy || !view?.data.dtd });
-    collectionFiles.addEventListener('change', () => {
-        const files = [...collectionFiles.files];
-        if (files.length) assist.perform(() => assist.importCollection(files));
-    });
-    collections.append(labeled('Store Text Files (.txt)', collectionFiles),
+    collections.append(node('p', 'Collections keep up to 10,000 .txt files in this browser and open them one at a time. Add text files under 4. Analyze and Review › Batch Analysis. Browser storage is not a backup; export one to keep a copy.', { class: 'muted' }),
         button('List Collections', () => assist.perform(async () => { assist.savedCollections = await assist.collectionStore.list(); }), { disabled: assist.busy, id: 'assist-collection-list' }));
     for (const saved of assist.savedCollections ?? [])
         collections.append(button(`Open ${saved.name} (${saved.count} files)`, () => assist.perform(() => assist.openCollection(saved.id)), { disabled: assist.busy, id: 'assist-collection-restore' }));

@@ -24,7 +24,7 @@ try:
         errors=[];requests=[];shots=[]
         page.on('pageerror',lambda e:errors.append(str(e)))
         page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'body':r.post_data}))
-        page.on('dialog',lambda d:d.accept())
+        page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
         def capture(name,caption):
             page.wait_for_timeout(300)
             page.screenshot(path=str(OUT/(name+'.png')))

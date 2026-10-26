@@ -128,7 +128,7 @@ async function runBoundary(context, data) {
     invariant(variant.codec === GLINER_CODEC || variant.codec === GLINER_STRUCTURED, 'Unsupported span codec');
     const threshold = data.threshold ?? variant.threshold ?? GLINER_LIMITS.threshold;
     if (data.task === 'analyze')
-        return analyzeText(ort, encoder, boundary, explicit, tokenizer, data.text, data.labels, { threshold, manifest, variant, manifestHash: data.manifestHash, contentCount: data.contentCount, groups: data.groups });
+        return analyzeText(ort, encoder, boundary, explicit, tokenizer, data.text, data.labels, { threshold, manifest, variant, manifestHash: data.manifestHash, contentCount: data.contentCount, groups: data.groups, onProgress: progress => self.postMessage({ progress }) });
     const results = [];
     for (const path of variant.fixtures) {
         const fixture = jsonParse(new TextDecoder().decode(files.get(path)));
@@ -139,7 +139,7 @@ async function runBoundary(context, data) {
     }
     return { kind: variant.codec, manifestHash: data.manifestHash, variantId: variant.id, backend: variant.backend, precision: variant.precision, runtime: ort.env.versions, notice: variant.codec === GLINER_STRUCTURED ? STRUCTURED_NOTICE : SPAN_NOTICE, results, pass: results.every(r => r.pass) };
 }
-async function analyzeText(ort, encoder, boundary, explicit, tokenizer, text, labels, { threshold, manifest, variant, manifestHash, contentCount, groups }) {
+async function analyzeText(ort, encoder, boundary, explicit, tokenizer, text, labels, { threshold, manifest, variant, manifestHash, contentCount, groups, onProgress }) {
     invariant(typeof text === 'string' && Array.isArray(labels) && labels.length > 0 && labels.length <= GLINER_LIMITS.labels && labels.every(label => typeof label === 'string'), 'Analysis labels required');
     const words = splitWords(text);
     const plan = planWindows(tokenizer, labels, words);
@@ -150,7 +150,7 @@ async function analyzeText(ort, encoder, boundary, explicit, tokenizer, text, la
     const structured = variant.codec === GLINER_STRUCTURED;
     if (structured)
         invariant(explicit && attributeGroups.reduce((count, group) => count + group.choices.length, 0) === labels.length - content, 'Structured analysis needs the span-attribute graph and its label groups');
-    for (const [from, to] of plan.windows) {
+    for (const [windowIndex, [from, to]] of plan.windows.entries()) {
         const slice = words.slice(from, to);
         const prepared = prepareWindow(tokenizer, labels, slice);
         const ids = BigInt64Array.from(prepared.inputIds, BigInt);
@@ -171,7 +171,10 @@ async function analyzeText(ort, encoder, boundary, explicit, tokenizer, text, la
         const decoded = decodeBoundary({ pairLogits: pair.data, pairDims: contentDims, candidateIndices: indices.data, indexDims: [indices.dims[0], content, indices.dims[2], indices.dims[3]], candidateValid: valid.data, nullLogits: absentRow(absent, labels.length).slice(0, content), labels: labels.slice(0, content), threshold });
         if (structured && decoded.length && attributeGroups.length)
             await attachAttributes(ort, explicit, tokens, slice.length, queries.slice(content * 768), attributeGroups, decoded);
-        spans.push(...locateSpans(text, words, decoded, from));
+        const located = locateSpans(text, words, decoded, from);
+        spans.push(...located);
+        // Progress also keeps a long note inside the worker's inactivity timeout.
+        onProgress?.({ completed: windowIndex + 1, total: plan.windows.length, spans: located });
     }
     const merged = resolveFlat(spans);
     const coverage = documentCoverage(text, words, plan.uncovered);
@@ -219,7 +222,9 @@ async function attachAttributes(ort, explicit, tokens, wordCount, attributeState
 }
 
 async function runSmall(context,request){
-    const analyze=async(input)=>({...await (context.entityContract?analyzeEntityContract(context.small,input.text,input.schema,context.entityContract,context.variant,{longContext:input.longContext===true,onProgress:progress=>self.postMessage({progress})}):analyzeSmall(context.small,input.text,input.schema,{threshold:context.variant.clinicalRelease?context.variant.threshold:input.threshold??context.variant.threshold??.5,automaticRelations:context.variant.automaticRelations===true,codec:context.variant.codec,abstentionThreshold:context.variant.abstentionThreshold??.5,onProgress:progress=>self.postMessage({progress})})),kind:context.variant.codec,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision,wasmThreads:context.ort.env.wasm.numThreads});
+    // Only a requested note streams window records; conformance fixtures report counts alone.
+    const post=request.task==='analyze'?progress=>self.postMessage({progress}):({records,...progress})=>self.postMessage({progress});
+    const analyze=async(input)=>({...await (context.entityContract?analyzeEntityContract(context.small,input.text,input.schema,context.entityContract,context.variant,{longContext:input.longContext===true,onProgress:post}):analyzeSmall(context.small,input.text,input.schema,{threshold:context.variant.clinicalRelease?context.variant.threshold:input.threshold??context.variant.threshold??.5,automaticRelations:context.variant.automaticRelations===true,codec:context.variant.codec,abstentionThreshold:context.variant.abstentionThreshold??.5,onProgress:post})),kind:context.variant.codec,manifestHash:context.manifestHash,variantId:context.variant.id,backend:context.variant.backend,precision:context.variant.precision,wasmThreads:context.ort.env.wasm.numThreads});
     if(request.task==='analyze')return analyze(request);
     const results=[];
     for(const path of context.variant.fixtures){const fixture=jsonParse(new TextDecoder().decode(context.files.get(path)));if(fixture.feeds){const checks={};if(fixture.sourceText&&context.entityContract){const packed=packEntityContract(fixture.sourceText,context.entityContract,t=>context.small.rt._tokenize(t)),pad=context.variant.fixedWords;const expected={input_ids:packed.inputIds,attention_mask:packed.inputIds.map(()=>1),text_word_indices:[...packed.textWordFirstPositions,...Array(pad-packed.words.length).fill(0)],text_word_mask:[...packed.words.map(()=>1),...Array(pad-packed.words.length).fill(0)],query_marker_indices:packed.queryMarkerPositions,query_marker_mask:packed.queryMarkerPositions.map(()=>1)};for(const [name,values]of Object.entries(expected))invariant(JSON.stringify(values)===JSON.stringify(fixture.feeds[name].type==='bool'?fixture.feeds[name].data.map(Number):fixture.feeds[name].data),'Exact native input packing failed: '+name);}for(const row of fixture.tokenRows)invariant(JSON.stringify(context.small.rt._tokenize(row.text))===JSON.stringify(row.ids),'Exact tokenizer conformance failed');const feeds={};for(const [name,t] of Object.entries(fixture.feeds))feeds[name]=new context.ort.Tensor(t.type,t.type==='int64'?BigInt64Array.from(t.data,BigInt):t.type==='bool'?Uint8Array.from(t.data):Float32Array.from(t.data),t.dims);const session=fixture.graph==='attributes'?context.small.rt.attrsSession:fixture.graph==='records'?context.small.rt.recordsSession:fixture.graph==='relations'?context.small.rt.headsSession:context.small.rt.session;const outputs=await session.run(feeds);for(const [name,expected] of Object.entries(fixture.outputs)){invariant(JSON.stringify(outputs[name].dims)===JSON.stringify(expected.dims),'Native output shape mismatch');checks[name]=compareTensors(outputs[name].data,expected.data,expected.tolerance);}let rawCandidateChecks;

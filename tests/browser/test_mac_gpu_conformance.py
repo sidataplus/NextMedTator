@@ -191,7 +191,7 @@ def run_profile(playwright, browser, profile, precision, models_dir, url, entry,
         expect.set_options(timeout=600_000)
         page.on("request", lambda request: requests.append((request.method, request.url)))
         page.on("pageerror", lambda error: page_errors.append(str(error)))
-        page.on("dialog", lambda dialog: dialog.accept())
+        page.on("dialog", lambda dialog: dialog.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
 
         phase = time.perf_counter()
         page.goto(url, wait_until="domcontentloaded")

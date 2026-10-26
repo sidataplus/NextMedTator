@@ -59,7 +59,7 @@ def run():
             errors, requests = [], []
             page.on('pageerror', lambda e: errors.append(str(e)))
             context.on('request', lambda r: requests.append({'url': r.url, 'method': r.method, 'body': r.post_data}))
-            page.on('dialog', lambda dialog: dialog.accept())
+            page.on('dialog', lambda dialog: dialog.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
             url = 'http://127.0.0.1:4190/'
             page.goto(url)
             page.get_by_label('Open local documents or project').set_input_files({'name': 'lora-source.txt', 'mimeType': 'text/plain', 'buffer': case['text'].encode()})

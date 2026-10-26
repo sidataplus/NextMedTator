@@ -19,7 +19,7 @@ def run():
   with sync_playwright() as pw:
    exe=chromium_path();browser=pw.chromium.launch(executable_path=exe if exe and Path(exe).exists() else None,args=['--no-sandbox'])
    context=browser.new_context(accept_downloads=True);page=context.new_page();page.set_default_timeout(180000);expect.set_options(timeout=180000);errors=[];requests=[]
-   page.on('dialog',lambda d:d.accept());page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'body':r.post_data}))
+   page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true');page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda r:requests.append({'url':r.url,'method':r.method,'body':r.post_data}))
    page.goto(URL);fixture=json.loads((ROOT/'tests/fixtures/gliner-small-card.json').read_text())
    page.get_by_label('Open local documents or project').set_input_files({'name':'public-card.txt','mimeType':'text/plain','buffer':fixture['text'].encode()})
    page.get_by_role('button',name='Export & assignments',exact=True).click()

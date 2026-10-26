@@ -175,7 +175,7 @@ function installedModels(assist) {
     }
     for (const item of assist.installedModels ?? [])
         section.append(button('Remove Installed ' + item.manifest.id, () => assist.perform(async () => {
-            if (!confirm('Remove this cached model from this browser? You can download or import it again.')) return;
+            if (!await assist.ask('Remove this cached model from this browser? You can download or import it again.', { confirm: 'Remove Model' })) return;
             if (assist.model?.manifestHash === item.manifestHash) assist.unloadModel();
             await assist.modelStore.remove(item.manifestHash);
             await assist.inspectStorage();

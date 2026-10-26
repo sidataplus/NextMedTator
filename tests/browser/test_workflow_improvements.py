@@ -2,7 +2,7 @@
 import json,os,time
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
-from browser_support import chromium_path
+from browser_support import chromium_path,open_assist_sections
 from windows_process_meter import ProcessMeter
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -33,7 +33,7 @@ with sync_playwright() as p:
         context=browser.new_context(viewport={'width':1600,'height':1050},accept_downloads=True)
         page=context.new_page();page.set_default_timeout(300000);expect.set_options(timeout=300000)
         errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-        page.on('dialog',lambda d:d.accept())
+        page.on('dialog',lambda d:d.accept());page.add_init_script('globalThis.NMT_AUTO_CONFIRM=true');page.evaluate('globalThis.NMT_AUTO_CONFIRM=true')
         page.goto(URL);expect(page.locator('#start-screen')).to_be_hidden()
         page.get_by_test_id('assist-practice-'+profile).click()
         long_text=('Fictional note 😀.\n\n'+''.join(f'Observation {i}. She is pacing, shouting and resisting morning care. No hallucinations.\n' for i in range(60))+'\nShe is pacing, shouting and resisting morning care. No hallucinations.  ')
@@ -58,7 +58,8 @@ with sync_playwright() as p:
         page.get_by_test_id('assist-review-undo').click();idle(page)
         assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length')==0
         page.get_by_test_id('assist-apply-all').click();idle(page)
-        assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length')==result['records']
+        # Apply All applies the suggestions at or above the run's Minimum Score (the model preset).
+        assert page.evaluate("()=>{const r=document.querySelector('nextmedtator-assist').assist.current().run;return app_hotpot.vpp.$data.anns[0].tags.length===r.records.filter(x=>!(x.score<r.minScore)).length&&r.records.filter(x=>!(x.score<r.minScore)).length>0}")
         page.get_by_test_id('assist-review-undo').click();idle(page)
         assert page.evaluate('app_hotpot.vpp.$data.anns[0].tags.length')==0
         assert page.evaluate('Object.keys(app_hotpot.vpp.hint_dict).length')==0
@@ -68,7 +69,7 @@ with sync_playwright() as p:
         page.get_by_test_id('assist-review-undo').click();idle(page)
         expect(page.get_by_test_id('assist-suggestion')).to_have_count(0)
         page.get_by_label('Filter suggestions by status').select_option('all')
-        if not page.get_by_test_id('assist-unload-model').is_visible():section(page,'Model packages')
+        open_assist_sections(page,'packages','download-options')
         # One package readback test also checks installed-on-disk versus loaded-in-RAM.
         if profile=='p10':page.get_by_role('button',name='Install for Offline Use',exact=True).click();idle(page)
         page.screenshot(path=str(OUT/f'{profile}-model-manager.png'))
@@ -82,13 +83,13 @@ with sync_playwright() as p:
             page.get_by_role('button',name='Use Installed ',exact=False).click();idle(page)
         else:
             page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}.nmt-model.zip'));idle(page)
-        section(page,'Large Collections')
+        open_assist_sections(page,'more','collections')
         files=[{'name':f'{profile}-collection-{i:03}.txt','mimeType':'text/plain','buffer':('Fictional note. The patient has fever. She was agitated and wandered at night. '+str(i)).encode()} for i in range(NOTE_COUNT)]
         page.get_by_test_id('assist-collection-import').set_input_files(files);idle(page)
         assert page.evaluate(STATE)['notes']==NOTE_COUNT
         scroll_to(page,'assist-collection-memory')
         page.screenshot(path=str(OUT/f'{profile}-collection-import.png'))
-        section(page,'Batch Analysis (0 selected)')
+        open_assist_sections(page,'batch')
         page.get_by_test_id('assist-collection-open-note').first.click();idle(page)
         page.get_by_test_id('assist-select-all').click()
         page.get_by_test_id('assist-analyze-selected').click()
@@ -99,14 +100,14 @@ with sync_playwright() as p:
         page.reload();expect(page.locator('#start-screen')).to_be_hidden()
         # Reload must not materialize cached weights or start any inference.
         assert not page.evaluate(STATE)['model']
-        section(page,'Large Collections');page.get_by_test_id('assist-collection-list').click();idle(page)
+        open_assist_sections(page,'more','collections');page.get_by_test_id('assist-collection-list').click();idle(page)
         page.get_by_test_id('assist-collection-restore').click();idle(page)
         assert page.evaluate(STATE)['collection']==collection_id
-        if not page.get_by_label('Import model package into the annotation assistance panel').is_visible():section(page,'Get a model package')
+        open_assist_sections(page,'packages','local-packages')
         page.get_by_label('Import model package into the annotation assistance panel').set_input_files(str(ROOT/'work'/f'{profile}.nmt-model.zip'));idle(page)
         # Restore the queue's explicit review mode before resuming.
-        page.get_by_label('Review mode').select_option('assisted')
-        section(page,'Batch Analysis (0 selected)')
+        page.get_by_label('Review mode').select_option(page.evaluate("document.querySelector('nextmedtator-assist').assist.batchQueue.settings.mode"))
+        open_assist_sections(page,'batch')
         page.get_by_test_id('assist-batch-resume').click();idle(page)
         final=page.evaluate(STATE)
         assert all(n['status']=='completed' for n in final['queue']['notes']),final

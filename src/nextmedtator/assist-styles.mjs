@@ -58,6 +58,30 @@ p{margin:5px 0}
 .badge{padding:0 5px;border:1px solid #cccccc;background:whitesmoke;font-size:10px}
 .badge.pending{background:#fff2db;color:#78571c}
 .badge.ready{background:#e8f5ef;color:#176444}
+.badge.completed{background:#e8f5ef;color:#176444}
+.badge.failed{background:#fff0ec;color:#8a3b16}
+.badge.cancelled{background:#fff2db;color:#78571c}
+.badge.running{background:#e5f3ff}
+.file-list{margin:6px 0}
+.file-row{display:flex;align-items:center;gap:6px;min-height:28px;padding:1px 2px;border-bottom:1px dotted #cccccc}
+.file-row.current{background:#fffee8}
+.file-row .check{min-width:0;margin:0}
+.file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-row small{flex-shrink:0;font-size:10px;font-variant-numeric:tabular-nums}
+.file-row .badge{flex-shrink:0;white-space:nowrap}
+.file-row button{flex-shrink:0;min-height:22px;padding:2px 5px;font-size:11px}
+.filters input[type=text]{flex:1;min-width:120px}
+.drop-zone{margin:6px 0;padding:4px 8px;border:1px dashed #aaaaaa;background:#fafafa}
+.drop-zone.active{border-color:#1ba1e2;background:#e5f3ff}
+.drop-zone label{margin:4px 0}
+.advice strong{display:block}
+.confirm{flex-shrink:0;margin:6px 8px 0;padding:6px 8px;border:1px solid #1ba1e2;border-left-width:3px;background:#eff6fc;font-size:11px}
+.confirm p{margin:0 0 4px;overflow-wrap:anywhere;font-weight:600}
+.confirm .row{margin:0}
+.min-score{display:flex;align-items:center;gap:6px;margin:6px 0}
+.min-score input[type=range]{flex:1;min-width:80px}
+.min-score output{min-width:2.5em;font-weight:600;font-variant-numeric:tabular-nums}
+.advice .row{margin:4px 0 2px}
 .setup-hint{margin:6px 0;padding:5px 8px;border-left:3px solid #1ba1e2;background:#eff6fc;font-size:11px}
 .setup-hint p{margin:3px 0}
 .setup-hint .section{border:0;padding-bottom:0}
